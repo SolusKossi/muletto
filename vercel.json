@@ -1,4 +1,5 @@
 {
+  "buildCommand": "node tools/build-site.js",
   "outputDirectory": "apps/web",
   "cleanUrls": false,
   "trailingSlash": false,
