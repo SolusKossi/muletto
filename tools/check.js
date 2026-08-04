@@ -96,9 +96,18 @@ console.log("\nGenerated pages match the guide JSON");
     fail("build-site.js threw: " + String(e.message).split("\n")[0]);
   }
 
+  /* The commit stamp is deployment metadata, not content. It is written by
+     whichever build produced the deployed pages, so it differs between a
+     laptop and the host by design - and comparing it made every generated page
+     look stale in the public repository, where the build can see the remote
+     and the committed files were copied from a tree that could not. Compare
+     what the guide JSON actually produces. */
+  const withoutStamp = (t) =>
+    t.replace(new RegExp('\s*<a class="foot-commit"[\s\S]*?</a>', "g"), "");
+
   const stale = [];
   for (const [f, was] of before) {
-    if (fs.readFileSync(f, "utf8") !== was) stale.push(rel(f));
+    if (withoutStamp(fs.readFileSync(f, "utf8")) !== withoutStamp(was)) stale.push(rel(f));
   }
   if (stale.length) {
     stale.forEach((f) => fail(f + " is stale - run the build and commit the result"));
