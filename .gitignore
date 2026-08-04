@@ -26,3 +26,7 @@ tools/vendor/photos/
 # Converted from the shipped woff2 so Pillow can draw with it. Regenerate with
 # fonttools rather than tracking a second copy of the typeface.
 brand/_hostgrotesk.ttf
+
+# Belt and braces for the raw captures: the line above ignores their contents,
+# this ignores the directory itself if it is ever recreated somewhere else.
+**/screenshots-raw/
