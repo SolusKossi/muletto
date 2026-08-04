@@ -139,8 +139,20 @@ const MZip = (function () {
   }
 
   /* Extract one entry, reading only that entry's bytes from disk. */
+  /* Which blob an entry actually lives in.
+
+     An entry from a nested archive carries offsets into that archive, not into
+     the file on disk, so reading it against the outer file returns whatever
+     happens to be at those bytes - usually a damaged-entry error, occasionally
+     silent nonsense. Entries expanded out of a nested zip carry the inner blob
+     with them, and every read here goes through this rather than the file it
+     was handed. That way the twenty-seven callers do not have to know nested
+     archives exist. */
+  const src = (file, entry) => (entry && entry.blob) || file;
+
   async function extract(file, entry) {
-    const head = await readRange(file, entry.localOff, 30);
+    const f = src(file, entry);
+    const head = await readRange(f, entry.localOff, 30);
     const hdv = new DataView(head.buffer);
     if (head.length < 30 || hdv.getUint32(0, true) !== LFH) {
       throw new Error("Damaged entry: " + entry.name);
@@ -150,7 +162,7 @@ const MZip = (function () {
     const dataStart = entry.localOff + 30 + nameLen + extraLen;
     /* Only read when there is something encrypted to describe. */
     const extra = (entry.encrypted || entry.method === 99) && extraLen
-      ? await readRange(file, entry.localOff + 30 + nameLen, extraLen)
+      ? await readRange(f, entry.localOff + 30 + nameLen, extraLen)
       : null;
 
     /* Refuse early and say why. Without this the deflate stream fails on
@@ -173,7 +185,7 @@ const MZip = (function () {
       }
       const aes = method === 99 ? readAesExtra(extra) : null;
       if (method === 99 && !aes) throw new Error("Unreadable AES header in " + entry.name);
-      const raw = await readRange(file, dataStart, entry.compSize);
+      const raw = await readRange(f, dataStart, entry.compSize);
       if (aes) {
         cipherBytes = await MZipCrypt.decryptAes(raw, password, aes.strength);
         method = aes.method;
@@ -188,7 +200,7 @@ const MZip = (function () {
     }
 
     if (method === 0) {
-      return cipherBytes || readRange(file, dataStart, entry.size);
+      return cipherBytes || readRange(f, dataStart, entry.size);
     }
     if (method !== 8) {
       throw new Error("Unsupported compression in " + entry.name);
@@ -204,7 +216,7 @@ const MZip = (function () {
     }
     // Stream the compressed bytes straight from disk through the inflater, so
     // even a very large single file never sits in memory twice.
-    const slice = file.slice(dataStart, dataStart + entry.compSize);
+    const slice = f.slice(dataStart, dataStart + entry.compSize);
     const stream = slice.stream().pipeThrough(new DecompressionStream("deflate-raw"));
     return new Uint8Array(await new Response(stream).arrayBuffer());
   }
@@ -224,13 +236,14 @@ const MZip = (function () {
       const bytes = await extract(file, entry);
       return new Blob([bytes]).stream();
     }
-    const head = await readRange(file, entry.localOff, 30);
+    const f = src(file, entry);
+    const head = await readRange(f, entry.localOff, 30);
     const hdv = new DataView(head.buffer);
     if (head.length < 30 || hdv.getUint32(0, true) !== LFH) {
       throw new Error("Damaged entry: " + entry.name);
     }
     const dataStart = entry.localOff + 30 + hdv.getUint16(26, true) + hdv.getUint16(28, true);
-    const raw = file.slice(dataStart, dataStart + (entry.method === 0 ? entry.size : entry.compSize));
+    const raw = f.slice(dataStart, dataStart + (entry.method === 0 ? entry.size : entry.compSize));
     return entry.method === 0
       ? raw.stream()
       : raw.stream().pipeThrough(new DecompressionStream("deflate-raw"));
@@ -276,10 +289,81 @@ const MZip = (function () {
     return out;
   }
 
+
+  /* Archives inside archives.
+   *
+   * Apple answers one request with eighteen zips, seven of which contain more
+   * zips. In a real export that hid 394 entries: 57 spreadsheets of purchase
+   * history in Apple_Media_Services.zip and 319 Siri recordings in another.
+   * They were on screen as nothing at all, and no count anywhere said so.
+   *
+   * Each one is read out, kept as a blob, and its entries folded into the
+   * outer listing under a joined name. They carry the blob with them so every
+   * later read goes to the right bytes.
+   *
+   * Bounded on purpose: an archive that contains itself, or a zip bomb, must
+   * not be able to spend the tab. Whatever is refused is reported rather than
+   * dropped quietly.
+   */
+  const NEST = { depth: 3, archives: 40, bytes: 512 * 1024 * 1024 };
+
+  async function expandNested(file, entries, budget) {
+    const cap = budget || NEST;
+    const out = entries.slice();
+    const skipped = [];
+    let opened = 0, bytes = 0;
+
+    /* Escaped, and written here rather than built in any generator: as an
+       unescaped /.zip$/ the dot matched any character, so this claimed every
+       name ending in "zip" was an archive - "unzip", "gzip", a folder called
+       "Winzip" - and each one was then extracted in full before failing to
+       parse. */
+    const IS_ZIP = /\.zip$/i;
+
+    async function walk(host, list, prefix, depth) {
+      if (depth > cap.depth) return;
+      for (const e of list) {
+        if (!IS_ZIP.test(e.name) || !e.size) continue;
+        if (e.size > cap.bytes) {
+          // Too big on its own. Inflating it would hold the whole thing in
+          // memory at once, and Apple ships one of 1.3 GB.
+          skipped.push({ name: prefix + e.name, size: e.size, reason: "size" });
+          continue;
+        }
+        if (opened >= cap.archives || bytes + e.size > cap.bytes) {
+          skipped.push({ name: prefix + e.name, size: e.size, reason: "budget" });
+          continue;
+        }
+        let inner, blob;
+        try {
+          blob = new Blob([await extract(host, e)]);
+          inner = await readDirectory(blob);
+        } catch (err) {
+          // Encrypted, damaged, or not really an archive.
+          skipped.push({ name: prefix + e.name, size: e.size, reason: "unreadable" });
+          continue;
+        }
+        opened++;
+        bytes += e.size;
+        const here = prefix + e.name + "/";
+        const tagged = inner.map((x) => Object.assign({}, x, {
+          name: here + x.name,
+          blob,
+          nestedIn: prefix + e.name,
+        }));
+        out.push(...tagged);
+        await walk(blob, inner, here, depth + 1);
+      }
+    }
+
+    await walk(file, entries, "", 1);
+    return { entries: out, opened, skipped };
+  }
+
   /* The password for encrypted entries, set by whoever asked the reader for
      one. Kept here rather than threaded through every call because an archive
      has one password and every entry in it needs the same one. */
   Object.assign(api, { readDirectory, extract, streamEntry, readHead, extractText,
-    extractJson, extractBlob });
+    extractJson, extractBlob, expandNested });
   return api;
 })();

@@ -69,7 +69,10 @@ The layer everything else sits on. A failure here loses a whole export.
 | Cancelling the password prompt | `V` | |
 | Streamed head reads inside an encrypted entry | `V` | Was silently broken; fixed and re-checked |
 | `.tgz` / `.tar.gz` Takeout | `X` | **Not supported at all.** Google offers tgz and some people pick it |
-| Nested archives (a zip inside a zip) | `X` | **Confirmed against a real export, not inferred.** Seven of the eighteen Apple archives hold zips, and **394 entries are unread inside them** - including `Apple_Media_Services.zip` with 57 CSVs, and `Apple Features Using iCloud.zip` with 319 `.m4a` Siri recordings. Also `.pages`, `.numbers` and `.spd` |
+| Nested archives (a zip inside a zip) | `V` | Seven of the eighteen Apple archives hold zips. Run over that export, expansion opens 9 of them and takes the listing from **1020 entries to 1091**; a nested CSV was read end to end through its blob. In the browser, a hand-built nested zip expands, a file named `notanarchive.unzip` is correctly left alone, and a nested entry reads back byte for byte |
+| A nested archive too large to open | `V` | `Apple Features Using iCloud.zip` is **1.34 GB** and holds the 319 `.m4a` Siri recordings. Inflating it would sit in tab memory whole, so it is refused above 512 MB - and the refusal is now a note on the library naming the file and its size, rather than silence. The other two refusal reasons (archive-count budget, unreadable or password-protected) are each confirmed in the browser |
+| A nested archive left unopened, unpacked by hand | `X` | The note tells the user to unzip that one file and drop it in on its own. That instruction has not been walked |
+| `.pages`, `.numbers`, `.spd` containers | `X` | Zip containers too, but of XML rather than user files, so expansion would list parts rather than documents. Deliberately not expanded |
 | Folder picked with `showDirectoryPicker` | `V` | Chrome only |
 | Works with the server stopped | `V` | Registered, 38 files cached, then the dev server was killed and the page reloaded: HTML, all eight modules, styles, fonts and the full sample library all came back |
 | Offline on Safari and Firefox | `-` | Service workers behave differently on both, and neither has ever run this |
