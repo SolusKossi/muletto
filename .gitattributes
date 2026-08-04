@@ -1,0 +1,29 @@
+# Line endings are LF everywhere, in the repository and in the working tree.
+#
+# Without this, git on Windows checks files out with CRLF while the build
+# writes LF, so every generated page compares as changed. In the public
+# repository that meant a fresh clone failed `node tools/check.js` with
+# thirty-one stale-page errors - which is the first thing CONTRIBUTING.md asks
+# a contributor to run, so the project appeared broken before they had touched
+# anything.
+#
+# It is also why check.js could never have caught a real staleness problem on
+# Windows: everything was always stale.
+* text=auto eol=lf
+
+# Binaries must not be touched at all. A woff2 or a png with its bytes
+# rewritten is a corrupt file, not a tidied one.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.mp4 binary
+*.mp3 binary
+*.wav binary
+*.pdf binary
