@@ -1,15 +1,18 @@
 # Muletto
 
-### [muletto.app](https://muletto.app)
+**Open the data export a service sends you, and actually read it.**
 
-Just want to use it? Open the site and drop your export in. Nothing to install,
-no account, nothing to sign up for, and it is free. This repository is here for
-anyone who would rather read what it does before trusting it with their files.
+Google, Apple, Samsung, Facebook, Instagram, Snapchat. Everything happens in
+your browser, and nothing is uploaded.
+
+## [Open muletto.app](https://muletto.app)
+
+Free, no account, nothing to install. Drop your export in and it opens.
+
+The whole thing is in this repository too, so anyone curious about how it works
+can see exactly what it does.
 
 ---
-
-Open the data export a service sends you, in your browser, without uploading it
-anywhere.
 
 Every large service is obliged to hand over a copy of your data, and most of
 them do it in a format that is technically compliant and practically unreadable.
@@ -22,11 +25,10 @@ Muletto reads those archives, merges several exports into one library, finds
 duplicates across them, and can write the real capture dates and locations back
 into the files.
 
-## Checking the privacy claim
+## How you can tell nothing is uploaded
 
-The claim is that nothing you open ever leaves your machine. You should not have
-to take that on trust, so there are three ways to check it, in ascending order
-of effort.
+Muletto keeps everything on your machine. That is easy to say, so here are three
+ways to see it for yourself, from the quickest to the most thorough.
 
 **Turn off your internet, then open an export.** Everything still works. A
 service worker caches the application itself, so even a reload succeeds with no
