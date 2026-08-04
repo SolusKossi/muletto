@@ -399,7 +399,12 @@ async function readSource(file, seen) {
      export - and until this ran, everything in them was invisible. Done after
      unlocking, because a nested archive inside an encrypted one cannot be read
      until the outer archive is open. */
-  const nest = await MZip.expandNested(file, outer);
+  const nest = await MZip.expandNested(file, outer, null, (a) => {
+    if (seen && seen.say) {
+      seen.say("Unpacking " + a.name.split("/").pop() +
+               " (" + fmtBytes(a.size) + ") from inside " + file.name + "...");
+    }
+  });
   const all = nest.entries;
   const det = detectProvider(all, file.name);
   const key = exportKey(file.name, (det && det.slug) || file.name);
@@ -435,8 +440,8 @@ async function readSource(file, seen) {
       lib.notes.push(who + "this export has more nested archives than Muletto " +
                      "opens in one go." + fix);
     } else {
-      lib.notes.push(who + "at " + fmtBytes(s.size) + " it is too large to " +
-                     "unpack in a browser tab without risking the page." + fix);
+      lib.notes.push(who + "at " + fmtBytes(s.size) + " this browser would not " +
+                     "give us room to unpack it." + fix);
     }
   }
 
@@ -813,6 +818,10 @@ async function handleFiles(fileList, opts) {
         done: sources.map((x) => x.name),
         todo: files.slice(i + 1).map((f) => f.name),
       };
+      /* Unpacking an archive inside an archive can take a while - Apple's
+         Siri recordings are 1.3 GB - and with no word from it the curtain
+         reads as a hang on the outer file. */
+      seenBytes.say = (m) => { curtainSay(m); if (status) status(m); };
       const src = await readSource(files[i], seenBytes);
       src.batch = batch;
       sources.push(src);
