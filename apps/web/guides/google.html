@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How to export your data from Google | Muletto</title>
+  <meta name="description" content="Request a complete copy of your photos, videos, location history from Google. 7 steps, what you get back, and how long it takes (minutes to a few days depending on size)." />
+  <link rel="canonical" href="https://muletto.app/guides/google.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="How to export your data from Google | Muletto" />
+  <meta property="og:description" content="Request a complete copy of your photos, videos, location history from Google. 7 steps, what you get back, and how long it takes (minutes to a few days depending on size)." />
+  <meta property="og:url" content="https://muletto.app/guides/google.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=1638b7bc" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to export your data from Google","description":"Request a complete copy of your photos, videos, location history from Google. 7 steps, what you get back, and how long it takes (minutes to a few days depending on size).","step":[{"@type":"HowToStep","position":1,"name":"Open Google Takeout","text":"Sign in with the Google account you want to export."},{"@type":"HowToStep","position":2,"name":"Deselect all, then pick what you need","text":"Takeout ticks everything by default. Click \"Deselect all\" and choose only what you want (e.g. Google Photos, Mail, YouTube)."},{"@type":"HowToStep","position":3,"name":"Choose .zip and a large chunk size","text":"Pick .zip - it is the format everything can open, and the one Muletto reads. For size, choose the largest chunk offered: fewer, bigger files mean fewer downloads to babysit and fewer chances for one to fail. A 50 GB library at the 2 GB default arrives as around 25 separate zips. Files over 2 GB come back in the zip64 format, which Muletto reads and some desktop tools do not."},{"@type":"HowToStep","position":4,"name":"Choose a one-time export","text":"\"Export once\" is right for most people. Then \"Create export\"."},{"@type":"HowToStep","position":5,"name":"Wait for the email","text":"Small exports finish in minutes; large photo libraries can take a day or more. Google emails a download link."},{"@type":"HowToStep","position":6,"name":"Download all parts","text":"Download every numbered part, and keep them together in one folder. The download links expire, so do not leave it a fortnight - if they lapse you have to request the whole export again and wait again. Do not unzip them: Muletto reads the archives directly, which is faster and avoids doubling the disk space you need."},{"@type":"HowToStep","position":7,"name":"Open all the parts at once","text":"Drop every zip into Muletto together. It reads them as one export, so a photograph in part 3 finds its metadata in part 7, the duplicates Google created by exporting album copies alongside year folders are found and folded together, and the dates and locations go back into the files themselves."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Google","item":"https://muletto.app/guides/google.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span>/</span>
+        <a href="../guides.html">Guides</a>
+        <span>/</span>
+        <span aria-current="page">Google</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>How to export your data from Google</h1>
+        <div class="art-meta">
+          <span class="badge easy">easy</span>
+          <span class="muted">Wait: minutes to a few days depending on size</span>
+        </div>
+        <p class="art-intro">Google is required to give you a copy of the data it holds about you, including photos, videos, location history, email, browsing activity and purchase history. The request itself is free, and arrives as .zip (recommended) or .tgz, split into chunks of up to 50 GB. Typical wait: minutes to a few days depending on size.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="https://takeout.google.com" target="_blank" rel="noopener noreferrer">Google Takeout <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          <aside class="explain"><h2>Open every part together, not one at a time</h2><p>Google splits a large export into numbered zips, and it does not keep a photograph and its metadata file in the same one. Open part 3 on its own and some of those photographs have no date and no place, because the JSON describing them is sitting in part 7. Hand Muletto all the parts at once and they are read as the single export they are. This is also why a Takeout looks bigger than your library: a photograph in an album and in its year folder is exported twice.</p></aside>
+
+          <h2>Step by step</h2>
+          <p class="confirmed-line">Every screenshot below is from Google&#39;s own pages on 30 July 2026.</p>
+          <ol class="steps-ol">
+            <li>
+              <h3>Open Google Takeout</h3>
+              <p>Sign in with the Google account you want to export.</p>
+              <figure class="figshot">
+                <span class="figshot-frame"><img src="img/google-1-select-data.png" alt="Google Takeout, stage 1 &#39;Select data to include&#39;, showing 61 of 61 products selected and a format button under each one." loading="lazy" width="719" height="1200"></span>
+                <figcaption>Takeout opens with everything selected - 61 products. Deselect all first unless you genuinely want all of it.</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>Deselect all, then pick what you need</h3>
+              <p>Takeout ticks everything by default. Click &quot;Deselect all&quot; and choose only what you want (e.g. Google Photos, Mail, YouTube).</p>
+              
+            </li>
+            <li>
+              <h3>Choose .zip and a large chunk size</h3>
+              <p>Pick .zip - it is the format everything can open, and the one Muletto reads. For size, choose the largest chunk offered: fewer, bigger files mean fewer downloads to babysit and fewer chances for one to fail. A 50 GB library at the 2 GB default arrives as around 25 separate zips. Files over 2 GB come back in the zip64 format, which Muletto reads and some desktop tools do not.</p>
+              <figure class="figshot">
+                <span class="figshot-frame"><img src="img/google-2-filetype.png" alt="Google Takeout stage 2, showing destination &#39;Send download link via email&#39;, frequency &#39;Export once&#39;, file type .zip and file size 50 GB." loading="lazy" width="721" height="1186"></span>
+                <figcaption>Destination, frequency, file type and size are all on one screen. Google&#39;s own note here is worth reading: anything over 2 GB comes back as zip64, which some tools cannot open. Muletto can.</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>Choose a one-time export</h3>
+              <p>&quot;Export once&quot; is right for most people. Then &quot;Create export&quot;.</p>
+              
+            </li>
+            <li>
+              <h3>Wait for the email</h3>
+              <p>Small exports finish in minutes; large photo libraries can take a day or more. Google emails a download link.</p>
+              <figure class="figshot">
+                <span class="figshot-frame"><img src="img/google-3-progress.png" alt="Google Takeout export progress, reading &#39;Google is creating a copy of data from 61 products&#39; and warning it can take hours or days." loading="lazy" width="720" height="741"></span>
+                <figcaption>Confirmed on the screen itself: hours or days. Asking for all 61 products is what makes it days.</figcaption>
+              </figure>
+            </li>
+            <li>
+              <h3>Download all parts</h3>
+              <p>Download every numbered part, and keep them together in one folder. The download links expire, so do not leave it a fortnight - if they lapse you have to request the whole export again and wait again. Do not unzip them: Muletto reads the archives directly, which is faster and avoids doubling the disk space you need.</p>
+              
+            </li>
+            <li>
+              <h3>Open all the parts at once</h3>
+              <p>Drop every zip into Muletto together. It reads them as one export, so a photograph in part 3 finds its metadata in part 7, the duplicates Google created by exporting album copies alongside year folders are found and folded together, and the dates and locations go back into the files themselves.</p>
+              
+            </li>
+          </ol>
+
+          <h2>Worth knowing</h2>
+          <div class="note">A Takeout is usually larger than your library, because a photograph that is in an album and in its year folder is exported once for each. Those copies are byte-identical, so the duplicate pass finds them.</div>
+          <div class="note">Google names the metadata files inconsistently - supplemental-metadata.json, truncated forms of it, and numbered variants - so a tool that matches only the tidy spelling misses some. Muletto matches all of them.</div>
+          <div class="note">Do not unzip before opening. Muletto reads inside the archives, so unzipping only costs time and twice the disk space.</div>
+          <div class="note">Photos and Drive are separate products in Takeout. If you want both, tick both - a Photos export contains no Drive files.</div>
+
+          <h2>What Muletto does with this export</h2>
+          <p>Once your download arrives, open it in Muletto. The file is read in your browser, on your own machine - nothing is uploaded. You get a breakdown of what is inside, duplicate detection, and a browsable view of your photos, messages, timeline and records.</p>
+          <p><a class="btn secondary" href="../app.html">Open your export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>At a glance</h4>
+            <dl>
+              <dt>Effort</dt><dd>easy</dd>
+              <dt>Typical wait</dt><dd>minutes to a few days depending on size</dd>
+              <dt>Format</dt><dd>.zip (recommended) or .tgz, split into chunks of up to 50 GB</dd>
+              <dt>Delivery</dt><dd>email link</dd>
+              <dt>Checked</dt><dd>30 July 2026</dd>
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Other services</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+              <li><a href="samsung.html"><span class="side-ic" data-icon="samsung"></span>Samsung</a></li>
+              <li><a href="facebook.html"><span class="side-ic" data-icon="facebook"></span>Facebook</a></li>
+              <li><a href="instagram.html"><span class="side-ic" data-icon="instagram"></span>Instagram</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Where to keep your data</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../app.js?v=93c59e8a"></script>
+</body>
+</html>

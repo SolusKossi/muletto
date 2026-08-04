@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muletto plan review</title>
+<style>
+  :root {
+    --ground: #f4f2ef;
+    --card: #ffffff;
+    --ink: #171721;
+    --muted: rgba(23,23,33,.6);
+    --slate: #50617a;
+    --border: #ededf3;
+    --lime: #e0f050;
+    --brick: #c0452c;
+    --dark: #171721;
+    --shadow: rgba(50,50,93,.25) 0 30px 45px -30px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d6d6de; border-radius: 8px; border: 2px solid var(--ground); }
+  ::-webkit-scrollbar-thumb:hover { background: #c2c2cc; }
+  * { scrollbar-width: thin; scrollbar-color: #d6d6de transparent; }
+
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; border-radius: 4px; }
+
+  .micro {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--slate);
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 32px 24px 120px;
+  }
+
+  /* drop zone / empty state */
+  #dropzone {
+    background: var(--card);
+    border: 1px dashed #cfcfda;
+    border-radius: 12px;
+    padding: 72px 32px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  #dropzone.dragging { border-color: var(--slate); background: #fbfbf6; }
+  #dropzone h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  #dropzone p { color: var(--muted); margin: 0 0 20px; }
+  body.dragging-file #dropzone { border-color: var(--slate); background: #fbfbf6; }
+
+  button {
+    font: inherit;
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  button:hover { border-color: #d6d6de; }
+  button.primary {
+    background: var(--lime);
+    border-color: var(--lime);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  button.primary:hover { background: #d6e648; border-color: #d6e648; }
+  button.small { padding: 4px 10px; font-size: 12px; border-radius: 4px; }
+  button:disabled { opacity: .45; cursor: default; }
+
+  /* header */
+  #planHeader { display: none; margin-bottom: 20px; }
+  #planHeader .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: var(--shadow);
+  }
+  #rootPath {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 4px 0 10px;
+    word-break: break-all;
+  }
+  #summaryLine { color: var(--muted); }
+  #summaryLine strong { color: var(--ink); font-weight: 600; }
+  #headerTop { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  #generatedAt { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+  /* keep exceptions */
+  #keepSection { display: none; margin-bottom: 20px; }
+  #keepCard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  #keepToggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(224,240,80,.22);
+    border: none;
+    border-radius: 0;
+    padding: 12px 20px;
+    text-align: left;
+  }
+  #keepToggle:hover { background: rgba(224,240,80,.32); }
+  #keepToggle .micro { color: #5a6320; }
+  #keepChevron { font-size: 12px; color: #5a6320; }
+  #keepList { display: none; max-height: 260px; overflow-y: auto; }
+  #keepList.open { display: block; }
+  .keep-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 20px;
+    border-top: 1px solid var(--border);
+    background: rgba(224,240,80,.08);
+    font-size: 13px;
+  }
+  .keep-row .kp { word-break: break-all; }
+  .keep-row .kr { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
+
+  /* groups */
+  #groups { display: none; }
+  .group {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #fafafc;
+  }
+  .group-head .g-title { display: flex; align-items: baseline; gap: 10px; }
+  .group-head .g-name { font-weight: 600; font-size: 13px; }
+  .group-head .g-name.delete { color: var(--brick); }
+  .group-head .g-meta { color: var(--muted); font-size: 12px; }
+  .group-head .g-actions { display: flex; gap: 8px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--slate);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.c-name { max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.c-cat { color: var(--muted); white-space: nowrap; }
+  td.c-size, td.c-date { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.c-rule { color: var(--muted); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.c-toggle { text-align: right; white-space: nowrap; }
+  th.c-toggle { text-align: right; }
+
+  tr.rejected td { opacity: .38; }
+  tr.rejected td.c-toggle { opacity: 1; }
+
+  .tgl {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 78px;
+  }
+  .tgl.on { background: var(--lime); border-color: var(--lime); color: var(--ink); }
+  .tgl.off { background: var(--card); color: var(--brick); border-color: #e3cfc9; }
+
+  /* footer */
+  #footer {
+    display: none;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    box-shadow: rgba(50,50,93,.25) 0 -12px 30px -24px;
+    z-index: 20;
+  }
+  #footer .inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  #footerCounts { color: var(--muted); font-size: 13px; }
+  #footerCounts strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  #footer .btns { display: flex; gap: 10px; }
+
+  /* fullscreen review */
+  #fsOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--dark);
+    color: #f4f2ef;
+    z-index: 50;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+  }
+  #fsOverlay.open { display: flex; }
+  #fsPos { color: rgba(244,242,239,.55); margin-bottom: 24px; }
+  #fsAction { margin-bottom: 6px; }
+  #fsAction.delete { color: #e8836b; }
+  #fsAction.move, #fsAction.transfer { color: #9fb0c6; }
+  #fsName {
+    font-size: 30px;
+    font-weight: 600;
+    max-width: 820px;
+    word-break: break-all;
+    margin: 0 0 14px;
+  }
+  #fsMeta { color: rgba(244,242,239,.65); margin-bottom: 10px; font-variant-numeric: tabular-nums; }
+  #fsRule { color: rgba(244,242,239,.5); max-width: 640px; margin-bottom: 28px; font-size: 13px; }
+  #fsState {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+  }
+  #fsState.on { background: var(--lime); color: var(--ink); }
+  #fsState.off { background: var(--brick); color: #f4f2ef; }
+  #fsHint {
+    position: absolute;
+    bottom: 28px;
+    left: 0; right: 0;
+    color: rgba(244,242,239,.4);
+    font-size: 12px;
+  }
+  #fsHint b { color: rgba(244,242,239,.7); font-weight: 600; }
+
+  input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div id="dropzone">
+    <div class="micro">Muletto</div>
+    <h1>Review a plan</h1>
+    <p>Drop a plan.json anywhere on this page, or pick one.<br>Nothing runs from here; you only approve or reject proposed actions.</p>
+    <button id="pickBtn" type="button">Choose file</button>
+    <p id="loadError" style="color:var(--brick); display:none; margin-top:16px;"></p>
+  </div>
+
+  <div id="planHeader">
+    <div class="card">
+      <div id="headerTop">
+        <div>
+          <div class="micro">Plan root</div>
+          <div id="rootPath"></div>
+        </div>
+        <div id="generatedAt"></div>
+      </div>
+      <div id="summaryLine"></div>
+    </div>
+  </div>
+
+  <div id="keepSection">
+    <div id="keepCard">
+      <button id="keepToggle" type="button">
+        <span class="micro" id="keepLabel">Keep exceptions</span>
+        <span id="keepChevron">show</span>
+      </button>
+      <div id="keepList"></div>
+    </div>
+  </div>
+
+  <div id="groups"></div>
+</div>
+
+<div id="footer">
+  <div class="inner">
+    <div id="footerCounts"></div>
+    <div class="btns">
+      <button id="fsBtn" type="button">Review one by one</button>
+      <button id="exportBtn" type="button" class="primary">Export approved plan</button>
+    </div>
+  </div>
+</div>
+
+<div id="fsOverlay">
+  <div id="fsPos" class="micro"></div>
+  <div id="fsAction" class="micro"></div>
+  <div id="fsName"></div>
+  <div id="fsMeta"></div>
+  <div id="fsRule"></div>
+  <div><span id="fsState"></span></div>
+  <div id="fsHint"><b>up</b> approve &nbsp; <b>down</b> reject &nbsp; <b>left / right</b> navigate &nbsp; <b>esc</b> exit</div>
+</div>
+
+<input type="file" id="fileInput" accept=".json,application/json">
+
+<script>
+(function () {
+  "use strict";
+
+  var ACTION_ORDER = ["delete", "move", "transfer"];
+  var state = null; // { plan, items (ordered, each with .approved), keepOpen }
+  var fsIndex = 0;
+  var fsOpen = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function baseName(p) {
+    var s = String(p || "");
+    var i = Math.max(s.lastIndexOf("\\"), s.lastIndexOf("/"));
+    return i >= 0 ? s.slice(i + 1) : s;
+  }
+
+  function fmtBytes(n) {
+    n = Number(n) || 0;
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    if (n < 1024 * 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + " MB";
+    return (n / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+  }
+
+  function fmtGB(n) {
+    return ((Number(n) || 0) / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return "-";
+    var s = String(iso);
+    return s.length >= 10 ? s.slice(0, 10) : s;
+  }
+
+  function stamp() {
+    var d = new Date();
+    function p(n) { return (n < 10 ? "0" : "") + n; }
+    return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "-" +
+           p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+  }
+
+  // ---- loading ----
+
+  function loadFile(file) {
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var plan = JSON.parse(r.result);
+        if (!plan || !Array.isArray(plan.items)) {
+          throw new Error("no items array");
+        }
+        setPlan(plan);
+      } catch (e) {
+        showError("Could not read that file as a plan: " + e.message);
+      }
+    };
+    r.onerror = function () { showError("Could not read that file."); };
+    r.readAsText(file);
+  }
+
+  function showError(msg) {
+    var el = $("loadError");
+    el.textContent = msg;
+    el.style.display = "block";
+    $("dropzone").style.display = "block";
+  }
+
+  function setPlan(plan) {
+    // order items: grouped by action, delete first, stable within group
+    var ordered = [];
+    var actions = ACTION_ORDER.slice();
+    plan.items.forEach(function (it) {
+      if (actions.indexOf(it.action) < 0) actions.push(it.action);
+    });
+    actions.forEach(function (a) {
+      plan.items.forEach(function (it) {
+        if (it.action === a) {
+          ordered.push({
+            path: it.path, bytes: it.bytes, category: it.category,
+            mtime: it.mtime, action: it.action, destination: it.destination,
+            rule_id: it.rule_id, rule_text: it.rule_text,
+            approved: true
+          });
+        }
+      });
+    });
+    state = { plan: plan, items: ordered, actions: actions, keepOpen: false };
+    fsIndex = 0;
+    closeFullscreen();
+    render();
+  }
+
+  // ---- rendering ----
+
+  function counts() {
+    var c = { delete: { n: 0, b: 0 }, move: { n: 0, b: 0 }, transfer: { n: 0, b: 0 } };
+    var freed = 0;
+    state.items.forEach(function (it) {
+      if (!it.approved) return;
+      var slot = c[it.action] || (c[it.action] = { n: 0, b: 0 });
+      slot.n += 1;
+      slot.b += Number(it.bytes) || 0;
+      if (it.action === "delete" || it.action === "transfer") freed += Number(it.bytes) || 0;
+    });
+    c._freed = freed;
+    return c;
+  }
+
+  function render() {
+    $("dropzone").style.display = "none";
+    $("loadError").style.display = "none";
+    $("planHeader").style.display = "block";
+    $("groups").style.display = "block";
+    $("footer").style.display = "block";
+
+    var plan = state.plan;
+    $("rootPath").textContent = plan.root || "(unknown root)";
+    $("generatedAt").textContent = plan.generated ? "generated " + fmtDate(plan.generated) : "";
+
+    var per = { delete: 0, move: 0, transfer: 0 };
+    var freed = 0;
+    state.items.forEach(function (it) {
+      per[it.action] = (per[it.action] || 0) + 1;
+      if (it.action === "delete" || it.action === "transfer") freed += Number(it.bytes) || 0;
+    });
+    if (plan.summary && typeof plan.summary.total_bytes_freed === "number") {
+      freed = plan.summary.total_bytes_freed;
+    }
+    $("summaryLine").innerHTML =
+      "<strong>" + state.items.length + "</strong> proposed: " +
+      "<strong>" + (per.delete || 0) + "</strong> delete, " +
+      "<strong>" + (per.move || 0) + "</strong> move, " +
+      "<strong>" + (per.transfer || 0) + "</strong> transfer &middot; " +
+      "<strong>" + fmtGB(freed) + "</strong> freed if fully approved";
+
+    renderKeep();
+    renderGroups();
+    renderFooter();
+  }
+
+  function renderKeep() {
+    var ex = (state.plan.keep_exceptions || []);
+    if (!ex.length) { $("keepSection").style.display = "none"; return; }
+    $("keepSection").style.display = "block";
+    $("keepLabel").textContent = ex.length + " keep exception" + (ex.length === 1 ? "" : "s") + " (untouchable)";
+    var html = "";
+    ex.forEach(function (k) {
+      html += '<div class="keep-row"><span class="kp">' + esc(k.path) + '</span>' +
+              '<span class="kr" title="' + esc(k.rule_text) + '">' + esc(k.rule_text) + "</span></div>";
+    });
+    $("keepList").innerHTML = html;
+    $("keepList").className = state.keepOpen ? "open" : "";
+    $("keepList").id = "keepList";
+    $("keepChevron").textContent = state.keepOpen ? "hide" : "show";
+  }
+
+  function renderGroups() {
+    var host = $("groups");
+    var html = "";
+    state.actions.forEach(function (action) {
+      var idxs = [];
+      state.items.forEach(function (it, i) { if (it.action === action) idxs.push(i); });
+      if (!idxs.length) return;
+      var bytes = 0;
+      idxs.forEach(function (i) { bytes += Number(state.items[i].bytes) || 0; });
+
+      html += '<div class="group" data-action="' + esc(action) + '">' +
+        '<div class="group-head">' +
+          '<div class="g-title">' +
+            '<span class="g-name ' + esc(action) + '">' + esc(action) + "</span>" +
+            '<span class="g-meta">' + idxs.length + " items &middot; " + fmtBytes(bytes) + "</span>" +
+          "</div>" +
+          '<div class="g-actions">' +
+            '<button type="button" class="small" data-groupop="approve" data-ga="' + esc(action) + '">Approve all</button>' +
+            '<button type="button" class="small" data-groupop="reject" data-ga="' + esc(action) + '">Reject all</button>' +
+          "</div>" +
+        "</div>" +
+        "<table><thead><tr>" +
+          "<th>File</th><th>Category</th><th>Size</th><th>Date</th><th>Rule</th>" +
+          '<th class="c-toggle">Decision</th>' +
+        "</tr></thead><tbody>";
+
+      idxs.forEach(function (i) {
+        var it = state.items[i];
+        html += '<tr id="row-' + i + '" class="' + (it.approved ? "" : "rejected") + '">' +
+          '<td class="c-name" title="' + esc(it.path) + '">' + esc(baseName(it.path)) + "</td>" +
+          '<td class="c-cat">' + esc(it.category || "-") + "</td>" +
+          '<td class="c-size">' + fmtBytes(it.bytes) + "</td>" +
+          '<td class="c-date">' + esc(fmtDate(it.mtime)) + "</td>" +
+          '<td class="c-rule" title="' + esc(it.rule_text) + '">' + esc(it.rule_text || "-") + "</td>" +
+          '<td class="c-toggle"><button type="button" class="tgl ' + (it.approved ? "on" : "off") +
+            '" data-idx="' + i + '">' + (it.approved ? "approved" : "rejected") + "</button></td>" +
+        "</tr>";
+      });
+
+      html += "</tbody></table></div>";
+    });
+    host.innerHTML = html;
+  }
+
+  function renderFooter() {
+    var c = counts();
+    $("footerCounts").innerHTML =
+      "Approved: <strong>" + c.delete.n + "</strong> delete &middot; " +
+      "<strong>" + c.move.n + "</strong> move &middot; " +
+      "<strong>" + c.transfer.n + "</strong> transfer &middot; " +
+      "<strong>" + fmtGB(c._freed) + "</strong> freed";
+    var any = state.items.some(function (it) { return it.approved; });
+    $("exportBtn").disabled = !any;
+    $("fsBtn").disabled = !state.items.length;
+  }
+
+  function updateRow(i) {
+    var it = state.items[i];
+    var row = $("row-" + i);
+    if (!row) return;
+    row.className = it.approved ? "" : "rejected";
+    var btn = row.querySelector(".tgl");
+    btn.className = "tgl " + (it.approved ? "on" : "off");
+    btn.textContent = it.approved ? "approved" : "rejected";
+  }
+
+  // ---- export ----
+
+  function exportApproved() {
+    var approved = state.items.filter(function (it) { return it.approved; })
+      .map(function (it) {
+        var o = {
+          path: it.path, bytes: it.bytes, category: it.category, mtime: it.mtime,
+          action: it.action, rule_id: it.rule_id, rule_text: it.rule_text
+        };
+        if (it.destination != null) o.destination = it.destination;
+        return o;
+      });
+
+    var summary = {};
+    var freed = 0;
+    approved.forEach(function (it) {
+      var key = it.action;
+      if (!summary[key]) summary[key] = { count: 0, bytes: 0 };
+      summary[key].count += 1;
+      summary[key].bytes += Number(it.bytes) || 0;
+      if (key === "delete" || key === "transfer") freed += Number(it.bytes) || 0;
+    });
+    summary.total_bytes_freed = freed;
+
+    var out = {
+      version: 1,
+      generated: new Date().toISOString(),
+      root: state.plan.root,
+      items: approved,
+      keep_exceptions: state.plan.keep_exceptions || [],
+      summary: summary
+    };
+
+    var blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "approved-plan-" + stamp() + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  }
+
+  // ---- fullscreen ----
+
+  function openFullscreen() {
+    if (!state || !state.items.length) return;
+    fsOpen = true;
+    if (fsIndex >= state.items.length) fsIndex = 0;
+    $("fsOverlay").className = "open";
+    renderFs();
+  }
+
+  function closeFullscreen() {
+    fsOpen = false;
+    $("fsOverlay").className = "";
+  }
+
+  function renderFs() {
+    var it = state.items[fsIndex];
+    if (!it) return;
+    $("fsPos").textContent = "item " + (fsIndex + 1) + " of " + state.items.length;
+    var actionLabel = it.action + (it.destination ? " to " + it.destination : "");
+    $("fsAction").textContent = actionLabel;
+    $("fsAction").className = "micro " + it.action;
+    $("fsName").textContent = baseName(it.path);
+    $("fsMeta").textContent = it.path + "  -  " + (it.category || "-") + "  -  " +
+      fmtBytes(it.bytes) + "  -  " + fmtDate(it.mtime);
+    $("fsRule").textContent = it.rule_text || "";
+    var st = $("fsState");
+    st.textContent = it.approved ? "approved" : "rejected";
+    st.className = it.approved ? "on" : "off";
+  }
+
+  function fsSet(approved) {
+    var it = state.items[fsIndex];
+    if (!it) return;
+    it.approved = approved;
+    updateRow(fsIndex);
+    renderFooter();
+    renderFs();
+  }
+
+  // ---- events ----
+
+  $("pickBtn").addEventListener("click", function () { $("fileInput").click(); });
+
+  $("fileInput").addEventListener("change", function (e) {
+    if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+    e.target.value = "";
+  });
+
+  document.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    document.body.classList.add("dragging-file");
+  });
+  document.addEventListener("dragleave", function (e) {
+    if (e.relatedTarget === null) document.body.classList.remove("dragging-file");
+  });
+  document.addEventListener("drop", function (e) {
+    e.preventDefault();
+    document.body.classList.remove("dragging-file");
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) loadFile(f);
+  });
+
+  $("keepToggle").addEventListener("click", function () {
+    state.keepOpen = !state.keepOpen;
+    $("keepList").className = state.keepOpen ? "open" : "";
+    $("keepChevron").textContent = state.keepOpen ? "hide" : "show";
+  });
+
+  $("groups").addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.dataset && t.dataset.idx != null) {
+      var i = Number(t.dataset.idx);
+      state.items[i].approved = !state.items[i].approved;
+      updateRow(i);
+      renderFooter();
+      return;
+    }
+    if (t.dataset && t.dataset.groupop) {
+      var approve = t.dataset.groupop === "approve";
+      var action = t.dataset.ga;
+      state.items.forEach(function (it, i) {
+        if (it.action === action && it.approved !== approve) {
+          it.approved = approve;
+          updateRow(i);
+        }
+      });
+      renderFooter();
+    }
+  });
+
+  $("exportBtn").addEventListener("click", exportApproved);
+  $("fsBtn").addEventListener("click", openFullscreen);
+
+  document.addEventListener("keydown", function (e) {
+    if (!fsOpen) return;
+    switch (e.key) {
+      case "Escape":
+        e.preventDefault(); closeFullscreen(); break;
+      case "ArrowUp":
+        e.preventDefault(); fsSet(true); break;
+      case "ArrowDown":
+        e.preventDefault(); fsSet(false); break;
+      case "ArrowRight":
+        e.preventDefault();
+        if (fsIndex < state.items.length - 1) { fsIndex += 1; renderFs(); }
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        if (fsIndex > 0) { fsIndex -= 1; renderFs(); }
+        break;
+    }
+  });
+})();
+</script>
+</body>
+</html>

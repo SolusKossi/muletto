@@ -1,0 +1,198 @@
+{
+  "_comment": [
+    "Recipes for turning raw screenshots into publishable guide images.",
+    "Boxes are [left, top, right, bottom] as fractions of the image, so they",
+    "hold up if a screenshot is retaken at a different window size.",
+    "The crop drops the left sidebar, which is where the profile photo,",
+    "display name, username and Snapcode all live. Removing that region is",
+    "better than painting over it: nothing identifying survives the crop.",
+    "Cover boxes are measured off the cropped image, not estimated, so they",
+    "sit inside the element and do not swallow its label."
+  ],
+  "shots": [
+    {
+      "name": "snapchat-1-select-data.png",
+      "source": "snapchat-2026-07-28-094145.png",
+      "crop": [
+        0.255,
+        0.08,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "snapchat-2-date-range.png",
+      "source": "snapchat-2026-07-28-094235.png",
+      "crop": [
+        0.255,
+        0.1,
+        1.0,
+        0.93
+      ],
+      "cover": [
+        {
+          "_what": "the confirmed email address field, measured from its grey background",
+          "at": [
+            0.0929,
+            0.6614,
+            0.3831,
+            0.7314
+          ],
+          "fill": "#f1f3f4",
+          "label": "your address"
+        }
+      ]
+    },
+    {
+      "name": "snapchat-3-in-progress.png",
+      "source": "snapchat-2026-07-28-094250.png",
+      "crop": [
+        0.255,
+        0.1,
+        1.0,
+        0.83
+      ]
+    },
+    {
+      "name": "snapchat-4-notification.jpg",
+      "source": "snapchat-2026-07-28-0944-notification.jpg",
+      "_what": "Phone notification of the acknowledgement email. No account details visible, so no redaction needed - it is here so the recipe stays the record of every published image."
+    },
+    {
+      "name": "google-1-select-data.png",
+      "source": "google-2026-07-30-select-data.png",
+      "crop": [
+        0.3,
+        0.0,
+        0.71,
+        1.0
+      ]
+    },
+    {
+      "name": "google-2-filetype.png",
+      "source": "google-2026-07-30-filetype.png",
+      "crop": [
+        0.3,
+        0.0,
+        0.71,
+        1.0
+      ]
+    },
+    {
+      "name": "google-3-progress.png",
+      "source": "google-2026-07-30-progress.png",
+      "crop": [
+        0.3,
+        0.0,
+        0.71,
+        0.62
+      ]
+    },
+    {
+      "name": "samsung-1-mydata.png",
+      "source": "samsung-2026-07-30-mydata.png",
+      "crop": [
+        0.08,
+        0.0,
+        0.87,
+        0.8
+      ]
+    },
+    {
+      "name": "samsung-2-confirm.png",
+      "source": "samsung-2026-07-30-confirm.png",
+      "crop": [
+        0.32,
+        0.14,
+        0.7,
+        0.84
+      ]
+    },
+    {
+      "name": "instagram-1-export-dialog.png",
+      "source": "instagram-2026-07-30-export-dialog.png",
+      "crop": [
+        0.3,
+        0.0,
+        0.69,
+        0.42
+      ]
+    },
+    {
+      "name": "instagram-2-requested.png",
+      "source": "instagram-2026-07-30-requested.png",
+      "crop": [
+        0.279,
+        0.025,
+        0.731,
+        0.77
+      ],
+      "cover": [
+        {
+          "at": [
+            0.176,
+            0.675,
+            0.388,
+            0.716
+          ],
+          "label": "your username"
+        }
+      ]
+    },
+    {
+      "name": "app-timeline.png",
+      "source": "app-timeline-2026-07-30.png",
+      "out": "site",
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        0.72
+      ]
+    },
+    {
+      "name": "app-cleanup.png",
+      "source": "app-cleanup-similar-2026-07-30.png",
+      "out": "site",
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        0.62
+      ]
+    },
+    {
+      "name": "app-duplicates.png",
+      "source": "app-cleanup-exact-2026-07-30.png",
+      "out": "site",
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        0.6
+      ]
+    },
+    {
+      "name": "app-export.png",
+      "source": "app-export-saved-2026-07-30.png",
+      "out": "site",
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "app-images.png",
+      "source": "app-images-2026-07-30.png",
+      "out": "site",
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        0.8
+      ]
+    }
+  ]
+}

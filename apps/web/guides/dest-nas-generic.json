@@ -1,0 +1,46 @@
+{
+ "slug": "dest-nas-generic",
+ "provider": "Any NAS (network folder)",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "server",
+ "difficulty": "easy",
+ "wait_time": "minutes to connect, an hour or more to copy",
+ "format": "a network folder, readable by anything",
+ "steps": [
+  {
+   "title": "Make a folder for it",
+   "detail": "Create a share on the NAS for the library - photos, or archive, or whatever you will still understand in five years. Give your own account write access to it. If the NAS has a photo app of its own, check where that app expects files to live before choosing, because the wrong folder means the app never sees them."
+  },
+  {
+   "title": "Map it as a drive",
+   "detail": "Follow the note above so the share appears as an ordinary folder on your computer. Tick reconnect at sign-in on Windows if you will use it regularly. Prefer a wired connection for the first copy - a large library over wifi is measured in hours."
+  },
+  {
+   "title": "Write the library straight to it",
+   "detail": "Export from Muletto directly to the mapped drive, or copy the folders across afterwards. They are ordinary folders of ordinary files, so nothing on the NAS needs to understand Muletto for this to work."
+  },
+  {
+   "title": "Verify by count and size",
+   "detail": "Compare the number of files and the total size against the source. Network copies fail differently from local ones: a dropped connection can leave a folder that looks complete and is short by hundreds of files. Open a few photographs from different years as a sanity check."
+  },
+  {
+   "title": "Let the NAS index it, if it has an app",
+   "detail": "Most NAS photo apps need to read every file before showing anything, and on a large library that runs for hours. An app that looks empty shortly after copying is usually still working. Find its indexing status rather than guessing."
+  },
+  {
+   "title": "Remember a NAS is not a backup",
+   "detail": "It is one copy, in one building, on disks that were probably bought together. RAID keeps you running when a disk dies; it does nothing about fire, theft, ransomware or deleting the wrong folder. Use whatever backup tool the NAS ships with to copy to an external drive or another location, and test a restore before relying on it."
+  }
+ ],
+ "notes": [
+  "SMB is the protocol both Windows and macOS speak. If the NAS offers AFP as well, ignore it - Apple deprecated it and SMB is the one that keeps working.",
+  "If the NAS has a photo app, its indexing is separate from the copy. The files being present and the app showing them are two different things."
+ ],
+ "explain": {
+  "title": "Mapping a network folder",
+  "body": "Your NAS appears on the network under a name or an address like 192.168.1.20. On Windows, open File Explorer, right-click This PC and choose Map network drive, then enter two backslashes, the address, a backslash, and the share name. On a Mac, use Finder, Go, Connect to Server and enter smb: followed by two slashes and the address. Once mapped it behaves like any other folder, which is all Muletto needs to write into it."
+ }
+}

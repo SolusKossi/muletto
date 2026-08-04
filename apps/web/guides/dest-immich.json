@@ -1,0 +1,56 @@
+{
+ "slug": "dest-immich",
+ "provider": "Immich (self-hosted)",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "server",
+ "difficulty": "medium",
+ "wait_time": "an evening to set up, then minutes per import",
+ "format": "folders on disk, read in place or uploaded",
+ "request": {
+  "url": "https://immich.app",
+  "label": "Immich"
+ },
+ "steps": [
+  {
+   "title": "Decide which of the two ways you want",
+   "detail": "Immich can either take a copy of your library into its own storage, or read the folder you already have and leave the files exactly where they are. The second is an External Library, and for a library Muletto has just written out it is usually the right one: the folders keep the structure you chose, and nothing is duplicated on disk. Uploading suits you better if you want Immich to be the only copy and to manage the files itself."
+  },
+  {
+   "title": "Install it",
+   "detail": "Immich is a self-hosted photo and video server with a phone app, a timeline, search and face recognition. It runs with Docker Compose on a NAS, a home server or any spare PC. Follow the official install, start it, open the web interface and create the first account - that account is the admin, and it exists only on your own machine."
+  },
+  {
+   "title": "Mount your folder so the container can see it",
+   "detail": "This is the step people get wrong. Immich runs inside a container, which has its own view of the filesystem, so add your library folder to docker-compose.yml as a volume - for example the host path on the left and a container path like /mnt/media/photos on the right. Add :ro at the end to mount it read-only if you want Immich never to be able to change or delete your originals. Restart the stack afterwards."
+  },
+  {
+   "title": "Add it as an External Library",
+   "detail": "In the web interface go to Administration, External Libraries, and create one for your user. Set the import path to the path the container sees - /mnt/media/photos in the example above - and not the path your host uses. A path that is right on the host and wrong inside the container is the usual reason a scan finds nothing. Exclusion patterns take glob syntax if you want to leave subfolders out."
+  },
+  {
+   "title": "Scan, and let it rescan on its own",
+   "detail": "Run the first scan from the same screen. Immich reads each file where it lies and builds the timeline, the map and the search index from it - the files are not copied. After that a nightly job picks up anything new, and you can trigger a rescan by hand whenever you add to the folder. Recent versions made scanning dramatically faster, so a large library is no longer an overnight job."
+  },
+  {
+   "title": "Check the dates landed",
+   "detail": "Immich sorts by the date inside each file, not the file's timestamp on disk. This is exactly what Muletto repairs before you export: a Google or Apple archive imported without that step arrives dated the day you imported it, and a decade of photographs collapses into one afternoon. Spot-check a few old ones in the timeline before you trust the whole library."
+  },
+  {
+   "title": "Back up the parts that matter",
+   "detail": "With an External Library your originals are wherever you put them, so they are covered by whatever already backs that folder up. What is not covered is Immich's database, which holds the albums, the faces and anything you edited inside Immich - including metadata you added there, which is not written back into external files. Back the database up too, or that work is the part you lose."
+  }
+ ],
+ "notes": [
+  "An external file that you move or rename outside Immich is treated as a new asset, and what Immich knew about the old one is lost. Settle on your folder structure in Muletto first, then point Immich at it.",
+  "Deleting an external file puts the asset in the trash for 30 days and then removes it, along with everything Immich had recorded about it.",
+  "A read-only mount stops Immich changing or deleting your originals, and also stops it writing metadata back to them. That is a trade, not a bug: pick it if the folder is your archive of record.",
+  "For uploading rather than reading in place, immich-go handles very large sets and Google Takeout archives better than the standard CLI, and needs no Node.js installed."
+ ],
+ "explain": {
+  "title": "The import path is the container's path, not yours",
+  "body": "Immich runs inside a container, which sees a different filesystem from the machine it runs on. When you add an External Library you give it an import path, and that path has to be the one the container sees - whatever you wrote on the right-hand side of the volume line in docker-compose.yml - not the path you use on the host. A scan that runs happily and finds nothing at all is almost always this."
+ }
+}

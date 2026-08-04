@@ -1,0 +1,47 @@
+{
+ "slug": "dest-nextcloud",
+ "provider": "Nextcloud (self-hosted)",
+ "icon": "server",
+ "difficulty": "medium",
+ "wait_time": "an evening to set up, then a scan and an index",
+ "format": "files in Nextcloud, or a folder mounted into it",
+ "explain": {
+  "title": "Nextcloud does not notice files you put there behind its back",
+  "body": "Nextcloud keeps its own database of what exists. Upload through the web interface or the sync client and it updates as it goes. Copy files straight into the data folder, or mount a folder you already have, and Nextcloud has no idea they arrived - the folder looks empty in the browser. Telling it to look is one command, and it is the step every guide-less attempt misses."
+ },
+ "steps": [
+  {
+   "title": "Decide whether Nextcloud holds the files or just sees them",
+   "detail": "Two options. Let Nextcloud store the library itself, by uploading through the web interface or the desktop sync client - simplest, and it stays in charge of its own data folder. Or leave the library where it is and add it as External Storage, which mounts the folder into Nextcloud without moving anything. The second suits a library that already lives on a NAS or a big disk."
+  },
+  {
+   "title": "If you are uploading, use the desktop client",
+   "detail": "Install the Nextcloud desktop client, connect it to your server, and point it at the folder Muletto wrote. It handles tens of thousands of files, resumes when the connection drops and shows real progress. The browser upload is fine for a handful of files and miserable for a library."
+  },
+  {
+   "title": "If you are mounting, add it as External Storage",
+   "detail": "In the admin settings, open External Storage, add a Local storage, give it a folder name as it should appear in Nextcloud, and set the path to the folder on the server. If Nextcloud runs in a container that path is the one the container sees, not the host's. Make sure the web server user can read it, or the mount appears and stays stubbornly empty."
+  },
+  {
+   "title": "Tell Nextcloud the files are there",
+   "detail": "This is the step that matters. On the server run occ files:scan for the user who owns the folder, or with --all for everyone. It walks the filesystem and writes what it finds into the database. Until it has run, files copied in from outside simply do not exist as far as Nextcloud is concerned."
+  },
+  {
+   "title": "Install Memories for an actual photo timeline",
+   "detail": "The Files app lists folders; it is not a photo library. Memories adds a timeline, a map, albums and face grouping. After installing it, run occ memories:index to read the dates and locations out of your files and build the timeline. On external storage this is slower, because every file has to be read through the mount."
+  },
+  {
+   "title": "Keep it up to date automatically",
+   "detail": "Anything added from outside Nextcloud needs another scan. A scheduled job running occ files:scan --all every so often keeps it honest; Memories then indexes the new files through its own background job. If you only ever add things through the client or the web interface, neither is necessary."
+  },
+  {
+   "title": "Check the dates came through",
+   "detail": "Memories builds its timeline from the date inside each file, which is precisely what Muletto repairs before you export. Without that, a Google or Apple archive arrives dated the day you copied it. Scroll back a few years before trusting it."
+  }
+ ],
+ "notes": [
+  "occ has to run as the web server user, typically with sudo -u www-data php occ ... - running it as root leaves files the server cannot read afterwards.",
+  "External storage means Nextcloud does not own the files. Deleting the mount does not delete them, and anything written into that folder by other tools shows up after the next scan.",
+  "Memories is a separate app from the built-in Photos app, and is the one worth having if a timeline, a map and face grouping are what you are after."
+ ]
+}

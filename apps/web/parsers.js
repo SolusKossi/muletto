@@ -1,0 +1,931 @@
+"use strict";
+
+/* Muletto - provider parsers.
+   Each parser turns a provider's export into one normalized library shape, so
+   the viewer can display every kind of exported data the same way:
+
+     { provider, media[], conversations[], events[], places[], tables[], files[], notes[] }
+
+   All parsing happens in the browser on the user's own file. */
+
+const MParse = (function () {
+
+  /* ---------- shared helpers ---------- */
+
+  const MEDIA_EXT = {
+    photo: ["jpg", "jpeg", "png", "heic", "heif", "avif", "gif", "webp", "bmp", "tif", "tiff", "dng"],
+    video: ["mp4", "mov", "m4v", "avi", "mkv", "webm", "3gp"],
+    audio: ["mp3", "m4a", "aac", "wav", "ogg", "opus", "flac"],
+  };
+  const MIME = {
+    jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif",
+    webp: "image/webp", bmp: "image/bmp", heic: "image/heic", heif: "image/heif", avif: "image/avif",
+    mp4: "video/mp4", mov: "video/quicktime", webm: "video/webm",
+    mp3: "audio/mpeg", m4a: "audio/mp4", wav: "audio/wav",
+  };
+  const ext = (n) => (n.split(".").pop() || "").toLowerCase();
+  const base = (n) => n.split("/").pop();
+
+  function mediaKind(name) {
+    const e = ext(name);
+    for (const k of Object.keys(MEDIA_EXT)) if (MEDIA_EXT[k].includes(e)) return k;
+    return null;
+  }
+  function mimeOf(name) { return MIME[ext(name)] || ""; }
+
+  // Browsers will not put HEIC in an <img>, but we can decode the HEIF family
+  // ourselves through WebCodecs - see heif.js.
+  function renderable(name) {
+    const e = ext(name);
+    return ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(e);
+  }
+  function heifFamily(name) {
+    return ["heic", "heif", "avif"].includes(ext(name));
+  }
+
+  function parseDate(v) {
+    if (v === null || v === undefined || v === "") return null;
+    if (typeof v === "number") {
+      const ms = v > 1e12 ? v : v > 1e9 ? v * 1000 : null;
+      return ms ? new Date(ms) : null;
+    }
+    let s = String(v).trim();
+    // "2024-03-01 12:33:55 UTC" -> ISO
+    const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(s);
+    if (m) {
+      const iso = `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}` + (/UTC|Z/i.test(s) ? "Z" : "");
+      const d = new Date(iso);
+      if (!isNaN(d)) return d;
+    }
+    const d2 = new Date(s);
+    return isNaN(d2) ? null : d2;
+  }
+
+  /* RFC4180-ish CSV parser: handles quotes, embedded commas and newlines. */
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], field = "", inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQ = false;
+        } else field += c;
+      } else if (c === '"') inQ = true;
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n") { row.push(field); field = ""; rows.push(row); row = []; }
+      else if (c === "\r") { /* skip */ }
+      else field += c;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    while (rows.length && rows[rows.length - 1].every((x) => x === "")) rows.pop();
+    if (!rows.length) return { columns: [], rows: [] };
+    return { columns: rows[0], rows: rows.slice(1) };
+  }
+
+  /* One CSV, several tables.
+
+     Samsung writes a section title on a line of its own, the column names
+     under it, the rows under those, then a blank line and the next section.
+     Read as one table that is a single column of 107 rows with the heading
+     "Review history" - technically parsed, and useless. Split on the shape
+     instead: a lone field followed by a wider row starts a new section. */
+  function csvSections(text) {
+    const all = parseCsv(text);
+    const rows = all.columns.length ? [all.columns].concat(all.rows) : [];
+    const width = (r) => { let n = 0; for (let i = 0; i < r.length; i++) if (r[i] !== "") n = i + 1; return n; };
+    const out = [];
+    let cur = null;
+    for (let i = 0; i < rows.length; i++) {
+      const w = width(rows[i]);
+      if (!w) { cur = null; continue; }               // blank line ends a section
+      const next = rows[i + 1] ? width(rows[i + 1]) : 0;
+      /* A heading can also turn up part way down, with no blank line before
+         it. SmartThings Find writes title, header, row, title, header, row -
+         and reading the second title as data meant the card listed the names
+         of the fields instead of what was in them. */
+      if (cur && cur.columns && w === 1 && next > 1) cur = null;
+      if (!cur) {
+        // A lone field above a wider row is a heading, not the column names.
+        if (w === 1 && next > 1) {
+          cur = { title: rows[i][0].trim(), columns: null, rows: [] };
+          out.push(cur);
+        } else {
+          cur = { title: "", columns: rows[i], rows: [] };
+          out.push(cur);
+        }
+        continue;
+      }
+      if (!cur.columns) { cur.columns = rows[i]; continue; }
+      cur.rows.push(rows[i]);
+    }
+    const kept = out.filter((t) => t.columns && t.columns.length && t.rows.length);
+    /* Nothing sectioned about it after all - hand back the plain reading.
+
+       This used to fire on one section too. A file with a real heading and one
+       usable section fell back to reading the whole thing as a single table,
+       which put the heading in the column slot and every subsequent line under
+       it - SmartThings Find came out as one column of 19 rows that were mostly
+       field names. An ordinary CSV yields exactly one section and the plain
+       reading of it is identical, so only a total miss needs the fallback. */
+    if (!kept.length && all.columns.length) {
+      return [{ title: "", columns: all.columns, rows: all.rows }];
+    }
+    return kept;
+  }
+
+  /* Column names as the database wrote them: datauuid, pkg_name, SBR@DATE_CREATED.
+     The table is real content and it reads like a schema dump, which is most of
+     why a Samsung export looks like it holds nothing worth seeing. */
+  const COLUMN_WORDS = {
+    uuid: "UUID", id: "ID", url: "URL", os: "OS", imei: "IMEI", ip: "IP",
+    pkg: "Package", dt: "Date", ts: "Time", num: "Number", no: "Number",
+    sa: "Samsung account", tab: "Tab", app: "App", sim: "SIM",
+  };
+  // Names the database glued together and never took apart again.
+  const GLUED = [["datauuid", "data uuid"], ["pkgname", "package name"],
+    ["devicetype", "device type"], ["filename", "file name"],
+    ["createtime", "create time"], ["updatetime", "update time"]];
+  function niceColumn(name) {
+    let s = String(name || "").trim();
+    s = s.replace(/^[A-Z]{2,4}@/, "");                    // SBR@, SCN@ table tags
+    s = s.replace(/^com\.samsung\.[a-z.]*/i, "");
+    // SHOUTED_COLUMN_NAMES carry no capitalisation worth keeping.
+    if (s === s.toUpperCase() && /[A-Z]/.test(s)) s = s.toLowerCase();
+    s = s.replace(/([a-z0-9])([A-Z])/g, "$1 $2");         // camelCase
+    s = s.replace(/[_.]+/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+    for (const [from, to] of GLUED) s = s.split(from).join(to);
+    if (!s) return String(name || "");
+    const out = s.split(" ").map((w) => COLUMN_WORDS[w] || w).join(" ");
+    return out.charAt(0).toUpperCase() + out.slice(1);
+  }
+
+  /* How much of a kind of file to read, and what to say when it stops.
+
+     Every parser here used to take the first N and drop the rest in silence.
+     A real Takeout has 137 CSVs and the cap was 30, so 107 of them - every
+     YouTube playlist - vanished with nothing on screen to say they existed.
+     The count was invented rather than measured, too: a playlist CSV is a
+     couple of kilobytes and thirty of those is nothing, while thirty CSVs from
+     somewhere else could be a gigabyte.
+
+     So the budget is bytes, with a generous ceiling on the count as a backstop,
+     and whatever it refuses is returned rather than forgotten. */
+  const READ_BUDGET = { bytes: 48 * 1024 * 1024, count: 1500 };
+
+  function withinBudget(entries, budget) {
+    const cap = budget || READ_BUDGET;
+    const taken = [];
+    let bytes = 0;
+    for (const e of entries) {
+      if (taken.length >= cap.count || bytes + e.size > cap.bytes) break;
+      taken.push(e);
+      bytes += e.size;
+    }
+    return { taken, dropped: entries.length - taken.length };
+  }
+
+  /* Said plainly, in the library, rather than left for somebody to notice. */
+  function noteDropped(lib, dropped, what) {
+    if (!dropped) return;
+    lib.notes.push(dropped + " " + what + " were not read, because this export holds " +
+      "more of them than Muletto opens in one go. Nothing is wrong with the files - " +
+      "they are listed under All files, and What is in here counts them.");
+  }
+
+  // Find the first array of objects hiding under any key matching a pattern.
+  function pickArrays(obj, re) {
+    const out = [];
+    if (!obj || typeof obj !== "object") return out;
+    for (const k of Object.keys(obj)) {
+      if (Array.isArray(obj[k]) && re.test(k)) out.push({ key: k, list: obj[k] });
+    }
+    return out;
+  }
+  const field = (o, ...names) => {
+    for (const n of names) {
+      for (const k of Object.keys(o)) {
+        if (k.toLowerCase().replace(/[^a-z]/g, "") === n.toLowerCase().replace(/[^a-z]/g, "")) return o[k];
+      }
+    }
+    return undefined;
+  };
+
+  function emptyLib(slug, label) {
+    return {
+      provider: { slug, label },
+      media: [], conversations: [], events: [], places: [],
+      tables: [], files: [], notes: [], accounts: [], insights: [],
+    };
+  }
+
+  // Very large JSON inside an export can exhaust browser memory. Skip those and
+  // say so, rather than freezing the tab.
+  const JSON_LIMIT = 60 * 1024 * 1024;
+  async function readJsonSafe(file, entry) {
+    if (!entry || entry.size > JSON_LIMIT) return null;
+    try { return await MZip.extractJson(file, entry); } catch { return null; }
+  }
+
+  /* Meta escapes the UTF-8 bytes of a string one at a time instead of the code
+     point, so accented text and emoji arrive broken. The repair, and the three
+     guards that stop it damaging text that was never broken, are in
+     mojibake.js.
+
+     The version that lived here matched only a C2 or C3 lead byte, which
+     covers Latin accents and misses emoji entirely - an emoji leads with F0,
+     so every one of them was left mangled, and three of its four bytes are
+     invisible control characters. That is why a smiling face showed up as a
+     single stray letter. It also decoded without the fatal flag, so a string
+     that was genuinely Latin-1 came back full of replacement characters
+     instead of being left alone. */
+  const fixMojibake = (s) =>
+    (typeof MMoji === "undefined" ? s : MMoji.repair(s));
+
+  /* Videos carry their recording date in the container header; read it for a
+     bounded number so the timeline is right without scanning everything. */
+  async function readVideoDates(lib, file, cap = 200) {
+    if (typeof MVideo === "undefined") return;
+    let done = 0;
+    for (const m of lib.media) {
+      if (m.kind !== "video" || done >= cap) continue;
+      try {
+        const blob = await MZip.extractBlob(file, m.entry, m.mime);
+        const at = await MVideo.readCreationDate(blob);
+        if (at) { m.at = at; lib.events.push({ at, kind: "video", label: m.name }); }
+        done++;
+      } catch { /* skip unreadable video */ }
+    }
+  }
+
+  /* EXIF writes "2020:07:01 19:10:00" - colons in the date part, which no
+     Date parser accepts, and no timezone, so it means local time where the
+     photo was taken. Building the date field by field says that explicitly
+     rather than hoping a string parser guesses the same thing. */
+  function exifToDate(stamp) {
+    const m = /^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(String(stamp || ""));
+    if (!m) return null;
+    const d = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+    // A camera with a dead clock writes 1970 or 1980; that is not a date.
+    return isNaN(d) || d.getFullYear() < 1990 ? null : d;
+  }
+
+  /* Dates and coordinates out of the photos themselves.
+
+     Nothing read EXIF before this, so a date only survived when the provider
+     shipped a sidecar JSON beside the file. Google does; Apple, Snapchat and
+     Instagram do not, and their photos arrived with no date at all - which is
+     most of what a photo library is.
+
+     Only the head of each file is decompressed, and a sidecar date already
+     found wins, because the provider knows better than the camera when the
+     camera clock was wrong. */
+  async function readPhotoDates(lib, file, cap = 800) {
+    if (typeof MExif === "undefined") return;
+    let done = 0, dated = 0, located = 0;
+    for (const m of lib.media) {
+      if (done >= cap) break;
+      if (m.kind !== "photo" || m.at) continue;
+      if (!/\.jpe?g$/i.test(m.name)) continue;
+      done++;
+      try {
+        const head = await MZip.readHead(file, m.entry, 96 * 1024);
+        const stamp = MExif.readDate(head);
+        if (stamp) {
+          const at = exifToDate(stamp);
+          if (at) {
+            m.at = at;
+            lib.events.push({ at, kind: "photo", label: m.name });
+            dated++;
+          }
+        }
+        const gps = MExif.readGps(head);
+        if (gps) {
+          m.gps = gps;
+          lib.places.push({ at: m.at || null, lat: gps.lat, lon: gps.lon });
+          located++;
+        }
+      } catch { /* unreadable photo; leave it undated */ }
+    }
+    if (dated) {
+      lib.notes.push("Recovered the date from " + dated.toLocaleString() +
+        " photo" + (dated === 1 ? "" : "s") + " by reading what the camera wrote into the file" +
+        (located ? ", and the location from " + located.toLocaleString() : "") + ".");
+    }
+  }
+
+  /* What a file is, when the name refuses to say.
+
+     Samsung's Pinall folder stores clipped screenshots under names like
+     hashCode2102669541, with no extension at all. They are ordinary PNGs, and
+     going by the name alone they were filed under "other files" and never
+     shown - six real pictures sitting in a list of unknowns. Samsung also
+     names PNG data .jpg inside its note files, so the bytes are the only
+     honest answer in both directions. */
+  const MAGIC = [
+    [[0xff, 0xd8, 0xff], "photo", "image/jpeg", ".jpg"],
+    [[0x89, 0x50, 0x4e, 0x47], "photo", "image/png", ".png"],
+    [[0x47, 0x49, 0x46, 0x38], "photo", "image/gif", ".gif"],
+    [[0x42, 0x4d], "photo", "image/bmp", ".bmp"],
+  ];
+  function sniff(head) {
+    for (const [sig, kind, mime, ext] of MAGIC) {
+      let ok = true;
+      for (let i = 0; i < sig.length; i++) if (head[i] !== sig[i]) { ok = false; break; }
+      if (ok) return { kind, mime, ext };
+    }
+    // RIFF....WEBP
+    if (head[0] === 0x52 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x46 &&
+        head[8] === 0x57 && head[9] === 0x45 && head[10] === 0x42 && head[11] === 0x50) {
+      return { kind: "photo", mime: "image/webp", ext: ".webp" };
+    }
+    return null;
+  }
+
+  const SNIFF_CAP = 300;   // reading a head is cheap, doing it 40,000 times is not
+
+  async function classifyFiles(lib, entries, file) {
+    const unknown = [];
+    for (const e of entries) {
+      const kind = mediaKind(e.name);
+      if (kind) {
+        lib.media.push({
+          name: base(e.name), path: e.name, size: e.size, entry: e,
+          kind, mime: mimeOf(e.name), renderable: renderable(e.name),
+          heif: heifFamily(e.name),
+        });
+      } else if (!/\.(json|csv|html?|txt|xml)$/i.test(e.name)) {
+        const rec = { name: base(e.name), path: e.name, size: e.size, entry: e };
+        lib.files.push(rec);
+        // No extension, or one nothing recognises, and big enough to be an image.
+        if (file && e.size > 256 && !/\.[a-z0-9]{1,5}$/i.test(base(e.name))) unknown.push(rec);
+      }
+    }
+
+    for (const rec of unknown.slice(0, SNIFF_CAP)) {
+      let hit = null;
+      try { hit = sniff(await MZip.readHead(file, rec.entry, 32)); } catch { /* unreadable */ }
+      if (!hit) continue;
+      lib.files.splice(lib.files.indexOf(rec), 1);
+      lib.media.push({
+        name: rec.name + hit.ext, path: rec.path, size: rec.size, entry: rec.entry,
+        kind: hit.kind, mime: hit.mime, renderable: true, heif: false, sniffed: true,
+      });
+    }
+    if (unknown.length > SNIFF_CAP) {
+      lib.notes.push("Checked the first " + SNIFF_CAP + " files that had no extension to see " +
+        "whether they were pictures. " + (unknown.length - SNIFF_CAP) + " more were left in " +
+        "Other files unchecked.");
+    }
+  }
+
+  /* ---------- Snapchat ---------- */
+  /* Export from accounts.snapchat.com "My Data": a json/ folder with
+     chat_history, snap_history, memories_history, location_history, friends,
+     account, plus html/ copies of the same. */
+
+  async function snapchat(file, entries) {
+    const lib = emptyLib("snapchat", "Snapchat");
+    const jsons = entries.filter((e) => /\.json$/i.test(e.name));
+    const read = async (re) => {
+      const hit = jsons.find((e) => re.test(e.name.toLowerCase()));
+      if (!hit) return null;
+      try { return await MZip.extractJson(file, hit); } catch { return null; }
+    };
+
+    // Chats
+    const chat = await read(/chat_?history/);
+    if (chat) {
+      const convs = new Map();
+      for (const { key, list } of pickArrays(chat, /chat/i)) {
+        const dir = /sent/i.test(key) ? "sent" : "received";
+        for (const m of list) {
+          const title = field(m, "Conversation Title", "conversationtitle") ||
+                        field(m, "From", "from") || "Conversation";
+          if (!convs.has(title)) convs.set(title, { title, messages: [] });
+          convs.get(title).messages.push({
+            from: field(m, "From", "from") || (dir === "sent" ? "You" : "Them"),
+            direction: dir,
+            text: field(m, "Content", "text", "body") || "",
+            type: (field(m, "Media Type", "mediatype") || "TEXT").toString(),
+            at: parseDate(field(m, "Created", "created", "timestamp", "date")),
+          });
+        }
+      }
+      for (const c of convs.values()) {
+        c.messages.sort((a, b) => (a.at || 0) - (b.at || 0));
+        lib.conversations.push(c);
+      }
+      lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
+    }
+
+    // Snaps -> timeline events
+    const snaps = await read(/snap_?history/);
+    if (snaps) {
+      for (const { key, list } of pickArrays(snaps, /snap/i)) {
+        const dir = /sent/i.test(key) ? "Sent" : "Received";
+        for (const s of list) {
+          lib.events.push({
+            at: parseDate(field(s, "Created", "created", "timestamp")),
+            kind: "snap",
+            label: `${dir} ${(field(s, "Media Type", "mediatype") || "snap").toLowerCase()}` +
+                   (field(s, "From", "from") ? ` with ${field(s, "From", "from")}` : ""),
+          });
+        }
+      }
+    }
+
+    // Memories (media lives behind expiring links, so we list them as records)
+    const mem = await read(/memories_?history/);
+    if (mem) {
+      let n = 0;
+      for (const { list } of pickArrays(mem, /media|memories|saved/i)) {
+        for (const m of list) {
+          n++;
+          lib.events.push({
+            at: parseDate(field(m, "Date", "date", "created")),
+            kind: "memory",
+            label: `Memory (${(field(m, "Media Type", "mediatype") || "media").toLowerCase()})`,
+          });
+        }
+      }
+      if (n) lib.notes.push(`${n.toLocaleString()} Memories are listed in this export as time-limited download links rather than files. Download them from Snapchat before the links expire, then open them here.`);
+    }
+
+    // Locations
+    const loc = await read(/location_?history/);
+    if (loc) {
+      for (const { list } of pickArrays(loc, /location/i)) {
+        for (const p of list) {
+          const pair = field(p, "Latitude, Longitude", "latitudelongitude", "coordinates");
+          let lat = null, lon = null;
+          if (typeof pair === "string" && pair.includes(",")) {
+            const [a, b] = pair.split(",").map((x) => parseFloat(x));
+            if (!isNaN(a) && !isNaN(b)) { lat = a; lon = b; }
+          }
+          lat = lat !== null ? lat : parseFloat(field(p, "Latitude", "lat"));
+          lon = lon !== null ? lon : parseFloat(field(p, "Longitude", "lon", "lng"));
+          if (isNaN(lat) || isNaN(lon)) continue;
+          lib.places.push({
+            at: parseDate(field(p, "Time", "time", "date", "created")),
+            lat, lon,
+          });
+        }
+      }
+    }
+
+    // Friends
+    const friends = await read(/friends/);
+    if (friends) {
+      for (const { key, list } of pickArrays(friends, /friend/i)) {
+        if (!list.length) continue;
+        const cols = Object.keys(list[0]);
+        lib.tables.push({
+          name: key,
+          columns: cols,
+          rows: list.map((o) => cols.map((c) => String(o[c] === undefined || o[c] === null ? "" : o[c]))),
+        });
+      }
+    }
+
+    // Account details
+    const acct = await read(/account/);
+    if (acct && typeof acct === "object") {
+      for (const k of Object.keys(acct)) {
+        const v = acct[k];
+        if (Array.isArray(v) && v.length && typeof v[0] === "object") {
+          const cols = Object.keys(v[0]);
+          lib.tables.push({ name: k, columns: cols, rows: v.map((o) => cols.map((c) => String(o[c] ?? ""))) });
+        } else if (v && typeof v === "object") {
+          // key/value blocks (account details) render as a two-column table
+          lib.tables.push({
+            name: k, columns: ["Field", "Value"],
+            rows: Object.entries(v).map(([a, b]) => [a, String(b)]),
+          });
+        }
+      }
+    }
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+  /* ---------- Apple ---------- */
+  /* Apple's privacy export is mostly folders of CSVs plus iCloud Photos media.
+     Structure varies by which services you selected, so we parse defensively:
+     every CSV becomes a browsable table, every media file becomes an item. */
+
+  async function apple(file, entries) {
+    const lib = emptyLib("apple", "Apple");
+
+    const csvPick = withinBudget(entries.filter((e) => /\.csv$/i.test(e.name)));
+    const csvs = csvPick.taken;
+    noteDropped(lib, csvPick.dropped, "record tables");
+    for (const e of csvs) {
+      try {
+        const txt = await MZip.extractText(file, e);
+        const { columns, rows } = parseCsv(txt);
+        if (!columns.length) continue;
+        lib.tables.push({ name: base(e.name).replace(/\.csv$/i, ""), path: e.name, columns, rows });
+
+        // Purchases and similar dated rows make good timeline events
+        const dateIdx = columns.findIndex((c) => /date|time|purchase/i.test(c));
+        const labelIdx = columns.findIndex((c) => /item|title|name|description|product/i.test(c));
+        if (dateIdx >= 0 && labelIdx >= 0 && rows.length <= 5000) {
+          for (const r of rows) {
+            const at = parseDate(r[dateIdx]);
+            if (at && r[labelIdx]) lib.events.push({ at, kind: "record", label: r[labelIdx] });
+          }
+        }
+      } catch { /* skip unreadable csv */ }
+    }
+
+    const jsonPick = withinBudget(entries.filter((e) => /\.json$/i.test(e.name)));
+    const jsons = jsonPick.taken;
+    noteDropped(lib, jsonPick.dropped, "data files");
+    for (const e of jsons) {
+      try {
+        const data = await MZip.extractJson(file, e);
+        if (Array.isArray(data) && data.length && typeof data[0] === "object") {
+          const cols = Object.keys(data[0]);
+          lib.tables.push({
+            name: base(e.name).replace(/\.json$/i, ""), path: e.name, columns: cols,
+            rows: data.slice(0, 5000).map((o) => cols.map((c) => String(o[c] ?? ""))),
+          });
+        }
+      } catch { /* skip */ }
+    }
+
+    await classifyFiles(lib, entries, file);
+
+    if (lib.media.some((m) => /heic|heif/i.test(m.name))) {
+      lib.notes.push("Some photos are HEIC. Muletto decodes them for preview and can convert them to JPG; writing dates back into HEIC itself is not supported yet.");
+    }
+    if (!lib.media.length && lib.tables.length) {
+      lib.notes.push("This part of your Apple export contains account and service records. Photos arrive in a separate iCloud Photos archive - open that file too.");
+    }
+    return lib;
+  }
+
+  /* ---------- Google Takeout ---------- */
+  /* Takeout stores each photo's real date and place in a sidecar JSON next to
+     the file, named <photo>.json or <photo>.supplemental-metadata.json. Reading
+     those is what lets us put a library back in the right order. */
+
+  const SIDECAR_RE = /\.(supplemental-metadata|suppl)?\.?json$/i;
+  /* Sidecars are a few hundred bytes of JSON each, so reading them is cheap
+     next to decoding a photograph. The old limit of 1,200 meant a library of
+     three thousand got dates back for the first 1,200 and nothing after -
+     silently, beyond one line of small print. The cap is now high enough to
+     cover any real library and exists only so a pathological archive cannot
+     hang the tab. */
+  const SIDECAR_CAP = 60000;
+
+  async function google(file, entries) {
+    const lib = emptyLib("google", "Google Takeout");
+    await classifyFiles(lib, entries, file);
+
+    // index sidecars by the media path they describe
+    const sidecars = new Map();
+    for (const e of entries) {
+      if (!/\.json$/i.test(e.name)) continue;
+      /* Google truncates the sidecar name to fit a filename length limit, and
+         does not truncate it consistently. The same export contains
+         photo.jpg.supplemental-metadata.json, photo.jpg.supplemental-m.json,
+         photo.jpg.suppl.json and photo.jpg.supplemental-metadata(1).json.
+         Matching only the full spelling and one abbreviation dropped the rest,
+         and a dropped sidecar is a photograph that keeps neither its date nor
+         its location - which is most of the reason to open a Takeout at all.
+         Anything beginning .supp and ending .json is one of these. */
+      const stripped = e.name
+        .replace(/\(\d+\)(?=\.json$)/i, "")
+        .replace(/\.supp[a-z-]*\.json$/i, "")
+        .replace(/\.json$/i, "");
+      if (stripped !== e.name && mediaKind(stripped)) sidecars.set(stripped, e);
+      /* Google also numbers a repeated name as photo(1).jpg while calling its
+         sidecar photo.jpg(1).json, so the number has to move into the stem to
+         find the file it describes. */
+      const numbered = e.name.match(/^(.*)\.(\w+)\((\d+)\)\.json$/i);
+      if (numbered) {
+        const alt = numbered[1] + "(" + numbered[3] + ")." + numbered[2];
+        if (mediaKind(alt) && !sidecars.has(alt)) sidecars.set(alt, e);
+      }
+    }
+
+    let withDate = 0, read = 0, capped = false;
+    for (const m of lib.media) {
+      const sc = sidecars.get(m.path);
+      if (!sc) continue;
+      if (read >= SIDECAR_CAP) { capped = true; break; }
+      read++;
+      const meta = await readJsonSafe(file, sc);
+      if (!meta) continue;
+      const ts = meta.photoTakenTime || meta.creationTime;
+      if (ts && ts.timestamp) {
+        m.at = new Date(Number(ts.timestamp) * 1000);
+        withDate++;
+        lib.events.push({ at: m.at, kind: "photo", label: m.name });
+      }
+      const geo = (meta.geoData && meta.geoData.latitude) ? meta.geoData : meta.geoDataExif;
+      if (geo && (geo.latitude || geo.longitude)) {
+        m.place = { lat: geo.latitude, lon: geo.longitude };
+        lib.places.push({ at: m.at || null, lat: geo.latitude, lon: geo.longitude });
+      }
+    }
+
+    if (sidecars.size) {
+      lib.insights.push({
+        n: (capped ? sidecars.size : withDate).toLocaleString(),
+        label: "Dates recoverable",
+        note: "from Takeout metadata", accent: true,
+      });
+      lib.notes.push(
+        "Google stores each photo's real date and location in a separate metadata file rather than in the photo itself. " +
+        "That is why re-uploaded Takeout libraries often show up in the wrong order. Muletto reads those files and can write the correct date back into each photo." +
+        (capped ? " This export is large, so only the first " + SIDECAR_CAP.toLocaleString() + " were read here." : "")
+      );
+    }
+
+    // Location history (can be enormous, so guard the size)
+    const locEntry = entries.find((e) => /location\s*history.*\/records\.json$/i.test(e.name) || /\/records\.json$/i.test(e.name));
+    if (locEntry) {
+      if (locEntry.size > JSON_LIMIT) {
+        lib.notes.push("Your location history file is " + Math.round(locEntry.size / 1048576) + " MB, which is too large to open in a browser tab. The desktop app handles files this size.");
+      } else {
+        const rec = await readJsonSafe(file, locEntry);
+        const list = rec && (rec.locations || rec.Records || []);
+        if (Array.isArray(list)) {
+          for (const p of list.slice(0, 20000)) {
+            const lat = p.latitudeE7 !== undefined ? p.latitudeE7 / 1e7 : parseFloat(p.latitude);
+            const lon = p.longitudeE7 !== undefined ? p.longitudeE7 / 1e7 : parseFloat(p.longitude);
+            if (!isFinite(lat) || !isFinite(lon)) continue;
+            lib.places.push({ at: parseDate(p.timestamp || p.timestampMs), lat, lon });
+          }
+        }
+      }
+    }
+
+    // YouTube watch history
+    const yt = entries.find((e) => /watch-history\.json$/i.test(e.name));
+    if (yt) {
+      const list = await readJsonSafe(file, yt);
+      if (Array.isArray(list)) {
+        for (const v of list.slice(0, 8000)) {
+          const at = parseDate(v.time);
+          if (at) lib.events.push({ at, kind: "video", label: (v.title || "Watched a video").replace(/^Watched\s+/, "Watched ") });
+        }
+      }
+    }
+
+    // Gmail is shipped as MBOX, often many gigabytes. Report rather than parse.
+    const mbox = entries.filter((e) => /\.mbox$/i.test(e.name));
+    if (mbox.length) {
+      const bytes = mbox.reduce((s, e) => s + e.size, 0);
+      const size = bytes >= 1073741824
+        ? (bytes / 1073741824).toFixed(1) + " GB"
+        : Math.max(1, Math.round(bytes / 1048576)) + " MB";
+      // Streamed, headers only - the bodies are never held in memory.
+      let indexed = 0;
+      for (const e of mbox.slice(0, 3)) {
+        try {
+          const res = await MMbox.index(await MZip.streamEntry(file, e), { limit: 20000 });
+          const { senders, events } = MMbox.summarise(res);
+          indexed += res.messages.length;
+          lib.events.push(...events);
+          if (senders.length) {
+            lib.tables.push({
+              name: "Mail - who writes to you", path: e.name,
+              columns: ["Sender", "Address", "Messages"],
+              rows: senders.slice(0, 2000).map((x) => [x.name, x.address, String(x.count)]),
+            });
+          }
+        } catch { /* leave it listed under All files */ }
+      }
+      if (indexed) {
+        lib.insights.push({
+          n: indexed.toLocaleString(), label: "Emails indexed",
+          note: "headers only, from " + size + " of mail", accent: true,
+        });
+        lib.notes.push("Your Gmail mailbox (" + size + ") was indexed by header: sender, subject and date. Message bodies and attachments are deliberately not loaded.");
+      } else {
+        lib.notes.push("This export contains your Gmail mailbox (" + size + " as MBOX). It is listed under All files.");
+      }
+    }
+
+    // Any remaining CSVs become browsable tables
+    const gCsv = withinBudget(entries.filter((x) => /\.csv$/i.test(x.name)));
+    noteDropped(lib, gCsv.dropped, "record tables");
+    for (const e of gCsv.taken) {
+      try {
+        const { columns, rows } = parseCsv(await MZip.extractText(file, e));
+        if (columns.length) lib.tables.push({ name: base(e.name).replace(/\.csv$/i, ""), path: e.name, columns, rows });
+      } catch { /* skip */ }
+    }
+
+    return lib;
+  }
+
+  /* ---------- Meta (Facebook and Instagram share one format) ---------- */
+
+  async function meta(file, entries, slug, label) {
+    const lib = emptyLib(slug || "facebook", label || "Meta");
+    await classifyFiles(lib, entries, file);
+
+    // Conversations: messages/inbox/<thread>/message_N.json
+    const threads = entries.filter((e) => /messages\/(inbox|archived_threads|filtered_threads)\/[^/]+\/message_\d+\.json$/i.test(e.name));
+    const byThread = new Map();
+    for (const e of threads.slice(0, 400)) {
+      const key = e.name.replace(/\/message_\d+\.json$/i, "");
+      if (!byThread.has(key)) byThread.set(key, []);
+      byThread.get(key).push(e);
+    }
+    for (const [key, parts] of byThread) {
+      const conv = { title: fixMojibake(decodeURIComponent(key.split("/").pop().replace(/_\w+$/, "").replace(/_/g, " "))), messages: [] };
+      for (const part of parts.slice(0, 6)) {
+        const data = await readJsonSafe(file, part);
+        if (!data) continue;
+        if (data.title) conv.title = fixMojibake(data.title);
+        for (const m of (data.messages || []).slice(0, 3000)) {
+          conv.messages.push({
+            from: fixMojibake(m.sender_name || "Unknown"),
+            direction: null,  // resolved later; Meta does not mark who is who
+            text: fixMojibake(m.content || ""),
+            type: m.photos ? "PHOTO" : m.videos ? "VIDEO" : m.share ? "LINK" : "TEXT",
+            at: m.timestamp_ms ? new Date(m.timestamp_ms) : null,
+          });
+        }
+      }
+      if (conv.messages.length) {
+        conv.messages.sort((a, b) => (a.at || 0) - (b.at || 0));
+        lib.conversations.push(conv);
+      }
+    }
+    lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
+
+    // Posts and other dated content
+    const contentFiles = entries.filter((e) =>
+      /(posts_\d+\.json|your_posts.*\.json|stories\.json|reels\.json|profile_photos\.json)$/i.test(e.name)).slice(0, 12);
+    for (const e of contentFiles) {
+      const data = await readJsonSafe(file, e);
+      const list = Array.isArray(data) ? data : (data && (data.ig_stories || data.ig_reels_media || data.photos)) || [];
+      if (!Array.isArray(list)) continue;
+      for (const post of list.slice(0, 4000)) {
+        const t = post.creation_timestamp || (post.media && post.media[0] && post.media[0].creation_timestamp);
+        const at = t ? new Date(t * 1000) : null;
+        const title = fixMojibake(post.title || (post.media && post.media[0] && post.media[0].title) || "Post");
+        if (at) lib.events.push({ at, kind: "post", label: title || "Post" });
+      }
+    }
+
+    // Everything else structured becomes a table
+    const mJson = withinBudget(entries.filter((x) => /\.json$/i.test(x.name)));
+    noteDropped(lib, mJson.dropped, "data files");
+    for (const e of mJson.taken) {
+      if (/message_\d+\.json$/i.test(e.name)) continue;
+      const data = await readJsonSafe(file, e);
+      if (!data || typeof data !== "object") continue;
+      // Some Meta files (posts_1.json) are a top-level array rather than an
+      // object of named arrays, so handle both shapes.
+      const lists = Array.isArray(data)
+        ? [{ key: "entries", list: data }]
+        : pickArrays(data, /./);
+      for (const { key, list } of lists) {
+        if (!list.length || typeof list[0] !== "object") continue;
+        const cols = Object.keys(list[0]).filter((c) => typeof list[0][c] !== "object").slice(0, 8);
+        if (!cols.length) continue;
+        lib.tables.push({
+          name: base(e.name).replace(/\.json$/i, "") + " - " + key,
+          path: e.name, columns: cols,
+          rows: list.slice(0, 2000).map((o) => cols.map((c) => fixMojibake(String(o[c] === undefined || o[c] === null ? "" : o[c])))),
+        });
+      }
+      if (lib.tables.length > 40) break;
+    }
+
+    if (lib.conversations.length) {
+      lib.insights.push({
+        n: lib.conversations.reduce((s, c) => s + c.messages.length, 0).toLocaleString(),
+        label: "Messages", note: "across " + lib.conversations.length.toLocaleString() + " conversations", accent: true,
+      });
+    }
+    return lib;
+  }
+
+  /* ---------- Samsung ---------- */
+  /* Samsung's export is a set of per-service folders. Gallery and Cloud hold
+     media; Samsung Health ships CSVs whose first line is a service header
+     rather than the column names. */
+
+  async function samsung(file, entries) {
+    const lib = emptyLib("samsung", "Samsung");
+    await classifyFiles(lib, entries, file);
+
+    let healthRows = 0;
+    const sCsv = withinBudget(entries.filter((x) => /\.csv$/i.test(x.name)));
+    noteDropped(lib, sCsv.dropped, "record tables");
+    for (const e of sCsv.taken) {
+      try {
+        const text = await MZip.extractText(file, e);
+        const fileName = base(e.name).replace(/\.csv$/i, "")
+          .replace(/^com\.samsung\.(shealth\.|health\.)?/i, "")
+          // GalaxyStore_<account>_<date>_access, ANS_gk<id>_<date>_access
+          .replace(/[_-][a-z]{0,3}\d{6,}[_-]\d{6,}[_-]access$/i, "")
+          .replace(/[_-]\d{6,}$/, "").replace(/[_-]+$/, "").trim();
+
+        for (const sec of csvSections(text)) {
+          let columns = sec.columns;
+          let rows = sec.rows;
+          // Samsung Health prefixes the file with a service line such as
+          // "com.samsung.shealth.step_count,1". The real headers are the next row.
+          if (rows.length && /^com\.samsung/i.test(columns[0] || "")) {
+            columns = rows[0];
+            rows = rows.slice(1);
+          }
+          if (!columns.length || !rows.length) continue;
+          const name = sec.title
+            ? (fileName ? fileName + ": " + sec.title : sec.title)
+            : fileName;
+          lib.tables.push({ name, path: e.name, columns: columns.map(niceColumn), rows });
+          if (/health|step|sleep|exercise|heart|weight/i.test(e.name)) healthRows += rows.length;
+
+          const dateIdx = columns.findIndex((c) => /start_time|create_time|day_time|date|time/i.test(c));
+          if (dateIdx >= 0 && rows.length <= 4000) {
+            for (const r of rows) {
+              const at = parseDate(r[dateIdx]);
+              if (at) lib.events.push({ at, kind: "record", label: name });
+            }
+          }
+        }
+      } catch { /* skip unreadable csv */ }
+    }
+
+    if (healthRows) {
+      lib.insights.push({
+        n: healthRows.toLocaleString(), label: "Health records",
+        note: "steps, sleep and workouts", accent: true,
+      });
+    }
+    if (!lib.media.length && lib.tables.length) {
+      lib.notes.push("This part of your Samsung export holds service records. Gallery photos arrive only if Samsung Cloud backup was switched on, and may be in a separate archive.");
+    }
+    return lib;
+  }
+
+  /* ---------- Generic fallback ---------- */
+
+  async function generic(file, entries, slug, label) {
+    const lib = emptyLib(slug || "unknown", label || "Export");
+    const genCsv = withinBudget(entries.filter((x) => /\.csv$/i.test(x.name)));
+    noteDropped(lib, genCsv.dropped, "record tables");
+    for (const e of genCsv.taken) {
+      try {
+        const fileName = base(e.name).replace(/\.csv$/i, "");
+        for (const sec of csvSections(await MZip.extractText(file, e))) {
+          if (!sec.columns.length || !sec.rows.length) continue;
+          lib.tables.push({
+            name: sec.title ? fileName + ": " + sec.title : fileName,
+            path: e.name, columns: sec.columns.map(niceColumn), rows: sec.rows,
+          });
+        }
+      } catch { /* skip */ }
+    }
+    const genJson = withinBudget(entries.filter((x) => /\.json$/i.test(x.name)));
+    noteDropped(lib, genJson.dropped, "data files");
+    for (const e of genJson.taken) {
+      try {
+        const data = await MZip.extractJson(file, e);
+        for (const { key, list } of pickArrays(data, /./)) {
+          if (!list.length || typeof list[0] !== "object") continue;
+          const cols = Object.keys(list[0]);
+          lib.tables.push({
+            name: `${base(e.name).replace(/\.json$/i, "")} - ${key}`, path: e.name, columns: cols,
+            rows: list.slice(0, 3000).map((o) => cols.map((c) => String(o[c] ?? ""))),
+          });
+        }
+      } catch { /* skip */ }
+    }
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+  async function parse(file, entries, detected) {
+    const slug = detected && detected.slug;
+    const finish = async (libPromise) => {
+      const lib = await libPromise;
+      await readPhotoDates(lib, file);
+      await readVideoDates(lib, file);
+      return lib;
+    };
+    if (slug === "snapchat") return finish(snapchat(file, entries));
+    if (slug === "apple") return finish(apple(file, entries));
+    if (slug === "google") return finish(google(file, entries));
+    if (slug === "samsung") return finish(samsung(file, entries));
+    if (slug === "facebook" || slug === "instagram") {
+      return finish(meta(file, entries, slug, detected.label));
+    }
+    return finish(generic(file, entries, slug, detected && detected.label));
+  }
+
+  return { parse, parseCsv, parseDate, mediaKind, mimeOf, renderable, heifFamily };
+})();

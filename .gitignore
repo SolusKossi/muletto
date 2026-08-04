@@ -1,0 +1,28 @@
+.DS_Store
+node_modules/
+
+# Curator run artifacts (generated in the working dir)
+scan.json
+plan.json
+rules.json
+approved-plan.json
+.muletto/
+
+
+# Raw screenshots may show account details; only the redacted crops in
+# apps/web/guides/img/ are committed.
+screenshots-raw/*
+!screenshots-raw/README.txt
+
+# Cached source photography for the sample exports. The generated zips are
+# committed; regenerating them from scratch needs one online run.
+tools/vendor/photos/
+# Raw screenshots land here from the OS with their default names. The publishable
+# versions are built from screenshots-raw/ by tools/redact-screenshot.py, so the
+# untouched originals - which still have usernames and avatars in them - must not
+# be committed.
+/Screenshot *.png
+
+# Converted from the shipped woff2 so Pillow can draw with it. Regenerate with
+# fonttools rather than tracking a second copy of the typeface.
+brand/_hostgrotesk.ttf

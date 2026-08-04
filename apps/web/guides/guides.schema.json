@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://muletto.app/guides.schema.json",
+  "title": "Muletto export guide",
+  "description": "One provider's instructions for requesting a personal-data export. A guide is only finished once a human has BOTH walked the request flow and opened the resulting export in Muletto. See `confirmed`.",
+  "type": "object",
+  "required": ["slug", "provider", "confirmed", "difficulty", "data_types", "request", "steps"],
+  "properties": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "URL-safe id, e.g. \"apple\"." },
+    "provider": { "type": "string", "description": "Display name, e.g. \"Apple\"." },
+    "icon": { "type": "string", "enum": ["apple", "google", "samsung", "snapchat", "facebook", "instagram", "server", "drive", "box"], "description": "Provider key mapping to an official brand mark (inline SVG) in the web app." },
+    "confirmed": {
+      "type": "object",
+      "description": "Two independent checks, both done by hand. Neither may be filled in from documentation. A guide is finished only when both are set.",
+      "required": ["flow", "import"],
+      "properties": {
+        "flow": {
+          "description": "Set once someone has walked the request flow start to finish and screenshotted each stage. Null until then.",
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["on", "by"],
+              "properties": {
+                "on": { "type": "string", "format": "date", "description": "The date the flow was walked, not the date the guide was edited." },
+                "by": { "type": "string" }
+              }
+            }
+          ]
+        },
+        "import": {
+          "description": "Set once the real export from this provider has been opened in Muletto and the results checked against what the guide promises. Null until then.",
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["on", "by"],
+              "properties": {
+                "on": { "type": "string", "format": "date" },
+                "by": { "type": "string" },
+                "export_size": { "type": "string", "description": "How big the real export turned out to be. Feeds the size estimate shown to users." },
+                "findings": { "type": "string", "description": "What the import got wrong, or confirmed." }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "difficulty": { "enum": ["easy", "medium", "hard"], "description": "How painful the request is (dark patterns, friction)." },
+    "wait_time": { "type": "string", "description": "Human estimate of how long the export takes to arrive, e.g. \"up to 7 days\"." },
+    "delivery": { "enum": ["download", "email-link", "on-device"], "description": "How the finished export reaches the user." },
+    "format": { "type": "string", "description": "What the export is, e.g. \"one or more .zip files\"." },
+    "data_types": {
+      "type": "array",
+      "items": { "enum": ["photos", "videos", "messages", "location", "contacts", "email", "browsing", "purchases", "social", "health", "files", "other"] },
+      "description": "Categories of data this export can contain."
+    },
+    "request": {
+      "type": "object",
+      "required": ["url", "label"],
+      "properties": {
+        "url": { "type": "string", "format": "uri", "description": "The official page where the request is made." },
+        "label": { "type": "string" }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string" },
+          "detail": { "type": "string" },
+          "image": { "type": "string", "description": "Filename in apps/web/guides/img/, produced by tools/redact-screenshot.py. Never a raw capture." },
+          "alt": { "type": "string", "description": "Required whenever `image` is set." },
+          "caption": { "type": "string" },
+          "uncertain": {
+            "type": "string",
+            "description": "Set when this step is still written from documentation rather than from experience. The text says what specifically needs confirming. Rendered as a visible caveat, and listed in GUIDE-STATUS.md so it does not get forgotten."
+          }
+        }
+      }
+    },
+    "notes": { "type": "array", "items": { "type": "string" }, "description": "Gotchas, e.g. \"originals only download when...\"." },
+    "muletto_support": {
+      "type": "object",
+      "description": "What Muletto can do with this provider's export once the user has it.",
+      "properties": {
+        "importable": { "type": "boolean" },
+        "adapter": { "type": "string", "description": "Which parser/adapter handles this export, if any." },
+        "status": { "enum": ["planned", "partial", "supported"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+ "slug": "dest-ente",
+ "provider": "Ente (end-to-end encrypted)",
+ "icon": "server",
+ "difficulty": "easy",
+ "wait_time": "an upload, on your own machine",
+ "format": "encrypted on your computer, then uploaded",
+ "explain": {
+  "title": "Why the import happens on your computer",
+  "body": "Ente encrypts everything before it leaves your machine, and its servers cannot decrypt any of it. That is the point of the service, and it has a practical consequence: there is no server-side importer, because a server that cannot read your photographs cannot sort them either. Every import runs in the desktop app, on your own computer, which does the encrypting as it goes. Expect it to take real time and real CPU on a large library."
+ },
+ "steps": [
+  {
+   "title": "Decide if the trade suits you",
+   "detail": "Ente is a hosted service you pay for, like iCloud or Google Photos, with the difference that it cannot read what you store. You get the phone app, sharing and search; you give up the ability to recover anything if you lose your recovery key, because nobody at Ente can reset it for you. It is also open source and can be self-hosted if you would rather run it yourself."
+  },
+  {
+   "title": "Install the desktop app",
+   "detail": "Get the desktop app rather than using the browser. It is the supported route for importing from a local disk, it handles large sets, and it is what does the encryption. The CLI is worth knowing about but is built for exporting your library back out, not for bulk import."
+  },
+  {
+   "title": "Write down the recovery key",
+   "detail": "Do this before uploading anything. End-to-end encryption means the key is the only way in - lose it and the photographs are unrecoverable by anyone, including Ente. Store it somewhere that survives the loss of your computer: a password manager, or paper somewhere safe."
+  },
+  {
+   "title": "Import the folder Muletto wrote",
+   "detail": "In the desktop app choose to add files from a folder and point it at your organised library. Ente reads the date and location out of each file, so the timeline lands correctly - which is exactly what repairing metadata first is for. The folder structure can become albums, so the year and month folders keep meaning something."
+  },
+  {
+   "title": "Let it finish, and watch the storage",
+   "detail": "Encrypting and uploading a large library is slower than a plain copy, because your machine is doing cryptography on every file. Leave it running on power. Keep an eye on your plan's storage as it goes, since a full repaired library is usually about the size of the archive you downloaded."
+  },
+  {
+   "title": "Keep a copy that does not depend on them",
+   "detail": "Encrypted and hosted is still hosted. Ente makes leaving easy - the CLI exists specifically so you can take continuous exports with no dependency on them - so set that up, or keep the folder Muletto wrote on a drive of your own."
+  }
+ ],
+ "notes": [
+  "No server-side migration tools exist for Ente, and that is a consequence of the encryption rather than a gap. Anything that reads your library has to run on your own machine.",
+  "The CLI pulls from Ente to local storage; changes to those local files do not sync back. Treat it as an export tool, which is what it is for."
+ ]
+}

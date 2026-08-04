@@ -1,0 +1,42 @@
+{
+ "slug": "dest-photoprism",
+ "provider": "PhotoPrism (self-hosted)",
+ "icon": "server",
+ "difficulty": "medium",
+ "wait_time": "an evening to set up, then an indexing run",
+ "format": "folders on disk, indexed in place",
+ "explain": {
+  "title": "Indexing is not importing",
+  "body": "PhotoPrism uses those two words for different things. Indexing reads the folder you already have and leaves every file and folder name alone. Importing copies files into PhotoPrism's own originals folder and renames them into its own structure. For a library Muletto has just organised, indexing is almost always what you want - you chose the folder names for a reason."
+ },
+ "steps": [
+  {
+   "title": "Install it",
+   "detail": "PhotoPrism is a self-hosted photo server with search, places, faces and a web interface. It runs with Docker Compose on a NAS, a home server or a spare PC. Start from the official docker-compose.yml, bring it up, then open the web interface and sign in with the admin password you set in the compose file."
+  },
+  {
+   "title": "Mount your library as originals",
+   "detail": "PhotoPrism reads everything under one folder it calls originals. Point that at the folder Muletto wrote by adding it as a volume in docker-compose.yml, with your host path on the left and /photoprism/originals on the right. If you keep several separate folders, mount each as a subfolder of originals instead - your path on the left, /photoprism/originals/holidays on the right, and so on."
+  },
+  {
+   "title": "Turn on read-only if this is your archive of record",
+   "detail": "Setting PHOTOPRISM_READONLY to true stops PhotoPrism writing to your originals at all. Indexing still works; the import feature does not, because importing needs to write into that folder. If these files are the copy you intend to keep forever, that trade is worth making."
+  },
+  {
+   "title": "Index, do not import",
+   "detail": "Open Library, then Index, and run it. PhotoPrism walks the folder, reads each file where it lies and builds its database from what it finds. Nothing is moved and nothing is renamed. The Import tab does something different - it copies files in and renames them to its own scheme - so leave it alone unless that is what you actually want."
+  },
+  {
+   "title": "Check the dates and places came through",
+   "detail": "PhotoPrism reads the date and GPS from inside each file, which is exactly what Muletto repairs before you export. Open the calendar and the places map and spot check a few old photographs. If everything has landed on today's date, the originals lost their metadata somewhere upstream and it is worth repairing them again before indexing."
+  },
+  {
+   "title": "Add more whenever you like",
+   "detail": "You can drop new folders into originals at any time without stopping the server, then run the index again. Only what is new gets read, so a second run over a large library is quick."
+  }
+ ],
+ "notes": [
+  "The originals folder is the one PhotoPrism cares about. Everything else it keeps - thumbnails, the database, its cache - lives in its storage folder, and that is the part to back up alongside your photographs.",
+  "Indexing does not change your files, so your folder structure stays exactly as Muletto wrote it and any other tool can still read it."
+ ]
+}

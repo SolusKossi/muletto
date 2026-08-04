@@ -1,0 +1,76 @@
+{
+ "slug": "instagram",
+ "provider": "Instagram",
+ "confirmed": {
+  "flow": {
+   "on": "2026-07-30",
+   "by": "Martin"
+  },
+  "import": null
+ },
+ "icon": "instagram",
+ "difficulty": "easy",
+ "wait_time": "minutes to a few days depending on size",
+ "delivery": "download",
+ "format": ".zip containing JSON or HTML files and media",
+ "data_types": [
+  "photos",
+  "videos",
+  "messages",
+  "social"
+ ],
+ "request": {
+  "url": "https://accountscenter.instagram.com/info_and_permissions/dyi",
+  "label": "Meta Accounts Center - Download your information"
+ },
+ "steps": [
+  {
+   "title": "Open Download your information",
+   "detail": "In the Instagram app or on the web, go to Accounts Center, then Your information and permissions, then Download your information.",
+   "image": "instagram-1-export-dialog.png",
+   "alt": "Meta Accounts Centre 'Export your information' dialog with a Create export button, and a note that the export excludes information other people shared.",
+   "caption": "The export lives in Meta's Accounts Centre now, not in Instagram's own settings. Note what it says: photos other people posted that you are tagged in are not included, because they are not yours."
+  },
+  {
+   "title": "Choose the Instagram profile",
+   "detail": "Select the Instagram account whose data you want to export."
+  },
+  {
+   "title": "Select information and range",
+   "detail": "Choose which categories to include (posts, stories, messages, and more) and pick \"All time\" for everything."
+  },
+  {
+   "title": "Pick format and quality",
+   "detail": "Choose JSON for machine-readable data (best for Muletto) and set media quality to high."
+  },
+  {
+   "title": "Create the file and wait",
+   "detail": "Submit the request. Meta prepares your download and notifies you when it is ready.",
+   "image": "instagram-2-requested.png",
+   "alt": "The same dialog after requesting, showing the request listed as 'Export to device, Once, JSON' with the date it was requested.",
+   "caption": "Once submitted it appears under Current activity with the settings you chose, so you can check you actually asked for JSON."
+  },
+  {
+   "title": "Download the file",
+   "detail": "Download every part before the link expires and keep the files together."
+  }
+ ],
+ "notes": [
+  "Meta gives you four days to download once the export is ready, not the week Google allows. The confirmation screen says so and the notification does not repeat it.",
+  "Meta asks for your password again before submitting the request. That is Meta's own screen - Muletto never sees it and never asks for a password.",
+  "Instagram and Facebook are both handled in Meta Accounts Center, so you can request them together.",
+  "Full-resolution photos and videos are included only if you set media quality to high before requesting.",
+  "Choose JSON, not HTML. HTML is a rendering of your data that nothing can read back.",
+  "Set the range to All time. A range left at a recent default produces an export that looks complete and is missing years.",
+  "Meta splits large exports across several files, and a conversation's media can be in a different part from its messages. Open all the parts together."
+ ],
+ "muletto_support": {
+  "importable": true,
+  "adapter": "meta",
+  "status": "planned"
+ },
+ "explain": {
+  "title": "It is a Meta export, requested from the Accounts Centre",
+  "body": "Instagram's own settings hand you off to Meta's Accounts Centre, which is where downloads for every linked account live. This catches people out twice: the option is not where the app implies it is, and requesting a download there covers whichever accounts you tick, so Instagram and Facebook are separate requests even though they are made on the same screen."
+ }
+}

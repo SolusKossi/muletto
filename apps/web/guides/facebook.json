@@ -1,0 +1,64 @@
+{
+ "slug": "facebook",
+ "provider": "Facebook",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "facebook",
+ "difficulty": "easy",
+ "wait_time": "minutes to a few days depending on size",
+ "delivery": "download",
+ "format": ".zip containing JSON or HTML files and media",
+ "data_types": [
+  "photos",
+  "messages",
+  "social"
+ ],
+ "request": {
+  "url": "https://accountscenter.facebook.com/info_and_permissions/dyi",
+  "label": "Meta Accounts Center - Download your information"
+ },
+ "steps": [
+  {
+   "title": "Open Download your information",
+   "detail": "Go to Accounts Center, then Your information and permissions, then Download your information. Sign in if asked."
+  },
+  {
+   "title": "Choose the Facebook profile",
+   "detail": "If your accounts are linked, select the Facebook profile whose data you want."
+  },
+  {
+   "title": "Select information and range",
+   "detail": "Set the date range to All time unless you have a reason not to. Meta defaults to a recent window on some screens, and a range quietly left at twelve months produces an export that looks complete and is missing most of your life. Tick everything you care about; posts, photos and messages are separate selections."
+  },
+  {
+   "title": "Pick format and quality",
+   "detail": "Choose JSON for the format. For media quality, High keeps your photographs at full size and roughly doubles the archive - often past 12 GB for a long-standing account - while Medium is far smaller and permanently smaller in quality. If this export is the copy you intend to keep, choose High: it is the only chance to get the originals out."
+  },
+  {
+   "title": "Create the file and wait",
+   "detail": "Submit the request. Meta prepares the download and notifies you when it is ready."
+  },
+  {
+   "title": "Download the file",
+   "detail": "The link is emailed and expires in a few days, so download it promptly. Save every part if it arrives split, keep them in one folder, and do not unzip - Muletto reads the archives directly."
+  }
+ ],
+ "notes": [
+  "Facebook and Instagram both live in Meta Accounts Center, so you can request them from the same place.",
+  "Choose JSON if you plan to search or organize the data - it is far cleaner to work with than the HTML version.",
+  "Meta produces this export for Facebook and Instagram separately, even when the accounts are linked. Request each one.",
+  "HTML exports cannot be read back by Muletto or by anything else. If you already have one, request JSON as well - it costs another wait and nothing else.",
+  "The wait is usually minutes to hours rather than days, but Meta gives no progress and the email is the only signal."
+ ],
+ "muletto_support": {
+  "importable": true,
+  "adapter": "meta",
+  "status": "planned"
+ },
+ "explain": {
+  "title": "JSON, not HTML, and it is not obvious why",
+  "body": "Meta offers both. HTML looks friendlier - it opens in a browser and resembles Facebook - but it is a rendering of your data rather than the data, and nothing can reliably read it back. JSON is the machine-readable one, and it is what Muletto reads. Pick HTML and you have a scrapbook you can only look at; pick JSON and you have your data, which Muletto turns into something you can look at anyway."
+ }
+}

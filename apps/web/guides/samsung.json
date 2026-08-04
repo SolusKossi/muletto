@@ -1,0 +1,85 @@
+{
+ "slug": "samsung",
+ "provider": "Samsung",
+ "confirmed": {
+  "flow": {
+   "on": "2026-07-30",
+   "by": "Martin"
+  },
+  "import": null
+ },
+ "icon": "samsung",
+ "difficulty": "medium",
+ "wait_time": "a few days",
+ "delivery": "email-link",
+ "format": "one or more .zip files",
+ "data_types": [
+  "photos",
+  "videos",
+  "health",
+  "files"
+ ],
+ "request": {
+  "url": "https://privacy.samsung.com",
+  "label": "Samsung Privacy portal"
+ },
+ "steps": [
+  {
+   "title": "Open the Samsung Privacy portal",
+   "detail": "Go to privacy.samsung.com and sign in with the Samsung account whose data you want.",
+   "image": "samsung-1-mydata.png",
+   "alt": "The Samsung Privacy My Data page, showing counters for Processing and Completed requests, both at zero, and 'There are no services requested.'",
+   "caption": "My Data is the whole portal: it counts requests in progress and finished, and lists nothing until you ask for something."
+  },
+  {
+   "title": "Choose \"Download or delete your data\"",
+   "detail": "Select the option to request a copy of your personal data, then continue to the data request form."
+  },
+  {
+   "title": "Select what to include",
+   "detail": "Tick the categories you want. Samsung Health is worth taking even if you came for something else - it is the hardest to get elsewhere and the most revealing. What is offered varies by region and by which Samsung services your account has actually used, so the list will not match anyone else's exactly."
+  },
+  {
+   "title": "Submit the request",
+   "detail": "Confirm the email address the download link should be sent to and submit.",
+   "image": "samsung-2-confirm.png",
+   "alt": "Samsung's Request Confirmation dialog, with a red warning that the request cannot be cancelled, above a grid of the selected apps.",
+   "caption": "Read the red box before pressing Request. Samsung will not let you cancel this, and it says some apps may misbehave while it runs."
+  },
+  {
+   "title": "Wait for the email",
+   "detail": "Samsung prepares the export and emails a link. There is no progress to watch. If nothing arrives, check the address on the Samsung account rather than the one you assume it uses - an old address on the account is the usual reason the email never appears."
+  },
+  {
+   "title": "Download every part",
+   "detail": "Press Send my file password first and wait for the email - check spam, it often lands there. Then press Download all files. Samsung sends one archive per service, so expect several: Samsung Health, Samsung Cloud, Samsung Account, Galaxy Store and whatever else the account has used. Keep them together in one folder. The download link expires, so do not leave it a fortnight."
+  },
+  {
+   "title": "Open it and see what is actually in there",
+   "detail": "Drop the archives into Muletto. The CSV tables become browsable records rather than filenames, any photographs join the same timeline as your other exports, and the What is in here view lists every file it found and how much of it was read - which for an export this varied is the quickest way to see what Samsung actually sent."
+  },
+  {
+   "title": "Unzip them with the password before opening them here",
+   "detail": "Muletto reads archives directly and cannot open encrypted ones, so a locked Samsung export shows a full file list and nothing else. Unzip each archive with the emailed password, then open the resulting folder. Everything Samsung sent is CSV, PDF and spreadsheets, and the CSVs are the part with your history in them."
+  }
+ ],
+ "notes": [
+  "Samsung's confirmation dialog states the request cannot be cancelled once submitted, and that some apps and services may be inconvenient to use while the data is being prepared. Choose the services you want before submitting.",
+  "Samsung Health and Samsung Cloud data are requested from the same portal - include them if you want your steps, workouts or cloud backups.",
+  "The data you get back depends on which Samsung services you actually use on your phone.",
+  "Data not tied to a Samsung account is requested separately through the same privacy portal.",
+  "There are no gallery photographs in this export, and for a modern Galaxy there will not be. Samsung closed its own Gallery sync in 2021 and handed photo backup to Microsoft OneDrive, so your pictures are in a OneDrive account rather than anything Samsung sends you. That arrangement ends on 30 September 2026, after which Samsung stops syncing to it at all - if you have been relying on it, get the photographs out of OneDrive before then.",
+  "Samsung Health comes out two different ways and they look nothing alike. This request returns it inside one of the samsungcloud archives, as folders named in plain English - Heart Rate, Weight, Sleep - each holding one CSV. The other route is inside the Samsung Health app itself, under Settings and Download personal data, which writes files called com.samsung.shealth.tracker.pedometer_step_count and similar to your Downloads folder. Muletto reads both. If you wear a watch, the app route has tended to include more history, so it is worth doing as well.",
+  "The password email and the download are separate steps, and the download link expires first. Get the password before you need it.",
+  "If Muletto says the files are password protected, that is what has happened - the archives are locked, not damaged."
+ ],
+ "muletto_support": {
+  "importable": true,
+  "adapter": "samsung",
+  "status": "planned"
+ },
+ "explain": {
+  "title": "The archives are locked, and the password arrives separately",
+  "body": "Every file Samsung sends is a password protected zip, and the password is not on the download page - it is emailed to you. On the completed request there are two buttons: Send my file password, which mails it, and Download all files. Press the first, wait for the mail, then press the second. Miss the password and you have a folder of archives nothing can open, including Muletto."
+ }
+}

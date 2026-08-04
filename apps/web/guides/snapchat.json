@@ -1,0 +1,86 @@
+{
+  "slug": "snapchat",
+  "provider": "Snapchat",
+  "confirmed": {
+    "flow": {
+      "on": "2026-07-28",
+      "by": "Martin"
+    },
+    "import": null
+  },
+  "icon": "snapchat",
+  "difficulty": "easy",
+  "wait_time": "hours to days, and Snapchat emails you when it is ready",
+  "delivery": "email-link",
+  "format": ".zip containing JSON and HTML files",
+  "data_types": [
+    "messages",
+    "social",
+    "location"
+  ],
+  "request": {
+    "url": "https://accounts.snapchat.com",
+    "label": "Snapchat account page"
+  },
+  "steps": [
+    {
+      "title": "Sign in at accounts.snapchat.com",
+      "detail": "Use a browser rather than the app. The app can start the same request from Profile, then the gear icon for Settings, then My Data, but the browser version shows you the full list of categories at once."
+    },
+    {
+      "title": "Open My Data",
+      "detail": "It is the first item in the left-hand menu once you are signed in. The page walks through three numbered stages: choose your data, confirm the date range and email, then wait.",
+      "image": "snapchat-1-select-data.png",
+      "alt": "The Snapchat My Data page showing stage 1, Select data to include, with a list of thirteen categories and a toggle beside each one.",
+      "caption": "Stage 1. Every toggle is on by default, but check them rather than assuming."
+    },
+    {
+      "title": "Leave Export JSON files switched on",
+      "detail": "This is the toggle that matters most and it is easy to skim past, because it sits second in the list and its only label is 'For data portability purposes'. Without it you get a set of web pages you can read but nothing a tool can work with. Muletto reads the JSON to build the searchable view of your chats, snaps, friends and locations, and so does every other importer."
+    },
+    {
+      "title": "Check the three media exports are on",
+      "detail": "Export your Memories, Export shared Stories and Export Chat media are listed separately from the data categories, and they are the only route to your actual photos and videos. The counter at the top right reads 10 / 10 selected when the data categories are all on, so it can look complete while a media toggle is off. Look at those three specifically."
+    },
+    {
+      "title": "Confirm the rest of the categories and press Next",
+      "detail": "The remaining categories are User information, Chat history, Spotlight, Shopping, Support history, Ranking and location, Other media, Other, and My AI. Chat history covers snaps, chats, talk and Communities. Ranking and location covers your Snap Map places and location history. There is no reason to leave any of them out of a backup."
+    },
+    {
+      "title": "Leave the date range off, and check the email address",
+      "detail": "Stage 2 asks whether you want a specific date range. It is off by default, which is what you want for a full backup - turning it on gives you a slice instead. Then check the address shown is one you can still get into, because that is where the download link goes. Press Submit.",
+      "image": "snapchat-2-date-range.png",
+      "alt": "Stage 2 of the Snapchat export, with the date range toggle switched off and an email address field below it.",
+      "caption": "Stage 2. The date range toggle is already off - leave it that way for a full backup."
+    },
+    {
+      "title": "Wait for the email",
+      "detail": "Snapchat says the job can take hours or days depending on how much it has to gather. The page shows the request as In progress with the time you created it, and you can close the tab - it does not need to stay open.",
+      "image": "snapchat-3-in-progress.png",
+      "alt": "Stage 3 of the Snapchat export showing the request listed as In progress with a creation timestamp.",
+      "caption": "Stage 3. Safe to close the tab; the link arrives by email."
+    },
+    {
+      "title": "Expect an in-app notification you can ignore",
+      "detail": "Snapchat pushes a notification from the app itself, saying your data is on its way. It is informational and there is nothing to do with it - no link, no download, and it does not mean the export is ready. Ignore it and wait for the email.",
+      "image": "snapchat-4-notification.jpg",
+      "alt": "A push notification from the Snapchat app reading 'Your Snapchat data is on its way', received shortly after submitting the request.",
+      "caption": "About two minutes after submitting. Informational only - not the export."
+    },
+    {
+      "title": "Download every part promptly",
+      "detail": "The download links expire, so save the files when the email lands rather than leaving it for the weekend. Large exports are split into several parts, and you need all of them."
+    }
+  ],
+  "notes": [
+    "Export JSON files is the one toggle worth double-checking. HTML alone is readable but not importable, into Muletto or anything else.",
+    "The first email arrives within minutes and only confirms the request was accepted. The download link comes in a later, separate email.",
+    "Memories, shared Stories and Chat media are counted separately from the ten data categories, so a full-looking selection can still be missing your photos.",
+    "Size depends almost entirely on Memories. Chats, friends and location history are a few megabytes of JSON, but years of saved snaps and videos can run to tens of gigabytes. Muletto reads the archive in chunks rather than loading it whole, so a large one opens the same way a small one does."
+  ],
+  "muletto_support": {
+    "importable": true,
+    "adapter": "snapchat",
+    "status": "partial"
+  }
+}

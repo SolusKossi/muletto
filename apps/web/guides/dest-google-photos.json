@@ -1,0 +1,50 @@
+{
+ "slug": "dest-google-photos",
+ "provider": "Back into Google Photos",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "google",
+ "difficulty": "easy",
+ "wait_time": "hours to upload, depending on your connection",
+ "format": "uploaded into your Google account",
+ "request": {
+  "url": "https://photos.google.com",
+  "label": "Google Photos"
+ },
+ "steps": [
+  {
+   "title": "Be clear why you are uploading it back",
+   "detail": "This is the right destination if you want Google's search, sharing and phone app and you are happy for Google to hold the library. It is the wrong one if the point of the export was to stop depending on them. Muletto's output works either way, so the choice is yours rather than technical."
+  },
+  {
+   "title": "Check what it will cost you first",
+   "detail": "Look at your storage before uploading anything: your allowance is shared across Gmail, Drive and Photos, and a repaired library is typically the same size as the archive you downloaded. Compare that against the space you have left. Finding out halfway through an upload is worse than deciding now."
+  },
+  {
+   "title": "Pick the quality deliberately",
+   "detail": "Original quality keeps the file exactly as it is and uses the space it actually takes. Storage saver re-compresses to around 16 megapixels and video to 1080p, which stretches your allowance and permanently discards detail on the copy Google holds. If this upload is your archive of record, pick original; if it is a convenience copy and you keep the real one elsewhere, storage saver is reasonable."
+  },
+  {
+   "title": "Upload the folders",
+   "detail": "Drag the folders Muletto wrote into photos.google.com, or point the Google Drive desktop app at them and let it back up in the background. The desktop app copes far better with tens of thousands of files and with a connection that drops."
+  },
+  {
+   "title": "Check the dates rather than assuming",
+   "detail": "Google Photos reads the date from inside each file. This is exactly what Muletto repairs before export, and it matters most here: photographs uploaded without a date land on the day you uploaded them, which buries a decade of history under today. Spot check a few old ones once the first batch is up."
+  },
+  {
+   "title": "Expect some duplicates, and know why",
+   "detail": "Google skips a file it recognises as already present, so re-uploading an untouched library mostly folds back into itself. Muletto repaired files are not byte-identical to the originals - that is the point of repairing them - so some will land beside the old copy rather than merging with it. If you want one clean set, clear out the old library first."
+  }
+ ],
+ "notes": [
+  "Keep a copy outside Google. An export you upload straight back and then delete locally leaves you exactly where you started: one company holding the only copy.",
+  "Storage saver is not reversible. Google keeps the compressed version, so the original detail only survives wherever else you kept it."
+ ],
+ "explain": {
+  "title": "Putting it back where it came from costs storage now",
+  "body": "If you exported from Google Photos and upload the same library again, it counts against your 15 GB - the free allowance shared with Gmail and Drive. Everything uploaded now counts, whichever quality you pick; the old exemption only ever applied to photographs backed up before June 2021, and those keep it. So a round trip out and back is not free, and on a large library it is usually the moment people find they need a paid plan."
+ }
+}

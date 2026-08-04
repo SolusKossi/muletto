@@ -1,0 +1,48 @@
+# Headers for Cloudflare Pages and Netlify, which both read this file from the
+# published directory. Other hosts want the same values expressed their own way
+# - the same values expressed their own way.
+#
+# The Content-Security-Policy is the point of this file. Muletto's whole claim
+# is that your export never leaves the machine, and connect-src turns that from
+# a sentence on a page into something the browser refuses to let us break. If a
+# future change tries to POST an archive somewhere, it fails in the console
+# instead of succeeding quietly.
+#
+# connect-src has to allow the caption endpoints, because that is the one
+# feature that legitimately sends something:
+#   'self'          the credit service is proxied through our own origin
+#   localhost etc.  a model running on the reader's own machine
+#   api.openai.com  bring-your-own-key, straight from their browser
+#   api.anthropic.com  the same
+# Anything else is blocked. Add a host here and you are changing the privacy
+# promise, so change privacy.html in the same commit.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* https://localhost:* https://api.openai.com https://api.anthropic.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# The build regenerates these, and a stale guide is worse than a slow one.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+
+# The offline worker must never be served stale. Every other file it caches is
+# reached through a stamped URL, so the worker itself is the only thing that can
+# pin a whole generation of the app in place - cache it for an hour and an hour
+# is how long a fix takes to reach anyone who has visited before.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Content-addressed nothing yet, so no long-lived immutable caching. Revisit if
+# the CSS and JS ever get hashed filenames.
+/*.css
+  Cache-Control: public, max-age=3600
+/*.js
+  Cache-Control: public, max-age=3600

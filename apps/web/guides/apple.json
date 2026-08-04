@@ -1,0 +1,69 @@
+{
+ "slug": "apple",
+ "provider": "Apple",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "apple",
+ "difficulty": "medium",
+ "wait_time": "up to 7 days (Apple emails you when it is ready)",
+ "delivery": "email-link",
+ "format": "one or more .zip files, split into chunks you choose (1-25 GB each)",
+ "data_types": [
+  "photos",
+  "videos",
+  "purchases",
+  "files"
+ ],
+ "request": {
+  "url": "https://privacy.apple.com",
+  "label": "Apple Data & Privacy portal"
+ },
+ "steps": [
+  {
+   "title": "Sign in at privacy.apple.com",
+   "detail": "Use the same Apple ID whose data you want. This is the official GDPR / data-portability portal, separate from iCloud."
+  },
+  {
+   "title": "Choose \"Get a copy of your data\"",
+   "detail": "Then \"Get started\" under Obtain a copy of your data."
+  },
+  {
+   "title": "Select what to include",
+   "detail": "Tick the categories you want. iCloud Photos is the large one, and it is listed separately from the account information - your sign-in records, purchases and app history are their own entries and are small by comparison. If you only want the photographs, take only that; if this is a once-and-for-all copy, take everything, since the wait is the same."
+  },
+  {
+   "title": "Pick a maximum file size",
+   "detail": "Apple splits the export into chunks and lets you choose how big they are, from 1 GB up to 25 GB. Pick the largest your disk and your connection will tolerate: a 20 GB library at the 5 GB setting arrives as four files, and at 1 GB as twenty. Fewer, larger files means fewer downloads to shepherd and fewer chances for one to fail partway."
+  },
+  {
+   "title": "Submit and wait",
+   "detail": "Apple verifies the request and prepares the export, which takes up to seven days - the longest wait of any of the big services. There is no progress to watch and no way to hurry it. Make the request before you need it rather than the evening you have set aside to sort your photographs."
+  },
+  {
+   "title": "Download every part",
+   "detail": "Download all the numbered parts and keep them in one folder. The links expire after a few days; let them lapse and the whole seven-day wait starts again. Do not unzip them - Muletto reads the archives directly, which saves both the time and the doubled disk space."
+  },
+  {
+   "title": "Open the parts together",
+   "detail": "Drop every part into Muletto at once. It reads them as one export, decodes the HEIC without converting anything, puts the dates and locations back into the files themselves, and finds the photographs that also exist in your Google or Snapchat archives."
+  }
+ ],
+ "notes": [
+  "This export gives you full-resolution originals, not the compressed previews some sync tools leave behind.",
+  "Download links expire after a few days, so save every part promptly.",
+  "A large library arrives as several multi-gigabyte files. Keep them together in one folder and open them together.",
+  "Apple also offers a separate service that transfers your iCloud Photos collection directly to another provider. That is a different thing from this export: it moves your library to another company rather than giving you a copy of your own.",
+  "HEIC files keep working after Muletto writes dates and locations back, and export as they came unless you ask for something else."
+ ],
+ "muletto_support": {
+  "importable": true,
+  "adapter": "apple-privacy-export",
+  "status": "planned"
+ },
+ "explain": {
+  "title": "Your iPhone photographs come back as HEIC, and most tools will not open them",
+  "body": "Apple hands your files back in their original format, which for anything shot on a recent iPhone means HEIC rather than JPEG. That is the honest thing to do and it is also why an Apple export so often looks broken: Windows shows grey placeholders, plenty of photo tools refuse it outright, and the usual advice is to convert everything first. Muletto reads HEIC directly, using the same video codec your browser already has, so there is no conversion step before you can see what you were sent."
+ }
+}

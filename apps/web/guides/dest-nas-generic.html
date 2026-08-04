@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Any NAS (network folder): where to keep your data | Muletto</title>
+  <meta name="description" content="Step-by-step guide to moving your cleaned photo and data archive to Any NAS (network folder). 6 steps, written for people who want to keep their own copy." />
+  <link rel="canonical" href="https://muletto.app/guides/dest-nas-generic.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Any NAS (network folder): where to keep your data | Muletto" />
+  <meta property="og:description" content="Step-by-step guide to moving your cleaned photo and data archive to Any NAS (network folder). 6 steps, written for people who want to keep their own copy." />
+  <meta property="og:url" content="https://muletto.app/guides/dest-nas-generic.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=1638b7bc" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to move your data to Any NAS (network folder)","description":"Step-by-step guide to moving your cleaned photo and data archive to Any NAS (network folder). 6 steps, written for people who want to keep their own copy.","step":[{"@type":"HowToStep","position":1,"name":"Make a folder for it","text":"Create a share on the NAS for the library - photos, or archive, or whatever you will still understand in five years. Give your own account write access to it. If the NAS has a photo app of its own, check where that app expects files to live before choosing, because the wrong folder means the app never sees them."},{"@type":"HowToStep","position":2,"name":"Map it as a drive","text":"Follow the note above so the share appears as an ordinary folder on your computer. Tick reconnect at sign-in on Windows if you will use it regularly. Prefer a wired connection for the first copy - a large library over wifi is measured in hours."},{"@type":"HowToStep","position":3,"name":"Write the library straight to it","text":"Export from Muletto directly to the mapped drive, or copy the folders across afterwards. They are ordinary folders of ordinary files, so nothing on the NAS needs to understand Muletto for this to work."},{"@type":"HowToStep","position":4,"name":"Verify by count and size","text":"Compare the number of files and the total size against the source. Network copies fail differently from local ones: a dropped connection can leave a folder that looks complete and is short by hundreds of files. Open a few photographs from different years as a sanity check."},{"@type":"HowToStep","position":5,"name":"Let the NAS index it, if it has an app","text":"Most NAS photo apps need to read every file before showing anything, and on a large library that runs for hours. An app that looks empty shortly after copying is usually still working. Find its indexing status rather than guessing."},{"@type":"HowToStep","position":6,"name":"Remember a NAS is not a backup","text":"It is one copy, in one building, on disks that were probably bought together. RAID keeps you running when a disk dies; it does nothing about fire, theft, ransomware or deleting the wrong folder. Use whatever backup tool the NAS ships with to copy to an external drive or another location, and test a restore before relying on it."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Any NAS (network folder)","item":"https://muletto.app/guides/dest-nas-generic.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span>/</span>
+        <a href="../guides.html">Guides</a>
+        <span>/</span>
+        <span aria-current="page">Any NAS (network folder)</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Move your data to Any NAS (network folder)</h1>
+        <div class="art-meta">
+          <span class="badge easy">easy</span>
+          <span class="muted">Takes minutes to connect, an hour or more to copy</span>
+        </div>
+        <p class="art-intro">Once you have your data out of the big services and cleaned up, it needs to live somewhere you control. This guide covers moving your archive to Any NAS (network folder).</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          
+          <aside class="explain"><h2>Mapping a network folder</h2><p>Your NAS appears on the network under a name or an address like 192.168.1.20. On Windows, open File Explorer, right-click This PC and choose Map network drive, then enter two backslashes, the address, a backslash, and the share name. On a Mac, use Finder, Go, Connect to Server and enter smb: followed by two slashes and the address. Once mapped it behaves like any other folder, which is all Muletto needs to write into it.</p></aside>
+
+          <h2>Step by step</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Make a folder for it</h3>
+              <p>Create a share on the NAS for the library - photos, or archive, or whatever you will still understand in five years. Give your own account write access to it. If the NAS has a photo app of its own, check where that app expects files to live before choosing, because the wrong folder means the app never sees them.</p>
+              
+            </li>
+            <li>
+              <h3>Map it as a drive</h3>
+              <p>Follow the note above so the share appears as an ordinary folder on your computer. Tick reconnect at sign-in on Windows if you will use it regularly. Prefer a wired connection for the first copy - a large library over wifi is measured in hours.</p>
+              
+            </li>
+            <li>
+              <h3>Write the library straight to it</h3>
+              <p>Export from Muletto directly to the mapped drive, or copy the folders across afterwards. They are ordinary folders of ordinary files, so nothing on the NAS needs to understand Muletto for this to work.</p>
+              
+            </li>
+            <li>
+              <h3>Verify by count and size</h3>
+              <p>Compare the number of files and the total size against the source. Network copies fail differently from local ones: a dropped connection can leave a folder that looks complete and is short by hundreds of files. Open a few photographs from different years as a sanity check.</p>
+              
+            </li>
+            <li>
+              <h3>Let the NAS index it, if it has an app</h3>
+              <p>Most NAS photo apps need to read every file before showing anything, and on a large library that runs for hours. An app that looks empty shortly after copying is usually still working. Find its indexing status rather than guessing.</p>
+              
+            </li>
+            <li>
+              <h3>Remember a NAS is not a backup</h3>
+              <p>It is one copy, in one building, on disks that were probably bought together. RAID keeps you running when a disk dies; it does nothing about fire, theft, ransomware or deleting the wrong folder. Use whatever backup tool the NAS ships with to copy to an external drive or another location, and test a restore before relying on it.</p>
+              
+            </li>
+          </ol>
+
+          <h2>Worth knowing</h2>
+          <div class="note">SMB is the protocol both Windows and macOS speak. If the NAS offers AFP as well, ignore it - Apple deprecated it and SMB is the one that keeps working.</div>
+          <div class="note">If the NAS has a photo app, its indexing is separate from the copy. The files being present and the app showing them are two different things.</div>
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>At a glance</h4>
+            <dl>
+              <dt>Effort</dt><dd>easy</dd>
+              <dt>Time</dt><dd>minutes to connect, an hour or more to copy</dd>
+              <dt>Format</dt><dd>a network folder, readable by anything</dd>
+              
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Other destinations</h4>
+            <ul class="side-links">
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+              <li><a href="dest-immich.html"><span class="side-ic" data-icon="server"></span>Immich (self-hosted)</a></li>
+              <li><a href="dest-photoprism.html"><span class="side-ic" data-icon="server"></span>PhotoPrism (self-hosted)</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Export guides</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+              <li><a href="samsung.html"><span class="side-ic" data-icon="samsung"></span>Samsung</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../app.js?v=93c59e8a"></script>
+</body>
+</html>

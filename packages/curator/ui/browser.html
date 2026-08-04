@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<!--
+  Memory browser: single-file, offline viewer for exported photo libraries.
+  No server, no network, no external resources. Open this file in a browser
+  and point it at a folder of media. Dates come from file modification time,
+  which the ingestion pipeline restores to the original capture time.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memories</title>
+<style>
+:root{
+  --ground:#f4f2ef;
+  --card:#ffffff;
+  --ink:#171721;
+  --muted:rgba(23,23,33,.6);
+  --slate:#50617a;
+  --border:#ededf3;
+  --lime:#e0f050;
+  --brick:#c0452c;
+  --dark:#171721;
+  --shadow:0 30px 45px -30px rgba(50,50,93,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:'Inter','Segoe UI',system-ui,sans-serif;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+[hidden]{display:none !important}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+img{user-select:none}
+
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* ---------- header ---------- */
+header{
+  flex:none;
+  display:flex;align-items:center;gap:16px;
+  padding:12px 24px;
+  background:var(--ground);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;
+}
+.htitle .micro{margin-bottom:2px}
+header h1{font-size:15px;font-weight:600;letter-spacing:-.01em}
+#countline{font-size:12px;color:var(--muted)}
+.hspace{margin-left:auto;display:flex;gap:8px}
+.micro{
+  font-size:10px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--slate);
+}
+.btn{
+  font-size:12px;padding:7px 12px;
+  border-radius:8px;border:1px solid var(--border);
+  background:var(--card);color:var(--ink);
+}
+.btn:hover{border-color:#d9dbe4}
+.btn-lime{background:var(--lime);border-color:var(--lime);font-weight:600}
+.btn-lime:hover{background:#d6e648;border-color:#d6e648}
+
+/* ---------- main / landing ---------- */
+#main{position:relative;flex:1;min-height:0}
+#landing{
+  position:absolute;inset:0;z-index:5;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--ground);
+}
+.lcard{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  padding:36px 40px;
+  max-width:430px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.lcard h2{font-size:18px;font-weight:600}
+.lcard p{font-size:13px;color:var(--muted);line-height:1.55}
+.lcard .hint{font-size:11px}
+#landingMsg{font-size:12px;color:var(--brick);min-height:1em}
+#fileInput{display:none}
+
+/* ---------- grid ---------- */
+#grid{
+  position:absolute;inset:0;
+  overflow-y:auto;overflow-x:hidden;
+  outline:none;
+  scrollbar-width:thin;
+  scrollbar-color:#c9c6c0 transparent;
+}
+#grid::-webkit-scrollbar{width:10px}
+#grid::-webkit-scrollbar-track{background:transparent}
+#grid::-webkit-scrollbar-thumb{
+  background:#d6d3ce;border-radius:8px;
+  border:2px solid var(--ground);
+}
+#grid::-webkit-scrollbar-thumb:hover{background:#c4c1bb}
+#spacer{position:relative;width:100%}
+
+.shead{
+  position:absolute;top:0;left:0;
+  height:46px;padding-top:16px;
+  display:flex;align-items:baseline;gap:8px;
+  pointer-events:none;
+}
+.shead .sm{font-size:13px;font-weight:600}
+.shead .sy{font-size:13px;color:var(--slate)}
+.shead .sc{font-size:11px;color:var(--muted)}
+
+.tile{
+  position:absolute;top:0;left:0;
+  border-radius:4px;overflow:hidden;
+  background:#eceae6;
+  cursor:pointer;
+}
+.tile img{width:100%;height:100%;object-fit:cover;display:block}
+.tile.flat{
+  background:var(--card);
+  border:1px solid var(--border);
+  padding:10px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:6px;
+}
+.flat .fmid{display:flex;flex-direction:column;gap:5px;min-height:0;overflow:hidden}
+.flat .fname{
+  font-size:11px;line-height:1.35;color:var(--ink);
+  word-break:break-all;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+}
+.flat .fdate{font-size:10px;color:var(--muted)}
+.strip{display:flex;gap:6px;justify-content:center;flex:none}
+.hole{width:5px;height:5px;background:rgba(23,23,33,.16)}
+
+/* ---------- timeline rail ---------- */
+#rail{
+  position:absolute;top:12px;bottom:12px;right:26px;
+  width:58px;z-index:4;
+  cursor:pointer;touch-action:none;user-select:none;
+}
+.rtick{
+  position:absolute;right:6px;
+  width:10px;height:1px;
+  background:rgba(80,97,122,.45);
+  pointer-events:none;
+}
+.ryear{
+  position:absolute;right:22px;
+  font-size:10px;font-weight:600;color:var(--ink);
+  letter-spacing:.02em;
+  transform:translateY(-50%);
+  pointer-events:none;
+}
+#railMarker{
+  position:absolute;top:0;right:2px;
+  width:18px;height:5px;
+  background:var(--lime);
+  border:1px solid rgba(23,23,33,.35);
+  pointer-events:none;
+  will-change:transform;
+}
+#railFloat{
+  position:fixed;z-index:15;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  box-shadow:var(--shadow);
+  padding:4px 10px;
+  font-size:11px;color:var(--ink);
+  pointer-events:none;white-space:nowrap;
+}
+
+/* ---------- fullscreen viewer ---------- */
+#viewer{
+  position:fixed;inset:0;z-index:20;
+  background:var(--dark);
+  display:flex;flex-direction:column;
+}
+#stage{position:relative;flex:1;min-height:0;overflow:hidden}
+#stage.zoomed{cursor:grab}
+#stage.panning{cursor:grabbing}
+#zoomwrap{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  will-change:transform;
+}
+#zoomwrap img,#zoomwrap video{
+  max-width:calc(100% - 32px);
+  max-height:calc(100% - 32px);
+}
+#zoomwrap video{outline:none}
+.vcard{
+  background:var(--card);
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  padding:26px 30px;
+  max-width:360px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.vcard .vn{font-size:14px;font-weight:600;word-break:break-all;color:var(--ink)}
+.vcard .vm{font-size:12px;color:var(--muted)}
+.vbtn{
+  position:absolute;z-index:2;
+  width:40px;height:40px;
+  border-radius:8px;border:0;
+  background:rgba(244,242,239,.08);
+  color:#f4f2ef;
+  display:flex;align-items:center;justify-content:center;
+}
+.vbtn:hover{background:rgba(244,242,239,.16)}
+#vClose{top:14px;right:14px}
+#vPrev{left:14px;top:50%;margin-top:-20px}
+#vNext{right:14px;top:50%;margin-top:-20px}
+#vbar{
+  flex:none;height:46px;
+  display:flex;align-items:center;gap:18px;
+  padding:0 18px;
+  border-top:1px solid rgba(244,242,239,.08);
+  color:#f4f2ef;
+}
+#vName{
+  font-size:12px;max-width:50%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.vmuted{font-size:11px;color:rgba(244,242,239,.55)}
+#vPos{margin-left:auto}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="htitle">
+      <div class="micro">Library</div>
+      <h1>Memories</h1>
+    </div>
+    <div id="countline"></div>
+    <div class="hspace">
+      <button id="sortBtn" class="btn" hidden>Oldest first</button>
+      <button id="reBtn" class="btn" hidden>Choose another folder</button>
+    </div>
+  </header>
+
+  <div id="main">
+    <div id="grid" tabindex="-1">
+      <div id="spacer"></div>
+    </div>
+
+    <div id="rail" hidden>
+      <div id="railTicks"></div>
+      <div id="railMarker"></div>
+    </div>
+
+    <div id="landing">
+      <div class="lcard">
+        <div class="micro">Local library</div>
+        <h2>Browse your memories</h2>
+        <p>Point this page at an exported photo folder. Everything runs in your
+        browser and nothing leaves this machine. Dates come from file
+        timestamps, which the export restored to the original capture time.</p>
+        <button id="pickBtn" class="btn btn-lime">Choose your memories folder</button>
+        <p class="hint">Or drop a folder anywhere on this page.</p>
+        <div id="landingMsg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="railFloat" hidden></div>
+
+<div id="viewer" hidden>
+  <div id="stage">
+    <div id="zoomwrap"></div>
+  </div>
+  <button id="vClose" class="vbtn" aria-label="Close viewer">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <button id="vPrev" class="vbtn" aria-label="Previous item">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+  </button>
+  <button id="vNext" class="vbtn" aria-label="Next item">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <div id="vbar">
+    <span id="vName"></span>
+    <span id="vDate" class="vmuted"></span>
+    <span id="vPos" class="vmuted"></span>
+  </div>
+</div>
+
+<input id="fileInput" type="file" webkitdirectory multiple>
+
+<script>
+'use strict';
+
+/* ---------- constants ---------- */
+var IMG_EXT = {jpg:1, jpeg:1, png:1, gif:1, webp:1, bmp:1};
+var VID_EXT = {mp4:1, mov:1};
+var OPQ_EXT = {heic:1};
+var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var MON_FULL = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+var GAP = 6;          /* px between tiles */
+var PAD_L = 24;       /* grid left padding */
+var PAD_R = 112;      /* grid right padding, clears the rail */
+var HEAD_H = 46;      /* section header height */
+var SECT_GAP = 26;    /* space after each section */
+var TOP_PAD = 8;
+var BOT_PAD = 90;
+var BUFFER = 800;     /* px of off-viewport tiles kept mounted */
+var RAIL_PAD = 14;    /* inner padding of the rail */
+
+/* ---------- elements ---------- */
+function $(id){ return document.getElementById(id); }
+var gridEl = $('grid'), spacerEl = $('spacer');
+var railEl = $('rail'), railTicks = $('railTicks');
+var railMarker = $('railMarker'), railFloat = $('railFloat');
+var landingEl = $('landing'), landingMsg = $('landingMsg');
+var pickBtn = $('pickBtn'), reBtn = $('reBtn'), sortBtn = $('sortBtn');
+var fileInput = $('fileInput'), countline = $('countline');
+var viewerEl = $('viewer'), stageEl = $('stage'), zoomwrap = $('zoomwrap');
+var vName = $('vName'), vDate = $('vDate'), vPos = $('vPos');
+var vClose = $('vClose'), vPrev = $('vPrev'), vNext = $('vNext');
+
+/* ---------- state ---------- */
+var items = [];       /* ascending by date */
+var display = [];     /* current display order */
+var sortDesc = false;
+var sections = [];    /* {start,count,year,month,y,railY} */
+var posX = [], posY = [];
+var tile = 0;
+var mounted = new Map();  /* display index -> {el,url} */
+var railRH = 0;
+
+var vOpen = false, vIdx = 0, curKind = 'image', curVideo = null;
+var vScale = 1, vTx = 0, vTy = 0;
+var vCache = new Map();   /* display index -> {url,img} */
+
+/* ---------- helpers ---------- */
+function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+function p2(n){ return n < 10 ? '0' + n : '' + n; }
+function fmtDate(d){
+  return d.getFullYear() + '-' + p2(d.getMonth()+1) + '-' + p2(d.getDate());
+}
+function fmtDateTime(d){
+  return fmtDate(d) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
+}
+function fmtSize(b){
+  if (b >= 1048576) return (b/1048576).toFixed(1) + ' MB';
+  if (b >= 1024) return Math.round(b/1024) + ' KB';
+  return b + ' B';
+}
+function lowerY(v){
+  var lo = 0, hi = display.length;
+  while (lo < hi){ var m = (lo + hi) >> 1; if (posY[m] < v) lo = m + 1; else hi = m; }
+  return lo;
+}
+function sectionOf(idx){
+  var lo = 0, hi = sections.length - 1;
+  while (lo < hi){
+    var m = (lo + hi + 1) >> 1;
+    if (sections[m].start <= idx) lo = m; else hi = m - 1;
+  }
+  return sections[lo];
+}
+
+/* ---------- ingestion ---------- */
+function classify(name){
+  var dot = name.lastIndexOf('.');
+  if (dot < 0) return null;
+  var ext = name.slice(dot + 1).toLowerCase();
+  if (IMG_EXT[ext]) return {ext: ext, kind: 'image'};
+  if (VID_EXT[ext]) return {ext: ext, kind: 'video'};
+  if (OPQ_EXT[ext]) return {ext: ext, kind: 'opaque'};
+  return null;
+}
+
+function ingest(fileList){
+  var arr = [];
+  for (var i = 0; i < fileList.length; i++){
+    var f = fileList[i];
+    var c = classify(f.name);
+    if (!c) continue;
+    arr.push({
+      file: f, name: f.name, ext: c.ext, kind: c.kind,
+      ms: f.lastModified, date: new Date(f.lastModified), broken: false
+    });
+  }
+  if (!arr.length){
+    if (!items.length) landingMsg.textContent = 'No media files found in that folder.';
+    return;
+  }
+  arr.sort(function(a, b){
+    return a.ms - b.ms || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+  });
+  closeViewer();
+  unmountAll();
+  items = arr;
+  sortDesc = false;
+  sortBtn.textContent = 'Oldest first';
+  var y0 = items[0].date.getFullYear();
+  var y1 = items[items.length - 1].date.getFullYear();
+  countline.textContent = items.length + ' items, ' + (y0 === y1 ? y0 : y0 + '-' + y1);
+  landingEl.hidden = true;
+  landingMsg.textContent = '';
+  sortBtn.hidden = false;
+  reBtn.hidden = false;
+  railEl.hidden = false;
+  rebuild();
+}
+
+function rebuild(){
+  display = sortDesc ? items.slice().reverse() : items.slice();
+  unmountAll();
+  layout();
+  buildRail();
+  gridEl.scrollTop = 0;
+  render();
+  updateMarker();
+}
+
+/* ---------- layout ---------- */
+function layout(){
+  var n = display.length;
+  var w = gridEl.clientWidth - PAD_L - PAD_R;
+  var cols = Math.max(2, Math.floor((w + GAP) / (160 + GAP)));
+  tile = (w - (cols - 1) * GAP) / cols;
+  sections = [];
+  posX = new Array(n);
+  posY = new Array(n);
+
+  var cur = null;
+  for (var i = 0; i < n; i++){
+    var d = display[i].date;
+    var key = d.getFullYear() * 12 + d.getMonth();
+    if (!cur || cur.key !== key){
+      cur = {key: key, start: i, count: 0, year: d.getFullYear(), month: d.getMonth()};
+      sections.push(cur);
+    }
+    cur.count++;
+  }
+
+  var y = TOP_PAD;
+  for (var s = 0; s < sections.length; s++){
+    var sec = sections[s];
+    sec.y = y;
+    y += HEAD_H;
+    var rows = Math.ceil(sec.count / cols);
+    for (var j = 0; j < sec.count; j++){
+      var k = sec.start + j;
+      posX[k] = PAD_L + (j % cols) * (tile + GAP);
+      posY[k] = y + Math.floor(j / cols) * (tile + GAP);
+    }
+    y += rows * (tile + GAP) - GAP + SECT_GAP;
+  }
+  spacerEl.style.height = (y + BOT_PAD) + 'px';
+  renderHeaders();
+}
+
+function renderHeaders(){
+  var old = spacerEl.querySelectorAll('.shead');
+  for (var i = 0; i < old.length; i++) old[i].remove();
+  var frag = document.createDocumentFragment();
+  for (var s = 0; s < sections.length; s++){
+    var sec = sections[s];
+    var el = document.createElement('div');
+    el.className = 'shead';
+    el.style.transform = 'translate(' + PAD_L + 'px,' + sec.y + 'px)';
+    el.innerHTML =
+      '<span class="sm">' + MON_FULL[sec.month] + '</span>' +
+      '<span class="sy">' + sec.year + '</span>' +
+      '<span class="sc">' + sec.count + '</span>';
+    frag.appendChild(el);
+  }
+  spacerEl.appendChild(frag);
+}
+
+/* ---------- virtualized rendering ---------- */
+function render(){
+  var n = display.length;
+  if (!n) return;
+  var st = gridEl.scrollTop, vh = gridEl.clientHeight;
+  var minY = st - BUFFER, maxY = st + vh + BUFFER;
+  var start = lowerY(minY - tile);
+  var keep = new Set();
+  for (var i = start; i < n && posY[i] <= maxY; i++){
+    keep.add(i);
+    if (!mounted.has(i)) mountTile(i);
+  }
+  mounted.forEach(function(m, idx){
+    if (!keep.has(idx)){
+      if (m.url) URL.revokeObjectURL(m.url);
+      m.el.remove();
+      mounted.delete(idx);
+    }
+  });
+}
+
+function makeStrip(){
+  var s = document.createElement('div');
+  s.className = 'strip';
+  for (var i = 0; i < 5; i++){
+    var h = document.createElement('span');
+    h.className = 'hole';
+    s.appendChild(h);
+  }
+  return s;
+}
+
+function neutralInto(el, it){
+  el.classList.add('flat');
+  el.innerHTML = '';
+  if (it.kind === 'video') el.appendChild(makeStrip());
+  var mid = document.createElement('div');
+  mid.className = 'fmid';
+  var lab = document.createElement('div');
+  lab.className = 'micro';
+  lab.textContent = it.ext.toUpperCase();
+  var nm = document.createElement('div');
+  nm.className = 'fname';
+  nm.textContent = it.name;
+  mid.appendChild(lab);
+  mid.appendChild(nm);
+  el.appendChild(mid);
+  var dt = document.createElement('div');
+  dt.className = 'fdate';
+  dt.textContent = fmtDate(it.date);
+  el.appendChild(dt);
+  if (it.kind === 'video') el.appendChild(makeStrip());
+}
+
+function mountTile(i){
+  var it = display[i];
+  var el = document.createElement('div');
+  el.className = 'tile';
+  el.style.width = tile + 'px';
+  el.style.height = tile + 'px';
+  el.style.transform = 'translate(' + posX[i] + 'px,' + posY[i] + 'px)';
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', it.name);
+  var url = null;
+  if (it.kind === 'image' && !it.broken){
+    url = URL.createObjectURL(it.file);
+    var img = new Image();
+    img.decoding = 'async';
+    img.draggable = false;
+    img.alt = '';
+    img.onerror = function(){
+      it.broken = true;
+      var m = mounted.get(i);
+      if (m && m.el === el){
+        if (m.url){ URL.revokeObjectURL(m.url); m.url = null; }
+        neutralInto(el, it);
+      }
+    };
+    img.src = url;
+    el.appendChild(img);
+  } else {
+    neutralInto(el, it);
+  }
+  el.addEventListener('click', function(){ openViewer(i); });
+  el.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openViewer(i); }
+  });
+  spacerEl.appendChild(el);
+  mounted.set(i, {el: el, url: url});
+}
+
+function unmountAll(){
+  mounted.forEach(function(m){
+    if (m.url) URL.revokeObjectURL(m.url);
+    m.el.remove();
+  });
+  mounted.clear();
+}
+
+/* ---------- timeline rail ---------- */
+function buildRail(){
+  railTicks.innerHTML = '';
+  var n = display.length;
+  if (!n) return;
+  railRH = railEl.clientHeight - RAIL_PAD * 2;
+  var cum = 0, s, sec;
+  for (s = 0; s < sections.length; s++){
+    sections[s].railY = RAIL_PAD + (cum / n) * railRH;
+    cum += sections[s].count;
+  }
+  var endY = RAIL_PAD + railRH;
+  var lastTick = -99;
+  var frag = document.createDocumentFragment();
+  for (s = 0; s < sections.length; s++){
+    sec = sections[s];
+    if (sec.railY - lastTick >= 4){
+      var t = document.createElement('div');
+      t.className = 'rtick';
+      t.style.top = sec.railY.toFixed(1) + 'px';
+      frag.appendChild(t);
+      lastTick = sec.railY;
+    }
+  }
+  var a = 0;
+  while (a < sections.length){
+    var b = a;
+    while (b < sections.length && sections[b].year === sections[a].year) b++;
+    var y0 = sections[a].railY;
+    var y1 = b < sections.length ? sections[b].railY : endY;
+    if (y1 - y0 >= 16){
+      var lab = document.createElement('div');
+      lab.className = 'ryear';
+      lab.textContent = sections[a].year;
+      lab.style.top = ((y0 + y1) / 2).toFixed(1) + 'px';
+      frag.appendChild(lab);
+    }
+    a = b;
+  }
+  railTicks.appendChild(frag);
+  updateMarker();
+}
+
+function updateMarker(){
+  var n = display.length;
+  if (!n) return;
+  var idx = Math.min(n - 1, lowerY(gridEl.scrollTop - tile));
+  railMarker.style.transform =
+    'translateY(' + (RAIL_PAD + (idx / n) * railRH).toFixed(1) + 'px)';
+}
+
+var railDrag = false;
+function railPoint(e){
+  var n = display.length;
+  if (!n) return;
+  var r = railEl.getBoundingClientRect();
+  var frac = clamp((e.clientY - r.top - RAIL_PAD) / railRH, 0, 0.9999);
+  var idx = Math.min(n - 1, Math.floor(frac * n));
+  gridEl.scrollTop = Math.max(0, posY[idx] - HEAD_H - TOP_PAD);
+  var sec = sectionOf(idx);
+  railFloat.textContent = sec.year + ' ' + MON[sec.month];
+  railFloat.hidden = false;
+  railFloat.style.right = (window.innerWidth - r.left + 12) + 'px';
+  railFloat.style.top = clamp(e.clientY - 13, r.top, r.bottom - 26) + 'px';
+  railMarker.style.transform =
+    'translateY(' + (RAIL_PAD + frac * railRH).toFixed(1) + 'px)';
+}
+railEl.addEventListener('pointerdown', function(e){
+  railDrag = true;
+  railEl.setPointerCapture(e.pointerId);
+  railPoint(e);
+});
+railEl.addEventListener('pointermove', function(e){ if (railDrag) railPoint(e); });
+function railEnd(){ railDrag = false; railFloat.hidden = true; }
+railEl.addEventListener('pointerup', railEnd);
+railEl.addEventListener('pointercancel', railEnd);
+
+/* ---------- fullscreen viewer ---------- */
+function getVUrl(i){
+  var e = vCache.get(i);
+  if (!e){ e = {url: URL.createObjectURL(display[i].file), img: null}; vCache.set(i, e); }
+  return e.url;
+}
+function evictCache(){
+  vCache.forEach(function(e, k){
+    if (Math.abs(k - vIdx) > 1){
+      URL.revokeObjectURL(e.url);
+      vCache.delete(k);
+    }
+  });
+}
+function preloadAdj(){
+  [vIdx - 1, vIdx + 1].forEach(function(j){
+    if (j < 0 || j >= display.length) return;
+    var it = display[j];
+    if (it.kind !== 'image' || it.broken) return;
+    var url = getVUrl(j);
+    var e = vCache.get(j);
+    if (!e.img){
+      var im = new Image();
+      im.decoding = 'async';
+      im.src = url;
+      e.img = im;
+    }
+  });
+}
+function stopMedia(){
+  if (curVideo){
+    curVideo.pause();
+    curVideo.removeAttribute('src');
+    curVideo = null;
+  }
+}
+function showCard(it){
+  zoomwrap.innerHTML = '';
+  var card = document.createElement('div');
+  card.className = 'vcard';
+  var lab = document.createElement('div');
+  lab.className = 'micro';
+  lab.textContent = it.ext.toUpperCase() + (it.broken ? ' - cannot decode' : '');
+  var nm = document.createElement('div');
+  nm.className = 'vn';
+  nm.textContent = it.name;
+  var meta = document.createElement('div');
+  meta.className = 'vm';
+  meta.textContent = fmtDateTime(it.date) + '  -  ' + fmtSize(it.file.size);
+  card.appendChild(lab);
+  card.appendChild(nm);
+  card.appendChild(meta);
+  zoomwrap.appendChild(card);
+  curKind = 'card';
+}
+function applyT(){
+  zoomwrap.style.transform =
+    'translate(' + vTx + 'px,' + vTy + 'px) scale(' + vScale + ')';
+}
+function resetZoom(){
+  vScale = 1; vTx = 0; vTy = 0;
+  applyT();
+  stageEl.classList.remove('zoomed');
+  stageEl.classList.remove('panning');
+}
+function showCurrent(){
+  resetZoom();
+  stopMedia();
+  zoomwrap.innerHTML = '';
+  var it = display[vIdx];
+  vName.textContent = it.name;
+  vDate.textContent = fmtDateTime(it.date);
+  vPos.textContent = (vIdx + 1) + ' of ' + display.length;
+  if (it.kind === 'video' && !it.broken){
+    var v = document.createElement('video');
+    v.controls = true;
+    v.autoplay = true;
+    v.preload = 'metadata';
+    v.muted = false;
+    v.onerror = function(){ it.broken = true; stopMedia(); showCard(it); };
+    v.src = getVUrl(vIdx);
+    zoomwrap.appendChild(v);
+    curVideo = v;
+    curKind = 'video';
+  } else if (it.kind === 'opaque' || it.broken){
+    showCard(it);
+  } else {
+    var img = new Image();
+    img.decoding = 'async';
+    img.draggable = false;
+    img.alt = it.name;
+    img.onerror = function(){ it.broken = true; showCard(it); };
+    img.src = getVUrl(vIdx);
+    zoomwrap.appendChild(img);
+    curKind = 'image';
+  }
+  evictCache();
+  preloadAdj();
+}
+function openViewer(i){
+  vOpen = true;
+  vIdx = i;
+  viewerEl.hidden = false;
+  showCurrent();
+  vClose.focus();
+}
+function closeViewer(){
+  if (!vOpen && viewerEl.hidden) return;
+  vOpen = false;
+  stopMedia();
+  vCache.forEach(function(e){ URL.revokeObjectURL(e.url); });
+  vCache.clear();
+  zoomwrap.innerHTML = '';
+  resetZoom();
+  viewerEl.hidden = true;
+}
+function nav(d){
+  var j = vIdx + d;
+  if (j < 0 || j >= display.length) return;
+  vIdx = j;
+  showCurrent();
+}
+vClose.addEventListener('click', closeViewer);
+vPrev.addEventListener('click', function(){ nav(-1); });
+vNext.addEventListener('click', function(){ nav(1); });
+
+/* zoom and pan */
+viewerEl.addEventListener('wheel', function(e){
+  e.preventDefault();
+  if (curKind !== 'image') return;
+  var r = stageEl.getBoundingClientRect();
+  var cx = e.clientX - r.left - r.width / 2;
+  var cy = e.clientY - r.top - r.height / 2;
+  var ns = clamp(vScale * Math.exp(-e.deltaY * 0.0016), 1, 8);
+  vTx = cx - (cx - vTx) * (ns / vScale);
+  vTy = cy - (cy - vTy) * (ns / vScale);
+  vScale = ns;
+  if (vScale === 1){ vTx = 0; vTy = 0; }
+  stageEl.classList.toggle('zoomed', vScale > 1);
+  applyT();
+}, {passive: false});
+
+stageEl.addEventListener('dblclick', function(e){
+  if (curKind !== 'image') return;
+  if (vScale > 1){ resetZoom(); return; }
+  var r = stageEl.getBoundingClientRect();
+  var cx = e.clientX - r.left - r.width / 2;
+  var cy = e.clientY - r.top - r.height / 2;
+  var ns = 2;
+  vTx = cx - (cx - vTx) * (ns / vScale);
+  vTy = cy - (cy - vTy) * (ns / vScale);
+  vScale = ns;
+  stageEl.classList.add('zoomed');
+  applyT();
+});
+
+var panning = false, panX = 0, panY = 0;
+stageEl.addEventListener('pointerdown', function(e){
+  if (curKind !== 'image' || vScale <= 1) return;
+  panning = true;
+  panX = e.clientX; panY = e.clientY;
+  stageEl.setPointerCapture(e.pointerId);
+  stageEl.classList.add('panning');
+});
+stageEl.addEventListener('pointermove', function(e){
+  if (!panning) return;
+  vTx += e.clientX - panX;
+  vTy += e.clientY - panY;
+  panX = e.clientX; panY = e.clientY;
+  applyT();
+});
+function panEnd(){ panning = false; stageEl.classList.remove('panning'); }
+stageEl.addEventListener('pointerup', panEnd);
+stageEl.addEventListener('pointercancel', panEnd);
+
+window.addEventListener('keydown', function(e){
+  if (!vOpen) return;
+  if (e.key === 'Escape'){ e.preventDefault(); closeViewer(); }
+  else if (e.key === 'ArrowLeft'){ e.preventDefault(); nav(-1); }
+  else if (e.key === 'ArrowRight'){ e.preventDefault(); nav(1); }
+});
+
+/* ---------- wiring ---------- */
+pickBtn.addEventListener('click', function(){ fileInput.click(); });
+reBtn.addEventListener('click', function(){ fileInput.click(); });
+fileInput.addEventListener('change', function(){
+  var files = Array.prototype.slice.call(fileInput.files);
+  fileInput.value = '';
+  if (files.length) ingest(files);
+});
+sortBtn.addEventListener('click', function(){
+  sortDesc = !sortDesc;
+  sortBtn.textContent = sortDesc ? 'Newest first' : 'Oldest first';
+  rebuild();
+});
+
+var rafPending = false;
+gridEl.addEventListener('scroll', function(){
+  if (rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(function(){
+    rafPending = false;
+    render();
+    updateMarker();
+  });
+}, {passive: true});
+
+var resizeTimer = null;
+window.addEventListener('resize', function(){
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function(){
+    if (!items.length) return;
+    unmountAll();
+    layout();
+    buildRail();
+    render();
+    updateMarker();
+  }, 150);
+});
+
+/* folder drop support */
+function walkEntry(entry, out){
+  return new Promise(function(resolve){
+    if (entry.isFile){
+      entry.file(function(f){ out.push(f); resolve(); }, function(){ resolve(); });
+    } else if (entry.isDirectory){
+      var reader = entry.createReader();
+      var pump = function(){
+        reader.readEntries(function(batch){
+          if (!batch.length){ resolve(); return; }
+          var chain = Promise.resolve();
+          batch.forEach(function(en){
+            chain = chain.then(function(){ return walkEntry(en, out); });
+          });
+          chain.then(pump);
+        }, function(){ resolve(); });
+      };
+      pump();
+    } else {
+      resolve();
+    }
+  });
+}
+window.addEventListener('dragover', function(e){ e.preventDefault(); });
+window.addEventListener('drop', function(e){
+  e.preventDefault();
+  var out = [];
+  var entries = [];
+  var its = e.dataTransfer && e.dataTransfer.items ? e.dataTransfer.items : [];
+  for (var i = 0; i < its.length; i++){
+    if (its[i].webkitGetAsEntry){
+      var en = its[i].webkitGetAsEntry();
+      if (en) entries.push(en);
+    }
+  }
+  if (entries.length){
+    landingMsg.textContent = 'Scanning folder...';
+    landingMsg.style.color = 'var(--muted)';
+    var chain = Promise.resolve();
+    entries.forEach(function(en){
+      chain = chain.then(function(){ return walkEntry(en, out); });
+    });
+    chain.then(function(){
+      landingMsg.style.color = '';
+      landingMsg.textContent = '';
+      ingest(out);
+    });
+  } else if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){
+    ingest(Array.prototype.slice.call(e.dataTransfer.files));
+  }
+});
+</script>
+</body>
+</html>

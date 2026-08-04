@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Open an export - Muletto</title>
+  <meta name="description" content="Open your data export in your browser. Muletto reads it on your device - no upload, no account - and shows you what is inside." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="og.png" />
+  <link rel="canonical" href="https://muletto.app/app.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Open an export - Muletto" />
+  <meta property="og:description" content="Open your data export in your browser. Muletto reads it on your device - no upload, no account - and shows you what is inside." />
+  <meta property="og:url" content="https://muletto.app/app.html" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="styles.css?v=1638b7bc" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="index.html">muletto</a>
+        <div class="nav-links">
+          <a href="guides.html">Guides</a>
+          <a href="pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary active" href="app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="page-head wrap">
+      <h1>Open your export</h1>
+      <p>Drop the files your services gave you. Muletto reads them in your browser and shows you what is inside. Open several exports together and they are merged into one library, with duplicates found across all of them. Your export stays on your device and is never uploaded.</p>
+    </section>
+
+    <section class="wrap" style="padding-top:24px; max-width:820px">
+      <div id="resume" hidden></div>
+
+      <!-- The strongest thing this product can say about itself is that you can
+           check the claim yourself, in about four seconds, without trusting a
+           word of it. -->
+      <aside class="offline-check">
+        <strong>TURN OFF YOUR INTERNET</strong>
+        <p>Then open your export. Everything below still works, because none of it
+          needs a connection. That is the proof, and it costs you one click to see
+          it for yourself.</p>
+      </aside>
+
+      <div id="drop" class="drop">
+        <p><strong>Drop your export files here</strong><br />or click to choose them. Open several at once to merge them
+          into one library. A Muletto work file goes here too, to bring back what was worked out last time.</p>
+        <input id="file" type="file" accept=".zip,.muletto,.json,.gz" multiple hidden />
+      </div>
+      <div id="import-result" class="import-result" hidden></div>
+
+      <div class="trust">
+        <div class="trust-try">
+          <h2>Not sure? Do not use your own data yet.</h2>
+          <p>Open four sample exports instead - real archives, invented people. See what the app
+          is actually like to use - the merged library, the duplicates caught across services,
+          the dates repaired - before you go to the trouble of requesting your own.</p>
+          <button class="btn secondary" id="try-samples">Open the sample exports</button>
+        </div>
+
+        <div class="trust-check">
+          <h3>Then check the claim yourself</h3>
+          <p>Do not take our word for any of it. Here are three ways to check, in rising order
+          of effort.</p>
+          <ol>
+            <li><strong>Turn off your wifi.</strong> Then open an export and use everything -
+            search it, compare photos, write the tidied copy to your disk. It all still works,
+            because none of it ever needed the network. A page that was uploading your files
+            could not do that.</li>
+            <li><strong>Watch the network.</strong> Press F12, open the Network tab, then open
+            your export. You will see this page load and then nothing further. No request
+            carries your archive because no request is made.</li>
+            <li><strong>Read the rule the browser enforces.</strong> This page is served with a
+            Content-Security-Policy that permits connections to nothing but itself and, if you
+            switch it on, an AI service you choose. It is not a promise in our words - your
+            browser blocks anything else, and it applies to the code actually running rather
+            than to a description of it.</li>
+          </ol>
+          <p class="fine">There is also nothing here to breach: no account, no email address,
+          no password, no cookies, no analytics, and no server that receives files. The one
+          thing that is stored is your own progress, in your own browser, so a large export
+          does not have to be read again from scratch - and one button clears it.
+          <a href="privacy.html">The privacy page spells that out</a>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="guides.html">Guides</a>
+        <a href="app.html">Open export</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="notify.js?v=9f0ee69c"></script>
+  <script src="tips.js?v=0bdfdea4"></script>
+  <script src="jobs.js?v=3f996b9f"></script>
+  <script src="store.js?v=6c88c204"></script>
+  <script src="derived.js?v=b52d2219"></script>
+  <script src="credits.js?v=54539768"></script>
+  <script src="donate.js?v=e8f71043"></script>
+  <script src="plan.js?v=559498fc"></script>
+  <script src="planui.js?v=d3e286bf"></script>
+  <script src="caption.js?v=5d10cb7e"></script>
+  <script src="captionui.js?v=fc9b3409"></script>
+  <script src="zipcrypt.js?v=8e2f0449"></script>
+  <script src="zip.js?v=6846a39d"></script>
+  <script src="zipout.js?v=5c9c3222"></script>
+  <script src="exif.js?v=7b45a4ab"></script>
+  <script src="heif.js?v=d0ffffd5"></script>
+  <script src="video.js?v=a66813af"></script>
+  <script src="mbox.js?v=a465e9f3"></script>
+  <script src="diagnose.js?v=33645a5d"></script>
+  <script src="mojibake.js?v=38849a41"></script>
+  <script src="parsers.js?v=466b4cb8"></script>
+  <script src="catalog.js?v=d7b44ec6"></script>
+  <script src="insights.js?v=4eb7c92b"></script>
+  <script src="basemap.js?v=cbb6dfca"></script>
+  <script src="rail.js?v=b4bc5944"></script>
+  <script src="views.js?v=9f5101e0"></script>
+  <script src="export.js?v=68df0ef2"></script>
+  <script src="explorer.js?v=b9c16d1f"></script>
+  <script src="app.js?v=93c59e8a"></script>
+  <script src="swreg.js?v=266bec3b"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+ "slug": "dest-drive",
+ "provider": "External drive",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "drive",
+ "difficulty": "easy",
+ "wait_time": "an hour to copy, then a check once a year",
+ "format": "plain folders on a disk you own",
+ "steps": [
+  {
+   "title": "Buy more room than you need",
+   "detail": "Take the size of the folder Muletto wrote and buy at least double. Archives grow, and a drive kept near full is slower and more awkward to verify. A plain external hard disk is fine and cheaper per terabyte than an SSD; an SSD is worth it if the drive gets carried around, since it has nothing inside to jolt."
+  },
+  {
+   "title": "Format it for the machines you actually use",
+   "detail": "If the drive only ever meets Windows, use NTFS. Only Macs, use APFS. Both, use exFAT - it is the one format Windows and macOS can each read and write without extra software, and it handles large files and large volumes. macOS can read NTFS but cannot write to it without third-party software, which is the trap behind most cross-platform drive frustration."
+  },
+  {
+   "title": "Copy the folders across and let it finish",
+   "detail": "Drag the folders over, or export from Muletto straight to the drive. Nothing special is needed: they are ordinary folders of ordinary files, readable by any computer without this site or any application. Wait for the copy to complete and eject the drive properly - pulling a drive mid-write is a good way to lose the directory."
+  },
+  {
+   "title": "Verify by count and size, not by eye",
+   "detail": "Compare the number of files and the total size on the drive against the source. A copy that silently dropped files usually looks fine in a folder listing and is off by a few thousand in the count. Spot-check by opening a handful of photographs from different years."
+  },
+  {
+   "title": "Make the second copy now, not later",
+   "detail": "One drive is one point of failure, and this is the moment it is easiest to fix. Copy to a second drive, or to a NAS, or to a paid remote store. Doing it now costs an hour; doing it after the first drive fails costs everything on it."
+  },
+  {
+   "title": "Store the copies apart",
+   "detail": "Two drives in the same drawer are one flood, one fire and one burglary away from no drives. Keep the second somewhere else entirely - another building, a relative's house, a locker at work."
+  },
+  {
+   "title": "Test it once a year, and put it in the calendar",
+   "detail": "Plug each drive in, open several photographs from different years, and check the count still matches. Drives fail sitting in a drawer as readily as in use, and the failure is silent. An untested backup is a hope, not a backup. Put a reminder in the calendar now."
+  }
+ ],
+ "notes": [
+  "Bits do rot. Ordinary filesystems cannot tell you a file has quietly degraded, which is why the yearly check and the second copy matter more than the choice of format.",
+  "If you keep archives on Linux and want protection against silent corruption, ZFS and Btrfs checksum everything and can repair damage. Neither works on Windows or macOS without effort, so it is a choice for a NAS rather than a drive you carry."
+ ],
+ "explain": {
+  "title": "Three copies, two kinds of place, one elsewhere",
+  "body": "A drive in a drawer is one copy. If the house floods, that is no copies. Keep three: the working one, a second on different hardware, and a third somewhere else entirely - another building, a relative's house, or a paid remote store. Different hardware matters because two drives bought together tend to fail together, and elsewhere matters because fire and theft take whole rooms."
+ }
+}

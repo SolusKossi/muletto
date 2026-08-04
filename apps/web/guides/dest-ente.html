@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ente (end-to-end encrypted): where to keep your data | Muletto</title>
+  <meta name="description" content="Step-by-step guide to moving your cleaned photo and data archive to Ente (end-to-end encrypted). 6 steps, written for people who want to keep their own copy." />
+  <link rel="canonical" href="https://muletto.app/guides/dest-ente.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Ente (end-to-end encrypted): where to keep your data | Muletto" />
+  <meta property="og:description" content="Step-by-step guide to moving your cleaned photo and data archive to Ente (end-to-end encrypted). 6 steps, written for people who want to keep their own copy." />
+  <meta property="og:url" content="https://muletto.app/guides/dest-ente.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=1638b7bc" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to move your data to Ente (end-to-end encrypted)","description":"Step-by-step guide to moving your cleaned photo and data archive to Ente (end-to-end encrypted). 6 steps, written for people who want to keep their own copy.","step":[{"@type":"HowToStep","position":1,"name":"Decide if the trade suits you","text":"Ente is a hosted service you pay for, like iCloud or Google Photos, with the difference that it cannot read what you store. You get the phone app, sharing and search; you give up the ability to recover anything if you lose your recovery key, because nobody at Ente can reset it for you. It is also open source and can be self-hosted if you would rather run it yourself."},{"@type":"HowToStep","position":2,"name":"Install the desktop app","text":"Get the desktop app rather than using the browser. It is the supported route for importing from a local disk, it handles large sets, and it is what does the encryption. The CLI is worth knowing about but is built for exporting your library back out, not for bulk import."},{"@type":"HowToStep","position":3,"name":"Write down the recovery key","text":"Do this before uploading anything. End-to-end encryption means the key is the only way in - lose it and the photographs are unrecoverable by anyone, including Ente. Store it somewhere that survives the loss of your computer: a password manager, or paper somewhere safe."},{"@type":"HowToStep","position":4,"name":"Import the folder Muletto wrote","text":"In the desktop app choose to add files from a folder and point it at your organised library. Ente reads the date and location out of each file, so the timeline lands correctly - which is exactly what repairing metadata first is for. The folder structure can become albums, so the year and month folders keep meaning something."},{"@type":"HowToStep","position":5,"name":"Let it finish, and watch the storage","text":"Encrypting and uploading a large library is slower than a plain copy, because your machine is doing cryptography on every file. Leave it running on power. Keep an eye on your plan's storage as it goes, since a full repaired library is usually about the size of the archive you downloaded."},{"@type":"HowToStep","position":6,"name":"Keep a copy that does not depend on them","text":"Encrypted and hosted is still hosted. Ente makes leaving easy - the CLI exists specifically so you can take continuous exports with no dependency on them - so set that up, or keep the folder Muletto wrote on a drive of your own."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Ente (end-to-end encrypted)","item":"https://muletto.app/guides/dest-ente.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span>/</span>
+        <a href="../guides.html">Guides</a>
+        <span>/</span>
+        <span aria-current="page">Ente (end-to-end encrypted)</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Move your data to Ente (end-to-end encrypted)</h1>
+        <div class="art-meta">
+          <span class="badge easy">easy</span>
+          <span class="muted">Takes an upload, on your own machine</span>
+        </div>
+        <p class="art-intro">Once you have your data out of the big services and cleaned up, it needs to live somewhere you control. This guide covers moving your archive to Ente (end-to-end encrypted).</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          
+          <aside class="explain"><h2>Why the import happens on your computer</h2><p>Ente encrypts everything before it leaves your machine, and its servers cannot decrypt any of it. That is the point of the service, and it has a practical consequence: there is no server-side importer, because a server that cannot read your photographs cannot sort them either. Every import runs in the desktop app, on your own computer, which does the encrypting as it goes. Expect it to take real time and real CPU on a large library.</p></aside>
+
+          <h2>Step by step</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Decide if the trade suits you</h3>
+              <p>Ente is a hosted service you pay for, like iCloud or Google Photos, with the difference that it cannot read what you store. You get the phone app, sharing and search; you give up the ability to recover anything if you lose your recovery key, because nobody at Ente can reset it for you. It is also open source and can be self-hosted if you would rather run it yourself.</p>
+              
+            </li>
+            <li>
+              <h3>Install the desktop app</h3>
+              <p>Get the desktop app rather than using the browser. It is the supported route for importing from a local disk, it handles large sets, and it is what does the encryption. The CLI is worth knowing about but is built for exporting your library back out, not for bulk import.</p>
+              
+            </li>
+            <li>
+              <h3>Write down the recovery key</h3>
+              <p>Do this before uploading anything. End-to-end encryption means the key is the only way in - lose it and the photographs are unrecoverable by anyone, including Ente. Store it somewhere that survives the loss of your computer: a password manager, or paper somewhere safe.</p>
+              
+            </li>
+            <li>
+              <h3>Import the folder Muletto wrote</h3>
+              <p>In the desktop app choose to add files from a folder and point it at your organised library. Ente reads the date and location out of each file, so the timeline lands correctly - which is exactly what repairing metadata first is for. The folder structure can become albums, so the year and month folders keep meaning something.</p>
+              
+            </li>
+            <li>
+              <h3>Let it finish, and watch the storage</h3>
+              <p>Encrypting and uploading a large library is slower than a plain copy, because your machine is doing cryptography on every file. Leave it running on power. Keep an eye on your plan&#39;s storage as it goes, since a full repaired library is usually about the size of the archive you downloaded.</p>
+              
+            </li>
+            <li>
+              <h3>Keep a copy that does not depend on them</h3>
+              <p>Encrypted and hosted is still hosted. Ente makes leaving easy - the CLI exists specifically so you can take continuous exports with no dependency on them - so set that up, or keep the folder Muletto wrote on a drive of your own.</p>
+              
+            </li>
+          </ol>
+
+          <h2>Worth knowing</h2>
+          <div class="note">No server-side migration tools exist for Ente, and that is a consequence of the encryption rather than a gap. Anything that reads your library has to run on your own machine.</div>
+          <div class="note">The CLI pulls from Ente to local storage; changes to those local files do not sync back. Treat it as an export tool, which is what it is for.</div>
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>At a glance</h4>
+            <dl>
+              <dt>Effort</dt><dd>easy</dd>
+              <dt>Time</dt><dd>an upload, on your own machine</dd>
+              <dt>Format</dt><dd>encrypted on your computer, then uploaded</dd>
+              
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Other destinations</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+              <li><a href="dest-immich.html"><span class="side-ic" data-icon="server"></span>Immich (self-hosted)</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Export guides</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+              <li><a href="samsung.html"><span class="side-ic" data-icon="samsung"></span>Samsung</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../app.js?v=93c59e8a"></script>
+</body>
+</html>

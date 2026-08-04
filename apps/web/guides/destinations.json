@@ -1,0 +1,86 @@
+{
+ "updated": "2026-07-27",
+ "note": "Where to put your data once you have it. Same guide format as the export guides.",
+ "destinations": [
+  {
+   "slug": "dest-nas-generic",
+   "provider": "Any NAS (network folder)",
+   "icon": "server",
+   "difficulty": "easy",
+   "wait_time": "minutes to set up",
+   "verified": false
+  },
+  {
+   "slug": "dest-synology",
+   "provider": "Synology",
+   "icon": "server",
+   "difficulty": "easy",
+   "wait_time": "minutes to set up",
+   "verified": false
+  },
+  {
+   "slug": "dest-qnap",
+   "provider": "QNAP",
+   "icon": "server",
+   "difficulty": "easy",
+   "wait_time": "minutes to set up",
+   "verified": false
+  },
+  {
+   "slug": "dest-drive",
+   "provider": "External drive",
+   "icon": "drive",
+   "difficulty": "easy",
+   "wait_time": "minutes",
+   "verified": false
+  },
+  {
+   "slug": "dest-immich",
+   "provider": "Immich (self-hosted)",
+   "icon": "server",
+   "difficulty": "medium",
+   "wait_time": "under an hour",
+   "verified": false
+  },
+  {
+   "slug": "dest-photoprism",
+   "provider": "PhotoPrism (self-hosted)",
+   "icon": "server",
+   "difficulty": "medium",
+   "wait_time": "an evening to set up",
+   "verified": false
+  },
+  {
+   "slug": "dest-nextcloud",
+   "provider": "Nextcloud (self-hosted)",
+   "icon": "server",
+   "difficulty": "medium",
+   "wait_time": "an evening to set up",
+   "verified": false
+  },
+  {
+   "slug": "dest-ente",
+   "provider": "Ente (end-to-end encrypted)",
+   "icon": "server",
+   "difficulty": "easy",
+   "wait_time": "an upload",
+   "verified": false
+  },
+  {
+   "slug": "dest-google-photos",
+   "provider": "Back into Google Photos",
+   "icon": "google",
+   "difficulty": "easy",
+   "wait_time": "hours for a large library",
+   "verified": false
+  },
+  {
+   "slug": "dest-icloud",
+   "provider": "Back into iCloud Photos",
+   "icon": "apple",
+   "difficulty": "medium",
+   "wait_time": "hours to days for a large library",
+   "verified": false
+  }
+ ]
+}

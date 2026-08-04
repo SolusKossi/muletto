@@ -1,0 +1,50 @@
+{
+ "slug": "dest-qnap",
+ "provider": "QNAP",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "server",
+ "difficulty": "easy",
+ "wait_time": "minutes to copy, hours to index",
+ "format": "a multimedia folder, indexed by QuMagie",
+ "request": {
+  "url": "https://www.qnap.com/en/support",
+  "label": "QNAP support"
+ },
+ "steps": [
+  {
+   "title": "Copy the library onto the NAS",
+   "detail": "Map the NAS as a network drive, then export from Muletto straight into it. The Multimedia folder is the obvious home if you have no strong preference; any shared folder works as long as you declare it in the next step."
+  },
+  {
+   "title": "Declare the folder as a content source",
+   "detail": "Open Multimedia Console, go to Content Management, and choose QuMagie. Click Edit under Content Sources, tick the folder you just wrote into, and apply. There is a second route through Control Panel, Applications, Multimedia Management, Media Folder, which adds folders to the media library directly - either is fine, and the first is the one worth remembering."
+  },
+  {
+   "title": "Let it index, and check the status rather than guessing",
+   "detail": "Open Multimedia Console and go to Indexing. The Index field says Indexing while it works and Completed when it is done. A large library takes a long time and the app looks half empty throughout, so read the status instead of refreshing QuMagie and assuming the worst."
+  },
+  {
+   "title": "Only re-index if you have to",
+   "detail": "There is a Re-index button under the same Indexing screen, and it is the standard answer when files stubbornly refuse to appear. Know what it costs first: it discards thumbnails, media file tags and QuMagie albums, and rebuilds from scratch. Your photographs are untouched, but any album you built inside QuMagie is not."
+  },
+  {
+   "title": "Check the dates landed",
+   "detail": "QuMagie sorts by the date inside each file, which is what Muletto repairs before you export. Without that step a Google or Apple archive arrives dated the day you copied it. Scroll back a few years in the timeline before deleting anything elsewhere."
+  },
+  {
+   "title": "Back the NAS up somewhere else",
+   "detail": "One NAS is one copy in one building on disks bought at the same time. RAID covers a disk dying, not fire, theft or a wrong deletion. Use Hybrid Backup Sync to an external drive or another location, and test a restore before you rely on it."
+  }
+ ],
+ "notes": [
+  "If QuMagie shows nothing at all, the first thing to check is whether the folder is a declared content source. It is a far more common cause than a failed copy.",
+  "Re-indexing deletes thumbnails, tags and QuMagie albums. The photographs themselves are never touched by it."
+ ],
+ "explain": {
+  "title": "A folder QNAP does not know about is a folder QuMagie cannot show",
+  "body": "On a QNAP, copying photographs onto the NAS is only half the job. QuMagie shows what the system has indexed, and the system only indexes folders that have been declared multimedia folders. Land your library somewhere undeclared and the files are safely on the disk and completely invisible in the app - which reads exactly like the transfer failed."
+ }
+}

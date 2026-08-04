@@ -1,0 +1,82 @@
+{
+ "slug": "google",
+ "provider": "Google",
+ "confirmed": {
+  "flow": {
+   "on": "2026-07-30",
+   "by": "Martin"
+  },
+  "import": null
+ },
+ "icon": "google",
+ "difficulty": "easy",
+ "wait_time": "minutes to a few days depending on size",
+ "delivery": "email-link",
+ "format": ".zip (recommended) or .tgz, split into chunks of up to 50 GB",
+ "data_types": [
+  "photos",
+  "videos",
+  "location",
+  "email",
+  "browsing",
+  "purchases"
+ ],
+ "request": {
+  "url": "https://takeout.google.com",
+  "label": "Google Takeout"
+ },
+ "steps": [
+  {
+   "title": "Open Google Takeout",
+   "detail": "Sign in with the Google account you want to export.",
+   "image": "google-1-select-data.png",
+   "alt": "Google Takeout, stage 1 'Select data to include', showing 61 of 61 products selected and a format button under each one.",
+   "caption": "Takeout opens with everything selected - 61 products. Deselect all first unless you genuinely want all of it."
+  },
+  {
+   "title": "Deselect all, then pick what you need",
+   "detail": "Takeout ticks everything by default. Click \"Deselect all\" and choose only what you want (e.g. Google Photos, Mail, YouTube)."
+  },
+  {
+   "title": "Choose .zip and a large chunk size",
+   "detail": "Pick .zip - it is the format everything can open, and the one Muletto reads. For size, choose the largest chunk offered: fewer, bigger files mean fewer downloads to babysit and fewer chances for one to fail. A 50 GB library at the 2 GB default arrives as around 25 separate zips. Files over 2 GB come back in the zip64 format, which Muletto reads and some desktop tools do not.",
+   "image": "google-2-filetype.png",
+   "alt": "Google Takeout stage 2, showing destination 'Send download link via email', frequency 'Export once', file type .zip and file size 50 GB.",
+   "caption": "Destination, frequency, file type and size are all on one screen. Google's own note here is worth reading: anything over 2 GB comes back as zip64, which some tools cannot open. Muletto can."
+  },
+  {
+   "title": "Choose a one-time export",
+   "detail": "\"Export once\" is right for most people. Then \"Create export\"."
+  },
+  {
+   "title": "Wait for the email",
+   "detail": "Small exports finish in minutes; large photo libraries can take a day or more. Google emails a download link.",
+   "image": "google-3-progress.png",
+   "alt": "Google Takeout export progress, reading 'Google is creating a copy of data from 61 products' and warning it can take hours or days.",
+   "caption": "Confirmed on the screen itself: hours or days. Asking for all 61 products is what makes it days."
+  },
+  {
+   "title": "Download all parts",
+   "detail": "Download every numbered part, and keep them together in one folder. The download links expire, so do not leave it a fortnight - if they lapse you have to request the whole export again and wait again. Do not unzip them: Muletto reads the archives directly, which is faster and avoids doubling the disk space you need."
+  },
+  {
+   "title": "Open all the parts at once",
+   "detail": "Drop every zip into Muletto together. It reads them as one export, so a photograph in part 3 finds its metadata in part 7, the duplicates Google created by exporting album copies alongside year folders are found and folded together, and the dates and locations go back into the files themselves."
+  }
+ ],
+ "notes": [
+  "A Takeout is usually larger than your library, because a photograph that is in an album and in its year folder is exported once for each. Those copies are byte-identical, so the duplicate pass finds them.",
+  "Google names the metadata files inconsistently - supplemental-metadata.json, truncated forms of it, and numbered variants - so a tool that matches only the tidy spelling misses some. Muletto matches all of them.",
+  "Do not unzip before opening. Muletto reads inside the archives, so unzipping only costs time and twice the disk space.",
+  "Photos and Drive are separate products in Takeout. If you want both, tick both - a Photos export contains no Drive files."
+ ],
+ "muletto_support": {
+  "importable": true,
+  "adapter": "google-takeout",
+  "status": "planned"
+ },
+ "explain": {
+  "title": "Open every part together, not one at a time",
+  "body": "Google splits a large export into numbered zips, and it does not keep a photograph and its metadata file in the same one. Open part 3 on its own and some of those photographs have no date and no place, because the JSON describing them is sitting in part 7. Hand Muletto all the parts at once and they are read as the single export they are. This is also why a Takeout looks bigger than your library: a photograph in an album and in its year folder is exported twice."
+ }
+}

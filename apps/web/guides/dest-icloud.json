@@ -1,0 +1,46 @@
+{
+ "slug": "dest-icloud",
+ "provider": "Back into iCloud Photos",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "apple",
+ "difficulty": "easy",
+ "wait_time": "minutes to import, longer for iCloud to sync",
+ "format": "imported into the Photos library",
+ "steps": [
+  {
+   "title": "Check the copy setting before you import anything",
+   "detail": "Open Photos, Settings, General, and look at Copy items to the Photos library. Ticked is what most people want: the library becomes self-contained, syncs to iCloud and backs up as one thing. Unticked is deliberate - it suits a library too big to duplicate, on the understanding that iCloud will not hold it."
+  },
+  {
+   "title": "Know what it will cost in iCloud",
+   "detail": "If the setting is ticked and iCloud Photos is on, everything you import uploads and counts against your iCloud storage. Check what you have free against the size of the folder Muletto wrote before starting, rather than discovering it partway through the upload."
+  },
+  {
+   "title": "Import the folder",
+   "detail": "In Photos choose File, Import, select the folder Muletto wrote, and import. Photos reads the date and location out of each file as it goes, so they land in the right place in the timeline rather than all under today."
+  },
+  {
+   "title": "Check the dates before deleting anything",
+   "detail": "This is the payoff for repairing metadata first. A Google or Apple archive imported without that step arrives dated the day of import and a decade of history collapses into one afternoon. Scroll back a few years in the library and confirm before you remove the source folder."
+  },
+  {
+   "title": "Let iCloud finish, and watch it finish",
+   "detail": "Uploading a large library takes far longer than importing it. Photos shows progress at the bottom of the Library view. Leave the Mac awake and on power until it says it is up to date - a laptop that sleeps halfway through simply stops, without telling you it has."
+  },
+  {
+   "title": "If you skipped the copy, consolidate later",
+   "detail": "Changed your mind about referenced files? Select them in Photos and choose File, Consolidate. That copies them into the library, at which point iCloud takes them and a library backup covers them."
+  }
+ ],
+ "notes": [
+  "Referenced files are not backed up with the photo library. If you use them, the original folder needs its own backup, and losing it loses the photographs.",
+  "iCloud storage is shared with backups, Drive and Mail, so the space Photos can use is whatever the rest has left."
+ ],
+ "explain": {
+  "title": "One checkbox decides whether iCloud ever sees these photographs",
+  "body": "In Photos, Settings, General there is a checkbox called Copy items to the Photos library. Leave it ticked and importing copies each file into the library, where iCloud syncs it and a library backup includes it. Untick it and Photos only points at the files where they sit - Apple calls these referenced files. Referenced files are not stored in iCloud, are not visible on your other devices, and are not included when the library is backed up. If the plan was to get everything into iCloud, that checkbox is the entire plan."
+ }
+}

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy: where your data actually goes | Muletto</title>
+  <meta name="description" content="Muletto opens your data export in your browser and never uploads it. This page explains what stays on your device, the one optional exception, and how to clear everything." />
+  <link rel="canonical" href="https://muletto.app/privacy.html" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Privacy: where your data actually goes | Muletto" />
+  <meta property="og:description" content="Muletto opens your data export in your browser and never uploads it. This page explains what stays on your device, the one optional exception, and how to clear everything." />
+  <meta property="og:url" content="https://muletto.app/privacy.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="og.png" />
+  <link rel="stylesheet" href="styles.css?v=1638b7bc" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="index.html">muletto</a>
+        <div class="nav-links">
+          <a href="guides.html">Guides</a>
+          <a href="pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="privacy.html" class="active">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="page-head wrap">
+      <h1>Where your data actually goes</h1>
+      <p>Short version: nowhere. Everything happens in your browser, on your machine. This page is the long
+      version, because a promise you cannot check is not worth much.</p>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>Your export is never uploaded</h2>
+        <p>Your export is opened by the browser itself, the same way it would open a file you double-click.
+        Reading it, merging services, finding duplicates, repairing dates, searching and exporting all happen
+        on your machine. No part of the archive is sent anywhere. Open your browser's network tab while you
+        use it and you will see the page load, and then nothing.</p>
+        <p>There is exactly one exception, it is optional, and it is never on by default: if you ask us to
+        tag your photos with AI, those photos are sent to be described. That is the only thing that ever
+        leaves, and the next section is about it.</p>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>The one exception: AI tagging</h2>
+        <p>Tagging reads a picture and writes a sentence about what is in it. That needs a model, and models
+        do not run in a browser tab. So there are two ways to do it, and you choose before anything happens.</p>
+      </div>
+      <div class="grid cards">
+        <div class="card">
+          <h3>On your own machine</h3>
+          <p class="muted">Point Muletto at a model running on your own computer, or an API account you
+          already hold. With a local model nothing leaves the device at all, and there is nothing to pay.
+          This route will always exist.</p>
+        </div>
+        <div class="card">
+          <h3>Using our credits</h3>
+          <p class="muted">For people who do not want to install anything. You buy credits, and each photo
+          you tag is sent to be described. Only the picture - never the archive, the file list, the dates or
+          the messages.</p>
+        </div>
+        <div class="card">
+          <h3>What happens to the picture</h3>
+          <p class="muted">It is held for the moment it takes to describe it, then dropped. It is not written
+          to disk, not logged, and never used to train anything. No description or filename is kept after the
+          reply is sent back to you.</p>
+        </div>
+        <div class="card">
+          <h3>No account, ever</h3>
+          <p class="muted">A credit code identifies a balance, not a person. No email, no sign-up, nothing
+          tying the pictures to you. Everything else in Muletto stays free and needs no code at all.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>Some things are kept, on your device</h2>
+        <p>Reading a large export takes time, and working out which photos are near-duplicates takes longer.
+        Doing that again every visit would be a poor trade, so the results are kept - in your browser's own
+        storage, on your own disk.</p>
+      </div>
+      <div class="grid cards">
+        <div class="card">
+          <h3>What is kept</h3>
+          <p class="muted">The list of what is inside your export, the dates and places read out of it, and
+          the results of any analysis. Plus a reference to each archive, so it can be reopened without asking
+          you to find it again.</p>
+        </div>
+        <div class="card">
+          <h3>What is not kept</h3>
+          <p class="muted">Copies of your photos, videos or messages. A reference to an archive is a pointer
+          to the file already on your disk, not a second copy of it. Move or delete the archive and Muletto
+          will tell you it is gone.</p>
+        </div>
+        <div class="card">
+          <h3>Who can read it</h3>
+          <p class="muted">This browser, on this machine, for this site. Not us, not another site, not
+          another profile. It is the same storage a web app uses to remember your settings.</p>
+        </div>
+        <div class="card">
+          <h3>Getting rid of it</h3>
+          <p class="muted">One button. "Forget this library" in the sidebar clears everything Muletto has
+          kept, immediately. Clearing site data in your browser does the same.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>Work you can take with you</h2>
+        <p>Browser storage belongs to the browser, and it can be cleared - by you, or by the browser needing
+        room. Anything that took real effort can be written out to a file you keep. It holds the results
+        only: no photos, no messages, not even file names. Feed it back next year alongside a fresh export
+        and everything that still applies is recognised, because results are filed against the contents of
+        each file rather than its name.</p>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>Nothing happens in the background</h2>
+        <p>There is no telemetry, no analytics and no crash reporting. Nothing is sent while you are not
+        looking, and nothing is sent because you opened a page. The only request Muletto ever makes with
+        your data in it is one you started, for photos you picked, on a screen that told you the cost
+        first.</p>
+      </div>
+      <p><a class="btn secondary" href="app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="guides.html">Guides</a>
+        <a href="app.html">Open export</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js?v=93c59e8a"></script>
+</body>
+</html>

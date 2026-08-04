@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muletto - prototype</title>
+<style>
+  :root {
+    --ground: #f4f2ef;
+    --card: #ffffff;
+    --ink: #171721;
+    --muted: rgba(23,23,33,.6);
+    --slate: #50617a;
+    --line: #ededf3;
+    --lime: #e0f050;
+    --brick: #c0452c;
+    --dark: #171721;
+    --shadow: rgba(50,50,93,.25) 0 30px 45px -30px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Inter','Segoe UI',system-ui,sans-serif;
+    background: var(--ground);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  ::selection { background: var(--lime); color: var(--ink); }
+
+  *:focus { outline: none; }
+  *:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d8d5cf; border-radius: 4px; border: 2px solid var(--ground); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--slate); }
+
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* sidebar */
+  .sidebar {
+    width: 216px;
+    flex-shrink: 0;
+    background: var(--card);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 12px;
+  }
+  .brand {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    padding: 0 12px 20px;
+  }
+  .brand small {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--slate);
+    margin-top: 2px;
+  }
+  .nav-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    font: inherit;
+    color: var(--muted);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--ground); color: var(--ink); }
+  .nav-item.active { background: var(--ink); color: #ffffff; }
+  .nav-item .badge {
+    float: right;
+    font-size: 11px;
+    background: var(--lime);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 0 6px;
+    font-weight: 600;
+  }
+  .sidebar-foot {
+    margin-top: auto;
+    padding: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+  }
+
+  /* main */
+  .main { flex: 1; overflow-y: auto; padding: 32px 36px 64px; }
+  .view { display: none; max-width: 1060px; }
+  .view.active { display: block; }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+
+  .micro {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--slate);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  /* stat tiles */
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+  .tile { padding: 16px; }
+  .tile .num {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-top: 6px;
+  }
+  .tile .note { font-size: 11px; color: var(--muted); }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--slate);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.right, th.right { text-align: right; }
+  td .dim { color: var(--muted); font-size: 12px; }
+
+  /* buttons */
+  .btn {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--slate); }
+  .btn.primary { background: var(--lime); border-color: var(--lime); color: var(--ink); }
+  .btn.primary:hover { border-color: var(--ink); }
+  .btn.danger { background: var(--brick); border-color: var(--brick); color: #ffffff; }
+  .btn.danger:hover { border-color: var(--ink); }
+  .btn.ghost { background: none; border-color: transparent; color: var(--muted); }
+  .btn.ghost:hover { color: var(--brick); border-color: transparent; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn.small { font-size: 12px; padding: 3px 10px; border-radius: 4px; }
+
+  input[type=text], select {
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 10px;
+  }
+  input[type=text]::placeholder { color: var(--muted); }
+  input[type=checkbox], input[type=radio] { accent-color: var(--ink); width: 14px; height: 14px; }
+
+  /* rules */
+  .rule-add { display: flex; gap: 8px; padding: 16px; margin-bottom: 16px; }
+  .rule-add input { flex: 1; }
+  .rule-card {
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .rule-card.off { opacity: 0.5; }
+  .rule-body { flex: 1; }
+  .rule-text { font-weight: 500; margin-bottom: 4px; }
+  .rule-parsed { font-size: 12px; color: var(--slate); }
+  .rule-controls { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .rule-controls label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; }
+
+  /* review */
+  .review-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .review-counts { font-size: 13px; color: var(--muted); margin-right: auto; }
+  .review-counts b { color: var(--ink); font-weight: 600; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .item { overflow: hidden; display: flex; flex-direction: column; }
+  .item.done-approved { outline: 2px solid var(--lime); outline-offset: -2px; }
+  .item.done-rejected { opacity: 0.45; }
+  .thumb {
+    height: 110px;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px;
+    font-size: 11px;
+    color: rgba(23,23,33,.65);
+    word-break: break-all;
+    border-bottom: 1px solid var(--line);
+  }
+  .item-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .tag {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .tag.delete { background: var(--brick); color: #ffffff; }
+  .tag.move { background: var(--slate); color: #ffffff; }
+  .tag.keep { background: var(--lime); color: var(--ink); }
+  .reason { font-size: 12px; color: var(--muted); flex: 1; }
+  .meta { font-size: 11px; color: var(--slate); }
+  .item-actions { display: flex; gap: 6px; }
+  .item-status { font-size: 11px; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: 0.12em; padding-top: 4px; }
+
+  /* fullscreen review: the only dark surface */
+  .fs {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--dark);
+    color: #ffffff;
+    z-index: 50;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .fs.open { display: flex; }
+  .fs ::selection { background: var(--lime); color: var(--ink); }
+  .fs-thumb {
+    width: min(680px, 80vw);
+    height: min(420px, 52vh);
+    border-radius: 12px;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+    font-size: 13px;
+    color: rgba(23,23,33,.65);
+    margin-bottom: 24px;
+  }
+  .fs-line { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .fs-name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .fs-reason { color: rgba(255,255,255,.6); margin-bottom: 4px; }
+  .fs-meta { color: rgba(255,255,255,.4); font-size: 12px; margin-bottom: 24px; }
+  .fs-controls { display: flex; gap: 8px; margin-bottom: 32px; }
+  .fs-hints { font-size: 11px; color: rgba(255,255,255,.4); letter-spacing: 0.04em; }
+  .fs-hints span { color: rgba(255,255,255,.75); font-weight: 600; }
+  .fs-counter {
+    position: absolute;
+    top: 24px;
+    left: 32px;
+    font-size: 12px;
+    color: rgba(255,255,255,.5);
+  }
+  .fs-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: none;
+    border: 1px solid rgba(255,255,255,.25);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .fs-close:hover { border-color: #ffffff; }
+  .fs-decided {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .fs-decided.approved { background: var(--lime); color: var(--ink); }
+  .fs-decided.rejected { background: var(--brick); color: #ffffff; }
+
+  /* plan */
+  .plan-total {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 16px;
+    margin: 16px 0;
+  }
+  .plan-total .num { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+  .plan-exec { display: flex; align-items: center; gap: 12px; }
+  .plan-exec .note { font-size: 12px; color: var(--muted); }
+  .empty { padding: 24px 16px; color: var(--muted); }
+
+  /* settings */
+  .set-section { padding: 20px; margin-bottom: 16px; }
+  .set-section .micro { display: block; margin-bottom: 12px; }
+  .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .set-row:last-child { margin-bottom: 0; }
+  .set-row label { cursor: pointer; }
+  .set-row .desc { font-size: 12px; color: var(--muted); }
+  .set-path { width: 100%; max-width: 420px; }
+  .about { font-size: 12px; color: var(--muted); padding: 4px 2px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="sidebar">
+    <div class="brand">Muletto<small>Photo library cleanup</small></div>
+    <button class="nav-item" data-view="library">Library</button>
+    <button class="nav-item" data-view="rules">Rules</button>
+    <button class="nav-item" data-view="review">Review <span class="badge" id="navReviewBadge"></span></button>
+    <button class="nav-item" data-view="plan">Plan</button>
+    <button class="nav-item" data-view="settings">Settings</button>
+    <div class="sidebar-foot">Prototype build. No files are read or changed.</div>
+  </nav>
+
+  <main class="main">
+
+    <!-- LIBRARY -->
+    <section class="view" id="view-library">
+      <h1>Library</h1>
+      <p class="sub">Snapshot of the scanned library and what the active rules cover.</p>
+      <div class="tiles" id="tiles"></div>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th class="right">Items</th>
+              <th class="right">Size</th>
+              <th>Rules that apply</th>
+            </tr>
+          </thead>
+          <tbody id="catRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RULES -->
+    <section class="view" id="view-rules">
+      <h1>Rules</h1>
+      <p class="sub">Written in plain language. Muletto parses each rule and shows its interpretation before anything is proposed.</p>
+      <div class="card rule-add">
+        <input type="text" id="ruleInput" placeholder="Type a rule, e.g. delete blurry burst shots older than two years">
+        <button class="btn primary" id="ruleAddBtn">Add rule</button>
+      </div>
+      <div id="ruleList"></div>
+    </section>
+
+    <!-- REVIEW -->
+    <section class="view" id="view-review">
+      <h1>Review</h1>
+      <p class="sub">Every proposed action needs a decision. Nothing runs until the plan is executed.</p>
+      <div class="card review-bar">
+        <div class="review-counts" id="reviewCounts"></div>
+        <select id="filterSel">
+          <option value="all">All actions</option>
+          <option value="delete">Delete</option>
+          <option value="move">Move</option>
+          <option value="keep">Keep exception</option>
+        </select>
+        <button class="btn" id="approveAllBtn">Approve all shown</button>
+        <button class="btn primary" id="fsBtn">Review fullscreen</button>
+      </div>
+      <div class="grid" id="reviewGrid"></div>
+    </section>
+
+    <!-- PLAN -->
+    <section class="view" id="view-plan">
+      <h1>Plan</h1>
+      <p class="sub">Summary of approved actions. Review the totals, then execute in one pass.</p>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th class="right">Items</th>
+              <th class="right">Size</th>
+              <th>Detail</th>
+            </tr>
+          </thead>
+          <tbody id="planRows"></tbody>
+        </table>
+      </div>
+      <div class="card plan-total">
+        <span class="micro">Disk space freed</span>
+        <span class="num" id="planTotal">0.0 GB</span>
+      </div>
+      <div class="plan-exec">
+        <button class="btn primary" disabled>Execute plan</button>
+        <span class="note">disabled in prototype</span>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="view-settings">
+      <h1>Settings</h1>
+      <p class="sub">Local configuration. Nothing here syncs anywhere.</p>
+
+      <div class="card set-section">
+        <span class="micro">Library</span>
+        <div class="set-row">
+          <input type="text" class="set-path" value="C:\Photos\library">
+          <button class="btn">Browse</button>
+        </div>
+      </div>
+
+      <div class="card set-section">
+        <span class="micro">Models</span>
+        <div class="set-row">
+          <input type="radio" name="model" id="modelLocal" checked>
+          <label for="modelLocal">Run locally</label>
+          <span class="desc">image classification and rule parsing on this machine, no data leaves it</span>
+        </div>
+        <div class="set-row">
+          <input type="radio" name="model" id="modelCloud">
+          <label for="modelCloud">Use cloud inference</label>
+          <span class="desc">faster on large libraries, thumbnails are uploaded for classification</span>
+        </div>
+      </div>
+
+      <div class="card set-section">
+        <span class="micro">Telemetry</span>
+        <div class="set-row">
+          <input type="checkbox" id="telemetry" checked>
+          <label for="telemetry">Send usage data</label>
+          <span class="desc">sends anonymous crash reports and feature usage counts, never file names or image content</span>
+        </div>
+      </div>
+
+      <p class="about">Muletto - prototype</p>
+    </section>
+
+  </main>
+</div>
+
+<!-- FULLSCREEN REVIEW -->
+<div class="fs" id="fs">
+  <div class="fs-counter" id="fsCounter"></div>
+  <button class="fs-close" id="fsClose">Esc close</button>
+  <div class="fs-thumb" id="fsThumb"></div>
+  <div class="fs-line">
+    <span class="fs-name" id="fsName"></span>
+    <span id="fsTag"></span>
+    <span id="fsDecided"></span>
+  </div>
+  <div class="fs-reason" id="fsReason"></div>
+  <div class="fs-meta" id="fsMeta"></div>
+  <div class="fs-controls">
+    <button class="btn primary" id="fsApprove">Approve</button>
+    <button class="btn danger" id="fsReject">Reject</button>
+  </div>
+  <div class="fs-hints">
+    <span>Up</span> approve &nbsp; <span>Down</span> reject &nbsp; <span>Left / Right</span> prev / next &nbsp; <span>Esc</span> close
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- data ----------
+
+  var TONES = ["#d9d4cc", "#c9cfd6", "#d6cfc9", "#cdd3ca", "#d3ccd6", "#ccd6d2"];
+
+  var GYM = "rule: gym screenshots older than a year";
+  var DUP = "duplicate: same content hash as original";
+  var NAS = "rule: move old videos to the NAS";
+  var POSTIT = "rule: keep every photo of a post-it note";
+
+  // action: delete | move | keep
+  var items = [
+    { file: "Screenshot_2024-03-01_093412.png", cat: "screenshots", mb: 2.1, date: "2024-03-01", action: "delete", reason: GYM },
+    { file: "Screenshot_2024-02-11_181203.png", cat: "screenshots", mb: 1.8, date: "2024-02-11", action: "delete", reason: GYM },
+    { file: "Screenshot_2023-11-28_070144.png", cat: "screenshots", mb: 2.6, date: "2023-11-28", action: "delete", reason: GYM },
+    { file: "Screenshot_2023-10-02_064512.png", cat: "screenshots", mb: 2.2, date: "2023-10-02", action: "delete", reason: GYM },
+    { file: "Screenshot_2023-08-19_190301.png", cat: "screenshots", mb: 1.9, date: "2023-08-19", action: "delete", reason: GYM },
+    { file: "Screenshot_2023-06-30_070945.png", cat: "screenshots", mb: 2.4, date: "2023-06-30", action: "delete", reason: GYM },
+    { file: "Screenshot_2023-05-14_064128.png", cat: "screenshots", mb: 2.0, date: "2023-05-14", action: "delete", reason: GYM },
+    { file: "Screenshot_2023-04-03_185500.png", cat: "screenshots", mb: 2.3, date: "2023-04-03", action: "delete", reason: GYM },
+    { file: "Screenshot_2023-02-21_071822.png", cat: "screenshots", mb: 1.7, date: "2023-02-21", action: "delete", reason: GYM },
+    { file: "Screenshot_2023-01-09_064017.png", cat: "screenshots", mb: 2.5, date: "2023-01-09", action: "delete", reason: GYM },
+    { file: "IMG_4021 (1).JPG", cat: "duplicates", mb: 4.8, date: "2024-06-12", action: "move", target: "_duplicates", reason: DUP },
+    { file: "IMG_3987 (2).JPG", cat: "duplicates", mb: 5.1, date: "2024-05-30", action: "move", target: "_duplicates", reason: DUP },
+    { file: "DSC_0142 copy.JPG", cat: "duplicates", mb: 6.3, date: "2023-12-08", action: "move", target: "_duplicates", reason: DUP },
+    { file: "IMG_2210 (1).JPG", cat: "duplicates", mb: 4.2, date: "2023-09-17", action: "move", target: "_duplicates", reason: DUP },
+    { file: "VID_20230704_211302.mp4", cat: "camera videos", mb: 412, date: "2023-07-04", action: "move", target: "NAS DS920: /photo/cold", reason: NAS },
+    { file: "VID_20230512_140233.mp4", cat: "camera videos", mb: 268, date: "2023-05-12", action: "move", target: "NAS DS920: /photo/cold", reason: NAS },
+    { file: "VID_20221225_183012.mp4", cat: "camera videos", mb: 731, date: "2022-12-25", action: "move", target: "NAS DS920: /photo/cold", reason: NAS },
+    { file: "VID_20220806_120455.mp4", cat: "camera videos", mb: 322, date: "2022-08-06", action: "move", target: "NAS DS920: /photo/cold", reason: NAS },
+    { file: "VID_20220314_090211.mp4", cat: "camera videos", mb: 189, date: "2022-03-14", action: "move", target: "NAS DS920: /photo/cold", reason: NAS },
+    { file: "VID_20211031_201540.mp4", cat: "camera videos", mb: 505, date: "2021-10-31", action: "move", target: "NAS DS920: /photo/cold", reason: NAS },
+    { file: "IMG_5102.JPG", cat: "camera photos", mb: 3.4, date: "2024-09-02", action: "keep", reason: POSTIT },
+    { file: "IMG_5347.JPG", cat: "camera photos", mb: 3.1, date: "2024-10-14", action: "keep", reason: POSTIT },
+    { file: "IMG_5590.JPG", cat: "camera photos", mb: 2.9, date: "2025-01-22", action: "keep", reason: POSTIT },
+    { file: "IMG_5722.JPG", cat: "camera photos", mb: 3.6, date: "2025-03-05", action: "keep", reason: POSTIT }
+  ];
+  items.forEach(function (it, i) {
+    it.id = i;
+    it.status = "proposed"; // proposed | approved | rejected
+    it.tone = TONES[i % TONES.length];
+  });
+
+  var rules = [
+    { text: "keep every photo of a post-it note",
+      parsed: "matches: photos classified as handwritten note or post-it -> mark keep exception", on: true },
+    { text: "delete gym screenshots older than a year",
+      parsed: "matches: screenshots AND source app looks like fitness AND older than 12 months -> propose delete", on: true },
+    { text: "never touch photos of my kids",
+      parsed: "matches: faces tagged as family children -> excluded from every action", on: true },
+    { text: "move old videos to the NAS",
+      parsed: "matches: camera videos AND older than 24 months -> propose transfer to NAS DS920, hash-verified", on: true }
+  ];
+
+  var categories = [
+    { name: "camera photos", items: 31240, gb: 214.6, rules: "keep post-it notes; never touch kids" },
+    { name: "camera videos", items: 2180, gb: 96.2, rules: "move old videos to the NAS" },
+    { name: "screenshots", items: 8412, gb: 18.4, rules: "delete gym screenshots older than a year" },
+    { name: "chat media", items: 5934, gb: 12.1, rules: "none yet" },
+    { name: "duplicates", items: 447, gb: 2.9, rules: "built-in duplicate detection" }
+  ];
+
+  var filter = "all";
+  var fsOpen = false;
+  var fsIndex = 0;
+
+  // ---------- helpers ----------
+
+  function $(id) { return document.getElementById(id); }
+
+  function fmtSize(mb) {
+    return mb >= 1024 ? (mb / 1024).toFixed(1) + " GB" : mb.toFixed(1) + " MB";
+  }
+
+  function tagLabel(a) {
+    return a === "delete" ? "delete" : a === "move" ? "move" : "keep exception";
+  }
+
+  function filtered() {
+    return filter === "all" ? items : items.filter(function (i) { return i.action === filter; });
+  }
+
+  function count(status) {
+    return items.filter(function (i) { return i.status === status; }).length;
+  }
+
+  function reclaimableGb() {
+    // deletes and NAS transfers free local disk while not rejected
+    var mb = 0;
+    items.forEach(function (i) {
+      if (i.status === "rejected") return;
+      if (i.action === "delete" || (i.action === "move" && i.target && i.target.indexOf("NAS") === 0)) mb += i.mb;
+    });
+    return (mb / 1024).toFixed(1);
+  }
+
+  // ---------- library ----------
+
+  function renderLibrary() {
+    var tiles = [
+      { label: "Items total", num: "48,213", note: "last scan today 07:12" },
+      { label: "Junk detected", num: "1,893", note: "across all categories" },
+      { label: "Rules active", num: String(rules.filter(function (r) { return r.on; }).length), note: "of " + rules.length + " defined" },
+      { label: "Awaiting review", num: String(count("proposed")), note: "proposed actions" },
+      { label: "GB reclaimable", num: reclaimableGb(), note: "deletes and NAS transfers" }
+    ];
+    $("tiles").innerHTML = tiles.map(function (t) {
+      return '<div class="card tile"><span class="micro">' + t.label + '</span>' +
+             '<div class="num">' + t.num + '</div><div class="note">' + t.note + '</div></div>';
+    }).join("");
+
+    $("catRows").innerHTML = categories.map(function (c) {
+      return "<tr><td>" + c.name + "</td>" +
+             '<td class="right">' + c.items.toLocaleString("en-US") + "</td>" +
+             '<td class="right">' + c.gb.toFixed(1) + " GB</td>" +
+             '<td><span class="dim">' + c.rules + "</span></td></tr>";
+    }).join("");
+  }
+
+  // ---------- rules ----------
+
+  function renderRules() {
+    $("ruleList").innerHTML = rules.map(function (r, i) {
+      return '<div class="card rule-card' + (r.on ? "" : " off") + '">' +
+        '<div class="rule-body">' +
+          '<div class="rule-text">' + r.text + "</div>" +
+          '<div class="rule-parsed">' + r.parsed + "</div>" +
+        "</div>" +
+        '<div class="rule-controls">' +
+          '<label><input type="checkbox" data-rule="' + i + '"' + (r.on ? " checked" : "") + "> enabled</label>" +
+          '<button class="btn ghost small" data-delrule="' + i + '">Delete</button>' +
+        "</div></div>";
+    }).join("");
+
+    var boxes = $("ruleList").querySelectorAll("input[data-rule]");
+    for (var b = 0; b < boxes.length; b++) {
+      boxes[b].addEventListener("change", function () {
+        rules[+this.getAttribute("data-rule")].on = this.checked;
+        renderAll();
+      });
+    }
+    var dels = $("ruleList").querySelectorAll("button[data-delrule]");
+    for (var d = 0; d < dels.length; d++) {
+      dels[d].addEventListener("click", function () {
+        rules.splice(+this.getAttribute("data-delrule"), 1);
+        renderAll();
+      });
+    }
+  }
+
+  $("ruleAddBtn").addEventListener("click", addRule);
+  $("ruleInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") addRule();
+  });
+
+  function addRule() {
+    var v = $("ruleInput").value.trim();
+    if (!v) return;
+    rules.push({
+      text: v,
+      parsed: "matches: interpretation pending -> no items affected in prototype",
+      on: true
+    });
+    $("ruleInput").value = "";
+    renderAll();
+  }
+
+  // ---------- review ----------
+
+  function renderReview() {
+    $("reviewCounts").innerHTML =
+      "<b>" + count("proposed") + "</b> proposed &nbsp; " +
+      "<b>" + count("approved") + "</b> approved &nbsp; " +
+      "<b>" + count("rejected") + "</b> rejected";
+
+    var pending = count("proposed");
+    $("navReviewBadge").textContent = pending;
+    $("navReviewBadge").style.display = pending ? "" : "none";
+
+    $("reviewGrid").innerHTML = filtered().map(function (it) {
+      var cls = it.status === "approved" ? " done-approved" : it.status === "rejected" ? " done-rejected" : "";
+      var foot;
+      if (it.status === "proposed") {
+        foot = '<div class="item-actions">' +
+          '<button class="btn primary small" data-app="' + it.id + '">Approve</button>' +
+          '<button class="btn small" data-rej="' + it.id + '">Reject</button></div>';
+      } else {
+        foot = '<div class="item-status">' + it.status +
+          ' &nbsp;<button class="btn ghost small" data-undo="' + it.id + '">undo</button></div>';
+      }
+      var target = it.target ? '<div class="meta">to ' + it.target + "</div>" : "";
+      return '<div class="card item' + cls + '">' +
+        '<div class="thumb" style="background:' + it.tone + '">' + it.file + "</div>" +
+        '<div class="item-body">' +
+          '<span class="tag ' + it.action + '">' + tagLabel(it.action) + "</span>" +
+          '<div class="reason">' + it.reason + "</div>" + target +
+          '<div class="meta">' + it.cat + " - " + fmtSize(it.mb) + " - " + it.date + "</div>" +
+          foot +
+        "</div></div>";
+    }).join("");
+
+    bind("[data-app]", "data-app", function (id) { items[id].status = "approved"; });
+    bind("[data-rej]", "data-rej", function (id) { items[id].status = "rejected"; });
+    bind("[data-undo]", "data-undo", function (id) { items[id].status = "proposed"; });
+  }
+
+  function bind(sel, attr, fn) {
+    var els = $("reviewGrid").querySelectorAll(sel);
+    for (var i = 0; i < els.length; i++) {
+      els[i].addEventListener("click", function () {
+        fn(+this.getAttribute(attr));
+        renderAll();
+      });
+    }
+  }
+
+  $("filterSel").addEventListener("change", function () {
+    filter = this.value;
+    fsIndex = 0;
+    renderAll();
+  });
+
+  $("approveAllBtn").addEventListener("click", function () {
+    filtered().forEach(function (i) {
+      if (i.status === "proposed") i.status = "approved";
+    });
+    renderAll();
+  });
+
+  // ---------- fullscreen ----------
+
+  $("fsBtn").addEventListener("click", function () { openFs(0); });
+  $("fsClose").addEventListener("click", closeFs);
+  $("fsApprove").addEventListener("click", function () { fsDecide("approved"); });
+  $("fsReject").addEventListener("click", function () { fsDecide("rejected"); });
+
+  function openFs(i) {
+    var list = filtered();
+    if (!list.length) return;
+    fsIndex = Math.min(i, list.length - 1);
+    fsOpen = true;
+    $("fs").classList.add("open");
+    renderFs();
+  }
+
+  function closeFs() {
+    fsOpen = false;
+    $("fs").classList.remove("open");
+  }
+
+  function fsDecide(status) {
+    var list = filtered();
+    if (!list.length) return;
+    list[fsIndex].status = status;
+    if (fsIndex < list.length - 1) fsIndex++;
+    renderAll();
+  }
+
+  function fsMove(delta) {
+    var list = filtered();
+    if (!list.length) return;
+    fsIndex = Math.max(0, Math.min(list.length - 1, fsIndex + delta));
+    renderFs();
+  }
+
+  function renderFs() {
+    var list = filtered();
+    if (!list.length) { closeFs(); return; }
+    if (fsIndex >= list.length) fsIndex = list.length - 1;
+    var it = list[fsIndex];
+    $("fsCounter").textContent = (fsIndex + 1) + " of " + list.length + (filter === "all" ? "" : " (" + tagLabel(filter) + " only)");
+    $("fsThumb").style.background = it.tone;
+    $("fsThumb").textContent = it.file;
+    $("fsName").textContent = it.file;
+    $("fsTag").innerHTML = '<span class="tag ' + it.action + '">' + tagLabel(it.action) + "</span>";
+    $("fsDecided").innerHTML = it.status === "proposed" ? "" :
+      '<span class="fs-decided ' + it.status + '">' + it.status + "</span>";
+    $("fsReason").textContent = it.reason + (it.target ? " -> " + it.target : "");
+    $("fsMeta").textContent = it.cat + " - " + fmtSize(it.mb) + " - " + it.date;
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (!fsOpen) return;
+    if (e.key === "Escape") { closeFs(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); fsDecide("approved"); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); fsDecide("rejected"); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); fsMove(-1); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); fsMove(1); }
+  });
+
+  // ---------- plan ----------
+
+  function renderPlan() {
+    var approved = items.filter(function (i) { return i.status === "approved"; });
+    var groups = {};
+    approved.forEach(function (i) {
+      var key, label, detail;
+      if (i.action === "delete") {
+        key = "delete"; label = "Delete"; detail = "moved to system trash first, recoverable for 30 days";
+      } else if (i.action === "move" && i.target && i.target.indexOf("NAS") === 0) {
+        key = "nas"; label = "Transfer to " + i.target; detail = "hash-verified copy, source removed after verification";
+      } else if (i.action === "move") {
+        key = "move:" + i.target; label = "Move to " + i.target; detail = "same-disk move, nothing deleted";
+      } else {
+        key = "keep"; label = "Keep exception"; detail = "marked protected, skipped by all future rules";
+      }
+      if (!groups[key]) groups[key] = { label: label, detail: detail, n: 0, mb: 0, frees: key === "delete" || key === "nas" };
+      groups[key].n++;
+      groups[key].mb += i.mb;
+    });
+
+    var keys = Object.keys(groups);
+    if (!keys.length) {
+      $("planRows").innerHTML = '<tr><td colspan="4" class="empty">No approved actions yet. Approve items in Review to build the plan.</td></tr>';
+    } else {
+      $("planRows").innerHTML = keys.map(function (k) {
+        var g = groups[k];
+        return "<tr><td>" + g.label + "</td>" +
+          '<td class="right">' + g.n + "</td>" +
+          '<td class="right">' + fmtSize(g.mb) + "</td>" +
+          '<td><span class="dim">' + g.detail + "</span></td></tr>";
+      }).join("");
+    }
+
+    var freedMb = 0;
+    keys.forEach(function (k) { if (groups[k].frees) freedMb += groups[k].mb; });
+    $("planTotal").textContent = (freedMb / 1024).toFixed(1) + " GB";
+  }
+
+  // ---------- nav ----------
+
+  var navBtns = document.querySelectorAll(".nav-item");
+  for (var n = 0; n < navBtns.length; n++) {
+    navBtns[n].addEventListener("click", function () {
+      var v = this.getAttribute("data-view");
+      for (var j = 0; j < navBtns.length; j++) navBtns[j].classList.remove("active");
+      this.classList.add("active");
+      var views = document.querySelectorAll(".view");
+      for (var k = 0; k < views.length; k++) views[k].classList.remove("active");
+      $("view-" + v).classList.add("active");
+    });
+  }
+  navBtns[0].classList.add("active");
+  $("view-library").classList.add("active");
+
+  // ---------- render ----------
+
+  function renderAll() {
+    renderLibrary();
+    renderRules();
+    renderReview();
+    renderPlan();
+    if (fsOpen) renderFs();
+  }
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

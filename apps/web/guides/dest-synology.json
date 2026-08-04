@@ -1,0 +1,50 @@
+{
+ "slug": "dest-synology",
+ "provider": "Synology",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "icon": "server",
+ "difficulty": "easy",
+ "wait_time": "minutes to copy, hours to index",
+ "format": "a shared folder, indexed by Synology Photos",
+ "request": {
+  "url": "https://kb.synology.com",
+  "label": "Synology knowledge base"
+ },
+ "steps": [
+  {
+   "title": "Turn on the half you want",
+   "detail": "For Personal Space, open Control Panel, User and Group, Advanced, and enable the user home service - without it there is no home folder to write into. For Shared Space, open Synology Photos, Settings, Shared Space, and enable it. You can have both; they simply show different folders."
+  },
+  {
+   "title": "Point Muletto at the right folder",
+   "detail": "Map the NAS as a network drive first, then export from Muletto straight into it. For Personal Space the target is home/Photos on your own account. For Shared Space it is the /photo shared folder. Writing to any other folder means Synology Photos will never look at it, which is the usual reason a library appears to vanish after copying."
+  },
+  {
+   "title": "Keep your folder structure",
+   "detail": "Synology Photos has a folder view as well as a timeline, so the year and month folders Muletto writes stay meaningful and browsable. You do not need to flatten anything or rename to suit it."
+  },
+  {
+   "title": "Wait for the indexing, and expect it to take a while",
+   "detail": "Once files land, the NAS reads each one, extracts the date and location, and renders thumbnails. On a large library this is hours rather than minutes, and on an older or low-powered model it can run overnight. An empty-looking app an hour in is normal - check again later before concluding anything went wrong."
+  },
+  {
+   "title": "Check the dates, not just the count",
+   "detail": "Synology Photos builds its timeline from the date inside each file. That is what Muletto repairs before you export: without it, a Google or Apple archive arrives dated the day you copied it and the timeline is one enormous day. Open the timeline and scroll back a few years to confirm before you delete anything elsewhere."
+  },
+  {
+   "title": "Make sure it is actually backed up",
+   "detail": "A NAS is not a backup on its own - it is one copy, in one building, on disks that were probably bought together. RAID protects you from a disk failing, not from fire, theft, or deleting the wrong folder. Add Hyper Backup to an external drive or another location, and check a restore works before you rely on it."
+  }
+ ],
+ "notes": [
+  "Renaming the shared folder or moving files around underneath Synology Photos means indexing them again from scratch, so settle the structure in Muletto first.",
+  "Personal Space only ever shows the logged-in user's own folder. If several people are meant to see the same library, it has to be Shared Space."
+ ],
+ "explain": {
+  "title": "Personal Space or Shared Space, and why it matters before you copy",
+  "body": "Synology Photos has two halves and they are different folders on disk. Personal Space shows what is in your own home/Photos folder and nobody else on the NAS can browse it. Shared Space shows the /photo shared folder, which everyone with permission can see. Decide first: moving a large library between them afterwards means moving the files and waiting for the whole thing to be indexed again."
+ }
+}
