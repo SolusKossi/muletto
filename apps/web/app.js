@@ -392,8 +392,15 @@ async function unlockIfNeeded(file, entries, progress) {
 async function readSource(file, seen) {
   // Only the archive's directory is read here; file data stays on disk until
   // an individual entry is actually needed.
-  const all = await MZip.readDirectory(file);
-  const unlocked = await unlockIfNeeded(file, all, seen && seen.progress);
+  const outer = await MZip.readDirectory(file);
+  const unlocked = await unlockIfNeeded(file, outer, seen && seen.progress);
+
+  /* Apple puts archives inside archives - seven of the eighteen in a real
+     export - and until this ran, everything in them was invisible. Done after
+     unlocking, because a nested archive inside an encrypted one cannot be read
+     until the outer archive is open. */
+  const nest = await MZip.expandNested(file, outer);
+  const all = nest.entries;
   const det = detectProvider(all, file.name);
   const key = exportKey(file.name, (det && det.slug) || file.name);
 
@@ -413,6 +420,26 @@ async function readSource(file, seen) {
 
   const lib = await MParse.parse(file, entries, det);
 
+  /* A nested archive too large to open is the one case where something real is
+     missing and no count anywhere would show it: the outer archive lists it as
+     a single file, so everything reconciles. Apple's Other Data holds a 1.3 GB
+     zip of Siri recordings, which is over the limit and stays shut. Say so. */
+  for (const s of nest.skipped) {
+    const who = s.name.split("/").pop() + " is an archive inside this one, and ";
+    const fix = " Its contents are not counted anywhere below. Unzip that one " +
+                "file yourself and drop it in on its own to read it.";
+    if (s.reason === "unreadable") {
+      lib.notes.push(who + "it could not be opened - it may need its own " +
+                     "password, or be damaged." + fix);
+    } else if (s.reason === "budget") {
+      lib.notes.push(who + "this export has more nested archives than Muletto " +
+                     "opens in one go." + fix);
+    } else {
+      lib.notes.push(who + "at " + fmtBytes(s.size) + " it is too large to " +
+                     "unpack in a browser tab without risking the page." + fix);
+    }
+  }
+
   /* An archive whose contents are locked reads as an archive with nothing in
      it, and that is the worst possible way to present it: every count is zero,
      the file list is full, and nothing says why. Samsung protects every entry
@@ -421,7 +448,7 @@ async function readSource(file, seen) {
     ? 0
     : entries.filter((e) => e.encrypted || e.method === 99).length;
   return { name: file.name, size: file.size, file, entries, det, lib,
-           exportKey: key, dropped, locked };
+           exportKey: key, dropped, locked, lockedNested };
 }
 
 /* Combine several exports into a single library. Each item remembers which
