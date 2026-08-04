@@ -2642,3 +2642,8 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    and the link is only useful if somebody can find it without being told. */
 .foot-src { display: inline-flex; align-items: center; gap: 6px; }
 .foot-src svg { flex: none; opacity: 0.85; }
+
+/* The commit the deployed site was built from, linked to it. Quiet on purpose:
+   it is evidence rather than a badge, and the people who want it will look. */
+.foot-commit { font-variant-numeric: tabular-nums; opacity: 0.7; font-size: 12px; }
+.foot-commit:hover { opacity: 1; }
