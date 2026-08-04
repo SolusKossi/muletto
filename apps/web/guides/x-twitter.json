@@ -1,0 +1,75 @@
+{
+ "slug": "x-twitter",
+ "provider": "X (Twitter)",
+ "icon": "box",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "difficulty": "easy",
+ "wait_time": "usually within a day, sometimes several",
+ "delivery": "email-link",
+ "format": ".zip containing JavaScript files, not JSON",
+ "data_types": [
+  "social",
+  "messages"
+ ],
+ "request": {
+  "url": "https://x.com/settings/download_your_data",
+  "label": "Download an archive of your data"
+ },
+ "steps": [
+  {
+   "title": "Open Settings, then Your account",
+   "detail": "On the web rather than in the app. Settings and privacy, Your account, Download an archive of your data."
+  },
+  {
+   "title": "Confirm your password",
+   "detail": "You will be asked to re-enter it, and then to confirm a code sent by email or text."
+  },
+  {
+   "title": "Request the archive",
+   "detail": "There is one button and no options. You cannot choose a date range or a subset."
+  },
+  {
+   "title": "Wait for the notification",
+   "detail": "It arrives in the app and by email. Most people see it within a day; a large account can take several."
+  },
+  {
+   "title": "Download it promptly",
+   "detail": "The link expires after roughly a week and the request has to be made again from scratch."
+  },
+  {
+   "title": "Open Your archive.html to browse it",
+   "detail": "The archive ships with its own offline viewer. Note the space in the filename - that trips up a lot of scripts."
+  }
+ ],
+ "notes": [
+  "Bookmarks are not included. Likes are, but only as a tweet id and its text, with no author and no date.",
+  "Long posts are stored twice: a truncated copy in the main file and the full text in note-tweet.js. Anything reading only the first one silently loses the body of every long post.",
+  "Media in the archive is downsized rather than original. The original URLs are in the data, but they only resolve while the post is still live."
+ ],
+ "muletto_support": {
+  "importable": false,
+  "adapter": null,
+  "status": "none"
+ },
+ "faq": [
+  {
+   "q": "Why are the files in my X archive .js instead of .json?",
+   "a": "Because the archive ships with an offline viewer that loads them as scripts. Each file is a JavaScript assignment - window.YTD.tweets.part0 = [ ... ] - wrapping otherwise ordinary JSON. A JSON parser fails on every one of them until that first line is stripped."
+  },
+  {
+   "q": "Does the X archive include direct messages?",
+   "a": "Yes, in direct-messages.js for one-to-one conversations and direct-messages-group.js for group ones. They are in plain text."
+  },
+  {
+   "q": "Why are my old tweets truncated in the archive?",
+   "a": "Two reasons. Retweets are stored as a 140-character summary beginning RT @, with no way to recover the original. Long posts are stored truncated in tweets.js with the full text in note-tweet.js, joined by id."
+  },
+  {
+   "q": "Are bookmarks in the X data archive?",
+   "a": "No. Likes are included, bookmarks are not, and there is no way to request them."
+  }
+ ]
+}

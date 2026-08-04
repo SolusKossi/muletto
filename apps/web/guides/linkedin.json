@@ -1,0 +1,63 @@
+{
+ "slug": "linkedin",
+ "provider": "LinkedIn",
+ "icon": "box",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "difficulty": "easy",
+ "wait_time": "minutes for the small files, up to twenty-four hours for the rest",
+ "delivery": "download",
+ "format": ".zip containing CSV",
+ "data_types": [
+  "social",
+  "records"
+ ],
+ "request": {
+  "url": "https://www.linkedin.com/mypreferences/d/download-my-data",
+  "label": "Get a copy of your data"
+ },
+ "steps": [
+  {
+   "title": "Open Settings, then Data privacy",
+   "detail": "Get a copy of your data. This is not available in the mobile app."
+  },
+  {
+   "title": "Choose the larger option",
+   "detail": "The quick option gives you a handful of files within minutes. The full one takes up to a day and includes connections and messages."
+  },
+  {
+   "title": "Wait for both emails",
+   "detail": "They arrive separately. The fast set first, the important set later."
+  },
+  {
+   "title": "Download within seventy-two hours",
+   "detail": "The link expires after three days, which is shorter than most services."
+  }
+ ],
+ "notes": [
+  "Connections and messages, which are the two most people actually want, are in the slower batch. It is easy to download the first email and think that is everything.",
+  "Connections.csv begins with several lines of explanatory text before the header row, so importing it directly into a spreadsheet mis-labels every column.",
+  "Dates in that file use English month names regardless of your language setting."
+ ],
+ "muletto_support": {
+  "importable": false,
+  "adapter": null,
+  "status": "none"
+ },
+ "faq": [
+  {
+   "q": "Why is my LinkedIn export missing my connections?",
+   "a": "They are in the second, slower download. LinkedIn sends a small set of files within minutes and the rest, including connections and messages, up to twenty-four hours later as a separate email."
+  },
+  {
+   "q": "Why does Connections.csv open wrongly in Excel?",
+   "a": "There are three or four lines of notes above the real header row. Skip down to the line beginning First Name and import from there."
+  },
+  {
+   "q": "How long is a LinkedIn data download available?",
+   "a": "Seventy-two hours, which is shorter than most. After that you have to request it again."
+  }
+ ]
+}

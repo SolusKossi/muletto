@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How to export your data from X (Twitter) | Muletto</title>
+  <meta name="description" content="Request a complete copy of your posts and social activity, messages from X (Twitter). 6 steps, what you get back, and how long it takes (usually within a day, sometimes several)." />
+  <link rel="canonical" href="https://muletto.app/guides/x-twitter.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="How to export your data from X (Twitter) | Muletto" />
+  <meta property="og:description" content="Request a complete copy of your posts and social activity, messages from X (Twitter). 6 steps, what you get back, and how long it takes (usually within a day, sometimes several)." />
+  <meta property="og:url" content="https://muletto.app/guides/x-twitter.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=3343df73" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to export your data from X (Twitter)","description":"Request a complete copy of your posts and social activity, messages from X (Twitter). 6 steps, what you get back, and how long it takes (usually within a day, sometimes several).","step":[{"@type":"HowToStep","position":1,"name":"Open Settings, then Your account","text":"On the web rather than in the app. Settings and privacy, Your account, Download an archive of your data."},{"@type":"HowToStep","position":2,"name":"Confirm your password","text":"You will be asked to re-enter it, and then to confirm a code sent by email or text."},{"@type":"HowToStep","position":3,"name":"Request the archive","text":"There is one button and no options. You cannot choose a date range or a subset."},{"@type":"HowToStep","position":4,"name":"Wait for the notification","text":"It arrives in the app and by email. Most people see it within a day; a large account can take several."},{"@type":"HowToStep","position":5,"name":"Download it promptly","text":"The link expires after roughly a week and the request has to be made again from scratch."},{"@type":"HowToStep","position":6,"name":"Open Your archive.html to browse it","text":"The archive ships with its own offline viewer. Note the space in the filename - that trips up a lot of scripts."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"X (Twitter)","item":"https://muletto.app/guides/x-twitter.html"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why are the files in my X archive .js instead of .json?","acceptedAnswer":{"@type":"Answer","text":"Because the archive ships with an offline viewer that loads them as scripts. Each file is a JavaScript assignment - window.YTD.tweets.part0 = [ ... ] - wrapping otherwise ordinary JSON. A JSON parser fails on every one of them until that first line is stripped."}},{"@type":"Question","name":"Does the X archive include direct messages?","acceptedAnswer":{"@type":"Answer","text":"Yes, in direct-messages.js for one-to-one conversations and direct-messages-group.js for group ones. They are in plain text."}},{"@type":"Question","name":"Why are my old tweets truncated in the archive?","acceptedAnswer":{"@type":"Answer","text":"Two reasons. Retweets are stored as a 140-character summary beginning RT @, with no way to recover the original. Long posts are stored truncated in tweets.js with the full text in note-tweet.js, joined by id."}},{"@type":"Question","name":"Are bookmarks in the X data archive?","acceptedAnswer":{"@type":"Answer","text":"No. Likes are included, bookmarks are not, and there is no way to request them."}}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span>/</span>
+        <a href="../guides.html">Guides</a>
+        <span>/</span>
+        <span aria-current="page">X (Twitter)</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>How to export your data from X (Twitter)</h1>
+        <div class="art-meta">
+          <span class="badge easy">easy</span>
+          <span class="muted">Wait: usually within a day, sometimes several</span>
+        </div>
+        <p class="art-intro">X (Twitter) is required to give you a copy of the data it holds about you, including posts and social activity and messages. The request itself is free, and arrives as .zip containing JavaScript files, not JSON. Typical wait: usually within a day, sometimes several.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="https://x.com/settings/download_your_data" target="_blank" rel="noopener noreferrer">Download an archive of your data <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          
+
+          <h2>Step by step</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Open Settings, then Your account</h3>
+              <p>On the web rather than in the app. Settings and privacy, Your account, Download an archive of your data.</p>
+              
+            </li>
+            <li>
+              <h3>Confirm your password</h3>
+              <p>You will be asked to re-enter it, and then to confirm a code sent by email or text.</p>
+              
+            </li>
+            <li>
+              <h3>Request the archive</h3>
+              <p>There is one button and no options. You cannot choose a date range or a subset.</p>
+              
+            </li>
+            <li>
+              <h3>Wait for the notification</h3>
+              <p>It arrives in the app and by email. Most people see it within a day; a large account can take several.</p>
+              
+            </li>
+            <li>
+              <h3>Download it promptly</h3>
+              <p>The link expires after roughly a week and the request has to be made again from scratch.</p>
+              
+            </li>
+            <li>
+              <h3>Open Your archive.html to browse it</h3>
+              <p>The archive ships with its own offline viewer. Note the space in the filename - that trips up a lot of scripts.</p>
+              
+            </li>
+          </ol>
+
+          <h2>Worth knowing</h2>
+          <div class="note">Bookmarks are not included. Likes are, but only as a tweet id and its text, with no author and no date.</div>
+          <div class="note">Long posts are stored twice: a truncated copy in the main file and the full text in note-tweet.js. Anything reading only the first one silently loses the body of every long post.</div>
+          <div class="note">Media in the archive is downsized rather than original. The original URLs are in the data, but they only resolve while the post is still live.</div>
+
+          <h2>Common questions</h2>
+          <div class="faq">
+            <details class="faq-q">
+              <summary>Why are the files in my X archive .js instead of .json?</summary>
+              <p>Because the archive ships with an offline viewer that loads them as scripts. Each file is a JavaScript assignment - window.YTD.tweets.part0 = [ ... ] - wrapping otherwise ordinary JSON. A JSON parser fails on every one of them until that first line is stripped.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Does the X archive include direct messages?</summary>
+              <p>Yes, in direct-messages.js for one-to-one conversations and direct-messages-group.js for group ones. They are in plain text.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Why are my old tweets truncated in the archive?</summary>
+              <p>Two reasons. Retweets are stored as a 140-character summary beginning RT @, with no way to recover the original. Long posts are stored truncated in tweets.js with the full text in note-tweet.js, joined by id.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Are bookmarks in the X data archive?</summary>
+              <p>No. Likes are included, bookmarks are not, and there is no way to request them.</p>
+            </details>
+          </div>
+
+          <h2>What Muletto does with this export</h2>
+          <p>Once your download arrives, open it in Muletto. The file is read in your browser, on your own machine - nothing is uploaded. You get a breakdown of what is inside, duplicate detection, and a browsable view of your photos, messages, timeline and records.</p>
+          <p><a class="btn secondary" href="../app.html">Open your export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>At a glance</h4>
+            <dl>
+              <dt>Effort</dt><dd>easy</dd>
+              <dt>Typical wait</dt><dd>usually within a day, sometimes several</dd>
+              <dt>Format</dt><dd>.zip containing JavaScript files, not JSON</dd>
+              <dt>Delivery</dt><dd>email link</dd>
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Other services</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+              <li><a href="samsung.html"><span class="side-ic" data-icon="samsung"></span>Samsung</a></li>
+              <li><a href="facebook.html"><span class="side-ic" data-icon="facebook"></span>Facebook</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Where to keep your data</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../app.js?v=ac7e2d18"></script>
+</body>
+</html>

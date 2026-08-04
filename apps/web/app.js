@@ -1341,6 +1341,16 @@ async function buildReport(background) {
     current.report = reports;
     current.reportJson = JSON.stringify(reports.length === 1 ? reports[0] : reports, null, 2);
     if (typeof MExplorer !== "undefined" && MExplorer.currentView()) MExplorer.refresh();
+
+    /* Offer to report it, but only when the numbers say something is actually
+       wrong, and only once per set of files. Silent otherwise. */
+    if (typeof MContribute !== "undefined" && !current.demo) {
+      const providers = (current.sources || [])
+        .map((x) => (x.det ? x.det.label : null)).filter(Boolean);
+      const key = (current.sources || []).map((x) => x.name).sort().join("|");
+      try { MContribute.maybeOffer(reports, [...new Set(providers)], key); }
+      catch (err) { /* never let an offer to help break the thing it is about */ }
+    }
     if (note) {
       note.done("Checked your export", {
         body: "What is inside it, and how much of it was understood.",

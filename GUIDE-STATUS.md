@@ -14,7 +14,7 @@ Reading the provider's help pages is not evidence for either. Both of the
 Snapchat corrections that mattered - the Export JSON files toggle, and the date
 range already defaulting to off - contradicted the documentation.
 
-**0 of 16 finished.** 4 part-way.
+**0 of 26 finished.** 4 part-way.
 
 ## Export guides
 
@@ -26,6 +26,16 @@ range already defaulting to off - contradicted the documentation.
 | [Samsung](apps/web/guides/samsung.json) | 2026-07-30 (Martin) | no | request steps only |
 | [Facebook](apps/web/guides/facebook.json) | no | no | no |
 | [Instagram](apps/web/guides/instagram.json) | 2026-07-30 (Martin) | no | request steps only |
+| [X (Twitter)](apps/web/guides/x-twitter.json) | no | no | no |
+| [TikTok](apps/web/guides/tiktok.json) | no | no | no |
+| [Amazon](apps/web/guides/amazon.json) | no | no | no |
+| [Spotify](apps/web/guides/spotify.json) | no | no | no |
+| [Discord](apps/web/guides/discord.json) | no | no | no |
+| [Reddit](apps/web/guides/reddit.json) | no | no | no |
+| [LinkedIn](apps/web/guides/linkedin.json) | no | no | no |
+| [WhatsApp](apps/web/guides/whatsapp.json) | no | no | no |
+| [Fitbit and Google Health](apps/web/guides/google-fit-fitbit.json) | no | no | no |
+| [Strava](apps/web/guides/strava.json) | no | no | no |
 
 ## Destination guides
 

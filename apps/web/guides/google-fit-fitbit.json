@@ -1,0 +1,66 @@
+{
+ "slug": "google-fit-fitbit",
+ "provider": "Fitbit and Google Health",
+ "icon": "box",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "difficulty": "medium",
+ "wait_time": "hours to days, depending on which route",
+ "delivery": "email-link",
+ "format": ".zip containing JSON and CSV",
+ "data_types": [
+  "health"
+ ],
+ "request": {
+  "url": "https://takeout.google.com",
+  "label": "Google Takeout"
+ },
+ "steps": [
+  {
+   "title": "Work out which account you have",
+   "detail": "If you sign in to Fitbit with a Google account, your data comes through Google Takeout. If you still have a Fitbit account, use fitbit.com."
+  },
+  {
+   "title": "For a Google account: open Takeout",
+   "detail": "Deselect all, then find the health product. It is now listed under Google Health rather than Fitbit, although the folders inside still say Fitbit."
+  },
+  {
+   "title": "For a Fitbit account: fitbit.com, Settings, Data Export",
+   "detail": "You can choose a time period and a file format there, which Takeout does not offer."
+  },
+  {
+   "title": "Request and wait",
+   "detail": "Heart rate at full resolution is by far the largest part and takes the longest to prepare."
+  },
+  {
+   "title": "Expect thousands of small files",
+   "detail": "Heart rate is one file per day, and heart rate variability is a two-line file per day."
+  }
+ ],
+ "notes": [
+  "The migration to Google created a second folder with the same metrics in a different format, so one export can contain both.",
+  "Sleep files are named after a date but each contains about a month of nights, in reverse order.",
+  "Exercise files are numbered in blocks of a hundred rather than dated, so there is no way to tell what is in one without opening it."
+ ],
+ "muletto_support": {
+  "importable": false,
+  "adapter": null,
+  "status": "none"
+ },
+ "faq": [
+  {
+   "q": "Where is Fitbit in Google Takeout?",
+   "a": "It is listed as Google Health rather than Fitbit. The folders inside the download still use the Fitbit name, which is why searching for it in the product list turns up nothing."
+  },
+  {
+   "q": "Why does my Fitbit export have thousands of files?",
+   "a": "Heart rate is written one file per day, and heart rate variability one two-line file per day. Several years of wear produces several thousand files with very little in each."
+  },
+  {
+   "q": "Can I get my Fitbit data without a Google account?",
+   "a": "Only if you still have a Fitbit login. Once the account is migrated, Takeout is the route."
+  }
+ ]
+}

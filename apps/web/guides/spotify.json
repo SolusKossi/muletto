@@ -1,0 +1,66 @@
+{
+ "slug": "spotify",
+ "provider": "Spotify",
+ "icon": "box",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "difficulty": "easy",
+ "wait_time": "a few days for account data, up to thirty days for the full history",
+ "delivery": "email-link",
+ "format": ".zip containing JSON",
+ "data_types": [
+  "records"
+ ],
+ "request": {
+  "url": "https://www.spotify.com/account/privacy/",
+  "label": "Spotify privacy settings"
+ },
+ "steps": [
+  {
+   "title": "Open Account, then Privacy settings",
+   "detail": "Scroll to Download your data."
+  },
+  {
+   "title": "Tick extended streaming history, not just account data",
+   "detail": "This is the important step. Account data covers the past year only. Extended streaming history covers the entire life of the account."
+  },
+  {
+   "title": "Confirm from the email",
+   "detail": "Nothing starts until you click the link."
+  },
+  {
+   "title": "Wait",
+   "detail": "Spotify quotes thirty days for both. In practice the extended history has often arrived faster than the standard package."
+  },
+  {
+   "title": "Download and keep the zip",
+   "detail": "Playlists, library, search history and every stream you have ever played are inside."
+  }
+ ],
+ "notes": [
+  "The two packages are requested together but arrive separately, sometimes days apart. It is easy to open the first one and assume that is all there is.",
+  "Files are numbered with a counter that never resets, and sorting them alphabetically puts part 10 before part 2.",
+  "A field recording whether a track was skipped was not populated at all between 2015 and late 2022."
+ ],
+ "muletto_support": {
+  "importable": false,
+  "adapter": null,
+  "status": "none"
+ },
+ "faq": [
+  {
+   "q": "How do I get my full Spotify listening history?",
+   "a": "Tick extended streaming history when you request. The default account data package only covers the last twelve months; the extended one covers everything since you opened the account."
+  },
+  {
+   "q": "How long does a Spotify data request take?",
+   "a": "Spotify says up to thirty days. Reports vary from a few hours to about a week, and the extended history has often arrived before the standard package."
+  },
+  {
+   "q": "What is in a Spotify extended streaming history?",
+   "a": "Every track you have played, with the timestamp, how many milliseconds you listened for, the device platform and why playback started and stopped."
+  }
+ ]
+}

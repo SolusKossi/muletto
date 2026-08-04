@@ -1,0 +1,71 @@
+{
+ "slug": "tiktok",
+ "provider": "TikTok",
+ "icon": "box",
+ "confirmed": {
+  "flow": null,
+  "import": null
+ },
+ "difficulty": "easy",
+ "wait_time": "a few hours to four days",
+ "delivery": "download",
+ "format": "single JSON or TXT file, chosen when you request",
+ "data_types": [
+  "social",
+  "messages"
+ ],
+ "request": {
+  "url": "https://www.tiktok.com/setting/download-your-data",
+  "label": "Download your data"
+ },
+ "steps": [
+  {
+   "title": "Open your profile, then Settings and privacy",
+   "detail": "Account, then Download your data."
+  },
+  {
+   "title": "Choose all data rather than a selection",
+   "detail": "Selecting only some categories has been reported to drop watch history entirely. All data avoids the problem."
+  },
+  {
+   "title": "Pick JSON, not TXT",
+   "detail": "JSON keeps the structure. The TXT version is easier to read by eye and holds noticeably less."
+  },
+  {
+   "title": "Request the file",
+   "detail": "It is prepared in the background; there is no email link to wait for."
+  },
+  {
+   "title": "Collect it from the Download data tab",
+   "detail": "You are notified in the app when it is ready. The file is available for four days and then deleted."
+  }
+ ],
+ "notes": [
+  "No media of any kind is included. Your own videos, your profile picture and anything sent in a message are all URLs pointing back at TikTok.",
+  "The last day or two of activity is usually missing, because of how far behind the export runs.",
+  "Everything is in one file. For a heavy account that is tens of megabytes of JSON in a single document."
+ ],
+ "muletto_support": {
+  "importable": false,
+  "adapter": null,
+  "status": "none"
+ },
+ "faq": [
+  {
+   "q": "Are my TikTok videos included in the data download?",
+   "a": "No. The export contains links to your videos rather than the files. The same is true of anything you liked or saved, and of media in messages."
+  },
+  {
+   "q": "Should I choose TXT or JSON for a TikTok export?",
+   "a": "JSON. The TXT version is meant to be read by a person and is much harder for any tool to use, and by several accounts it contains less."
+  },
+  {
+   "q": "Why is my TikTok watch history missing?",
+   "a": "Requesting only some categories rather than all data has been reported to omit it. Request everything and it comes back."
+  },
+  {
+   "q": "How long is the TikTok download link valid?",
+   "a": "Four days from when it is ready. After that the request has to be made again."
+  }
+ ]
+}
