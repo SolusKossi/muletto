@@ -1,5 +1,13 @@
 # Muletto
 
+### [muletto.app](https://muletto.app)
+
+Just want to use it? Open the site and drop your export in. Nothing to install,
+no account, nothing to sign up for, and it is free. This repository is here for
+anyone who would rather read what it does before trusting it with their files.
+
+---
+
 Open the data export a service sends you, in your browser, without uploading it
 anywhere.
 
@@ -115,8 +123,10 @@ parsers. See `CONTRIBUTING.md`.
 ## Licence
 
 Source available, not open source. You may read, run, modify and self-host it
-for any non-commercial purpose. You may not sell it or run it as a commercial
-service. See `LICENSE`.
+for any non-commercial purpose. You may not sell it or charge for it. See
+`LICENSE` for the terms, which are the PolyForm Noncommercial License 1.0.0.
 
-The source is published so the claim above can be checked, which is a different
-goal from inviting a competing product, and the licence reflects that.
+Muletto is free and stays free. The source is here so nobody has to take the
+privacy claim on trust, and the licence exists to keep it free rather than to
+fence anything off. Use it, read it, change it, run your own copy. The one
+thing it asks is that nobody turns it into something people have to pay for.
