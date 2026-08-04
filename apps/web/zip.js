@@ -304,14 +304,44 @@ const MZip = (function () {
    * Bounded on purpose: an archive that contains itself, or a zip bomb, must
    * not be able to spend the tab. Whatever is refused is reported rather than
    * dropped quietly.
+   *
+   * Size is not the bound it looks like. The first version of this refused
+   * anything over 512 MB, which shut out the 1.34 GB of Siri recordings in
+   * Apple's Other Data, on the reasoning that a gigabyte cannot be held in a
+   * tab. That was wrong, and measuring said so: the only thing that could not
+   * survive a gigabyte was `extract`, which returns one contiguous Uint8Array,
+   * and a contiguous allocation is exactly what fails first - 1.5 GB is fine
+   * on a desktop and 2 GB throws RangeError on the same machine.
+   *
+   * Streamed into a Blob instead, 1.5 GB costs 12 MB of JS heap, because the
+   * browser pages blob storage to disk. Slices out of it still read. So the
+   * archive is never held in memory at all, and the byte budget is about disk
+   * and patience rather than about what will fit.
    */
-  const NEST = { depth: 3, archives: 40, bytes: 512 * 1024 * 1024 };
+  const NEST = {
+    depth: 3,
+    archives: 40,
+    bytes: 6 * 1024 * 1024 * 1024,   // total inflated, across every nested archive
+    /* The one case still bounded by memory. An encrypted entry cannot be
+       streamed - the check bytes are at the front and the counter runs from
+       there - so it goes through `extract` and does need a contiguous
+       allocation. Kept well under what a phone will give us. */
+    encryptedBytes: 256 * 1024 * 1024,
+  };
 
-  async function expandNested(file, entries, budget) {
-    const cap = budget || NEST;
+  async function expandNested(file, entries, budget, onProgress) {
+    const cap = Object.assign({}, NEST, budget || {});
     const out = entries.slice();
     const skipped = [];
     let opened = 0, bytes = 0;
+
+    /* Streamed, not allocated. `extract` would build the whole inflated
+       archive as one Uint8Array first, and that single allocation was the
+       entire reason a large archive could not be opened. */
+    async function blobOf(host, e) {
+      const stream = await streamEntry(host, e);
+      return await new Response(stream).blob();
+    }
 
     /* Escaped, and written here rather than built in any generator: as an
        unescaped /.zip$/ the dot matched any character, so this claimed every
@@ -324,9 +354,10 @@ const MZip = (function () {
       if (depth > cap.depth) return;
       for (const e of list) {
         if (!IS_ZIP.test(e.name) || !e.size) continue;
-        if (e.size > cap.bytes) {
-          // Too big on its own. Inflating it would hold the whole thing in
-          // memory at once, and Apple ships one of 1.3 GB.
+        const encrypted = e.encrypted || e.method === 99;
+        if (encrypted && e.size > cap.encryptedBytes) {
+          // The only remaining size refusal, and it is about the contiguous
+          // allocation decryption needs, not about the archive being large.
           skipped.push({ name: prefix + e.name, size: e.size, reason: "size" });
           continue;
         }
@@ -336,11 +367,14 @@ const MZip = (function () {
         }
         let inner, blob;
         try {
-          blob = new Blob([await extract(host, e)]);
+          if (onProgress) onProgress({ name: prefix + e.name, size: e.size });
+          blob = await blobOf(host, e);
           inner = await readDirectory(blob);
         } catch (err) {
-          // Encrypted, damaged, or not really an archive.
-          skipped.push({ name: prefix + e.name, size: e.size, reason: "unreadable" });
+          // Damaged, not really an archive, or too large even to stream.
+          const why = /allocation|Array buffer|out of memory/i.test(String(err && err.message))
+            ? "size" : "unreadable";
+          skipped.push({ name: prefix + e.name, size: e.size, reason: why });
           continue;
         }
         opened++;
