@@ -60,5 +60,23 @@
  "explain": {
   "title": "JSON, not HTML, and it is not obvious why",
   "body": "Meta offers both. HTML looks friendlier - it opens in a browser and resembles Facebook - but it is a rendering of your data rather than the data, and nothing can reliably read it back. JSON is the machine-readable one, and it is what Muletto reads. Pick HTML and you have a scrapbook you can only look at; pick JSON and you have your data, which Muletto turns into something you can look at anyway."
- }
+ },
+ "faq": [
+  {
+   "q": "Why does my Facebook export show strange characters instead of letters?",
+   "a": "Facebook writes JSON by escaping the individual bytes of each character rather than the character itself, so anything outside plain English arrives broken. Norwegian, Swedish, German and every emoji are affected. The text is not damaged, only mis-encoded, and it can be repaired exactly. Muletto does this automatically."
+  },
+  {
+   "q": "Should I choose JSON or HTML for my Facebook download?",
+   "a": "JSON if you intend to open it with anything other than a browser, because it keeps the structure. HTML is easier to skim by hand and much harder to read programmatically. Muletto reads the JSON."
+  },
+  {
+   "q": "How long does a Facebook data download take?",
+   "a": "Anything from minutes to several days depending on how much there is. The download link stays live only a few days once it arrives, so fetch it promptly."
+  },
+  {
+   "q": "Why is my Facebook export split into multiple files?",
+   "a": "Meta splits large downloads at around four gigabytes. The parts are slices of one folder tree rather than copies, so extract all of them into the same place before opening, or whole sections will look as though they are missing."
+  }
+ ]
 }

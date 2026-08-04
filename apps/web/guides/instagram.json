@@ -72,5 +72,23 @@
  "explain": {
   "title": "It is a Meta export, requested from the Accounts Centre",
   "body": "Instagram's own settings hand you off to Meta's Accounts Centre, which is where downloads for every linked account live. This catches people out twice: the option is not where the app implies it is, and requesting a download there covers whichever accounts you tick, so Instagram and Facebook are separate requests even though they are made on the same screen."
- }
+ },
+ "faq": [
+  {
+   "q": "Why are the emoji in my Instagram export broken?",
+   "a": "Instagram encodes JSON by escaping the raw bytes of each character, so emoji and accented letters come out mangled. Three of the four bytes of an emoji are invisible control characters, which is why a smiling face often shows as one stray letter. It is repairable, and Muletto repairs it."
+  },
+  {
+   "q": "Where are my Instagram photos in the download?",
+   "a": "Under a media folder, sorted into posts, stories, reels and profile, with the dates held in the category JSON rather than inside the pictures. Recent exports may also include a public-media folder that duplicates some of it."
+  },
+  {
+   "q": "Does an Instagram export include my direct messages?",
+   "a": "Yes, under your_instagram_activity and then messages, with one folder per conversation. Messages are stored newest first, and anything sent in a conversation sits alongside it in that folder."
+  },
+  {
+   "q": "How do I read an Instagram JSON export?",
+   "a": "Open it with something that understands the layout. Muletto reads the archive in your browser and presents the posts, messages and likes as a timeline, without uploading anything."
+  }
+ ]
 }

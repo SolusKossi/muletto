@@ -81,5 +81,27 @@
  "explain": {
   "title": "The archives are locked, and the password arrives separately",
   "body": "Every file Samsung sends is a password protected zip, and the password is not on the download page - it is emailed to you. On the completed request there are two buttons: Send my file password, which mails it, and Download all files. Press the first, wait for the mail, then press the second. Miss the password and you have a folder of archives nothing can open, including Muletto."
- }
+ },
+ "faq": [
+  {
+   "q": "Why is my Samsung data export password protected?",
+   "a": "Samsung encrypts every archive it sends and never puts the password in the same email. On the download page there is a separate Send my file password link that mails it to you. One password opens every archive in the request, and Muletto asks for it once and opens all of them."
+  },
+  {
+   "q": "How long does a Samsung data export take?",
+   "a": "Samsung says up to a month and in practice it is usually a few days. The email arrives when it is ready, and the download link expires, so fetch everything as soon as it lands."
+  },
+  {
+   "q": "Why did I get nine separate files from Samsung?",
+   "a": "Samsung sends one archive per service rather than one file for everything. A service that holds nothing for you produces no archive at all, so the number you get depends on what you have used. Open them together and they merge into one library."
+  },
+  {
+   "q": "My Samsung export has no photos in it. Where are they?",
+   "a": "There are no gallery photographs in a Samsung privacy export, and for a modern Galaxy there will not be. Samsung closed its own gallery sync in 2021 and handed photo backup to Microsoft OneDrive, so your pictures are in a OneDrive account rather than in anything Samsung sends. That arrangement ends on 30 September 2026."
+  },
+  {
+   "q": "Where is my Samsung Health data in the export?",
+   "a": "It arrives inside one of the samsungcloud archives, as folders named in plain English such as Heart Rate and Weight, each holding one CSV. There is a second and completely different route: the Samsung Health app itself has a Download personal data option under Settings, which writes files named com.samsung.shealth and often holds more history. Muletto reads both."
+  }
+ ]
 }

@@ -2612,3 +2612,20 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    while the page background stayed light. Measured at 2.2:1, against 4.6:1 for
    leaving it alone. A theme rule that fires when nothing else does is not a
    half-finished feature, it is a bug. */
+
+/* The questions people arrive with. Collapsed by default because a wall of
+   answers buries the steps above them, and the schema does not care whether
+   the text is visible - though a reader who opens one should get an answer
+   rather than a teaser. */
+.faq { display: grid; gap: 8px; margin: 14px 0 6px; }
+.faq-q { border: 1px solid var(--line); border-radius: 10px; background: var(--card);
+  padding: 0 14px; }
+.faq-q > summary { cursor: pointer; padding: 12px 0; font-weight: 560; font-size: 14.5px;
+  list-style: none; display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; }
+.faq-q > summary::-webkit-details-marker { display: none; }
+.faq-q > summary::after { content: "+"; color: var(--muted); font-weight: 400;
+  font-size: 17px; line-height: 1; flex: none; }
+.faq-q[open] > summary::after { content: "-"; }
+.faq-q > p { margin: 0 0 13px; font-size: 14px; line-height: 1.6; color: var(--muted);
+  max-width: 62ch; }

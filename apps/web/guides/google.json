@@ -78,5 +78,27 @@
  "explain": {
   "title": "Open every part together, not one at a time",
   "body": "Google splits a large export into numbered zips, and it does not keep a photograph and its metadata file in the same one. Open part 3 on its own and some of those photographs have no date and no place, because the JSON describing them is sitting in part 7. Hand Muletto all the parts at once and they are read as the single export they are. This is also why a Takeout looks bigger than your library: a photograph in an album and in its year folder is exported twice."
- }
+ },
+ "faq": [
+  {
+   "q": "Why are all my Google Photos dated today after a Takeout?",
+   "a": "Takeout does not put the capture date inside the photograph. It writes it into a small JSON file beside each one, so anything reading only the picture sees the day you downloaded it. Muletto reads those sidecar files and can write the real date and place back into each image."
+  },
+  {
+   "q": "Why is my Google Takeout Location History empty?",
+   "a": "Google moved Timeline onto the phone during 2024 and 2025. A Takeout now returns little more than a notice about encrypted server-side backups. The real data comes from an on-device export instead: on Android, Settings, then Location, Location services, Timeline, Export. That file has a completely different structure from the old Records.json."
+  },
+  {
+   "q": "What are the supplemental-metadata.json files in my Takeout?",
+   "a": "They hold each photograph's date, place and description. Google renamed them around October 2024 and truncates the name when the whole filename runs long, so one export can contain supplemental-metadata.json, supplemental-me.json and suppl.json for different pictures. Matching only the full spelling loses the rest."
+  },
+  {
+   "q": "How do I open a Google Takeout without uploading it anywhere?",
+   "a": "Use something that reads the archive locally. Muletto does: drop the zip in and it is read on your own machine. You can turn your connection off first and it still works."
+  },
+  {
+   "q": "Why is my Google Takeout split into several zip files?",
+   "a": "You choose a maximum archive size when requesting, and anything larger is split. A photograph and its sidecar file can end up in different parts, so open all of them together rather than one at a time."
+  }
+ ]
 }

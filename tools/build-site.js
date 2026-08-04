@@ -321,6 +321,23 @@ function guidePage(g, all, dests) {
     ],
   };
 
+  /* FAQPage, when the guide has questions.
+
+     This is the schema that feeds AI Overviews and the answers models give, and
+     those are now a bigger share of how anybody finds a page like this than the
+     ten blue links are. The questions are the ones people actually type after
+     an export has already landed and gone wrong, which is a different and much
+     higher-intent moment than "how do I request my data". */
+  const faq = (g.faq && g.faq.length) ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: g.faq.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  } : null;
+
   const body = `    <article class="wrap article">
       <nav class="crumbs" aria-label="Breadcrumb">
         <a href="../index.html">Home</a>
@@ -356,6 +373,14 @@ function guidePage(g, all, dests) {
 
           ${(g.notes && g.notes.length) ? `<h2>Worth knowing</h2>
           ${g.notes.map((n) => `<div class="note">${esc(n)}</div>`).join("\n          ")}` : ""}
+
+          ${(g.faq && g.faq.length) ? `<h2>Common questions</h2>
+          <div class="faq">
+            ${g.faq.map((f) => `<details class="faq-q">
+              <summary>${esc(f.q)}</summary>
+              <p>${esc(f.a)}</p>
+            </details>`).join("\n            ")}
+          </div>` : ""}
 
           ${!dest ? `<h2>What Muletto does with this export</h2>
           <p>Once your download arrives, open it in Muletto. The file is read in your browser, on your own machine - nothing is uploaded. You get a breakdown of what is inside, duplicate detection, and a browsable view of your photos, messages, timeline and records.</p>
@@ -394,7 +419,7 @@ function guidePage(g, all, dests) {
     title: guideTitle(g),
     description: guideDescription(g),
     canonical,
-    jsonld: [howto, crumbs],
+    jsonld: [howto, crumbs].concat(faq ? [faq] : []),
     body,
   });
 }

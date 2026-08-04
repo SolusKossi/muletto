@@ -65,5 +65,23 @@
  "explain": {
   "title": "Your iPhone photographs come back as HEIC, and most tools will not open them",
   "body": "Apple hands your files back in their original format, which for anything shot on a recent iPhone means HEIC rather than JPEG. That is the honest thing to do and it is also why an Apple export so often looks broken: Windows shows grey placeholders, plenty of photo tools refuse it outright, and the usual advice is to convert everything first. Muletto reads HEIC directly, using the same video codec your browser already has, so there is no conversion step before you can see what you were sent."
- }
+ },
+ "faq": [
+  {
+   "q": "Why did Apple send me eighteen separate zip files?",
+   "a": "Apple sends one archive per category, and splits anything larger than the size limit you picked when requesting. Several of those archives contain further zip files inside them, so a single category can be two levels deep."
+  },
+  {
+   "q": "How long does an Apple data request take?",
+   "a": "Apple says up to seven days and it is often less. Once ready, the download stays available for about two weeks, after which the request has to be made again."
+  },
+  {
+   "q": "Why are there no photos in my Apple privacy export?",
+   "a": "iCloud Photos is a separate category and has to be selected when the request is made. If it was included it arrives as its own set of archives, which for a large library can be very big."
+  },
+  {
+   "q": "What is inside the Apple Media Services archive?",
+   "a": "Purchase history, App Store activity, Apple Music listening and Game Center data. It holds further zip files rather than plain spreadsheets, so anything that unpacks only one level will appear to find almost nothing in it."
+  }
+ ]
 }
