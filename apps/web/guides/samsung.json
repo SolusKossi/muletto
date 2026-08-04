@@ -59,8 +59,8 @@
    "detail": "Drop the archives into Muletto. The CSV tables become browsable records rather than filenames, any photographs join the same timeline as your other exports, and the What is in here view lists every file it found and how much of it was read - which for an export this varied is the quickest way to see what Samsung actually sent."
   },
   {
-   "title": "Unzip them with the password before opening them here",
-   "detail": "Muletto reads archives directly and cannot open encrypted ones, so a locked Samsung export shows a full file list and nothing else. Unzip each archive with the emailed password, then open the resulting folder. Everything Samsung sent is CSV, PDF and spreadsheets, and the CSVs are the part with your history in them."
+   "title": "Open them here and enter the password when asked",
+   "detail": "Samsung locks every archive it sends and emails the password separately - on the download page, Send my file password mails it to you. Muletto asks for it once and opens all nine, so there is no need to unzip anything by hand. The password is used in the browser and never stored or sent anywhere. If you would rather not paste it, unzipping the archives yourself and opening the folder works just as well."
   }
  ],
  "notes": [
