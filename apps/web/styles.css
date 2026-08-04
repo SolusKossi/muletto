@@ -2636,3 +2636,9 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   font-size: 13.5px; line-height: 1.55; }
 .cb-list li { padding-left: 2px; }
 #cbx .xw { max-width: 520px; }
+
+/* The way to the source, in the footer of every page. A claim about what
+   software does with your files is worth more when the software is readable,
+   and the link is only useful if somebody can find it without being told. */
+.foot-src { display: inline-flex; align-items: center; gap: 6px; }
+.foot-src svg { flex: none; opacity: 0.85; }

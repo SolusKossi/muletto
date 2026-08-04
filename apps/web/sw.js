@@ -28,10 +28,10 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "1cf671192f4a";
+const VERSION = "52a9061afe85";
 const PRECACHE = [
   "/app.html",
-  "/styles.css?v=3343df73",
+  "/styles.css?v=ea153c5d",
   "/notify.js?v=9f0ee69c",
   "/tips.js?v=0bdfdea4",
   "/jobs.js?v=3f996b9f",
