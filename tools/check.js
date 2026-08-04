@@ -102,8 +102,13 @@ console.log("\nGenerated pages match the guide JSON");
      look stale in the public repository, where the build can see the remote
      and the committed files were copied from a tree that could not. Compare
      what the guide JSON actually produces. */
-  const withoutStamp = (t) =>
-    t.replace(new RegExp('\s*<a class="foot-commit"[\s\S]*?</a>', "g"), "");
+  /* Written as a literal rather than built from a string. Passing this through
+     a shell collapsed the escapes to /s*<a class="foot-commit"[sS]*?<\/a>/,
+     which asks for literal letters s and S and therefore matched nothing at
+     all - so the check went on reporting every page stale while appearing to
+     have been fixed. */
+  const STAMP = /\s*<a class="foot-commit"[\s\S]*?<\/a>/g;
+  const withoutStamp = (t) => t.replace(STAMP, "");
 
   const stale = [];
   for (const [f, was] of before) {
