@@ -681,9 +681,13 @@ const MTopics = (function () {
    * like a rendering fault. The title and aria-label already say "Back 10
    * seconds", so the number is available to anyone who wants it without being
    * printed at a size nobody can read. */
-  const SKIP_BACK = svg('<path d="M12 6.2A6.9 6.9 0 1 0 18.9 13.1"/>' +
+  /* The arc belongs on the side the arrow is travelling towards, so the gap in
+     the circle sits under the arrowhead. Drawn the other way round first, the
+     arrowheads pointed correctly and each one hung off the wrong end of its
+     own circle. */
+  const SKIP_BACK = svg('<path d="M12 6.2A6.9 6.9 0 1 1 5.1 13.1"/>' +
     '<path d="M12 2.6 8.4 6.2 12 9.8"/>', "au-i");
-  const SKIP_FWD = svg('<path d="M12 6.2A6.9 6.9 0 1 1 5.1 13.1"/>' +
+  const SKIP_FWD = svg('<path d="M12 6.2A6.9 6.9 0 1 0 18.9 13.1"/>' +
     '<path d="m12 2.6 3.6 3.6L12 9.8"/>', "au-i");
 
   function findAudio(lib, ctx) {
