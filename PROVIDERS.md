@@ -60,8 +60,8 @@ read without unpacking anything.
   across mail, no attachment extraction.
 - **My Activity is HTML** - search history, watch history, and app usage all
   live there, and none of it is parsed.
-- Chrome history, Calendar (`.ics`), Contacts (`.vcf`) and Keep are all
-  listed rather than read, and all four are shapes we already handle elsewhere.
+- Chrome history and Keep are listed rather than read. Contacts (`.vcf`) and
+  Calendar (`.ics`) now have views, and Google ships both.
 
 ---
 
@@ -78,22 +78,19 @@ page](https://support.apple.com/en-us/HT208502).
 
 | Area | Entries | What Muletto does |
 |---|---|---|
-| iCloud Notes | 860 | Listed - 809 `.txt` plus attachments |
-| iCloud Contacts | 112 | Listed - `.vcf` |
+| iCloud Notes | 860 | **View** - Notes, with the first line as the title |
+| iCloud Contacts | 112 | **View** - Contacts, one card each |
 | Apple Media Services | 67 after nesting | **Read** - purchase and store history |
 | Apple Account and device information | 14 | **Read** |
-| Apple Features Using iCloud | 323 after nesting | Listed - **319 Siri voice recordings**, 1.34 GB |
-| Calendars and Reminders, Wallet, AppleCare, Bookmarks | ~15 | **Read** |
+| Apple Features Using iCloud | 323 after nesting | **View** - Audio. The 319 Siri recordings play here, from the archive |
+| Calendars and Reminders | 5 | **View** - Calendar, events and reminders together |
+| Wallet, AppleCare, Bookmarks | ~10 | **Read** |
 
 **What works well.** Nested archives. Seven of the eighteen archives contain
 more archives, and 394 entries were invisible until that was handled.
 
 **Known gaps:**
 
-- **Siri recordings are listed, not playable.** 319 `.m4a` files with no audio
-  view anywhere in the product.
-- **Notes are plain text files with no view.** 809 of them.
-- **Contacts are `.vcf` and unparsed** - the same format Google ships.
 - `.pages` and `.numbers` are zip containers we deliberately do not open.
 
 ---

@@ -344,6 +344,378 @@ const MTopics = (function () {
         : "");
   }
 
+  /* ---------- topics that live in files, not tables ----------
+   *
+   * Everything above reads `lib.tables`. These four read the archive itself,
+   * which is where most of an export actually is: 112 vCards and 809 notes in
+   * one Apple export, 319 Siri recordings in another. All of it was reachable
+   * only through All files, one click per file, which is a file manager rather
+   * than a way to look at your contacts.
+   *
+   * They need two things the table topics do not - the entry list and the
+   * source archives to read them out of - so `find` and `draw` both take a
+   * context, and `draw` may be asynchronous because it has to decompress.
+   */
+
+  /* vCard and iCalendar both fold long lines: a line beginning with a space or
+     a tab is a continuation of the one before it. Unfolding first is what
+     makes everything after it a simple line-at-a-time read. */
+  function unfold(text) {
+    return String(text || "").replace(/\r\n/g, "\n").replace(/\n[ \t]/g, "");
+  }
+
+  /* Values escape commas, semicolons and newlines. Undoing that is the
+     difference between "Oslo\, Norway" and a name with a stray backslash. */
+  function unescapeValue(v) {
+    let out = "";
+    for (let i = 0; i < v.length; i++) {
+      if (v[i] === "\\" && i + 1 < v.length) {
+        const c = v[++i];
+        out += c === "n" || c === "N" ? "\n" : c;
+      } else out += v[i];
+    }
+    return out;
+  }
+
+  function propLines(block) {
+    const out = [];
+    for (const line of unfold(block).split("\n")) {
+      const at = line.indexOf(":");
+      if (at < 0) continue;
+      const left = line.slice(0, at);
+      const value = line.slice(at + 1);
+      const semi = left.indexOf(";");
+      const name = (semi < 0 ? left : left.slice(0, semi)).toUpperCase().trim();
+      const params = semi < 0 ? "" : left.slice(semi + 1);
+      out.push({ name, params, value });
+    }
+    return out;
+  }
+
+  function parseVcards(text) {
+    const cards = [];
+    const blocks = unfold(text).split(/BEGIN:VCARD/i).slice(1);
+    for (const b of blocks) {
+      const body = b.split(/END:VCARD/i)[0];
+      const card = { name: "", org: "", title: "", note: "", born: "",
+                     emails: [], phones: [], addresses: [] };
+      let structured = "";
+      for (const p of propLines(body)) {
+        const v = unescapeValue(p.value).trim();
+        if (!v) continue;
+        if (p.name === "FN") card.name = card.name || v;
+        else if (p.name === "N") structured = v;
+        else if (p.name === "ORG") card.org = v.split(";").filter(Boolean).join(", ");
+        else if (p.name === "TITLE") card.title = v;
+        else if (p.name === "NOTE") card.note = v;
+        else if (p.name === "BDAY") card.born = v;
+        else if (p.name === "EMAIL") card.emails.push(v);
+        else if (p.name === "TEL") card.phones.push(v);
+        else if (p.name === "ADR") card.addresses.push(v.split(";").filter(Boolean).join(", "));
+      }
+      // N is family;given;middle;prefix;suffix - only used when there is no FN.
+      if (!card.name && structured) {
+        const bits = structured.split(";");
+        card.name = [bits[3], bits[1], bits[2], bits[0], bits[4]]
+          .filter(Boolean).join(" ").trim();
+      }
+      if (card.name || card.emails.length || card.phones.length) cards.push(card);
+    }
+    return cards;
+  }
+
+  /* 20240301T120000Z, 20240301T120000, or 20240301 for an all-day entry.
+     Built field by field rather than handed to Date(), which parses none of
+     those three the same way twice. */
+  function icsDate(v) {
+    const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?/.exec(String(v || "").trim());
+    if (!m) return null;
+    const allDay = !m[4];
+    const d = m[7]
+      ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)))
+      : new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+    return isNaN(d) ? null : { at: d, allDay };
+  }
+
+  function parseIcs(text) {
+    const out = [];
+    const body = unfold(text);
+    const blocks = body.split(/BEGIN:VEVENT/i).slice(1);
+    for (const b of blocks) {
+      const ev = { summary: "", where: "", note: "", at: null, allDay: false, repeats: false };
+      for (const p of propLines(b.split(/END:VEVENT/i)[0])) {
+        const v = unescapeValue(p.value).trim();
+        if (p.name === "SUMMARY") ev.summary = v;
+        else if (p.name === "LOCATION") ev.where = v;
+        else if (p.name === "DESCRIPTION") ev.note = v;
+        else if (p.name === "RRULE") ev.repeats = true;
+        else if (p.name === "DTSTART") {
+          const d = icsDate(v);
+          if (d) { ev.at = d.at; ev.allDay = d.allDay || /VALUE=DATE(?!-)/i.test(p.params); }
+        }
+      }
+      if (ev.summary || ev.at) out.push(ev);
+    }
+    // Reminders come as VTODO and are worth the same treatment.
+    for (const b of body.split(/BEGIN:VTODO/i).slice(1)) {
+      const ev = { summary: "", where: "", note: "", at: null, allDay: false, todo: true };
+      for (const p of propLines(b.split(/END:VTODO/i)[0])) {
+        const v = unescapeValue(p.value).trim();
+        if (p.name === "SUMMARY") ev.summary = v;
+        else if (p.name === "DUE" || p.name === "DTSTART") {
+          const d = icsDate(v);
+          if (d && !ev.at) ev.at = d.at;
+        }
+      }
+      if (ev.summary) out.push(ev);
+    }
+    return out;
+  }
+
+  /* Entries by extension. Cheap on purpose - this runs on every sidebar
+     redraw, so it reads names and never touches the archive. */
+  function filesLike(ctx, re, max) {
+    const list = [];
+    for (const e of (ctx && ctx.entries) || []) {
+      if (!re.test(e.name)) continue;
+      list.push(e);
+      if (max && list.length >= max) break;
+    }
+    return list;
+  }
+
+  const sourceOf = (ctx, e) =>
+    ((ctx && ctx.sources) || [])[e && e.src ? e.src : 0];
+
+  async function readEach(ctx, entries, cap, asText) {
+    const out = [];
+    for (const e of entries.slice(0, cap)) {
+      const s = sourceOf(ctx, e);
+      if (!s || !s.file) continue;
+      try {
+        out.push({ entry: e, body: asText
+          ? await MZip.extractText(s.file, e)
+          : await MZip.extract(s.file, e) });
+      } catch (err) { /* one unreadable file is not a reason to show none */ }
+    }
+    return out;
+  }
+
+  /* ---------- contacts ---------- */
+
+  const VCF = /\.vcf$/i;
+
+  function findContacts(lib, ctx) {
+    const files = filesLike(ctx, VCF);
+    return files.length ? [{ files }] : [];
+  }
+
+  async function drawContacts(el, match, lib, ctx) {
+    const files = match[0].files;
+    const read = await readEach(ctx, files, 600, true);
+    const cards = [];
+    for (const r of read) cards.push(...parseVcards(r.body));
+    if (!el.isConnected) return;
+
+    cards.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    const withEmail = cards.filter((c) => c.emails.length).length;
+    const withPhone = cards.filter((c) => c.phones.length).length;
+
+    const card = (c) => '<article class="ct">' +
+      '<span class="ct-pfp" aria-hidden="true">' +
+        esc((c.name || "?").trim().charAt(0).toUpperCase()) + "</span>" +
+      "<div><b>" + esc(c.name || "No name") + "</b>" +
+      (c.title || c.org
+        ? '<div class="muted small">' + esc([c.title, c.org].filter(Boolean).join(", ")) + "</div>"
+        : "") +
+      (c.phones.length ? '<div class="ct-line">' + c.phones.map(esc).join(" &middot; ") + "</div>" : "") +
+      (c.emails.length ? '<div class="ct-line">' + c.emails.map(esc).join(" &middot; ") + "</div>" : "") +
+      (c.addresses.length ? '<div class="ct-line muted">' + esc(c.addresses[0]) + "</div>" : "") +
+      "</div></article>";
+
+    el.innerHTML =
+      unsupportedNote([]) +
+      '<div class="tp-stats">' +
+        '<div><b>' + num(cards.length) + "</b><span>contacts</span></div>" +
+        '<div><b>' + num(withPhone) + "</b><span>with a phone number</span></div>" +
+        '<div><b>' + num(withEmail) + "</b><span>with an email address</span></div>" +
+      "</div>" +
+      (files.length > read.length
+        ? '<p class="muted small">' + num(files.length - read.length) +
+          " could not be read.</p>" : "") +
+      '<div class="ct-grid">' + cards.map(card).join("") + "</div>";
+  }
+
+  /* ---------- calendar ---------- */
+
+  const ICS = /\.ics$/i;
+
+  function findCalendar(lib, ctx) {
+    const files = filesLike(ctx, ICS);
+    return files.length ? [{ files }] : [];
+  }
+
+  async function drawCalendar(el, match, lib, ctx) {
+    const files = match[0].files;
+    const read = await readEach(ctx, files, 60, true);
+    const events = [];
+    for (const r of read) events.push(...parseIcs(r.body));
+    if (!el.isConnected) return;
+
+    events.sort((a, b) => (b.at ? +b.at : 0) - (a.at ? +a.at : 0));
+    const dated = events.filter((e) => e.at);
+    const from = dated.length ? dated[dated.length - 1].at : null;
+    const to = dated.length ? dated[0].at : null;
+    const repeats = events.filter((e) => e.repeats).length;
+    const todos = events.filter((e) => e.todo).length;
+
+    const PAGE = 400;
+    const row = (e) => "<li>" +
+      '<div class="cal-when">' +
+        (e.at ? esc(e.allDay ? shortDate(e.at) : e.at.toLocaleString(undefined,
+          { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }))
+              : "<span class='muted'>no date</span>") +
+      "</div>" +
+      '<div class="cal-what"><b>' + esc(e.summary || "Untitled") + "</b>" +
+        (e.where ? '<span class="muted small">' + esc(e.where) + "</span>" : "") +
+        (e.repeats ? '<span class="cal-tag">repeats</span>' : "") +
+        (e.todo ? '<span class="cal-tag">reminder</span>' : "") +
+      "</div></li>";
+
+    el.innerHTML =
+      '<div class="tp-stats">' +
+        '<div><b>' + num(events.length - todos) + "</b><span>" +
+          (events.length - todos === 1 ? "event" : "events") + "</span></div>" +
+        (todos ? '<div><b>' + num(todos) + "</b><span>" +
+          (todos === 1 ? "reminder" : "reminders") + "</span></div>" : "") +
+        (repeats ? '<div><b>' + num(repeats) + "</b><span>" +
+          (repeats === 1 ? "repeats" : "repeat") + "</span></div>" : "") +
+        (from ? '<div><b>' + esc(shortDate(from)) + " to " + esc(shortDate(to)) +
+                "</b><span>first to last</span></div>" : "") +
+      "</div>" +
+      '<ol class="cal-list">' + events.slice(0, PAGE).map(row).join("") + "</ol>" +
+      (events.length > PAGE
+        ? '<p class="muted small">Showing the newest ' + num(PAGE) + " of " +
+          num(events.length) + ".</p>" : "");
+  }
+
+  /* ---------- notes ---------- */
+
+  /* Only inside a folder that says notes. A `.txt` anywhere in an export is
+     usually a readme, and 809 of somebody's notes deserve better than being
+     mixed in with them. */
+  const NOTE_FILE = /(^|\/)(icloud )?notes?\//i;
+  const TXT = /\.txt$/i;
+
+  function findNotes(lib, ctx) {
+    const files = ((ctx && ctx.entries) || [])
+      .filter((e) => TXT.test(e.name) && NOTE_FILE.test(e.name));
+    return files.length ? [{ files }] : [];
+  }
+
+  async function drawNotes(el, match, lib, ctx) {
+    const files = match[0].files;
+    const read = await readEach(ctx, files, 400, true);
+    if (!el.isConnected) return;
+
+    const notes = read.map((r) => {
+      const body = String(r.body || "").trim();
+      const nl = body.indexOf("\n");
+      const title = (nl < 0 ? body : body.slice(0, nl)).trim();
+      return {
+        title: title || r.entry.name.split("/").pop().replace(TXT, ""),
+        body,
+        words: body ? body.split(/\s+/).length : 0,
+      };
+    }).filter((n) => n.body);
+
+    const words = notes.reduce((a, n) => a + n.words, 0);
+    el.innerHTML =
+      '<div class="tp-stats">' +
+        '<div><b>' + num(files.length) + "</b><span>notes</span></div>" +
+        '<div><b>' + num(words) + "</b><span>words in them</span></div>" +
+      "</div>" +
+      (files.length > read.length
+        ? '<p class="muted small">Showing the first ' + num(read.length) + ". Open " +
+          "All files for the rest.</p>" : "") +
+      '<div class="nt-grid">' + notes.map((n) =>
+        '<article class="nt-note"><h3>' + esc(n.title.slice(0, 90)) + "</h3>" +
+        "<p>" + esc(n.body.slice(0, 400)) + (n.body.length > 400 ? "..." : "") + "</p>" +
+        '<footer class="muted small">' + plural(n.words, "word", "words") + "</footer>" +
+        "</article>").join("") + "</div>";
+  }
+
+  /* ---------- audio ---------- */
+
+  /* 319 Siri recordings sat in an Apple export with no way to hear them, which
+     is the most surprising thing in it. The player is an <audio> element over
+     a blob made here - nothing is fetched. */
+  const AUDIO = /\.(m4a|mp3|wav|aac|opus|ogg|flac)$/i;
+
+  function findAudio(lib, ctx) {
+    const files = filesLike(ctx, AUDIO);
+    return files.length ? [{ files }] : [];
+  }
+
+  async function drawAudio(el, match, lib, ctx) {
+    const files = match[0].files;
+    if (!el.isConnected) return;
+    const bytes = files.reduce((n, f) => n + (f.size || 0), 0);
+    const folders = new Set(files.map((f) => f.name.split("/").slice(0, -1).join("/")));
+
+    el.innerHTML =
+      '<div class="tp-stats">' +
+        '<div><b>' + num(files.length) + "</b><span>recordings</span></div>" +
+        '<div><b>' + esc(bytesText(bytes)) + "</b><span>of audio</span></div>" +
+        '<div><b>' + num(folders.size) + "</b><span>" +
+          (folders.size === 1 ? "folder" : "folders") + "</span></div>" +
+      "</div>" +
+      '<p class="muted small">Played from the archive on this machine. Nothing is ' +
+        "downloaded and nothing is sent anywhere.</p>" +
+      '<ol class="au-list">' + files.slice(0, 400).map((f, i) =>
+        '<li class="au"><div class="au-name">' + esc(f.name.split("/").pop()) + "</div>" +
+        '<div class="muted small">' + esc(bytesText(f.size || 0)) + "</div>" +
+        '<button type="button" class="btn ghost sm au-play" data-i="' + i + '">Play</button>' +
+        '<span class="au-slot"></span></li>').join("") + "</ol>" +
+      (files.length > 400
+        ? '<p class="muted small">Showing the first 400 of ' + num(files.length) + ".</p>" : "");
+
+    /* One listener for the list, and the blob is made only when something is
+       actually played - decoding 319 files to draw a page would be absurd. */
+    el.addEventListener("click", async (ev) => {
+      const b = ev.target.closest && ev.target.closest(".au-play");
+      if (!b) return;
+      const f = files[Number(b.dataset.i)];
+      const s = sourceOf(ctx, f);
+      if (!f || !s) return;
+      b.disabled = true;
+      b.textContent = "Loading";
+      try {
+        const blob = await MZip.extractBlob(s.file, f, mimeOfAudio(f.name));
+        const url = URL.createObjectURL(blob);
+        const slot = b.parentElement.querySelector(".au-slot");
+        slot.innerHTML = '<audio controls preload="none" src="' + url + '"></audio>';
+        b.remove();
+      } catch (err) {
+        b.disabled = false;
+        b.textContent = "Would not play";
+      }
+    });
+  }
+
+  const AUDIO_MIME = { m4a: "audio/mp4", mp3: "audio/mpeg", wav: "audio/wav",
+                       aac: "audio/aac", opus: "audio/ogg", ogg: "audio/ogg",
+                       flac: "audio/flac" };
+  const mimeOfAudio = (n) =>
+    AUDIO_MIME[(n.split(".").pop() || "").toLowerCase()] || "audio/mpeg";
+
+  const bytesText = (n) => {
+    if (!n) return "0 B";
+    const u = ["B", "KB", "MB", "GB"];
+    const i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
+    return (n / Math.pow(1024, i)).toFixed(i ? 1 : 0) + " " + u[i];
+  };
+
   /* ---------- the registry ---------- */
 
   /* `only` is the list of providers a topic can possibly apply to. An
@@ -365,6 +737,30 @@ const MTopics = (function () {
       only: ["samsung", "apple", "google"],
       find: findHealth, draw: drawHealth,
       count: (m) => m.reduce((n, x) => n + x.table.rows.length, 0) },
+
+    /* These four read the archive rather than the parsed tables, so they are
+       marked `slow` - the view puts up a line saying it is reading before the
+       decompression starts, instead of a blank panel for a second. */
+    { key: "contacts", label: "Contacts", icon: "chat",
+      sub: "Everyone in your address book, as the export wrote them.",
+      only: null, slow: true,
+      find: findContacts, draw: drawContacts,
+      count: (m) => m[0].files.length },
+    { key: "calendar", label: "Calendar", icon: "clock",
+      sub: "Events and reminders, newest first.",
+      only: null, slow: true,
+      find: findCalendar, draw: drawCalendar,
+      count: (m) => m[0].files.length },
+    { key: "notes", label: "Notes", icon: "table",
+      sub: "What you wrote down.",
+      only: null, slow: true,
+      find: findNotes, draw: drawNotes,
+      count: (m) => m[0].files.length },
+    { key: "audio", label: "Audio", icon: "chat",
+      sub: "Recordings in this export, playable here.",
+      only: null, slow: true,
+      find: findAudio, draw: drawAudio,
+      count: (m) => m[0].files.length },
   ];
 
   /* Ruled out per table, for the same reason readers are chosen per table: the
@@ -382,30 +778,49 @@ const MTopics = (function () {
      nothing has to be found twice. Called on every sidebar redraw, so it must
      stay cheap: the finders read column names and one pass of rows, never a
      decode. */
-  function detect(lib) {
+  /* `ctx` carries the entry list and the source archives, which the
+     file-reading topics need and the table ones ignore. Both are already on
+     the explorer's state; nothing new is computed for this. */
+  function detect(lib, ctx) {
     const out = [];
     for (const t of TOPICS) {
       if (!appliesTo(t, lib)) continue;
       let m = null;
-      try { m = t.find(lib); } catch (err) { m = null; }
+      try { m = t.find(lib, ctx); } catch (err) { m = null; }
       if (!m || !m.length) continue;
-      const n = t.count(m);
+      let n = 0;
+      try { n = t.count(m); } catch (err) { n = 0; }
       if (!n) continue;
       out.push({ key: t.key, label: t.label, icon: t.icon, sub: t.sub, n, match: m, topic: t });
     }
     return out;
   }
 
-  function draw(key, el, lib) {
+  function draw(key, el, lib, ctx) {
     const t = TOPICS.find((x) => x.key === key);
     if (!t) return false;
-    const m = t.find(lib);
+    let m = null;
+    try { m = t.find(lib, ctx); } catch (err) { m = null; }
     if (!m || !m.length) {
       el.innerHTML = '<div class="ex-empty"><h3>Nothing here right now</h3>' +
         '<p class="muted">Your filter hides everything of this kind.</p></div>';
       return true;
     }
-    t.draw(el, m, lib);
+    /* Said before the work starts rather than after, because unpacking a few
+       hundred files out of an archive takes long enough to look like nothing
+       happened. */
+    if (t.slow) {
+      el.innerHTML = '<p class="loading">Reading your ' + esc(t.label.toLowerCase()) +
+        " out of the archive...</p>";
+    }
+    Promise.resolve()
+      .then(() => t.draw(el, m, lib, ctx))
+      .catch((err) => {
+        // A view that fails says so; it does not sit on "Reading..." forever.
+        if (!el.isConnected) return;
+        el.innerHTML = '<div class="ex-empty"><h3>That did not read</h3>' +
+          '<p class="muted">' + esc(String((err && err.message) || err)) + "</p></div>";
+      });
     return true;
   }
 
