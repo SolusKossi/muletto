@@ -400,6 +400,9 @@ async function readSource(file, seen) {
      unlocking, because a nested archive inside an encrypted one cannot be read
      until the outer archive is open. */
   const nest = await MZip.expandNested(file, outer, null, (a) => {
+    // Also the point where Stop takes effect inside a long archive, rather
+    // than only between one archive and the next.
+    readCancelled();
     if (seen && seen.say) {
       seen.say("Unpacking " + a.name.split("/").pop() +
                " (" + fmtBytes(a.size) + ") from inside " + file.name + "...");
@@ -453,7 +456,7 @@ async function readSource(file, seen) {
     ? 0
     : entries.filter((e) => e.encrypted || e.method === 99).length;
   return { name: file.name, size: file.size, file, entries, det, lib,
-           exportKey: key, dropped, locked, lockedNested };
+           exportKey: key, dropped, locked, skippedNested: nest.skipped };
 }
 
 /* Combine several exports into a single library. Each item remembers which
@@ -709,7 +712,20 @@ const WORK_FILE = /\.(muletto|json|gz)$/i;
    Without something to look at, the page appears to have hung at exactly the
    moment the user is deciding whether to trust it - so it says what it is
    doing, and that it is doing it here. */
+/* A full-screen curtain with no way out is the wrong thing to show somebody who
+   did not ask for the work. Reading a large export takes minutes, and until
+   this was here the only way to stop it was to close the tab. */
+const cancelRead = { wanted: false };
+
+function readCancelled() {
+  if (!cancelRead.wanted) return false;
+  const e = new Error("Stopped before anything was read.");
+  e.cancelled = true;
+  throw e;
+}
+
 function showCurtain(name) {
+  if (curtainDrop) { clearTimeout(curtainDrop); curtainDrop = null; }
   let el = document.getElementById("curtain");
   if (!el) {
     el = document.createElement("div");
@@ -720,9 +736,17 @@ function showCurtain(name) {
         <div class="curtain-bar"><i></i></div>
         <p class="curtain-msg" id="curtain-msg"></p>
         <p class="curtain-fine">Reading it here, on your machine. Nothing is being uploaded.</p>
+        <button class="btn ghost curtain-stop" id="curtain-stop">Stop</button>
       </div>`;
     document.body.appendChild(el);
+    el.querySelector("#curtain-stop").addEventListener("click", () => {
+      cancelRead.wanted = true;
+      curtainSay("Stopping...");
+    });
   }
+  cancelRead.wanted = false;
+  const stop = el.querySelector("#curtain-stop");
+  if (stop) { stop.disabled = false; stop.textContent = "Stop"; }
   document.body.classList.add("curtained");
   curtainSay(name);
   return el;
@@ -733,10 +757,16 @@ function curtainSay(msg) {
   if (el) el.textContent = msg || "";
 }
 
+/* The removal is deferred so the fade can finish. If another read starts
+   inside that window the element is reused, and without cancelling the pending
+   removal it would be torn out from under the new read - leaving the body
+   marked `curtained` with no curtain in it. */
+let curtainDrop = null;
+
 function hideCurtain() {
   document.body.classList.remove("curtained");
   const el = document.getElementById("curtain");
-  if (el) setTimeout(() => el.remove(), 320);
+  if (el) curtainDrop = setTimeout(() => { el.remove(); curtainDrop = null; }, 320);
 }
 
 async function handleFiles(fileList, opts) {
@@ -809,6 +839,7 @@ async function handleFiles(fileList, opts) {
   showCurtain("Opening your export...");
   try {
     for (let i = 0; i < files.length; i++) {
+      readCancelled();
       const msg = `Reading ${files[i].name} (${fmtBytes(files[i].size)})` +
         (files.length > 1 ? ` - ${i + 1} of ${files.length}` : "") + "...";
       curtainSay(msg);
@@ -827,9 +858,19 @@ async function handleFiles(fileList, opts) {
       sources.push(src);
     }
   } catch (e) {
+    hideCurtain();
+    if (e && e.cancelled) {
+      out.hidden = true;
+      out.innerHTML = "";
+      MNotify.push("Stopped", {
+        kind: "info",
+        body: "Nothing was read, and nothing was changed. Your archives are exactly " +
+          "as they were - open them again whenever you want.",
+      });
+      return;
+    }
     if (status) status(e.message);
     else out.innerHTML = `<p class="loading">${esc(e.message)}</p>`;
-    hideCurtain();
     return;
   }
 
@@ -2349,33 +2390,62 @@ function addExploreLink() {
    there is nothing to upload and nothing to choose again. If one has since
    been moved or deleted, say which - the library is still browsable, but its
    pictures cannot be decoded. */
-async function restoreLibrary() {
-  // A top-level const is not a property of window, so test the binding itself.
+/* Landing on the page and having it start reading gigabytes unasked is
+   alarming in exactly the way this product cannot afford: the one question a
+   visitor has is whether their files are going anywhere, and work they did not
+   start is the worst possible answer. It also happened at the worst moment -
+   after the reader changed, so the "stale" branch below silently re-read every
+   archive.
+
+   So nothing happens now until it is asked for. What is kept is described, and
+   the reader chooses. */
+async function offerLibrary() {
   if (typeof MStore === "undefined" || !$("#drop")) return false;
   let saved = null;
   try { saved = await MStore.load(); } catch { saved = null; }
   if (!saved) return false;
 
+  const slot = $("#restore");
+  if (!slot) return false;
+
+  const files = saved.sources.map((x) => x.file).filter(Boolean);
+  const reread = saved.stale && (!saved.missing || !saved.missing.length) && files.length > 0;
+  const label = saved.sources.map((s) => s.name).join(", ");
+  const when = saved.savedAt ? fmtDate(new Date(saved.savedAt)) : null;
+  const bytes = saved.sources.reduce((n, s) => n + (s.size || 0), 0);
+
+  slot.hidden = false;
+  slot.className = "resume-card";
+  slot.innerHTML = `
+    <div>
+      <strong>You had an export open here${when ? " on " + esc(when) : ""}.</strong>
+      <div class="muted small">${esc(label)}${bytes ? " &middot; " + esc(fmtBytes(bytes)) : ""}${
+        reread ? " &middot; would be read again from the same files, which takes a few minutes"
+               : " &middot; picks up in a moment"}</div>
+    </div>
+    <div class="tool-actions">
+      <button class="btn primary" id="restore-go">${reread ? "Read it again" : "Pick up where I left off"}</button>
+      <button class="btn ghost" id="restore-drop">Start fresh</button>
+    </div>`;
+
+  $("#restore-drop", slot).addEventListener("click", async () => {
+    await MStore.clear().catch(() => {});
+    slot.hidden = true;
+    slot.innerHTML = "";
+  });
+
+  $("#restore-go", slot).addEventListener("click", async () => {
+    $("#restore-go", slot).disabled = true;
+    slot.hidden = true;
+    if (reread) await handleFiles(files);
+    else await restoreLibrary(saved);
+  });
+  return true;
+}
+
+async function restoreLibrary(saved) {
   const out = $("#import-result");
   out.hidden = false;
-
-  /* Read by an older version of the reader. The archives are still on disk and
-     still referenced, so the honest thing is to read them again rather than
-     show a library missing everything learned since. Encrypted archives will
-     ask for the password again, which is the cost of never storing it. */
-  if (saved.stale && (!saved.missing || !saved.missing.length)) {
-    const files = saved.sources.map((x) => x.file).filter(Boolean);
-    if (files.length) {
-      MNotify.push("Reading your export again", {
-        kind: "work",
-        body: "Muletto has learned to get more out of these archives since you last " +
-          "opened them, so it is reading them again from the same files. Nothing was " +
-          "downloaded and nothing left this device.",
-      });
-      await handleFiles(files);
-      return true;
-    }
-  }
 
   showCurtain("Picking up where you left off...");
 
@@ -2436,10 +2506,10 @@ if (navigator.storage && navigator.storage.persist) {
 if ($("#home-logos")) renderLogos();
 if (document.querySelector("figure.figshot")) wireShots();
 if ($("#drop")) wireImport();
-// Restoring wins over prompting; only ask for files when there is nothing kept.
+// Offer only. Nothing is read until somebody asks for it.
 if ($("#drop")) {
-  restoreLibrary().then((ok) => { if (!ok) noteReopenNeeded(); });
-} 
+  offerLibrary().then((ok) => { if (!ok) noteReopenNeeded(); });
+}
 if ($("#try-samples")) $("#try-samples").addEventListener("click", (e) => loadSamples(e.target));
 if ($("#resume")) offerResume();
 
