@@ -58,7 +58,12 @@ The layer everything else sits on. A failure here loses a whole export.
 | What | State | Notes |
 |---|---|---|
 | Zip central directory, deflate | `V` | Every export opened so far |
-| Zip64 (over 4 GB, over 65535 entries) | `S` | Never seen a real one. A heavy Takeout or iCloud Photos export will be the first |
+| Zip64 (over 4 GB) | `V` | **Confirmed against the real Google Takeout.** `takeout-1-001.zip` is 12.67 GB with 5041 entries, 2362 of them past the 4 GB offset mark, and the directory reads in 21 ms. `takeout-4-001.zip` is 22.89 GB. Reading only - see the rows below for what happens when those entries are written back out |
+| Over 65535 entries in one archive | `S` | Still unseen. The largest real archive here has 5041 |
+| An entry larger than 2 GB | `V` | That Takeout holds a 5.31 GB `.avi` and three `.mp4` over 4 GB. They could not be exported: `extract` returns one contiguous `Uint8Array` and that throws above 2 GB, so the largest file in the library was counted as "could not be written". Anything over 64 MB is now piped from source to destination and never exists in one piece |
+| Both ways of holding a large file, measured | `V` | They fail in the same place, which is why routing through a Blob fixed nothing. Contiguous `Uint8Array`: 1.5 GB OK, 2 GB `RangeError`. Single Blob: 1500 MB OK, 2048 MB `TypeError: Failed to fetch`. Reported storage quota was 5.5 GB, so the Blob ceiling is per blob rather than the quota |
+| Writing an entry too big to hold | `V` | 3 GB through the real zip writer in 12.5 s with every byte accounted for, peak heap 546 MB. A 60 MB round trip reads back with the right size, the right marker bytes at the chunk edges, and a deflated entry intact |
+| Thumbnail for a video over 1 GB | `V` | Skipped deliberately. A poster frame has to hand the file to a `<video>` element, so it needs a Blob and inherits the 2 GB ceiling; without the guard the tile spent a minute inflating before failing and showing nothing anyway |
 | Stored (uncompressed) entries | `V` | |
 | Data descriptors (general purpose bit 3) | `V` | Samsung sets it on two archives |
 | WinZip AES-256 (method 99) | `V` | All nine Samsung archives, 57 entries |
@@ -70,7 +75,8 @@ The layer everything else sits on. A failure here loses a whole export.
 | Streamed head reads inside an encrypted entry | `V` | Was silently broken; fixed and re-checked |
 | `.tgz` / `.tar.gz` Takeout | `X` | **Not supported at all.** Google offers tgz and some people pick it |
 | Nested archives (a zip inside a zip) | `V` | Seven of the eighteen Apple archives hold zips. Run over that export, expansion opens **all ten** and takes the listing from **1020 entries to 1414** - the full 394 that were unreachable, including the 319 `.m4a` Siri recordings. Nothing is skipped. A nested CSV was read end to end through its blob |
-| A nested archive over a gigabyte | `V` | `Apple Features Using iCloud.zip` is **1.34 GB** and now opens. It is streamed into a Blob rather than inflated into an array, so the browser pages it to disk: measured in Chrome, **1.5 GB costs 12 MB of JS heap**, and slices out of it still read. Measured on the same machine, the contiguous allocation this replaced succeeds at 1.5 GB and throws `RangeError` at 2 GB - so the old 512 MB refusal was guarding the wrong thing |
+| A nested archive over a gigabyte | `V` | `Apple Features Using iCloud.zip` is **1.34 GB** and now opens. It is streamed into a Blob rather than inflated into an array, so the browser pages it to disk: measured in Chrome, **1.5 GB costs 12 MB of JS heap**, and slices out of it still read. The old 512 MB refusal was guarding the wrong thing |
+| A nested archive over 1500 MB | `X` | Unlike an exported file, a nested archive cannot stay a stream - reading its directory means slicing at arbitrary offsets, so it has to be a Blob, and a single Blob fails at 2048 MB. Capped at the 1500 MB that was measured to work. Apple's 1.34 GB clears it; a larger one would not, and is reported as too big rather than as damaged |
 | Nested archive that is deflated, not stored | `V` | The real Apple shape is method 8. Confirmed in the browser with a hand-built deflated nested zip holding a 40 MB payload: expands, progress fires, heap does not grow (115 MB -> 110 MB), and both a nested CSV and the head of the nested 40 MB file read back |
 | A nested archive still refused | `V` | Three reasons remain and each is confirmed in the browser: an **encrypted** nested archive over 256 MB (decryption needs a contiguous buffer and cannot stream), the **archive-count budget**, and **unreadable or damaged**. Each becomes a note on the library naming the file, its size and what to do |
 | A nested archive left unopened, unpacked by hand | `X` | The note tells the user to unzip that one file and drop it in on its own. That instruction has not been walked. Now a rare path rather than the common one |
@@ -92,7 +98,7 @@ The layer everything else sits on. A failure here loses a whole export.
 | Older download superseded by a newer one | `V` | |
 | Content dedup across parts | `V` | Meta repeats JSON across parts |
 | Near-duplicate photo detection (dHash) | `V` | Gated on luminance after solid black and solid white collided |
-| Writing the library back out to folders | `V` | Chrome |
+| Writing the library back out to folders | `V` | Chrome. A large entry is piped straight to the file handle, which is itself a `WritableStream` |
 | Writing out as a single archive | `S` | |
 | Dates written back into JPEG EXIF | `V` | |
 | Dates written back into HEIC | `X` | Not supported; stated in the app |
