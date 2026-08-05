@@ -1561,6 +1561,12 @@ body.curtained #curtain { opacity: 1; pointer-events: auto; }
   transition: color var(--t) var(--ease), border-color var(--t) var(--ease); }
 .nt-bell:hover { color: var(--ink); border-color: var(--muted); }
 .nt-bell svg { width: 19px; height: 19px; }
+/* Beside the Export button, the bell is built from the same box as `.btn.sm`
+   rather than given a number of its own: same padding, same border, so the two
+   line up by construction instead of by a measurement that drifts the next
+   time the button's padding changes. It was 38px against the button's 31. */
+.ex-topact .nt-bell { width: auto; height: auto; padding: 7px; border-radius: var(--radius); }
+.ex-topact .nt-bell svg { width: 15px; height: 15px; }
 .nt-dot { position: absolute; top: 7px; right: 8px; width: 8px; height: 8px;
   border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); }
 .nt-dot[hidden] { display: none; }
@@ -2447,12 +2453,20 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    ========================================================================== */
 /* Cards sized by content, not by a grid that forces a profile of six fields
    to be as tall as a chart of four hundred readings. */
-/* Cards in a row share a height, so a row does not end in a ragged shelf of
-   white where a short card sat beside a tall one. `align-items: start` let
-   every card keep its natural height, which read as boxes scattered at random
-   with gaps between them. */
-.cards { display: grid; gap: 14px; align-items: stretch;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+/* A collage, not a grid.
+ *
+ * Grid gave two bad shapes and no good one. `align-items: start` left every
+ * card its own height and a row ended in a ragged shelf of white; `stretch`
+ * fixed the shelf by blowing every card up to match its tallest neighbour,
+ * so a card with one line in it became four hundred pixels of empty box.
+ *
+ * Columns give what was actually wanted: each card is exactly as tall as its
+ * contents and the next one starts immediately beneath it. Masonry in grid
+ * would be the modern answer but it is not shipping in enough browsers to
+ * rely on, and this needs no script. */
+.cards { display: block; columns: 300px; column-gap: 14px; }
+.cards > .card { break-inside: avoid; -webkit-column-break-inside: avoid;
+  margin: 0 0 14px; display: inline-block; width: 100%; }
 .card { border: 1px solid var(--line); border-radius: 14px; background: var(--card);
   padding: 16px 16px 14px; min-width: 0; }
 .card header { display: flex; align-items: baseline; justify-content: space-between;
@@ -2504,8 +2518,17 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   font-size: 12.5px; }
 .card-items li { display: flex; gap: 10px; justify-content: space-between;
   align-items: baseline; }
-.card-items li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* `min-width: 0` is what makes the ellipsis work at all. A flex item will not
+   shrink below its content width without it, so the title ran straight under
+   the date instead of being cut - which is why a video called "...(But it's a
+   Kanye AI cover)" printed on top of "Aug 2024". */
+.card-items li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0; flex: 1 1 auto; }
 .card-items time { color: var(--muted); font-size: 11px; white-space: nowrap; flex: none; }
+/* The overflow rows live in the page and are revealed in place. `display:
+   contents` keeps them as list items rather than one block inside the list. */
+.card-rest { display: contents; }
+.card-more { font-size: 11.5px; }
 
 .card-other .thin { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 5px;
   font-size: 12.5px; }

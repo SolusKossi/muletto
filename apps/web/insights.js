@@ -522,8 +522,11 @@ const MInsight = (function () {
       })).filter((x) => x.label);
       if (items.length) {
         items.sort((a, b) => (b.at || 0) - (a.at || 0));
+        /* Twelve are drawn and the rest are carried so the card can be opened
+           without going back to the table. Sixty is where a card stops being
+           a summary; past that the reader wants Records. */
         out.push({ kind: "list", title: t.name, source: t.source, path: t.path,
-                   items: items.slice(0, 12), n: items.length, span });
+                   items: items.slice(0, 60), n: items.length, span });
       }
     }
 

@@ -2005,12 +2005,25 @@ function cardHtml(c) {
       '<footer><span>' + cardNum(c.n) + " rows</span></footer>" + span + "</article>";
   }
   if (c.kind === "list") {
+    /* "16 more" with nothing to click was a card telling the reader what it
+       had decided not to show them. The rest are in the page, hidden, and the
+       button reveals them. */
+    const shown = c.items.slice(0, 12);
+    const rest = c.items.slice(12);
+    const li = (it) => "<li><span>" + esc(it.label) + "</span>" +
+      (it.at ? "<time>" + shortDate(it.at) + "</time>" : "") + "</li>";
+    const hiddenInFile = c.n - c.items.length;
     return '<article class="card card-list">' + head +
-      '<ol class="card-items">' + c.items.map((it) =>
-        "<li><span>" + esc(it.label) + "</span>" +
-        (it.at ? "<time>" + shortDate(it.at) + "</time>" : "") + "</li>").join("") + "</ol>" +
-      (c.n > c.items.length
-        ? '<footer><span>' + cardNum(c.n - c.items.length) + " more</span></footer>" : "") +
+      '<ol class="card-items">' + shown.map(li).join("") +
+      (rest.length ? '<span class="card-rest" hidden>' + rest.map(li).join("") + "</span>" : "") +
+      "</ol>" +
+      (rest.length
+        ? '<footer><button type="button" class="card-more linklike" data-n="' + rest.length + '">' +
+          "Show " + cardNum(rest.length) + " more</button></footer>"
+        : "") +
+      (hiddenInFile > 0
+        ? '<footer><span class="muted">' + cardNum(hiddenInFile) +
+          " more are in the table, under Records.</span></footer>" : "") +
       span + "</article>";
   }
   if (c.kind === "other") {
@@ -2108,7 +2121,26 @@ function renderHighlights(panel, lib) {
     return;
   }
   panel.innerHTML = cover + '<div class="cards">' + cards.map(cardHtml).join("") + "</div>";
+
 }
+
+/* On the document, not on the panel.
+ *
+ * The explorer hands a fresh panel to each render and discards the previous
+ * one, so a listener bound to the panel was gone by the time anybody clicked -
+ * the button was there, styled and labelled, and did nothing at all. Bound
+ * once here, it survives every redraw. */
+document.addEventListener("click", (ev) => {
+  const btn = ev.target.closest && ev.target.closest(".card-more");
+  if (!btn) return;
+  const card = btn.closest(".card");
+  const rest = card && card.querySelector(".card-rest");
+  if (!rest) return;
+  rest.hidden = !rest.hidden;
+  btn.textContent = rest.hidden
+    ? "Show " + cardNum(Number(btn.dataset.n)) + " more"
+    : "Show fewer";
+});
 
 /* A cell that is not a string.
 
@@ -2172,6 +2204,28 @@ function cellText(v) {
 
 const cellTitle = (v) => (v && typeof v === "object" ? JSON.stringify(v) : "");
 
+/* Which columns a person came to read.
+ *
+ * `comments.csv` is Comment ID, Channel ID, timestamp, Price, Parent comment
+ * ID, Post ID, Video ID, **Comment text**, Top-level comment ID. Shown in file
+ * order that puts four opaque identifiers on screen and pushes the actual
+ * comment off the right edge behind a scrollbar - which reads, reasonably
+ * enough, as the text having been withheld. It was there the whole time.
+ *
+ * The columns are not reordered arbitrarily: identifiers are moved to the end
+ * and everything else keeps its original order, so the table still looks like
+ * the file it came from. */
+const ID_COLUMN = /(^|[ _])(id|ids|uuid|guid|hash|token|key)([ _]|$)/i;
+
+function readableOrder(columns) {
+  const order = columns.map((c, i) => i);
+  return order.sort((a, b) => {
+    const ai = ID_COLUMN.test(columns[a]) ? 1 : 0;
+    const bi = ID_COLUMN.test(columns[b]) ? 1 : 0;
+    return ai - bi || a - b;
+  });
+}
+
 function renderTables(panel, lib) {
   learnVideoTitles(lib);
   if (!lib.tables.length) {
@@ -2189,11 +2243,15 @@ function renderTables(panel, lib) {
   const draw = (i) => {
     const t = lib.tables[i];
     const rows = t.rows.slice(0, 200);
+    const ord = readableOrder(t.columns);
+    const from = t.fromFiles > 1
+      ? ` Joined from ${plural(t.fromFiles, "file", "files")} the export split it across.` : "";
     box.innerHTML = `
-      <p class="muted small">${plural(t.rows.length, "row", "rows")}${t.rows.length > rows.length ? `, showing 200` : ""}.</p>
+      <p class="muted small">${plural(t.rows.length, "row", "rows")}${t.rows.length > rows.length ? `, showing 200` : ""}.${from}</p>
       <div class="tablewrap"><table>
-        <thead><tr>${t.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>
-        <tbody>${rows.map((r) => `<tr>${t.columns.map((col, ci) => {
+        <thead><tr>${ord.map((ci) => `<th>${esc(t.columns[ci])}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map((r) => `<tr>${ord.map((ci) => {
+          const col = t.columns[ci];
           const v = r[ci];
           // Only in a column that says it holds video IDs, so an eleven
           // character string somewhere else is not turned into a link.

@@ -931,11 +931,63 @@ const MParse = (function () {
     return lib;
   }
 
+  /* One table that arrived as fourteen files.
+   *
+   * Google splits a large table across numbered CSVs - a real Takeout ships
+   * `comments.csv` through `comments(13).csv`, 206 rows each - and every one
+   * of them was listed as its own table. Fourteen entries in the sidebar with
+   * the same name, none of which is the thing the reader is looking for, and
+   * no single view of their comments anywhere.
+   *
+   * Merged only when the columns match exactly, because a matching name is not
+   * on its own evidence that two tables are the same table. Rows that appear
+   * twice are dropped: the numbered files are pages, but an export that
+   * repeats a page should not double it.
+   */
+  function mergePagedTables(lib) {
+    const groups = new Map();
+    for (const t of lib.tables || []) {
+      const stem = String(t.name || "").replace(/\s*\((\d+)\)\s*$/, "").trim();
+      // JSON rather than a separator character. Written with control bytes
+      // between the parts, this put a literal 0x00 and 0x01 into the source -
+      // the failure this project has a house rule about.
+      const key = JSON.stringify([stem, t.columns || []]);
+      if (!groups.has(key)) groups.set(key, { stem, list: [] });
+      groups.get(key).list.push(t);
+    }
+    const out = [];
+    let mergedFrom = 0, mergedInto = 0;
+    for (const { stem, list } of groups.values()) {
+      if (list.length === 1) { out.push(list[0]); continue; }
+      const seen = new Set();
+      const rows = [];
+      for (const t of list) {
+        for (const r of t.rows || []) {
+          const k = JSON.stringify(r);
+          if (seen.has(k)) continue;
+          seen.add(k);
+          rows.push(r);
+        }
+      }
+      mergedFrom += list.length;
+      mergedInto++;
+      out.push({ name: stem, path: list[0].path, source: list[0].source,
+                 columns: list[0].columns, rows, fromFiles: list.length });
+    }
+    if (mergedInto) {
+      lib.tables = out;
+      lib.notes.push(plural(mergedFrom, "file was", "files were") + " joined into " +
+        plural(mergedInto, "table", "tables") + ", because this export splits a long " +
+        "table across numbered files. Nothing was lost and repeated rows were dropped.");
+    }
+  }
+
   async function parse(file, entries, detected, say) {
     const slug = detected && detected.slug;
     const finish = async (libPromise) => {
       if (say) say("Working out what is in " + (detected && detected.label ? detected.label : "this export") + "...");
       const lib = await libPromise;
+      mergePagedTables(lib);
       await readPhotoDates(lib, file, 800, say);
       await readVideoDates(lib, file, 200, say);
       return lib;
