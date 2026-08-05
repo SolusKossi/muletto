@@ -28,7 +28,7 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "8727d4fbc345";
+const VERSION = "0d41ad7afe0d";
 const PRECACHE = [
   "/app.html",
   "/styles.css?v=19ab34a6",
@@ -44,7 +44,7 @@ const PRECACHE = [
   "/caption.js?v=5d10cb7e",
   "/captionui.js?v=fc9b3409",
   "/zipcrypt.js?v=8e2f0449",
-  "/zip.js?v=ee185d21",
+  "/zip.js?v=d39c5d14",
   "/zipout.js?v=5c9c3222",
   "/exif.js?v=7b45a4ab",
   "/heif.js?v=d0ffffd5",
@@ -59,9 +59,9 @@ const PRECACHE = [
   "/basemap.js?v=cbb6dfca",
   "/rail.js?v=b4bc5944",
   "/views.js?v=9f5101e0",
-  "/export.js?v=68df0ef2",
+  "/export.js?v=bad236d2",
   "/explorer.js?v=b9c16d1f",
-  "/app.js?v=477176cb",
+  "/app.js?v=eb35e884",
   "/swreg.js?v=266bec3b",
   "/fonts/host-grotesk-var-italic.woff2",
   "/fonts/host-grotesk-var.woff2"
