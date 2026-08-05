@@ -106,7 +106,12 @@ const MNotify = (function () {
      is re-parked whenever the surroundings change, and falls back to the
      corner if there is nothing to park it in. */
   function park() {
-    if (!hub) return;
+    /* The bell used to exist only once something had been pushed, because
+       `mount` was reached solely through `push` and `task`. So a library
+       opened quietly - or reopened from storage - had no bell at all, and the
+       notices already in the list had nowhere to be read from. Building it on
+       demand is safe: `mount` returns early if it has already run. */
+    if (!hub) { mount(); if (!hub) return; }
     const slot = document.querySelector("#ex-bell") ||
                  document.querySelector(".nav .nav-right");
     if (slot && hub.parentNode !== slot) {

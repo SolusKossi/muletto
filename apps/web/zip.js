@@ -28,6 +28,7 @@ const MZip = (function () {
 
   /* Read the central directory. Touches only the tail of the archive. */
   async function readDirectory(file) {
+    throwIfCancelled();
     // The end-of-central-directory record sits in the last 22 bytes plus up to
     // 64 KB of trailing comment.
     const tailLen = Math.min(file.size, 22 + 65535);
@@ -151,6 +152,7 @@ const MZip = (function () {
   const src = (file, entry) => (entry && entry.blob) || file;
 
   async function extract(file, entry) {
+    throwIfCancelled();
     const f = src(file, entry);
     const head = await readRange(f, entry.localOff, 30);
     const hdv = new DataView(head.buffer);
@@ -225,6 +227,7 @@ const MZip = (function () {
      Needed for files far too large to hold in memory - a Gmail mailbox can be
      tens of gigabytes - so callers can consume them incrementally. */
   async function streamEntry(file, entry) {
+    throwIfCancelled();
     /* An encrypted entry cannot be streamed: the bytes on disk are ciphertext
        and feeding them to the inflater throws. Decrypting needs the whole
        entry anyway - the check bytes are at the front and the counter runs
@@ -262,6 +265,21 @@ const MZip = (function () {
      Google Takeout can hold a 5.3 GB video, so every caller that only wants a
      Blob - a poster frame, a clip to play, a file to write out - would have
      failed on it while the same file streams for 12 MB of heap. */
+  /* Stopping, kept here because every read in the app goes through this file.
+     A flag checked at each entry point unwinds whatever loop is running, which
+     is the only way Stop can be quick: the work is not one long operation but
+     thousands of small ones, and the slow part is usually a loop over entries
+     rather than any single read. */
+  const stop = { wanted: false };
+  function setCancelled(v) { stop.wanted = !!v; }
+  function cancelled() { return stop.wanted; }
+  function throwIfCancelled() {
+    if (!stop.wanted) return;
+    const e = new Error("Stopped before anything was read.");
+    e.cancelled = true;
+    throw e;
+  }
+
   async function extractBlob(file, entry, type) {
     const stream = await streamEntry(file, entry);
     const blob = await new Response(stream).blob();
@@ -417,6 +435,6 @@ const MZip = (function () {
      one. Kept here rather than threaded through every call because an archive
      has one password and every entry in it needs the same one. */
   Object.assign(api, { readDirectory, extract, streamEntry, readHead, extractText,
-    extractJson, extractBlob, expandNested });
+    extractJson, extractBlob, expandNested, setCancelled, cancelled });
   return api;
 })();
