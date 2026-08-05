@@ -38,11 +38,11 @@ YouTube Music. The full list is on
 | Drive | 845 | Listed |
 | Google Play Games Services | 273 | Listed |
 | YouTube and YouTube Music | 192 | **View** - comments, with replies threaded. Playlists, subscriptions and video metadata are **Read** |
-| My Activity | 31 | Listed |
+| My Activity | 31 | **View** - Search and watch history, parsed from Google HTML |
 | Keep | 14 | Listed |
 | Maps | 10 | **Read** - places |
 | Chrome, Contacts, Calendar, Play Store, Pay, and 30 more areas | ~60 | Listed |
-| Mail (mbox) | 1 file | Listed. A single 776 MB mbox |
+| Mail (mbox) | 1 file | **View** - Mail. Headers only, streamed, so a 776 MB mbox becomes searchable without holding a message |
 
 **What works well.** Photos is the strongest path in the product: the sidecar
 JSON gives back the date and the location that the file itself lost, and that
@@ -56,10 +56,10 @@ read without unpacking anything.
 
 **Known gaps, in the order they hurt:**
 
-- **Gmail is a single mbox and is only listed.** No thread view, no search
-  across mail, no attachment extraction.
-- **My Activity is HTML** - search history, watch history, and app usage all
-  live there, and none of it is parsed.
+- **Mail is headers only.** Who, what and when - no bodies, no attachments, no
+  thread view.
+- **The YouTube history file is skipped above 20 MB.** In a real Takeout it is
+  48 MB on its own; the other ten products read fine.
 - Chrome history and Keep are listed rather than read. Contacts (`.vcf`) and
   Calendar (`.ics`) now have views, and Google ships both.
 
@@ -108,15 +108,16 @@ service still uses.
 |---|---|
 | Samsung Health - Heart Rate, Weight, Goal, Food Goal, Device Profile, User Profile | **View** - Health, with a panel per kind found and a list of the kinds that are absent |
 | Samsung Account, Galaxy Store, Samsung Cloud, SmartThings Find, PENUP | **Read** as tables |
-| S-Note3 | Listed - **21 `.spd` note containers, unopened** |
+| S-Note3 | **Read** - `.spd` is a zip, so the 21 notes open and the **21 pictures inside them** come out. The handwriting itself is a proprietary binary and stays unread |
 | S-Browser Tabs, Subscription Hub | **Read** |
-| `.xlsx` (Samsung Account, ANS tickets) | **Not read.** A zip of XML, and we already have the inflater |
+| `.xlsx` (Samsung Account, ANS tickets) | **Read** as tables - shared strings resolved, absent cells placed by reference |
 
 **What works well.** The Health view, and the catalogue of seventeen health
 kinds behind it - so an export that contains two of them says which fifteen are
 missing and what each would need.
 
-**Known gaps:** `.xlsx` and `.spd`. Both are containers we could open.
+**Known gaps:** the S Note page format itself. It is proprietary, so the words
+and strokes of a handwritten note stay unread - the pictures in them do not.
 
 ---
 

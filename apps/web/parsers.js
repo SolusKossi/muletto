@@ -982,11 +982,104 @@ const MParse = (function () {
     }
   }
 
+  /* Spreadsheets, which are zips of XML.
+   *
+   * Samsung sends the Samsung Account dump and the support ticket list as
+   * .xlsx and both were unread - the one format in that export where the
+   * container was already openable and nobody had opened it. Confirmed by
+   * magic bytes on the real files: 50 4b 03 04, an ordinary zip.
+   *
+   * Two parts matter. `xl/sharedStrings.xml` is a pool of every distinct
+   * string in the workbook, and `xl/worksheets/sheet1.xml` holds the cells,
+   * where a cell of type `s` carries an index into that pool rather than the
+   * text. Reading the sheet without the pool gives a spreadsheet of integers.
+   */
+  function xmlText(s) {
+    return String(s == null ? "" : s)
+      .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+      .replace(/&#(\d+);/g, (m, d) => String.fromCharCode(+d))
+      .replace(/&amp;/g, "&");
+  }
+
+  // "BC12" -> 54. Needed because empty cells are simply absent from the XML,
+  // so a row's values have to be placed by column rather than in order.
+  function colIndexOf(ref) {
+    const m = /^([A-Z]+)/.exec(String(ref || ""));
+    if (!m) return -1;
+    let n = 0;
+    for (const ch of m[1]) n = n * 26 + (ch.charCodeAt(0) - 64);
+    return n - 1;
+  }
+
+  async function readXlsx(file, entry) {
+    const bytes = await MZip.extract(file, entry);
+    const inner = new Blob([bytes]);
+    const parts = await MZip.readDirectory(inner);
+    const sheet = parts.find((p) => /^xl\/worksheets\/sheet1\.xml$/i.test(p.name)) ||
+                  parts.find((p) => /^xl\/worksheets\/.*\.xml$/i.test(p.name));
+    if (!sheet) return null;
+
+    const pool = [];
+    const shared = parts.find((p) => /^xl\/sharedStrings\.xml$/i.test(p.name));
+    if (shared) {
+      const sx = await MZip.extractText(inner, shared);
+      for (const si of sx.split(/<si[ >]/).slice(1)) {
+        // A string can be split across several runs; the text is all of them.
+        let text = "";
+        for (const t of si.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)) text += t[1];
+        pool.push(xmlText(text));
+      }
+    }
+
+    const sx = await MZip.extractText(inner, sheet);
+    const rows = [];
+    for (const rowXml of sx.split(/<row[ >]/).slice(1)) {
+      const cells = [];
+      for (const c of rowXml.matchAll(/<c([^>]*)>([\s\S]*?)<\/c>|<c([^>]*)\/>/g)) {
+        const attrs = c[1] || c[3] || "";
+        const body = c[2] || "";
+        const at = colIndexOf((/r="([A-Z]+\d+)"/.exec(attrs) || [])[1]);
+        const type = (/t="([^"]+)"/.exec(attrs) || [])[1] || "n";
+        let v = "";
+        if (type === "inlineStr") {
+          for (const t of body.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)) v += t[1];
+          v = xmlText(v);
+        } else {
+          const raw = xmlText((/<v>([\s\S]*?)<\/v>/.exec(body) || [])[1] || "");
+          v = type === "s" ? (pool[+raw] || "") : raw;
+        }
+        if (at >= 0) cells[at] = v; else cells.push(v);
+      }
+      for (let i = 0; i < cells.length; i++) if (cells[i] === undefined) cells[i] = "";
+      rows.push(cells);
+    }
+    while (rows.length && rows[rows.length - 1].every((x) => !x)) rows.pop();
+    if (rows.length < 2) return null;
+    return { columns: rows[0].map((c, i) => c || "Column " + (i + 1)), rows: rows.slice(1) };
+  }
+
+  async function addSpreadsheets(lib, file, entries, say) {
+    const sheets = entries.filter((e) => /\.xlsx$/i.test(e.name));
+    if (!sheets.length) return;
+    if (say) say("Reading " + plural(sheets.length, "spreadsheet", "spreadsheets") + "...");
+    for (const e of sheets.slice(0, 40)) {
+      try {
+        const t = await readXlsx(file, e);
+        if (t && t.rows.length) {
+          lib.tables.push({ name: base(e.name).replace(/\.xlsx$/i, ""), path: e.name,
+                            columns: t.columns, rows: t.rows });
+        }
+      } catch (err) { /* a spreadsheet we cannot read is still listed as a file */ }
+    }
+  }
+
   async function parse(file, entries, detected, say) {
     const slug = detected && detected.slug;
     const finish = async (libPromise) => {
       if (say) say("Working out what is in " + (detected && detected.label ? detected.label : "this export") + "...");
       const lib = await libPromise;
+      await addSpreadsheets(lib, file, entries, say);
       mergePagedTables(lib);
       await readPhotoDates(lib, file, 800, say);
       await readVideoDates(lib, file, 200, say);

@@ -2798,3 +2798,34 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   white-space: nowrap; min-width: 0; }
 .au-slot { grid-column: 1 / -1; }
 .au-slot audio { width: 100%; margin-top: 6px; }
+
+/* Search and watch history: when on the left, what on the right. */
+.ac-list { list-style: none; margin: 0; padding: 0; }
+.ac-list li { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px;
+  padding: 7px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.ac-when { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ac-what { font-size: 13.5px; overflow-wrap: anywhere; }
+.ac-verb { color: var(--muted); }
+.ac-prod { display: inline-block; margin-left: 8px; font-size: 11px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; }
+
+/* Mail. Headers only, and the page says so. */
+.ml-top { list-style: none; margin: 0 0 4px; padding: 0; }
+.ml-top li { display: flex; justify-content: space-between; gap: 12px;
+  padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.ml-top em { font-style: normal; font-size: 12px; }
+.ml-list { list-style: none; margin: 0; padding: 0; }
+.ml-list li { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px;
+  padding: 7px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.ml-when { font-size: 12px; color: var(--muted); }
+.ml-list b { font-size: 13.5px; font-weight: 560; display: block; overflow-wrap: anywhere; }
+
+/* Logins and devices. */
+.lg-grid { display: block; columns: 340px; column-gap: 12px; }
+.lg-card { break-inside: avoid; -webkit-column-break-inside: avoid; display: inline-block;
+  width: 100%; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--card); padding: 14px 16px; }
+.lg-card h3 { margin: 0 0 2px; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.lg-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.lg-list li { padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; }
+.lg-list b { display: block; font-weight: 560; overflow-wrap: anywhere; }
