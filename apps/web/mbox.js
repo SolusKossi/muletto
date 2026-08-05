@@ -46,7 +46,21 @@ const MMbox = (function () {
   };
 
   /* Index a mailbox from a byte stream. onProgress(bytesRead, messagesFound). */
-  async function index(stream, { limit = 50000, onProgress = null } = {}) {
+  /* Keeping the bodies as well as the headers.
+   *
+   * The mbox lives inside a deflated zip entry, so there is no seeking back to
+   * a message later - reaching byte forty million means inflating the first
+   * forty million again. One pass is all there is.
+   *
+   * So a body is collected as it goes past and parked in its own Blob when the
+   * message ends. The browser pages blob storage to disk, which is the same
+   * trick the tar reader uses: peak heap is one message rather than one
+   * mailbox, and every body is still there to be opened.
+   *
+   * Bounded by total bytes rather than by count, because a hundred short
+   * messages and a hundred with photographs in them are not the same ask. */
+  async function index(stream, { limit = 50000, bodyBytes = 256 * 1024 * 1024,
+                                 onProgress = null } = {}) {
     const reader = stream.getReader();
     const dec = new TextDecoder("utf-8", { fatal: false });
     let carry = "";           // partial line held between chunks
@@ -54,9 +68,18 @@ const MMbox = (function () {
     let inHeaders = false;
     let current = null, lastKey = null;
     const messages = [];
+    let body = null, bodyHeld = 0, bodiesDropped = 0;
 
     const finish = () => {
       if (!current) return;
+      if (body && body.length) {
+        const text = body.join("\n");
+        if (bodyHeld + text.length <= bodyBytes) {
+          current.body = new Blob([text], { type: "text/plain" });
+          bodyHeld += text.length;
+        } else bodiesDropped++;
+      }
+      body = null;
       if (messages.length < limit) messages.push(current);
       else skipped++;
       current = null;
@@ -75,11 +98,17 @@ const MMbox = (function () {
 
         if (SEPARATOR.test(line)) {
           finish();
-          current = { from: null, to: null, subject: "", at: null, cc: null };
-          inHeaders = true; lastKey = null;
+          current = { from: null, to: null, subject: "", at: null, cc: null, body: null };
+          inHeaders = true; lastKey = null; body = [];
           continue;
         }
-        if (!current || !inHeaders) continue;
+        if (!current) continue;
+        if (!inHeaders) {
+          // Past the headers: everything until the next separator is the body.
+          // `line` already has any trailing carriage return taken off.
+          if (body) body.push(line);
+          continue;
+        }
         if (line === "") { inHeaders = false; continue; }   // headers end at a blank line
 
         if (/^[ \t]/.test(line) && lastKey) {               // folded continuation
@@ -105,7 +134,7 @@ const MMbox = (function () {
       if (onProgress) onProgress(read, count);
     }
     finish();
-    return { messages, skipped, bytesRead: read };
+    return { messages, skipped, bytesRead: read, bodiesDropped };
   }
 
   /* Turn an index into the shapes the viewer already knows how to display. */

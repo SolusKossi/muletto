@@ -28,10 +28,10 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "2bb1c4ce1224";
+const VERSION = "b1e35faebc2a";
 const PRECACHE = [
   "/app.html",
-  "/styles.css?v=d67e8e9c",
+  "/styles.css?v=e5001856",
   "/notify.js?v=f2cf1cf3",
   "/tips.js?v=0bdfdea4",
   "/jobs.js?v=3f996b9f",
@@ -50,7 +50,7 @@ const PRECACHE = [
   "/exif.js?v=7b45a4ab",
   "/heif.js?v=d0ffffd5",
   "/video.js?v=a66813af",
-  "/mbox.js?v=a465e9f3",
+  "/mbox.js?v=ee10197f",
   "/diagnose.js?v=33645a5d",
   "/contribute.js?v=c3b34297",
   "/mojibake.js?v=38849a41",
@@ -59,7 +59,7 @@ const PRECACHE = [
   "/insights.js?v=362a2b0d",
   "/basemap.js?v=cbb6dfca",
   "/rail.js?v=b4bc5944",
-  "/topics.js?v=b32a7089",
+  "/topics.js?v=63d741b2",
   "/views.js?v=9f5101e0",
   "/export.js?v=bad236d2",
   "/explorer.js?v=0d634a5e",

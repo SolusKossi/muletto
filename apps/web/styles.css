@@ -2812,40 +2812,41 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   overflow-wrap: anywhere; }
 
 /* Audio. One player for the whole list, moved to whichever row is playing.
-   The controls grow in on hover and stay once a row is chosen - nothing here
-   appears, everything arrives. */
+
+   The row keeps its full height at all times and the controls are simply
+   invisible until wanted. Animating the height made every row above the
+   pointer shuffle down as the mouse moved across the list, which is the
+   opposite of calm - the controls were already there, so revealing them is
+   all that should happen. */
 .au-list { list-style: none; margin: 0; padding: 0; }
-.au { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 12px;
-  align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--line);
+.au { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px;
+  align-items: center; padding: 7px 10px; border-bottom: 1px solid var(--line);
   border-radius: 8px; cursor: pointer;
   transition: background var(--t) var(--ease); }
 .au:hover, .au-on { background: var(--surface-2); }
 .au-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; min-width: 0; }
-.au-size { justify-self: end; }
-/* Height and opacity, not display:none - a box that flicks into existence is
-   the thing being complained about. */
-.au-ctl { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px;
-  max-height: 0; opacity: 0; margin-top: 0; overflow: hidden;
-  transform: translateY(-4px);
-  transition: max-height .22s var(--ease), opacity .18s var(--ease),
-    margin-top .22s var(--ease), transform .22s var(--ease); }
-.au:hover .au-ctl, .au-on .au-ctl { max-height: 60px; opacity: 1;
-  margin-top: 8px; transform: none; }
-.au-b { border: 1px solid var(--line); background: var(--surface); color: var(--body);
-  border-radius: 7px; font: inherit; font-size: 11.5px; padding: 3px 7px; cursor: pointer;
-  min-width: 34px; transition: border-color var(--t) var(--ease),
-    background var(--t) var(--ease), transform .12s var(--ease); }
-.au-b:hover { border-color: var(--muted); }
-.au-b:active { transform: scale(.94); }
-.au-toggle { display: inline-flex; align-items: center; justify-content: center; }
-/* A triangle that becomes two bars. Drawn in CSS so it inherits colour and
-   needs no icon font and no emoji. */
-.au-tri { border-style: solid; border-width: 5px 0 5px 8px;
-  border-color: transparent transparent transparent currentColor;
-  transition: border-width .16s var(--ease), width .16s var(--ease); }
-.au-playing .au-tri { border-width: 0; width: 8px; height: 10px;
-  border-left: 3px solid currentColor; border-right: 3px solid currentColor; }
+.au-size { justify-self: end; font-variant-numeric: tabular-nums; }
+/* Present and laid out, just not shown. No height change on hover. */
+.au-ctl { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px;
+  opacity: 0; visibility: hidden;
+  transition: opacity .16s var(--ease), visibility 0s linear .16s; }
+.au:hover .au-ctl, .au-on .au-ctl { opacity: 1; visibility: visible;
+  transition: opacity .16s var(--ease), visibility 0s; }
+/* Transport controls, not form buttons: no border, no background, no text. */
+.au-b { border: 0; background: none; color: var(--muted); padding: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; flex: none; border-radius: 50%;
+  transition: color var(--t) var(--ease), background var(--t) var(--ease),
+    transform .12s var(--ease); }
+.au-b:hover { color: var(--ink); background: var(--line); }
+.au-b:active { transform: scale(.9); }
+.au-i { width: 18px; height: 18px; }
+.au-toggle { color: var(--ink); }
+.au-i-play { display: block; }
+.au-i-pause { display: none; }
+.au-playing .au-i-play { display: none; }
+.au-playing .au-i-pause { display: block; }
 /* The waveform. --wave-on and --wave-off are read by the canvas, so the
    drawing follows the theme rather than hard-coding two greys. */
 .au-wave { flex: 1; min-width: 80px; height: 34px; display: block;
@@ -2854,7 +2855,7 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   transition: opacity .15s var(--ease); }
 .au-wave.au-scrub { cursor: grabbing; opacity: .85; }
 .au-time { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums;
-  white-space: nowrap; }
+  white-space: nowrap; flex: none; }
 .au-loading .au-time::after { content: " loading..."; }
 .au-failed { opacity: .6; }
 
@@ -2888,3 +2889,26 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .lg-list { list-style: none; margin: 8px 0 0; padding: 0; }
 .lg-list li { padding: 6px 0; border-top: 1px solid var(--line); font-size: 12.5px; }
 .lg-list b { display: block; font-weight: 560; overflow-wrap: anywhere; }
+
+/* Mail, read like an inbox: who and what in the list, the message only when
+   asked for. */
+.ml-item { cursor: pointer; border-radius: 8px; padding: 7px 10px;
+  transition: background var(--t) var(--ease); }
+.ml-item:hover { background: var(--surface-2); }
+.ml-item.open { background: var(--surface-2); }
+.ml-body { grid-column: 1 / -1; margin-top: 10px; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+  font-size: 13px; line-height: 1.55; max-height: 60vh; overflow: auto; }
+.ml-plain { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.ml-quote { color: var(--muted); }
+/* A sender's markup gets the page's typography, not its own ideas about it. */
+.ml-html { overflow-wrap: anywhere; }
+.ml-html img { max-width: 100%; height: auto; }
+.ml-html table { width: 100% !important; border-collapse: collapse; }
+.ml-html td, .ml-html th { padding: 2px 4px; }
+.ml-html a { color: var(--accent); }
+.ml-html * { max-width: 100% !important; font-family: inherit !important;
+  font-size: inherit !important; color: inherit !important;
+  background-color: transparent !important; }
+.ml-blocked { margin: 0 0 8px; font-size: 11.5px; color: var(--muted);
+  border-left: 2px solid var(--line); padding-left: 8px; }
