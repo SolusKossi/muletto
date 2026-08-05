@@ -127,7 +127,9 @@
      * Inserted here, with the content views, rather than appended after the
      * housekeeping ones. */
     if (typeof MTopics !== "undefined") {
-      state.topics = MTopics.detect(lib);
+      /* Entries follow the source filter, so a topic that reads files counts
+         the same set the rest of the sidebar does. */
+      state.topics = MTopics.detect(lib, { entries, sources: state.sources });
       for (const t of state.topics) items.push([t.key, t.label, t.icon, t.n]);
     }
 
@@ -807,7 +809,10 @@
     else if (k === "report") drawReport(body);
     else if (k === "chats") MViews.renderPeople(body, scopedLib(), viewCtx());
     else if (k === "map") MViews.renderMap(body, scopedLib(), viewCtx());
-    else if (typeof MTopics !== "undefined" && MTopics.has(k) && MTopics.draw(k, body, scopedLib())) { /* drawn */ }
+    else if (typeof MTopics !== "undefined" && MTopics.has(k) &&
+             MTopics.draw(k, body, scopedLib(),
+               { entries: filtering() ? state.entries.filter((e) => srcOk(e)) : state.entries,
+                 sources: state.sources })) { /* drawn */ }
     else if (state.actions.legacy) state.actions.legacy(k, body, viewCtx(), scopedLib());
     state.ctx.hydrate(body);
   }

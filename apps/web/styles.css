@@ -2757,3 +2757,44 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   border-radius: 10px; background: var(--surface-2); padding: 14px 16px; margin: 0 0 18px; }
 .tp-warn b { display: block; font-size: 13.5px; font-weight: 600; }
 .tp-warn p { margin: 6px 0 10px; font-size: 12.5px; color: var(--muted); max-width: 62ch; }
+
+/* Contacts. A card each, because an address book is a list of people rather
+   than a table of fields. */
+.ct-grid { display: block; columns: 280px; column-gap: 12px; }
+.ct { break-inside: avoid; -webkit-column-break-inside: avoid; display: flex; gap: 10px;
+  width: 100%; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--card); padding: 12px 14px; }
+.ct-pfp { width: 32px; height: 32px; border-radius: 50%; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-2); color: var(--body); font-weight: 600; font-size: 13px; }
+.ct b { font-size: 13.5px; }
+.ct-line { font-size: 12.5px; margin-top: 3px; overflow-wrap: anywhere; }
+
+/* Calendar. Time on the left, what happened on the right - the shape every
+   calendar has, so it needs no explaining. */
+.cal-list { list-style: none; margin: 0; padding: 0; }
+.cal-list li { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 14px;
+  padding: 9px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.cal-when { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cal-what b { font-size: 14px; font-weight: 560; }
+.cal-what span { display: block; }
+.cal-tag { display: inline-block; margin-top: 3px; font-size: 11px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+
+/* Notes, as notes rather than as file names. */
+.nt-grid { display: block; columns: 300px; column-gap: 12px; }
+.nt-note { break-inside: avoid; -webkit-column-break-inside: avoid; display: inline-block;
+  width: 100%; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--card); padding: 14px 16px; }
+.nt-note h3 { margin: 0 0 6px; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.nt-note p { margin: 0 0 8px; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap;
+  overflow-wrap: anywhere; }
+
+/* Audio. The blob is made when Play is pressed, never on render. */
+.au-list { list-style: none; margin: 0; padding: 0; }
+.au { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px;
+  align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.au-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; min-width: 0; }
+.au-slot { grid-column: 1 / -1; }
+.au-slot audio { width: 100%; margin-top: 6px; }
