@@ -2836,12 +2836,14 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 /* Transport controls, not form buttons: no border, no background, no text. */
 .au-b { border: 0; background: none; color: var(--muted); padding: 0; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; flex: none; border-radius: 50%;
+  width: 32px; height: 32px; flex: none; border-radius: 50%;
   transition: color var(--t) var(--ease), background var(--t) var(--ease),
     transform .12s var(--ease); }
 .au-b:hover { color: var(--ink); background: var(--line); }
 .au-b:active { transform: scale(.9); }
-.au-i { width: 18px; height: 18px; }
+/* Bigger, now that the glyph is a shape rather than a shape with a numeral
+   crammed into it. */
+.au-i { width: 22px; height: 22px; }
 .au-toggle { color: var(--ink); }
 .au-i-play { display: block; }
 .au-i-pause { display: none; }
