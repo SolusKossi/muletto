@@ -383,6 +383,10 @@ const MZip = (function () {
           blob = await blobOf(host, e);
           inner = await readDirectory(blob);
         } catch (err) {
+          /* Somebody pressing Stop is not a broken archive. Without this the
+             cancellation was swallowed here and reported as a file that could
+             not be read. */
+          if (err && err.cancelled) throw err;
           /* "Failed to fetch" is what building an over-large Blob reports, and
              it says nothing about the archive - so without this line the
              message told the reader their file was damaged when it was only
