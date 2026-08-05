@@ -328,10 +328,17 @@ const MZip = (function () {
     depth: 3,
     archives: 40,
     bytes: 6 * 1024 * 1024 * 1024,   // total inflated, across every nested archive
-    /* The one case still bounded by memory. An encrypted entry cannot be
-       streamed - the check bytes are at the front and the counter runs from
-       there - so it goes through `extract` and does need a contiguous
-       allocation. Kept well under what a phone will give us. */
+    /* Per archive, and this one is a real ceiling rather than a policy.
+       Reading a directory means slicing at arbitrary offsets, so a nested
+       archive has to be a Blob - it cannot stay a stream the way an exported
+       file can. Measured in Chrome: a single Blob succeeds at 1500 MB and
+       fails outright at 2048 MB with "Failed to fetch", well below the 5.5 GB
+       storage quota the same browser reported. So the cap is what was seen to
+       work, not what sounded safe. Apple's 1.34 GB clears it. */
+    archiveBytes: 1500 * 1024 * 1024,
+    /* An encrypted entry cannot be streamed at all - the check bytes are at
+       the front and the counter runs from there - so it goes through `extract`
+       and needs one contiguous allocation, which throws sooner still. */
     encryptedBytes: 256 * 1024 * 1024,
   };
 
@@ -361,9 +368,8 @@ const MZip = (function () {
       for (const e of list) {
         if (!IS_ZIP.test(e.name) || !e.size) continue;
         const encrypted = e.encrypted || e.method === 99;
-        if (encrypted && e.size > cap.encryptedBytes) {
-          // The only remaining size refusal, and it is about the contiguous
-          // allocation decryption needs, not about the archive being large.
+        const limit = encrypted ? cap.encryptedBytes : cap.archiveBytes;
+        if (e.size > limit) {
           skipped.push({ name: prefix + e.name, size: e.size, reason: "size" });
           continue;
         }
@@ -377,9 +383,12 @@ const MZip = (function () {
           blob = await blobOf(host, e);
           inner = await readDirectory(blob);
         } catch (err) {
-          // Damaged, not really an archive, or too large even to stream.
-          const why = /allocation|Array buffer|out of memory/i.test(String(err && err.message))
-            ? "size" : "unreadable";
+          /* "Failed to fetch" is what building an over-large Blob reports, and
+             it says nothing about the archive - so without this line the
+             message told the reader their file was damaged when it was only
+             big. */
+          const why = /allocation|Array buffer|out of memory|Failed to fetch/i
+            .test(String(err && err.message)) ? "size" : "unreadable";
           skipped.push({ name: prefix + e.name, size: e.size, reason: why });
           continue;
         }
