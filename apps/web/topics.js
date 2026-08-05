@@ -674,13 +674,17 @@ const MTopics = (function () {
     'stroke-linejoin="round" aria-hidden="true">' + d + "</svg>";
   const PLAY_ICON = svg('<path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/>', "au-i au-i-play");
   const PAUSE_ICON = svg('<path d="M9 5.5v13M15 5.5v13" stroke-width="2.6"/>', "au-i au-i-pause");
-  // A circular arrow with the 10 sitting inside it.
-  const SKIP_BACK = svg('<path d="M11.5 6.5A6.8 6.8 0 1 0 18 12"/><path d="M11.5 3.4 8.8 6.5l3 2.6"/>' +
-    '<text x="12" y="15.2" text-anchor="middle" font-size="7.5" fill="currentColor" ' +
-    'stroke="none" font-family="inherit">10</text>', "au-i");
-  const SKIP_FWD = svg('<path d="M12.5 6.5A6.8 6.8 0 1 1 6 12"/><path d="M12.5 3.4l2.7 3.1-3 2.6"/>' +
-    '<text x="12" y="15.2" text-anchor="middle" font-size="7.5" fill="currentColor" ' +
-    'stroke="none" font-family="inherit">10</text>', "au-i");
+  /* A circular arrow, and nothing inside it.
+   *
+   * These carried a "10" drawn as SVG text, which at eighteen pixels was a
+   * smudge rather than a numeral - worse than absent, because a smudge looks
+   * like a rendering fault. The title and aria-label already say "Back 10
+   * seconds", so the number is available to anyone who wants it without being
+   * printed at a size nobody can read. */
+  const SKIP_BACK = svg('<path d="M12 6.2A6.9 6.9 0 1 0 18.9 13.1"/>' +
+    '<path d="M12 2.6 8.4 6.2 12 9.8"/>', "au-i");
+  const SKIP_FWD = svg('<path d="M12 6.2A6.9 6.9 0 1 1 5.1 13.1"/>' +
+    '<path d="m12 2.6 3.6 3.6L12 9.8"/>', "au-i");
 
   function findAudio(lib, ctx) {
     const files = filesLike(ctx, AUDIO);
@@ -848,6 +852,14 @@ const MTopics = (function () {
     el.addEventListener("click", async (ev) => {
       const li = ev.target.closest && ev.target.closest(".au");
       if (!li) return;
+      /* The waveform is the scrubber and nothing else.
+       *
+       * Releasing a drag fires a click on the row, and the row's click means
+       * play or pause - so every skim through a recording ended by toggling
+       * playback, which is the opposite of what letting go should do. Seeking
+       * is handled entirely on pointerdown and pointermove; a click that
+       * started here has already done its job. */
+      if (ev.target.closest(".au-wave")) return;
       /* Clicking the row keeps the controls up; the buttons themselves act. */
       const back = ev.target.closest(".au-back");
       const fwd = ev.target.closest(".au-fwd");
@@ -891,10 +903,21 @@ const MTopics = (function () {
       audio.currentTime = at * audio.duration;
       paint();
     };
-    el.addEventListener("pointerdown", (ev) => {
+    el.addEventListener("pointerdown", async (ev) => {
       const canvas = ev.target.closest && ev.target.closest(".au-wave");
-      if (!canvas || !row || canvas.closest(".au") !== row) return;
+      if (!canvas) return;
+      const li = canvas.closest(".au");
       ev.preventDefault();
+      /* Hovering a row shows its waveform, so pressing on one that is not the
+         current recording has to adopt it first - otherwise the waveform of
+         every row but one is a picture that ignores you. */
+      if (li !== row) {
+        if (row) row.classList.remove("au-on", "au-playing");
+        row = li;
+        li.classList.add("au-on");
+        audio.pause();
+        if (!(await loadInto(li))) return;
+      }
       scrubbing = canvas;
       canvas.classList.add("au-scrub");
       try { canvas.setPointerCapture(ev.pointerId); } catch (e) { /* older engines */ }
