@@ -716,6 +716,245 @@ const MTopics = (function () {
     return (n / Math.pow(1024, i)).toFixed(i ? 1 : 0) + " " + u[i];
   };
 
+  /* ---------- My Activity ----------
+   *
+   * Google keeps search history, watch history, app opens and map lookups in
+   * HTML rather than JSON - eleven files in a real Takeout, one per product,
+   * the YouTube one 48 MB. None of it was parsed, so the data people are most
+   * surprised to see was the data we showed least of.
+   *
+   * The markup is Google's Material Design Lite: one `outer-cell` per action,
+   * a `header-cell` naming the product, then content cells holding what was
+   * done, a link to it, and the time. Measured against a real export.
+   *
+   * Parsed with DOMParser rather than regular expressions, because the values
+   * are somebody's search terms and a regex over untrusted HTML is how markup
+   * ends up executed. DOMParser builds an inert document - no scripts run, no
+   * images load, nothing is fetched.
+   */
+  const ACTIVITY_FILE = /My Activity\/([^/]+)\/My ?Activity\.html$/i;
+
+  function findActivity(lib, ctx) {
+    const files = ((ctx && ctx.entries) || []).filter((e) => ACTIVITY_FILE.test(e.name));
+    return files.length ? [{ files }] : [];
+  }
+
+  function parseActivity(html, product) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const out = [];
+    for (const cell of doc.querySelectorAll(".outer-cell")) {
+      const body = cell.querySelector(".content-cell");
+      if (!body) continue;
+      const link = body.querySelector("a");
+      /* The time is the last text node in the block, after the <br>. Taking
+         the whole block and stripping the action off the front is more robust
+         than trusting a position: some entries carry two links. */
+      const text = body.textContent.replace(/\s+/g, " ").trim();
+      const when = (text.match(/(\d{1,2} \w+ \d{4},? \d{1,2}:\d{2}(:\d{2})?)/) ||
+                    text.match(/(\w+ \d{1,2}, \d{4}, \d{1,2}:\d{2}:\d{2})/) || [])[1] || "";
+      let what = link ? link.textContent.trim() : text;
+      /* Google writes "Searched for x", "Watched y", "Used z". Keeping the verb
+         is what makes a list of a thousand lines readable at a glance. */
+      const verb = (text.match(/^(Searched for|Watched|Visited|Used|Viewed|Listened to|Saved|Opened)\b/) || [])[1] || "";
+      if (verb && !link) what = text.slice(verb.length).replace(when, "").trim();
+      const at = when ? new Date(when.replace(",", "")) : null;
+      if (!what) continue;
+      out.push({
+        product,
+        verb,
+        what: what.slice(0, 300),
+        href: link && /^https?:/i.test(link.getAttribute("href") || "")
+          ? link.getAttribute("href") : "",
+        at: at && !isNaN(at) ? at : null,
+      });
+    }
+    return out;
+  }
+
+  async function drawActivity(el, match, lib, ctx) {
+    const files = match[0].files;
+    const items = [];
+    /* Biggest last: the YouTube file alone can be 48 MB, and getting the small
+       products on screen first is the difference between a page that appears
+       and a page that arrives. */
+    const ordered = files.slice().sort((a, b) => (a.size || 0) - (b.size || 0));
+    const CAP = 20 * 1024 * 1024;
+    let skipped = 0;
+    for (const f of ordered) {
+      if ((f.size || 0) > CAP) { skipped++; continue; }
+      const s = sourceOf(ctx, f);
+      if (!s || !s.file) continue;
+      const product = (ACTIVITY_FILE.exec(f.name) || [])[1] || "Google";
+      try {
+        items.push(...parseActivity(await MZip.extractText(s.file, f), product));
+      } catch (err) { /* one unreadable product is not a reason to show none */ }
+    }
+    if (!el.isConnected) return;
+
+    items.sort((a, b) => (b.at ? +b.at : 0) - (a.at ? +a.at : 0));
+    const byProduct = new Map();
+    for (const i of items) byProduct.set(i.product, (byProduct.get(i.product) || 0) + 1);
+    const dated = items.filter((i) => i.at);
+    const PAGE = 500;
+
+    const row = (i) => "<li>" +
+      '<div class="ac-when">' + (i.at ? esc(shortDate(i.at)) : "") + "</div>" +
+      '<div class="ac-what">' +
+        (i.verb ? '<span class="ac-verb">' + esc(i.verb) + "</span> " : "") +
+        (i.href
+          ? '<a href="' + esc(i.href) + '" target="_blank" rel="noopener noreferrer nofollow">' +
+            esc(i.what) + "</a>"
+          : esc(i.what)) +
+        '<span class="ac-prod">' + esc(i.product) + "</span>" +
+      "</div></li>";
+
+    el.innerHTML =
+      '<div class="tp-stats">' +
+        '<div><b>' + num(items.length) + "</b><span>things you did</span></div>" +
+        '<div><b>' + num(byProduct.size) + "</b><span>Google services</span></div>" +
+        (dated.length
+          ? '<div><b>' + esc(shortDate(dated[dated.length - 1].at)) + " to " +
+            esc(shortDate(dated[0].at)) + "</b><span>first to last</span></div>" : "") +
+      "</div>" +
+      (skipped
+        ? '<p class="muted small">' + plural(skipped, "product's history was", "products' histories were") +
+          " too large to read here - the YouTube one alone can be 48 MB. They are in All files.</p>"
+        : "") +
+      '<ol class="ac-list">' + items.slice(0, PAGE).map(row).join("") + "</ol>" +
+      (items.length > PAGE
+        ? '<p class="muted small">Showing the newest ' + num(PAGE) + " of " +
+          num(items.length) + ".</p>" : "");
+  }
+
+  /* ---------- mail ---------- */
+
+  /* A Takeout ships Gmail as one mbox - 776 MB in a real export - and it was
+     listed as a single file. Indexed here rather than parsed in full: headers
+     only, streamed, so a large mailbox becomes searchable without ever holding
+     a message body. */
+  const MBOX = /\.mbox$/i;
+
+  function findMail(lib, ctx) {
+    const files = filesLike(ctx, MBOX);
+    return files.length ? [{ files }] : [];
+  }
+
+  async function drawMail(el, match, lib, ctx) {
+    if (typeof MMbox === "undefined") { el.innerHTML = ""; return; }
+    const f = match[0].files[0];
+    const s = sourceOf(ctx, f);
+    if (!s || !s.file) return;
+
+    const res = await MMbox.index(await MZip.streamEntry(s.file, f), {
+      limit: 20000,
+      onProgress: (read, n) => {
+        if (el.isConnected && n % 2000 === 0) {
+          el.innerHTML = '<p class="loading">Reading your mail - ' + num(n) +
+            " messages so far...</p>";
+        }
+      },
+    });
+    if (!el.isConnected) return;
+    const sum = MMbox.summarise(res);
+    const dated = res.messages.filter((m) => m.at).sort((a, b) => b.at - a.at);
+
+    el.innerHTML =
+      '<div class="tp-stats">' +
+        '<div><b>' + num(res.messages.length) + "</b><span>messages read</span></div>" +
+        '<div><b>' + num(sum.senders.length) + "</b><span>people and services</span></div>" +
+        (dated.length
+          ? '<div><b>' + esc(shortDate(dated[dated.length - 1].at)) + " to " +
+            esc(shortDate(dated[0].at)) + "</b><span>first to last</span></div>" : "") +
+      "</div>" +
+      '<p class="muted small">Headers only - who, what and when. The bodies stay in the ' +
+        "archive and are never held in memory." +
+        (res.skipped ? " " + num(res.skipped) + " could not be read." : "") + "</p>" +
+      '<h3 class="tp-h">Who writes to you most</h3>' +
+      '<ol class="ml-top">' + sum.senders.slice(0, 20).map((x) =>
+        "<li><b>" + esc(x.name || x.address || "Unknown") + "</b>" +
+        '<em class="muted">' + plural(x.count, "message", "messages") + "</em></li>").join("") +
+      "</ol>" +
+      '<h3 class="tp-h">Most recent</h3>' +
+      '<ol class="ml-list">' + dated.slice(0, 300).map((m) =>
+        "<li><div class='ml-when'>" + esc(shortDate(m.at)) + "</div>" +
+        "<div><b>" + esc(m.subject || "(no subject)") + "</b>" +
+        '<span class="muted small">' + esc((m.from && m.from.name) || "") + "</span></div></li>").join("") +
+      "</ol>";
+  }
+
+  /* ---------- logins and devices ----------
+   *
+   * Every provider ships this and nobody looks at it, which is exactly why it
+   * is worth a screen: it is the part of an export that makes somebody say
+   * "it knows what?" Recognised by shape, because five providers describe the
+   * same thing five ways.
+   */
+  const LOGIN_TABLE = /login|sign[- ]?in|session|device|access log|security|ip address/i;
+  const LOGIN_COLUMN = /ip address|user agent|device|browser|platform|login time|sign[- ]?in|last seen|city|country|os version/i;
+
+  function findLogins(lib) {
+    const out = [];
+    for (const t of lib.tables || []) {
+      if (!(t.rows || []).length) continue;
+      const cols = (t.columns || []).join(" ");
+      const hits = (t.columns || []).filter((c) => LOGIN_COLUMN.test(String(c))).length;
+      // Two matching columns, or a name that says it outright plus one.
+      if (hits >= 2 || (LOGIN_TABLE.test(String(t.name || "")) && hits >= 1)) {
+        out.push({ table: t, cols });
+      }
+    }
+    return out;
+  }
+
+  function drawLogins(el, match) {
+    const rows = match.reduce((n, m) => n + m.table.rows.length, 0);
+
+    const panel = (m) => {
+      const t = m.table;
+      const idx = (re) => (t.columns || []).findIndex((c) => re.test(String(c)));
+      const wi = idx(/login time|sign[- ]?in|last seen|date|time/i);
+      const ipi = idx(/ip address/i);
+      const di = idx(/device|user agent|browser|platform|model/i);
+      const li = idx(/city|country|location|region/i);
+      const seen = new Set();
+      const list = [];
+      for (const r of t.rows) {
+        const key = [r[ipi], r[di], r[li]].join("|");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        list.push({ when: wi >= 0 ? String(r[wi] || "") : "",
+                    ip: ipi >= 0 ? String(r[ipi] || "") : "",
+                    dev: di >= 0 ? String(r[di] || "") : "",
+                    where: li >= 0 ? String(r[li] || "") : "" });
+        if (list.length >= 200) break;
+      }
+      return '<article class="lg-card"><h3>' + esc(t.name) + "</h3>" +
+        '<p class="muted small">' + plural(t.rows.length, "record", "records") +
+          (list.length < t.rows.length ? ", " + num(list.length) + " distinct" : "") +
+        (t.srcLabel ? " &middot; " + esc(t.srcLabel) : "") + "</p>" +
+        '<ul class="lg-list">' + list.slice(0, 40).map((x) =>
+          "<li>" +
+          (x.dev ? "<b>" + esc(x.dev.slice(0, 80)) + "</b>" : "") +
+          '<span class="muted small">' +
+            [x.where, x.ip, x.when].filter(Boolean).map(esc).join(" &middot; ") +
+          "</span></li>").join("") + "</ul>" +
+        (list.length > 40
+          ? '<p class="muted small">' + num(list.length - 40) + " more under Records.</p>" : "") +
+        "</article>";
+    };
+
+    el.innerHTML =
+      unsupportedNote(match.map((m) => m.table)) +
+      '<div class="tp-stats">' +
+        '<div><b>' + num(rows) + "</b><span>recorded sign-ins and devices</span></div>" +
+        '<div><b>' + num(match.length) + "</b><span>" +
+          (match.length === 1 ? "table" : "tables") + "</span></div>" +
+      "</div>" +
+      '<p class="muted small">Every service keeps this. It is usually the part of an ' +
+        "export people have not thought about.</p>" +
+      '<div class="lg-grid">' + match.map(panel).join("") + "</div>";
+  }
+
   /* ---------- the registry ---------- */
 
   /* `only` is the list of providers a topic can possibly apply to. An
@@ -756,6 +995,21 @@ const MTopics = (function () {
       only: null, slow: true,
       find: findNotes, draw: drawNotes,
       count: (m) => m[0].files.length },
+    { key: "activity", label: "Search and watch history", icon: "clock",
+      sub: "What you searched for, watched and opened, as Google recorded it.",
+      only: ["google"], slow: true,
+      find: findActivity, draw: drawActivity,
+      count: (m) => m[0].files.length },
+    { key: "mail", label: "Mail", icon: "chat",
+      sub: "Who wrote to you and when. Headers only - the bodies stay in the archive.",
+      only: null, slow: true,
+      find: findMail, draw: drawMail,
+      count: (m) => m[0].files.length },
+    { key: "logins", label: "Logins and devices", icon: "pin",
+      sub: "Where your account has been used from, and on what.",
+      only: null,
+      find: findLogins, draw: drawLogins,
+      count: (m) => m.reduce((n, x) => n + x.table.rows.length, 0) },
     { key: "audio", label: "Audio", icon: "chat",
       sub: "Recordings in this export, playable here.",
       only: null, slow: true,

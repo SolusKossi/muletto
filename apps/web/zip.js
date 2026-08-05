@@ -394,7 +394,17 @@ const MZip = (function () {
        name ending in "zip" was an archive - "unzip", "gzip", a folder called
        "Winzip" - and each one was then extracted in full before failing to
        parse. */
-    const IS_ZIP = /\.zip$/i;
+    /* `.spd` is an S Note, and it is a zip - confirmed by magic bytes on the
+       real Samsung export: 50 4b 03 04. The page itself is a proprietary
+       binary we cannot read, but the pictures in the note are ordinary JPEGs
+       sitting in a `media/` folder, and those are the reader's own drawings
+       and photographs. Opening it gets those out; the page files come along
+       and are listed, which is honest about what we could not read.
+
+       `.xlsx` is deliberately not here. It is a zip too, but of XML parts, so
+       expanding it would list `sharedStrings.xml` rather than a spreadsheet.
+       It is read properly in parsers.js instead. */
+    const IS_ZIP = /\.(zip|spd)$/i;
 
     async function walk(host, list, prefix, depth) {
       if (depth > cap.depth) return;
