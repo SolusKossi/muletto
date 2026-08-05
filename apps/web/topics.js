@@ -667,6 +667,21 @@ const MTopics = (function () {
      a blob made here - nothing is fetched. */
   const AUDIO = /\.(m4a|mp3|wav|aac|opus|ogg|flac)$/i;
 
+  /* Drawn rather than typed. An emoji would be a different glyph on every
+     machine and the project is plain ASCII anyway. */
+  const svg = (d, cls) => '<svg class="' + cls + '" viewBox="0 0 24 24" fill="none" ' +
+    'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
+    'stroke-linejoin="round" aria-hidden="true">' + d + "</svg>";
+  const PLAY_ICON = svg('<path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/>', "au-i au-i-play");
+  const PAUSE_ICON = svg('<path d="M9 5.5v13M15 5.5v13" stroke-width="2.6"/>', "au-i au-i-pause");
+  // A circular arrow with the 10 sitting inside it.
+  const SKIP_BACK = svg('<path d="M11.5 6.5A6.8 6.8 0 1 0 18 12"/><path d="M11.5 3.4 8.8 6.5l3 2.6"/>' +
+    '<text x="12" y="15.2" text-anchor="middle" font-size="7.5" fill="currentColor" ' +
+    'stroke="none" font-family="inherit">10</text>', "au-i");
+  const SKIP_FWD = svg('<path d="M12.5 6.5A6.8 6.8 0 1 1 6 12"/><path d="M12.5 3.4l2.7 3.1-3 2.6"/>' +
+    '<text x="12" y="15.2" text-anchor="middle" font-size="7.5" fill="currentColor" ' +
+    'stroke="none" font-family="inherit">10</text>', "au-i");
+
   function findAudio(lib, ctx) {
     const files = filesLike(ctx, AUDIO);
     return files.length ? [{ files }] : [];
@@ -691,11 +706,18 @@ const MTopics = (function () {
         '<li class="au" data-i="' + i + '">' +
           '<div class="au-name">' + esc(f.name.split("/").pop()) + "</div>" +
           '<div class="au-size muted small">' + esc(bytesText(f.size || 0)) + "</div>" +
+          /* Icons, no boxes, no text. A row of little bordered buttons reading
+             "-10" and "+10" is a form; these are transport controls and should
+             look like the ones on every player anybody has used. The arrows
+             carry a 10 inside the curl, which is how Apple and the BBC both
+             draw skip, so the number is there without being a label. */
           '<div class="au-ctl">' +
-            '<button type="button" class="au-b au-back" title="Back 10 seconds">-10</button>' +
-            '<button type="button" class="au-b au-toggle" title="Play">' +
-              '<span class="au-tri"></span></button>' +
-            '<button type="button" class="au-b au-fwd" title="Forward 10 seconds">+10</button>' +
+            '<button type="button" class="au-b au-back" title="Back 10 seconds"' +
+              ' aria-label="Back 10 seconds">' + SKIP_BACK + "</button>" +
+            '<button type="button" class="au-b au-toggle" title="Play"' +
+              ' aria-label="Play">' + PLAY_ICON + PAUSE_ICON + "</button>" +
+            '<button type="button" class="au-b au-fwd" title="Forward 10 seconds"' +
+              ' aria-label="Forward 10 seconds">' + SKIP_FWD + "</button>" +
             '<canvas class="au-wave" height="34"></canvas>' +
             '<span class="au-time">0:00</span>' +
           "</div>" +
@@ -1067,11 +1089,101 @@ const MTopics = (function () {
         '<em class="muted">' + plural(x.count, "message", "messages") + "</em></li>").join("") +
       "</ol>" +
       '<h3 class="tp-h">Most recent</h3>' +
-      '<ol class="ml-list">' + dated.slice(0, 300).map((m) =>
-        "<li><div class='ml-when'>" + esc(shortDate(m.at)) + "</div>" +
+      '<ol class="ml-list">' + dated.slice(0, 500).map((m, i) =>
+        '<li class="ml-item" data-i="' + i + '">' +
+        "<div class='ml-when'>" + esc(shortDate(m.at)) + "</div>" +
         "<div><b>" + esc(m.subject || "(no subject)") + "</b>" +
-        '<span class="muted small">' + esc((m.from && m.from.name) || "") + "</span></div></li>").join("") +
+        '<span class="muted small">' + esc((m.from && m.from.name) || "") + "</span></div>" +
+        '<div class="ml-body" hidden></div>' +
+        "</li>").join("") +
       "</ol>";
+
+    /* Opened on click, like any inbox: the list shows who and what, and the
+       message itself only when asked for. */
+    const shown = dated.slice(0, 500);
+    el.addEventListener("click", async (ev) => {
+      const li = ev.target.closest && ev.target.closest(".ml-item");
+      if (!li || ev.target.closest(".ml-body")) return;
+      const pane = li.querySelector(".ml-body");
+      if (li.classList.contains("open")) {
+        li.classList.remove("open");
+        pane.hidden = true;
+        return;
+      }
+      li.classList.add("open");
+      pane.hidden = false;
+      if (li.dataset.done) return;
+      li.dataset.done = "1";
+      const m = shown[Number(li.dataset.i)];
+      if (!m || !m.body) {
+        pane.innerHTML = '<p class="muted small">This message was past the amount of ' +
+          "mail kept for reading. Its headers are here; the text is still in the archive.</p>";
+        return;
+      }
+      pane.innerHTML = '<p class="muted small">Reading...</p>';
+      try {
+        pane.innerHTML = renderMessage(await m.body.text());
+      } catch (err) {
+        pane.innerHTML = '<p class="muted small">That message would not open.</p>';
+      }
+    });
+  }
+
+  /* Showing a message without letting it act.
+   *
+   * Mail is the one thing in an export written by somebody else, so it is the
+   * one place where the content is hostile by default. Three things matter:
+   *
+   *   Scripts never run. `DOMParser` builds an inert document - nothing in it
+   *   executes - and script, style, iframe, object and form are removed
+   *   outright, along with every on* attribute and any href that is not http,
+   *   https or mailto.
+   *
+   *   Remote images never load. A tracking pixel exists to tell a sender that
+   *   the message was opened, and this app must never be the thing that tells
+   *   them. `img-src 'self' data: blob:` in the Content-Security-Policy is what
+   *   actually stops it - the browser refuses the request - and the src is
+   *   dropped here as well so nothing is even attempted.
+   *
+   *   Nothing is fetched to render it. Links open in a new tab and carry
+   *   noreferrer.
+   */
+  const STRIP = "script,style,iframe,object,embed,link,meta,form,input,button,svg";
+
+  function renderMessage(raw) {
+    const text = String(raw || "");
+    const html = /<(html|body|div|table|p|br|a)\b/i.test(text);
+    if (!html) {
+      // Plain text. Quoted replies are dimmed rather than hidden.
+      return '<div class="ml-plain">' + text.split("\n").map((l) =>
+        /^\s*>/.test(l) ? '<span class="ml-quote">' + esc(l) + "</span>" : esc(l)
+      ).join("\n") + "</div>";
+    }
+    const doc = new DOMParser().parseFromString(text, "text/html");
+    doc.querySelectorAll(STRIP).forEach((n) => n.remove());
+    let blocked = 0;
+    doc.querySelectorAll("*").forEach((n) => {
+      for (const a of [...n.attributes]) {
+        const name = a.name.toLowerCase();
+        if (name.startsWith("on")) n.removeAttribute(a.name);
+        else if (name === "srcset") n.removeAttribute(a.name);
+        else if (name === "src") {
+          if (!/^(data:image\/|cid:)/i.test(a.value)) { n.removeAttribute(a.name); blocked++; }
+        } else if (name === "href" && !/^(https?:|mailto:)/i.test(a.value)) {
+          n.removeAttribute(a.name);
+        }
+      }
+      if (n.tagName === "A") {
+        n.setAttribute("target", "_blank");
+        n.setAttribute("rel", "noopener noreferrer nofollow");
+      }
+    });
+    return (blocked
+      ? '<p class="ml-blocked">' + plural(blocked, "image was", "images were") +
+        " not loaded. They live on the sender's server, and fetching one tells them " +
+        "you opened this.</p>"
+      : "") +
+      '<div class="ml-html">' + doc.body.innerHTML + "</div>";
   }
 
   /* ---------- logins and devices ----------
