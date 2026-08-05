@@ -1811,6 +1811,12 @@ async function makeThumb(m) {
   try {
     const src = current.sources[m.src || 0].file;
     let blob = null;
+    /* A poster needs the file as a Blob, and a Blob has a ceiling: measured in
+       Chrome, 1500 MB succeeds and 2048 MB fails outright. A Google Takeout
+       can hold a 5.3 GB video, so without this the tile spends a minute
+       inflating gigabytes only to fail and show nothing anyway. It shows
+       nothing either way; this just declines to spend the minute. */
+    if ((m.size || 0) > 1024 * 1024 * 1024) return null;
     if (m.kind === "video") {
       blob = await MVideo.posterFrame(await MZip.extractBlob(src, m.entry, m.mime));
     } else if (m.heif) {

@@ -310,11 +310,34 @@ const MExport = (function () {
   /* Writing the metadata back into the file is the whole point of the export
      step: a date or a description that only exists inside Muletto is lost the
      moment the photos are moved anywhere. */
+  /* A file only has to become bytes if EXIF is going to be rewritten into it,
+     and that is only ever a JPEG - a few megabytes at the outside. Anything
+     larger is piped from the source archive to the destination without ever
+     existing in one piece.
+   *
+   * That is not a nicety. Extracting unconditionally is what made a 5.3 GB
+   * video in a Google Takeout impossible to save, and the export counted it as
+   * "could not be written". Measured in Chrome on a machine with a 5.5 GB
+   * storage quota, both of the obvious ways to hold it fail at almost exactly
+   * the same place: a contiguous Uint8Array throws RangeError at 2 GB, and a
+   * single Blob fails at 2048 MB while 1500 MB succeeds. So going by way of a
+   * Blob would have moved the ceiling by nothing at all.
+   *
+   * A stream has no ceiling, because nothing is ever whole. */
+  const HUGE = 64 * 1024 * 1024;
+
   async function bytesFor(m) {
-    let bytes = await MZip.extract(state.sources[m.src || 0].file, m.entry);
-    const jpeg = MExif.isJpeg(bytes);
+    const file = state.sources[m.src || 0].file;
     const wantDate = state.opt.writeDates && !!m.at;
     const wantDesc = state.opt.writeCaptions && !!m.caption;
+
+    if ((m.size || 0) > HUGE) {
+      return { bytes: await MZip.streamEntry(file, m.entry), size: m.size,
+               repaired: false, unrepairable: wantDate || wantDesc };
+    }
+
+    let bytes = await MZip.extract(file, m.entry);
+    const jpeg = MExif.isJpeg(bytes);
     if (!jpeg || (!wantDate && !wantDesc)) {
       return { bytes, repaired: false, unrepairable: (wantDate || wantDesc) && !jpeg };
     }
@@ -361,7 +384,7 @@ const MExport = (function () {
         try {
           const dir = LAYOUTS[o.layout].dir(m);
           const name = nameFor(m);
-          const { bytes, repaired, captioned, unrepairable } = await bytesFor(m);
+          const { bytes, size, repaired, captioned, unrepairable } = await bytesFor(m);
           await writer.file(dir, name, bytes, m.at);
           if (repaired) res.repaired++;
           if (captioned) res.captioned++;
@@ -373,7 +396,9 @@ const MExport = (function () {
           rows.push([dir.concat(name).join("/"), name, m.at ? m.at.toISOString() : "",
                      m.srcLabel || "", String(m.size || 0), m.path]);
           res.written++;
-          res.bytes += bytes.length;
+          // A stream has no length, so a piped entry reports the size the
+          // archive listed for it.
+          res.bytes += (bytes && bytes.length !== undefined) ? bytes.length : (size || 0);
         } catch { res.failed++; }
         if (i % 5 === 0 || i === list.length) {
           note.say(`${i.toLocaleString()} of ${list.length.toLocaleString()} - ${fmtBytes(res.bytes)}`);
@@ -451,12 +476,19 @@ const MExport = (function () {
       return d;
     };
     return {
-      async file(dir, name, bytes) {
+      async file(dir, name, body) {
         const d = await getDir(dir);
         const fh = await d.getFileHandle(name, { create: true });
         const w = await fh.createWritable();
-        await w.write(bytes);
-        await w.close();
+        /* A writable file handle is itself a WritableStream, so a large entry
+           is piped straight from the source archive to disk and never exists
+           in one piece. Small ones are still written in a single call. */
+        if (body && typeof body.pipeTo === "function") {
+          await body.pipeTo(w);          // pipeTo closes the destination
+        } else {
+          await w.write(body);
+          await w.close();
+        }
       },
       async done() { return "the folder you chose"; },
     };
@@ -490,8 +522,10 @@ const MExport = (function () {
 
     const zip = MZipOut.create(sink);
     return {
-      async file(dir, name, bytes, date) {
-        await zip.add(dir.concat(name).join("/"), bytes, { date, deflate: /\.(json|csv|txt)$/i.test(name) });
+      async file(dir, name, body, date) {
+        // zipout already takes a Uint8Array or a ReadableStream, so a large
+        // entry passes through as a stream with nothing held.
+        await zip.add(dir.concat(name).join("/"), body, { date, deflate: /\.(json|csv|txt)$/i.test(name) });
       },
       async done() {
         await zip.close();

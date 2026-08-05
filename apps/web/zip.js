@@ -257,9 +257,15 @@ const MZip = (function () {
     return JSON.parse(await extractText(file, entry));
   }
 
+  /* Streamed, for the same reason `expandNested` is: `extract` returns one
+     contiguous Uint8Array, and that allocation throws above about 2 GB. A
+     Google Takeout can hold a 5.3 GB video, so every caller that only wants a
+     Blob - a poster frame, a clip to play, a file to write out - would have
+     failed on it while the same file streams for 12 MB of heap. */
   async function extractBlob(file, entry, type) {
-    const bytes = await extract(file, entry);
-    return new Blob([bytes], type ? { type } : undefined);
+    const stream = await streamEntry(file, entry);
+    const blob = await new Response(stream).blob();
+    return type ? new Blob([blob], { type }) : blob;
   }
 
   /* Just the front of an entry.
