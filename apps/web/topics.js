@@ -113,12 +113,27 @@ const MTopics = (function () {
    * readable beats a blank page. But presenting a best effort as if it were
    * the finished thing is the kind of quiet overclaiming this project does not
    * do - and the person looking at it is the one who can fix it. */
+  /* Which providers have a parser written for them.
+   *
+   * This used to test `PROVIDERS`, the map of extra readers a few pages up -
+   * and that map holds one entry, google. So Apple, Samsung, Snapchat and Meta
+   * were all told they were unsupported, on top of exports Muletto reads
+   * perfectly well, and the notice named the archive file rather than the
+   * service. Telling somebody their data is not understood when it is is worse
+   * than saying nothing at all: the whole point of the notice was honesty.
+   *
+   * The right question is whether a parser exists, which is what a slug means. */
+  const PARSED = { google: "Google", apple: "Apple", samsung: "Samsung",
+                   snapchat: "Snapchat", facebook: "Facebook", instagram: "Instagram" };
+
   function unsupportedNote(tables) {
-    const unknown = [...new Set(tables.filter((t) => !PROVIDERS[slugOf(t)])
-      .map((t) => t.srcLabel || slugOf(t) || "this export"))];
+    const unknown = [...new Set(tables.filter((t) => !PARSED[slugOf(t)])
+      .map((t) => t.srcLabel || "this export"))];
     if (!unknown.length) return "";
     return '<div class="tp-warn">' +
-      "<b>" + esc(unknown.join(", ")) + " is not a provider Muletto reads in a tailored way yet.</b>" +
+      "<b>" + esc(unknown.join(", ")) +
+      (unknown.length === 1 ? " is" : " are") +
+      " not read in a tailored way yet.</b>" +
       "<p>Everything is shown, as the export wrote it, and some of it may look raw or arrive " +
       "in the wrong order. Nothing is missing and nothing has been altered - we simply have " +
       "not taught it this format.</p>" +
@@ -673,33 +688,113 @@ const MTopics = (function () {
       '<p class="muted small">Played from the archive on this machine. Nothing is ' +
         "downloaded and nothing is sent anywhere.</p>" +
       '<ol class="au-list">' + files.slice(0, 400).map((f, i) =>
-        '<li class="au"><div class="au-name">' + esc(f.name.split("/").pop()) + "</div>" +
-        '<div class="muted small">' + esc(bytesText(f.size || 0)) + "</div>" +
-        '<button type="button" class="btn ghost sm au-play" data-i="' + i + '">Play</button>' +
-        '<span class="au-slot"></span></li>').join("") + "</ol>" +
+        '<li class="au" data-i="' + i + '">' +
+          '<div class="au-name">' + esc(f.name.split("/").pop()) + "</div>" +
+          '<div class="au-size muted small">' + esc(bytesText(f.size || 0)) + "</div>" +
+          '<div class="au-ctl">' +
+            '<button type="button" class="au-b au-back" title="Back 10 seconds">-10</button>' +
+            '<button type="button" class="au-b au-toggle" title="Play">' +
+              '<span class="au-tri"></span></button>' +
+            '<button type="button" class="au-b au-fwd" title="Forward 10 seconds">+10</button>' +
+            '<div class="au-bar"><i></i></div>' +
+            '<span class="au-time">0:00</span>' +
+          "</div>" +
+        "</li>").join("") + "</ol>" +
       (files.length > 400
         ? '<p class="muted small">Showing the first 400 of ' + num(files.length) + ".</p>" : "");
 
-    /* One listener for the list, and the blob is made only when something is
-       actually played - decoding 319 files to draw a page would be absurd. */
-    el.addEventListener("click", async (ev) => {
-      const b = ev.target.closest && ev.target.closest(".au-play");
-      if (!b) return;
-      const f = files[Number(b.dataset.i)];
+    /* One <audio> for the whole list, not one per row.
+     *
+     * Three hundred and nineteen audio elements, each holding a blob, would
+     * decode the entire export to draw a page. There is a single player, moved
+     * to whichever row is playing, and the blob for that row is built at the
+     * moment somebody asks for it. */
+    const clock = (t) => {
+      if (!isFinite(t)) return "0:00";
+      const m = Math.floor(t / 60), s2 = Math.floor(t % 60);
+      return m + ":" + String(s2).padStart(2, "0");
+    };
+    const audio = new Audio();
+    audio.preload = "none";
+    let row = null, url = "";
+
+    const paint = () => {
+      if (!row) return;
+      const bar = row.querySelector(".au-bar i");
+      const time = row.querySelector(".au-time");
+      const share = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+      if (bar) bar.style.width = share.toFixed(2) + "%";
+      if (time) {
+        time.textContent = clock(audio.currentTime) +
+          (isFinite(audio.duration) ? " / " + clock(audio.duration) : "");
+      }
+      row.classList.toggle("au-playing", !audio.paused);
+    };
+    audio.addEventListener("timeupdate", paint);
+    audio.addEventListener("loadedmetadata", paint);
+    audio.addEventListener("play", paint);
+    audio.addEventListener("pause", paint);
+    audio.addEventListener("ended", () => { if (row) row.classList.remove("au-playing"); });
+
+    async function loadInto(li) {
+      const f = files[Number(li.dataset.i)];
       const s = sourceOf(ctx, f);
-      if (!f || !s) return;
-      b.disabled = true;
-      b.textContent = "Loading";
+      if (!f || !s) return false;
+      li.classList.add("au-loading");
       try {
         const blob = await MZip.extractBlob(s.file, f, mimeOfAudio(f.name));
-        const url = URL.createObjectURL(blob);
-        const slot = b.parentElement.querySelector(".au-slot");
-        slot.innerHTML = '<audio controls preload="none" src="' + url + '"></audio>';
-        b.remove();
+        if (url) URL.revokeObjectURL(url);
+        url = URL.createObjectURL(blob);
+        audio.src = url;
+        li.classList.remove("au-loading");
+        return true;
       } catch (err) {
-        b.disabled = false;
-        b.textContent = "Would not play";
+        li.classList.remove("au-loading");
+        li.classList.add("au-failed");
+        const t = li.querySelector(".au-time");
+        if (t) t.textContent = "would not play";
+        return false;
       }
+    }
+
+    el.addEventListener("click", async (ev) => {
+      const li = ev.target.closest && ev.target.closest(".au");
+      if (!li) return;
+      /* Clicking the row keeps the controls up; the buttons themselves act. */
+      const back = ev.target.closest(".au-back");
+      const fwd = ev.target.closest(".au-fwd");
+      const toggle = ev.target.closest(".au-toggle");
+
+      if (row !== li && (toggle || back || fwd || !row)) {
+        if (row) { row.classList.remove("au-on", "au-playing"); }
+        row = li;
+        li.classList.add("au-on");
+        audio.pause();
+        if (!(await loadInto(li))) return;
+      } else if (row !== li) {
+        // Selecting a different row without pressing anything: just pin it.
+        if (row) row.classList.remove("au-on");
+        row = li;
+        li.classList.add("au-on");
+        if (!(await loadInto(li))) return;
+        paint();
+        return;
+      }
+
+      if (back) audio.currentTime = Math.max(0, audio.currentTime - 10);
+      else if (fwd) audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
+      else if (audio.paused) audio.play().catch(() => { /* refused, stays paused */ });
+      else audio.pause();
+      paint();
+    });
+
+    // Scrubbing, on the bar itself.
+    el.addEventListener("pointerdown", (ev) => {
+      const bar = ev.target.closest && ev.target.closest(".au-bar");
+      if (!bar || !row || !bar.closest(".au") === row || !isFinite(audio.duration)) return;
+      const r = bar.getBoundingClientRect();
+      audio.currentTime = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * audio.duration;
+      paint();
     });
   }
 
@@ -889,19 +984,36 @@ const MTopics = (function () {
    * "it knows what?" Recognised by shape, because five providers describe the
    * same thing five ways.
    */
-  const LOGIN_TABLE = /login|sign[- ]?in|session|device|access log|security|ip address/i;
-  const LOGIN_COLUMN = /ip address|user agent|device|browser|platform|login time|sign[- ]?in|last seen|city|country|os version/i;
+  /* Matching was far too loose the first time: any two of "ip address",
+     "device", "city" and a timestamp counted, so a table of App Store
+     purchases - which records the address you bought from - was presented as
+     sign-in history, and 56,238 rows of it. A purchase is not a login.
+
+     The signal has to be a table that is *about* signing in or about devices,
+     or one carrying a user agent, which nothing else does. */
+  const LOGIN_TABLE = /login|logon|sign[- ]?in|session|access log|device information|devices?$|security|push notification/i;
+  const NOT_LOGIN = /purchase|transaction|billing|payment|order|subscription|refund|store /i;
+  const COL_AGENT = /user agent|browser|client name/i;
+  const COL_DEVICE = /device name|device type|device model|^model$|platform|os version|hardware/i;
+  const COL_IP = /ip address|\bip\b/i;
+  const COL_TIME = /time|date|last seen|when|created/i;
+  /* An identifier is not a name. Apple writes a device as
+     00008110-00090C800A6A401E, which told the reader nothing at all when it
+     was printed in bold as though it were "iPhone 13 Pro". */
+  const COL_ID = /\bid\b|uuid|guid|udid|serial|token|hash/i;
 
   function findLogins(lib) {
     const out = [];
     for (const t of lib.tables || []) {
       if (!(t.rows || []).length) continue;
-      const cols = (t.columns || []).join(" ");
-      const hits = (t.columns || []).filter((c) => LOGIN_COLUMN.test(String(c))).length;
-      // Two matching columns, or a name that says it outright plus one.
-      if (hits >= 2 || (LOGIN_TABLE.test(String(t.name || "")) && hits >= 1)) {
-        out.push({ table: t, cols });
-      }
+      const name = String(t.name || "");
+      if (NOT_LOGIN.test(name)) continue;
+      const cols = t.columns || [];
+      const has = (re) => cols.some((c) => re.test(String(c)) && !COL_ID.test(String(c)));
+      const aboutLogins = LOGIN_TABLE.test(name);
+      if (!(has(COL_AGENT) || (aboutLogins && (has(COL_IP) || has(COL_DEVICE))))) continue;
+      if (!has(COL_TIME) && !has(COL_IP)) continue;
+      out.push({ table: t });
     }
     return out;
   }
@@ -909,34 +1021,53 @@ const MTopics = (function () {
   function drawLogins(el, match) {
     const rows = match.reduce((n, m) => n + m.table.rows.length, 0);
 
+    const EMPTY = /^(n\/?a|null|none|unknown|-|)$/i;
+    const clean = (v) => { const s = String(v == null ? "" : v).trim(); return EMPTY.test(s) ? "" : s; };
+
     const panel = (m) => {
       const t = m.table;
-      const idx = (re) => (t.columns || []).findIndex((c) => re.test(String(c)));
-      const wi = idx(/login time|sign[- ]?in|last seen|date|time/i);
-      const ipi = idx(/ip address/i);
-      const di = idx(/device|user agent|browser|platform|model/i);
+      const cols = t.columns || [];
+      /* Never an identifier column: those are what produced a page of
+         00008110-00090C800A6A401E in bold. */
+      const idx = (re) => cols.findIndex((c) => re.test(String(c)) && !COL_ID.test(String(c)));
+      const wi = idx(COL_TIME);
+      const ipi = idx(COL_IP);
+      const ai = idx(COL_AGENT);
+      const di = idx(COL_DEVICE);
       const li = idx(/city|country|location|region/i);
+
       const seen = new Set();
       const list = [];
       for (const r of t.rows) {
-        const key = [r[ipi], r[di], r[li]].join("|");
+        const row = {
+          when: wi >= 0 ? clean(r[wi]) : "",
+          ip: ipi >= 0 ? clean(r[ipi]) : "",
+          dev: (ai >= 0 ? clean(r[ai]) : "") || (di >= 0 ? clean(r[di]) : ""),
+          where: li >= 0 ? clean(r[li]) : "",
+        };
+        // A row of N/A in every column is not a sign-in anybody can read.
+        if (!row.dev && !row.ip && !row.where) continue;
+        const key = row.dev + "|" + row.ip + "|" + row.where;
         if (seen.has(key)) continue;
         seen.add(key);
-        list.push({ when: wi >= 0 ? String(r[wi] || "") : "",
-                    ip: ipi >= 0 ? String(r[ipi] || "") : "",
-                    dev: di >= 0 ? String(r[di] || "") : "",
-                    where: li >= 0 ? String(r[li] || "") : "" });
+        list.push(row);
         if (list.length >= 200) break;
       }
-      return '<article class="lg-card"><h3>' + esc(t.name) + "</h3>" +
+      if (!list.length) return "";
+
+      // "Apple Account and device information (1).zip: Apple ID Device
+      // Information" is the archive talking, not the table.
+      const title = String(t.name || "").replace(/^.*?\.zip:\s*/i, "");
+      return '<article class="lg-card"><h3>' + esc(title) + "</h3>" +
         '<p class="muted small">' + plural(t.rows.length, "record", "records") +
-          (list.length < t.rows.length ? ", " + num(list.length) + " distinct" : "") +
-        (t.srcLabel ? " &middot; " + esc(t.srcLabel) : "") + "</p>" +
+          (list.length < t.rows.length ? ", " + num(list.length) + " worth showing" : "") +
+        "</p>" +
         '<ul class="lg-list">' + list.slice(0, 40).map((x) =>
           "<li>" +
-          (x.dev ? "<b>" + esc(x.dev.slice(0, 80)) + "</b>" : "") +
+          (x.dev ? "<b>" + esc(x.dev.slice(0, 90)) + "</b>"
+                 : x.where ? "<b>" + esc(x.where) + "</b>" : "") +
           '<span class="muted small">' +
-            [x.where, x.ip, x.when].filter(Boolean).map(esc).join(" &middot; ") +
+            [x.dev ? x.where : "", x.ip, x.when].filter(Boolean).map(esc).join(" &middot; ") +
           "</span></li>").join("") + "</ul>" +
         (list.length > 40
           ? '<p class="muted small">' + num(list.length - 40) + " more under Records.</p>" : "") +
@@ -971,7 +1102,7 @@ const MTopics = (function () {
       only: null,
       find: findComments, draw: drawComments,
       count: (m) => m.reduce((n, x) => n + x.items.length, 0) },
-    { key: "health", label: "Health", icon: "chart",
+    { key: "health", label: "Health", icon: "heart",
       sub: "What your devices recorded, and what they did not.",
       only: ["samsung", "apple", "google"],
       find: findHealth, draw: drawHealth,
@@ -980,37 +1111,37 @@ const MTopics = (function () {
     /* These four read the archive rather than the parsed tables, so they are
        marked `slow` - the view puts up a line saying it is reading before the
        decompression starts, instead of a blank panel for a second. */
-    { key: "contacts", label: "Contacts", icon: "chat",
+    { key: "contacts", label: "Contacts", icon: "person",
       sub: "Everyone in your address book, as the export wrote them.",
       only: null, slow: true,
       find: findContacts, draw: drawContacts,
       count: (m) => m[0].files.length },
-    { key: "calendar", label: "Calendar", icon: "clock",
+    { key: "calendar", label: "Calendar", icon: "calendar",
       sub: "Events and reminders, newest first.",
       only: null, slow: true,
       find: findCalendar, draw: drawCalendar,
       count: (m) => m[0].files.length },
-    { key: "notes", label: "Notes", icon: "table",
+    { key: "notes", label: "Notes", icon: "note",
       sub: "What you wrote down.",
       only: null, slow: true,
       find: findNotes, draw: drawNotes,
       count: (m) => m[0].files.length },
-    { key: "activity", label: "Search and watch history", icon: "clock",
+    { key: "activity", label: "Search and watch history", icon: "search",
       sub: "What you searched for, watched and opened, as Google recorded it.",
       only: ["google"], slow: true,
       find: findActivity, draw: drawActivity,
       count: (m) => m[0].files.length },
-    { key: "mail", label: "Mail", icon: "chat",
+    { key: "mail", label: "Mail", icon: "mail",
       sub: "Who wrote to you and when. Headers only - the bodies stay in the archive.",
       only: null, slow: true,
       find: findMail, draw: drawMail,
       count: (m) => m[0].files.length },
-    { key: "logins", label: "Logins and devices", icon: "pin",
+    { key: "logins", label: "Logins and devices", icon: "shield",
       sub: "Where your account has been used from, and on what.",
       only: null,
       find: findLogins, draw: drawLogins,
       count: (m) => m.reduce((n, x) => n + x.table.rows.length, 0) },
-    { key: "audio", label: "Audio", icon: "chat",
+    { key: "audio", label: "Audio", icon: "audio",
       sub: "Recordings in this export, playable here.",
       only: null, slow: true,
       find: findAudio, draw: drawAudio,
