@@ -153,6 +153,13 @@ const MZip = (function () {
 
   async function extract(file, entry) {
     throwIfCancelled();
+    /* A member of a tar is already its own bytes - there is no local header in
+       front of it and nothing to inflate. Handled here rather than in a second
+       reader so that every caller downstream stays unaware of which kind of
+       archive an entry came out of. */
+    if (entry && entry.raw && entry.blob) {
+      return new Uint8Array(await entry.blob.arrayBuffer());
+    }
     const f = src(file, entry);
     const head = await readRange(f, entry.localOff, 30);
     const hdv = new DataView(head.buffer);
@@ -228,6 +235,7 @@ const MZip = (function () {
      tens of gigabytes - so callers can consume them incrementally. */
   async function streamEntry(file, entry) {
     throwIfCancelled();
+    if (entry && entry.raw && entry.blob) return entry.blob.stream();
     /* An encrypted entry cannot be streamed: the bytes on disk are ciphertext
        and feeding them to the inflater throws. Decrypting needs the whole
        entry anyway - the check bytes are at the front and the counter runs
@@ -293,6 +301,13 @@ const MZip = (function () {
      is pure waste. Reading the stream and cancelling once we have enough
      leaves the rest of the entry untouched. */
   async function readHead(file, entry, max = 128 * 1024) {
+    /* A tar member is stored, so its head is a slice and there is nothing to
+       decompress to reach it. Without this the blob's stream hands back the
+       whole file in one chunk and "read the first 96 KB to find the EXIF date"
+       quietly becomes "read the entire photograph", once per photograph. */
+    if (entry && entry.raw && entry.blob) {
+      return new Uint8Array(await entry.blob.slice(0, max).arrayBuffer());
+    }
     const stream = await streamEntry(file, entry);
     const reader = stream.getReader();
     const parts = [];
