@@ -258,6 +258,21 @@ const MInsight = (function () {
     return (Math.round(n * 10) / 10).toLocaleString();
   };
 
+  /* Money is not abbreviated the way a count is. "140M" for a total of 140
+     kroner was wrong twice over, and even a correct "1.2k" reads badly against
+     a currency - a total someone might recognise from a bank statement should
+     be the number they would see there. */
+  const fmtMoney = (n, code) => {
+    if (!isFinite(n)) return "-";
+    const body = Math.abs(n) >= 1000
+      ? Math.round(n).toLocaleString()
+      : (Math.round(n * 100) / 100).toLocaleString();
+    return code ? body + " " + code : body;
+  };
+
+  // Smallest of the positive values, for deciding whether a column is in micros.
+  const se0 = (list) => list.reduce((a, b) => (b < a ? b : a), Infinity);
+
   /* Points down to a drawable number without lying about the shape: an average
      per bucket, not a sample, so a spike between two kept points still shows. */
   function bucket(points, want) {
@@ -402,6 +417,30 @@ const MInsight = (function () {
       const nums = rows.map((x) => toNumber(x[mi])).filter(isFinite);
       const spent = nums.filter((v) => v > 0);
       if (spent.length) {
+        /* The currency is nearly always sitting in the next column along, and
+           ignoring it produced the worst card in the app. YouTube live chats
+           read "140M across 4 charges": the unit was missing, the total was in
+           millionths, and 197 chat messages had been called charges because
+           four of them carried a price.
+
+           Google writes money in micros - millionths of a unit - wherever a
+           currency code column sits beside the amount. Confirmed against a
+           real export: four prices of magnitude 10^7 to 10^8 with the code
+           NOK, which is 140 kroner rather than 140 million of anything.
+
+           Scoped deliberately. The division only happens when there is a
+           currency-code column next to the amount and every value is a whole
+           number, because that pairing is what Google's exports do and an
+           amount that is already in kroner is rarely a bare integer. */
+        const curCol = r.cols.find((c) => /currency|curr[_ ]?code/i.test(c.name));
+        const cui = curCol ? r.idx(curCol) : -1;
+        const codes = cui >= 0
+          ? [...new Set(rows.map((x) => String(x[cui] == null ? "" : x[cui]).trim()).filter(Boolean))]
+          : [];
+        const currency = codes.length === 1 ? codes[0] : null;
+        const allWhole = spent.every((v) => Number.isInteger(v));
+        const micros = !!currency && allWhole && se0(spent) >= 10000;
+        const scale = micros ? 1e6 : 1;
         const byYear = new Map();
         if (whenIdx >= 0) {
           for (const row of rows) {
@@ -415,10 +454,16 @@ const MInsight = (function () {
         const se = extent(spent);
         out.push({
           kind: "money", title: t.name, source: t.source, path: t.path,
-          stat: fmtNum(se.sum),
+          stat: fmtMoney(se.sum / scale, currency),
           statLabel: "total", n: spent.length,
-          biggest: fmtNum(se.max),
-          years: [...byYear.entries()].sort((a, b) => a[0] - b[0]).map(([label, v]) => ({ label: String(label), n: v })),
+          /* How many rows the total actually came from, so a table where four
+             rows in two hundred carry a price says so instead of implying the
+             whole table was charges. */
+          rows: rows.length,
+          currency,
+          biggest: fmtMoney(se.max / scale, currency),
+          years: [...byYear.entries()].sort((a, b) => a[0] - b[0])
+            .map(([label, v]) => ({ label: String(label), n: v / scale })),
           span,
         });
       }

@@ -586,6 +586,12 @@ a.card { color: inherit; }
 .btn:disabled { opacity: .55; cursor: default; }
 
 /* ===== Resume an interrupted save ===== */
+/* Any `display` beats the browser's own `[hidden] { display: none }`, so an
+   element given both showed as an empty bordered box - which is what "start
+   fresh" left behind. Stated once here rather than per component, because
+   every component that sets display and toggles hidden has the same bug. */
+[hidden] { display: none !important; }
+
 .resume-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
   border: 1px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius-lg);
   padding: 18px 22px; margin-bottom: 18px; }
@@ -2441,14 +2447,22 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    ========================================================================== */
 /* Cards sized by content, not by a grid that forces a profile of six fields
    to be as tall as a chart of four hundred readings. */
-.cards { display: grid; gap: 14px; align-items: start;
+/* Cards in a row share a height, so a row does not end in a ragged shelf of
+   white where a short card sat beside a tall one. `align-items: start` let
+   every card keep its natural height, which read as boxes scattered at random
+   with gaps between them. */
+.cards { display: grid; gap: 14px; align-items: stretch;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 .card { border: 1px solid var(--line); border-radius: 14px; background: var(--card);
   padding: 16px 16px 14px; min-width: 0; }
 .card header { display: flex; align-items: baseline; justify-content: space-between;
   gap: 10px; margin-bottom: 10px; }
+/* Card titles are file and table names as the provider wrote them - "live
+   chats", "video texts" - so they arrive lowercase. Only the first letter is
+   touched: title case would turn "iPhone backups" into "IPhone Backups". */
 .card h3 { margin: 0; font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;
   overflow-wrap: anywhere; }
+.card h3::first-letter { text-transform: uppercase; }
 .card-src { font-size: 11px; color: var(--muted); white-space: nowrap; flex: none; }
 .card-span { display: block; margin-top: 10px; font-size: 11px; color: var(--muted); }
 .card footer { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px;
@@ -2476,10 +2490,18 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .card-facts dl { margin: 0; display: grid; grid-template-columns: auto 1fr;
   gap: 5px 14px; font-size: 12.5px; align-items: baseline; }
 .card-facts dt { color: var(--muted); overflow-wrap: anywhere; }
-.card-facts dd { margin: 0; overflow-wrap: anywhere; }
+/* A banner URL or a sentence-long setting was wrapping to six lines in a
+   narrow column and making its card four times the height of its neighbours.
+   Clamped to two lines; the whole value stays in the title attribute. */
+.card-facts dd { margin: 0; overflow-wrap: anywhere; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
+/* No scrollbar inside a card. The list is already cut to a handful with an
+   "and N more" underneath, so the scroller only ever revealed the same few
+   rows again - two ways of saying "there is more" stacked on each other, one
+   of which trapped the page scroll. */
 .card-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px;
-  font-size: 12.5px; max-height: 260px; overflow-y: auto; }
+  font-size: 12.5px; }
 .card-items li { display: flex; gap: 10px; justify-content: space-between;
   align-items: baseline; }
 .card-items li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

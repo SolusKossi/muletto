@@ -9,6 +9,9 @@
    All parsing happens in the browser on the user's own file. */
 
 const MParse = (function () {
+  // Its own, like every other module here. Reaching for app.js's copy works
+  // only because of load order, which is not a thing to depend on.
+  const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
 
   /* ---------- shared helpers ---------- */
 
@@ -245,17 +248,32 @@ const MParse = (function () {
 
   /* Videos carry their recording date in the container header; read it for a
      bounded number so the timeline is right without scanning everything. */
-  async function readVideoDates(lib, file, cap = 200) {
+  /* The creation date of an MP4 lives in its `moov` atom, which may be at
+     either end of the file, so there is no way to read it without unpacking
+     the whole video. That is affordable for a phone clip and absurd for the
+     4 GB videos a Google Takeout can hold - it was unpacking gigabytes to read
+     a timestamp, which is most of where "opening this takes forever" came
+     from. Big videos keep whatever date the provider's sidecar gave them. */
+  const VIDEO_DATE_MAX = 128 * 1024 * 1024;
+
+  async function readVideoDates(lib, file, cap = 200, say) {
     if (typeof MVideo === "undefined") return;
-    let done = 0;
+    let done = 0, skipped = 0;
     for (const m of lib.media) {
       if (m.kind !== "video" || done >= cap) continue;
+      if (MZip.cancelled()) return;
+      if ((m.size || 0) > VIDEO_DATE_MAX) { skipped++; continue; }
       try {
         const blob = await MZip.extractBlob(file, m.entry, m.mime);
         const at = await MVideo.readCreationDate(blob);
         if (at) { m.at = at; lib.events.push({ at, kind: "video", label: m.name }); }
         done++;
+        if (say && done % 10 === 0) say("Reading dates out of the videos - " + done + " so far...");
       } catch { /* skip unreadable video */ }
+    }
+    if (skipped) {
+      lib.notes.push(plural(skipped, "video is", "videos are") + " too large to unpack just to " +
+        "read a date, so they keep whatever date came with the export. Nothing about them is missing.");
     }
   }
 
@@ -281,14 +299,18 @@ const MParse = (function () {
      Only the head of each file is decompressed, and a sidecar date already
      found wins, because the provider knows better than the camera when the
      camera clock was wrong. */
-  async function readPhotoDates(lib, file, cap = 800) {
+  async function readPhotoDates(lib, file, cap = 800, say) {
     if (typeof MExif === "undefined") return;
     let done = 0, dated = 0, located = 0;
     for (const m of lib.media) {
       if (done >= cap) break;
+      if (MZip.cancelled()) return;
       if (m.kind !== "photo" || m.at) continue;
       if (!/\.jpe?g$/i.test(m.name)) continue;
       done++;
+      if (say && done % 50 === 0) {
+        say("Reading dates and places out of the photographs - " + done + " of up to " + cap + "...");
+      }
       try {
         const head = await MZip.readHead(file, m.entry, 96 * 1024);
         const stamp = MExif.readDate(head);
@@ -909,12 +931,13 @@ const MParse = (function () {
     return lib;
   }
 
-  async function parse(file, entries, detected) {
+  async function parse(file, entries, detected, say) {
     const slug = detected && detected.slug;
     const finish = async (libPromise) => {
+      if (say) say("Working out what is in " + (detected && detected.label ? detected.label : "this export") + "...");
       const lib = await libPromise;
-      await readPhotoDates(lib, file);
-      await readVideoDates(lib, file);
+      await readPhotoDates(lib, file, 800, say);
+      await readVideoDates(lib, file, 200, say);
       return lib;
     };
     if (slug === "snapchat") return finish(snapchat(file, entries));

@@ -28,11 +28,11 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "9c096c6a1e3f";
+const VERSION = "d8810066d799";
 const PRECACHE = [
   "/app.html",
-  "/styles.css?v=4e115af6",
-  "/notify.js?v=9f0ee69c",
+  "/styles.css?v=47a92400",
+  "/notify.js?v=f2cf1cf3",
   "/tips.js?v=0bdfdea4",
   "/jobs.js?v=3f996b9f",
   "/store.js?v=6c88c204",
@@ -44,7 +44,7 @@ const PRECACHE = [
   "/caption.js?v=5d10cb7e",
   "/captionui.js?v=fc9b3409",
   "/zipcrypt.js?v=8e2f0449",
-  "/zip.js?v=0591d597",
+  "/zip.js?v=125bf2b7",
   "/zipout.js?v=5c9c3222",
   "/exif.js?v=7b45a4ab",
   "/heif.js?v=d0ffffd5",
@@ -53,15 +53,15 @@ const PRECACHE = [
   "/diagnose.js?v=33645a5d",
   "/contribute.js?v=f9f45413",
   "/mojibake.js?v=38849a41",
-  "/parsers.js?v=466b4cb8",
+  "/parsers.js?v=63ecb349",
   "/catalog.js?v=d7b44ec6",
-  "/insights.js?v=4eb7c92b",
+  "/insights.js?v=0f4973b9",
   "/basemap.js?v=cbb6dfca",
   "/rail.js?v=b4bc5944",
   "/views.js?v=9f5101e0",
   "/export.js?v=bad236d2",
   "/explorer.js?v=b9c16d1f",
-  "/app.js?v=ae9e771d",
+  "/app.js?v=e4d8fd23",
   "/swreg.js?v=266bec3b",
   "/fonts/host-grotesk-var-italic.woff2",
   "/fonts/host-grotesk-var.woff2"

@@ -426,7 +426,8 @@ async function readSource(file, seen) {
     seen.set(key, set);
   }
 
-  const lib = await MParse.parse(file, entries, det);
+  const lib = await MParse.parse(file, entries, det, seen && seen.say);
+  readCancelled();
 
   /* A nested archive too large to open is the one case where something real is
      missing and no count anywhere would show it: the outer archive lists it as
@@ -741,10 +742,20 @@ function showCurtain(name) {
     document.body.appendChild(el);
     el.querySelector("#curtain-stop").addEventListener("click", () => {
       cancelRead.wanted = true;
-      curtainSay("Stopping...");
+      /* Also told to the reader, because the slow part is almost never a
+         single read - it is a loop over thousands of entries, and only the
+         reader is inside it. Without this, Stop sat saying "Stopping..." until
+         the current archive finished, which for a large export is minutes and
+         reads exactly like a hang. */
+      if (typeof MZip !== "undefined") MZip.setCancelled(true);
+      /* Down at once. Whatever is still unwinding cannot affect anything now:
+         the library is discarded either way, so there is nothing to wait for
+         and no reason to make somebody watch it. */
+      hideCurtain();
     });
   }
   cancelRead.wanted = false;
+  if (typeof MZip !== "undefined") MZip.setCancelled(false);
   const stop = el.querySelector("#curtain-stop");
   if (stop) { stop.disabled = false; stop.textContent = "Stop"; }
   document.body.classList.add("curtained");
@@ -1963,9 +1974,16 @@ function cardHtml(c) {
   }
   if (c.kind === "money") {
     const max = Math.max(...c.years.map((y) => y.n), 0);
+    /* "across 4 charges" on a table of 197 live chat messages said the table
+       was four charges. It was four rows that carried a price out of nearly
+       two hundred that did not, and saying both is the whole difference
+       between a number and a fact. */
+    const where = c.rows && c.rows > c.n
+      ? "over " + cardNum(c.n) + " of " + cardNum(c.rows) + " rows"
+      : "across " + cardNum(c.n) + (c.n === 1 ? " row" : " rows");
     return '<article class="card card-money">' + head +
       '<div class="card-figure"><strong>' + esc(c.stat) + "</strong>" +
-        '<span class="muted small">across ' + cardNum(c.n) + " charges</span></div>" +
+        '<span class="muted small">' + esc(where) + "</span></div>" +
       (c.years.length
         ? '<ul class="bars">' + c.years.map((y) => barRow(y.label, y.n, max, MInsight.fmtNum(y.n))).join("") + "</ul>"
         : '<p class="muted small">No dates on these, so they cannot be split by year.</p>') +
@@ -1974,7 +1992,8 @@ function cardHtml(c) {
   if (c.kind === "facts") {
     return '<article class="card card-facts">' + head +
       '<dl>' + c.facts.map(([k, v]) =>
-        "<dt>" + esc(k) + "</dt><dd>" + esc(v) + "</dd>").join("") + "</dl>" +
+        "<dt>" + esc(k) + '</dt><dd title="' + esc(String(v).slice(0, 400)) + '">' +
+        esc(v) + "</dd>").join("") + "</dl>" +
       (c.n > c.facts.length ? '<p class="muted small">' + cardNum(c.n - c.facts.length) + " more</p>" : "") +
       "</article>";
   }
@@ -2098,6 +2117,39 @@ function renderHighlights(panel, lib) {
    words repeated down the page, which is worse than showing nothing because
    it looks like the data. Objects are summarised by what is in them, and the
    whole value is kept in the title so it is still reachable. */
+/* A YouTube playlist in a Takeout is a column of eleven-character video IDs
+   and nothing else - `Foreign videos.csv` is `Video ID, Playlist video
+   creation timestamp`. The titles are not withheld by us; Google does not put
+   them in the export at all, except for videos on your own channel, which
+   arrive in `videos.csv` with a title beside them.
+ *
+ * So: resolve the ones the export actually names, and make the rest a link,
+ * because an ID nobody can read is one click from the video it names. */
+const YT_ID = /^[A-Za-z0-9_-]{11}$/;
+const ytTitles = new Map();
+
+function learnVideoTitles(lib) {
+  for (const t of lib.tables || []) {
+    const idAt = (t.columns || []).findIndex((c) => /^video id$/i.test(c));
+    const tiAt = (t.columns || []).findIndex((c) => /^video title/i.test(c));
+    if (idAt < 0 || tiAt < 0) continue;
+    for (const row of t.rows || []) {
+      const id = String(row[idAt] || "").trim();
+      const title = String(row[tiAt] == null ? "" : row[tiAt]).trim();
+      if (YT_ID.test(id) && title) ytTitles.set(id, title);
+    }
+  }
+}
+
+function videoCell(v) {
+  const id = String(v == null ? "" : v).trim();
+  if (!YT_ID.test(id)) return null;
+  const known = ytTitles.get(id);
+  const url = "https://www.youtube.com/watch?v=" + encodeURIComponent(id);
+  return '<a href="' + url + '" target="_blank" rel="noopener noreferrer nofollow">' +
+    esc(known || id) + "</a>" + (known ? "" : "");
+}
+
 function cellText(v) {
   if (v == null) return "";
   if (typeof v !== "object") return String(v);
@@ -2121,6 +2173,7 @@ function cellText(v) {
 const cellTitle = (v) => (v && typeof v === "object" ? JSON.stringify(v) : "");
 
 function renderTables(panel, lib) {
+  learnVideoTitles(lib);
   if (!lib.tables.length) {
     panel.innerHTML = `<div class="ex-empty"><h3>No record tables here</h3>
       <p class="muted">These are the spreadsheets and lists an export ships - purchases,
@@ -2140,8 +2193,14 @@ function renderTables(panel, lib) {
       <p class="muted small">${plural(t.rows.length, "row", "rows")}${t.rows.length > rows.length ? `, showing 200` : ""}.</p>
       <div class="tablewrap"><table>
         <thead><tr>${t.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>
-        <tbody>${rows.map((r) => `<tr>${t.columns.map((_, ci) => {
+        <tbody>${rows.map((r) => `<tr>${t.columns.map((col, ci) => {
           const v = r[ci];
+          // Only in a column that says it holds video IDs, so an eleven
+          // character string somewhere else is not turned into a link.
+          if (/video id/i.test(col)) {
+            const link = videoCell(v);
+            if (link) return `<td>${link}</td>`;
+          }
           const title = cellTitle(v);
           return `<td${title ? ` title="${esc(title.slice(0, 400))}"` : ""}>${esc(cellText(v))}</td>`;
         }).join("")}</tr>`).join("")}</tbody>
