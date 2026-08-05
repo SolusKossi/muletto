@@ -57,7 +57,7 @@
       <div id="drop" class="drop">
         <p><strong>Drop your export files here</strong><br />or click to choose them. Open several at once to merge them
           into one library. A Muletto work file goes here too, to bring back what was worked out last time.</p>
-        <input id="file" type="file" accept=".zip,.muletto,.json,.gz" multiple hidden />
+        <input id="file" type="file" accept=".zip,.tgz,.tar.gz,.muletto,.json,.gz" multiple hidden />
       </div>
       <div id="import-result" class="import-result" hidden></div>
 
@@ -128,7 +128,9 @@
   <script src="caption.js?v=5d10cb7e"></script>
   <script src="captionui.js?v=fc9b3409"></script>
   <script src="zipcrypt.js?v=8e2f0449"></script>
-  <script src="zip.js?v=125bf2b7"></script>
+  <script src="zip.js?v=6e362363"></script>
+  <!-- Gzipped tar, because Google offers .tgz next to .zip. -->
+  <script src="tar.js?v=535cfda4"></script>
   <script src="zipout.js?v=5c9c3222"></script>
   <script src="exif.js?v=7b45a4ab"></script>
   <script src="heif.js?v=d0ffffd5"></script>
@@ -148,7 +150,7 @@
   <script src="views.js?v=9f5101e0"></script>
   <script src="export.js?v=bad236d2"></script>
   <script src="explorer.js?v=11a47139"></script>
-  <script src="app.js?v=e31b4d18"></script>
+  <script src="app.js?v=0250e05d"></script>
   <script src="swreg.js?v=266bec3b"></script>
 </body>
 </html>

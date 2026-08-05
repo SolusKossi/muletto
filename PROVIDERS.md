@@ -48,10 +48,14 @@ YouTube Music. The full list is on
 JSON gives back the date and the location that the file itself lost, and that
 is the whole reason to open a Takeout.
 
+**`.tgz` works.** Google offers tgz next to zip on the same screen and it used
+to be refused outright. It is unpacked in one streaming pass, each member into
+its own blob - gzip is not seekable, so unlike a zip it cannot be read lazily.
+A `.zip` is still the better choice for a very large Takeout, because it is
+read without unpacking anything.
+
 **Known gaps, in the order they hurt:**
 
-- **`.tgz` is not supported at all.** Google offers tgz as an alternative to
-  zip and some people pick it. That is a working request turned into a wall.
 - **Gmail is a single mbox and is only listed.** No thread view, no search
   across mail, no attachment extraction.
 - **My Activity is HTML** - search history, watch history, and app usage all

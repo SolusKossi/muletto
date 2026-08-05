@@ -390,6 +390,38 @@ async function unlockIfNeeded(file, entries, progress) {
 }
 
 async function readSource(file, seen) {
+  /* A gzipped tar cannot be read lazily - gzip is not seekable, so there is no
+     directory to consult and no way to fetch one entry without decompressing
+     everything before it. It is unpacked in one pass instead, each member into
+     its own blob. Everything after this point is identical. */
+  if (typeof MTar !== "undefined" && MTar.isTgz(file.name)) {
+    const say = seen && seen.say;
+    if (say) say("Unpacking " + file.name + " - a .tgz has to be read in one go...");
+    const all = await MTar.read(file, (n, b) => {
+      if (say) say("Unpacking " + file.name + " - " + n.toLocaleString() +
+                   " files so far (" + fmtBytes(b) + ")...");
+    });
+    readCancelled();
+    const det = detectProvider(all, file.name);
+    const key = exportKey(file.name, (det && det.slug) || file.name);
+    let entries = all, dropped = 0;
+    if (seen) {
+      const set = seen.get(key) || new Set();
+      entries = all.filter((e) => {
+        if (!e.size) return true;
+        const k = e.name + ":" + e.size;
+        if (set.has(k)) { dropped++; return false; }
+        set.add(k);
+        return true;
+      });
+      seen.set(key, set);
+    }
+    const lib = await MParse.parse(file, entries, det, seen && seen.say);
+    readCancelled();
+    return { name: file.name, size: file.size, file, entries, det, lib,
+             exportKey: key, dropped, locked: 0, skippedNested: [] };
+  }
+
   // Only the archive's directory is read here; file data stays on disk until
   // an individual entry is actually needed.
   const outer = await MZip.readDirectory(file);
@@ -700,6 +732,10 @@ function resolveSelf(lib) {
 }
 
 const WORK_FILE = /\.(muletto|json|gz)$/i;
+/* Written as a literal. Built through a shell, the escapes collapse and the
+   dot matches any character - which is how a nested-archive test came to treat
+   "notanarchive.unzip" as an archive. */
+const ARCHIVE_FILE = /\.(zip|tgz|tar\.gz)$/i;
 
 /* One place to put files, whatever they are.
 
@@ -783,8 +819,11 @@ function hideCurtain() {
 async function handleFiles(fileList, opts) {
   const all = [...fileList];
   const demo = !!(opts && opts.demo);
-  const work = all.filter((f) => WORK_FILE.test(f.name) && !/\.zip$/i.test(f.name));
-  const files = all.filter((f) => /\.zip$/i.test(f.name));
+  /* A .tgz is an export, not a work file - and it ends in .gz, which WORK_FILE
+     also matches. Which of these two tests wins decides whether a Takeout in
+     tgz form is read as an archive or misfiled as saved progress. */
+  const work = all.filter((f) => WORK_FILE.test(f.name) && !ARCHIVE_FILE.test(f.name));
+  const files = all.filter((f) => ARCHIVE_FILE.test(f.name));
 
   /* Before the first await, so the curtain is up in the same tick as the drop
      or the click rather than after a work file has been read. Every return
