@@ -46,6 +46,16 @@ ICONS.video = line('<rect x="3" y="6" width="12.5" height="12" rx="2.5"/><path d
 ICONS.activity = line('<path d="M3 12h4l2.5-6 4 13L16 12h5"/>');
 ICONS.chart = line('<path d="M4 19.5V4.5M4 19.5h16"/><path d="M7.5 16.5v-4M12 16.5v-8M16.5 16.5v-5.5"/>');
 ICONS.route = line('<circle cx="6" cy="6" r="2.6"/><circle cx="18" cy="18" r="2.6"/><path d="M8.6 6H14a4 4 0 0 1 0 8h-4a4 4 0 0 0 0 8h4.9"/>');
+/* One per topic. A sidebar where Contacts, Audio and Comments all carry the
+   same speech bubble is a sidebar you have to read every time instead of
+   recognising. */
+ICONS.person = line('<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>');
+ICONS.calendar = line('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3.5v3M16 3.5v3"/>');
+ICONS.note = line('<path d="M5 3.5h9.5L19 8v12.5H5Z"/><path d="M14 3.5V8h5"/><path d="M8.5 12.5h7M8.5 16h4.5"/>');
+ICONS.audio = line('<path d="M4 14v-4h3.5L12 6v12l-4.5-4H4Z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/>');
+ICONS.mail = line('<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m3.8 7 7.1 5.2a2 2 0 0 0 2.2 0L20.2 7"/>');
+ICONS.shield = line('<path d="M12 3.2 19 6v5.5c0 4.3-2.9 7.6-7 9.3-4.1-1.7-7-5-7-9.3V6Z"/><path d="m9.2 12 2 2 3.6-3.8"/>');
+ICONS.heart = line('<path d="M12 20.3S3.8 15.6 3.8 9.8A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 8.2 2.2c0 5.8-8.2 10.5-8.2 10.5Z"/>');
 
 function iconSvg(key) {
   return ICONS[key] || ICONS.box;
@@ -2352,7 +2362,20 @@ async function loadSamples(btn) {
          one it is beats a generic failure. */
       let res;
       try {
-        res = await fetch("samples/" + name);
+        /* Revalidated, not taken from the cache on faith.
+         *
+         * Every other asset carries a content stamp in its URL, so a change is
+         * a new name. The samples deliberately do not - they are nine
+         * megabytes and are kept only once somebody asks for them - which
+         * means their URL stays the same while their contents change between
+         * builds. A sample gained thirteen files and the browser went on
+         * serving the old archive, and so did the service worker, because it
+         * filled its own new cache from the stale HTTP one.
+         *
+         * `no-cache` asks the server whether it changed rather than assuming
+         * it did not. Offline this still throws, and the message below is the
+         * one that matters. */
+        res = await fetch("samples/" + name, { cache: "no-cache" });
       } catch (err) {
         throw new Error(navigator.onLine
           ? "The sample exports could not be fetched."
