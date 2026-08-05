@@ -113,12 +113,31 @@
          scopedLib hands back a fresh array each time, so nothing would be
          reused and a large health export would stall the sidebar for a second
          each redraw. The cards are built when the view is opened. */
+    ];
+
+    /* Views that exist because the data does.
+     *
+     * A fixed sidebar meant anything without a home became a row in Records,
+     * which is the provider's spreadsheet with the provider's column names on
+     * it. Comments, health readings and whatever turns up next deserve to be
+     * looked at rather than scrolled through, and only when they are actually
+     * present - a Comments entry on an export with no comments in it is the
+     * same lie in the other direction.
+     *
+     * Inserted here, with the content views, rather than appended after the
+     * housekeeping ones. */
+    if (typeof MTopics !== "undefined") {
+      state.topics = MTopics.detect(lib);
+      for (const t of state.topics) items.push([t.key, t.label, t.icon, t.n]);
+    }
+
+    items.push(
       ["highlights", "Highlights", "chart", lib.tables.length],
       ["records", "Records", "table", lib.tables.reduce((n, t) => n + t.rows.length, 0)],
       ["files", "All files", "folder", entries.length],
       ["report", "What is in here", "table",
-        rep ? rep.filter((_, i) => !state.srcOff.has(i)).length : 0],
-    ];
+        rep ? rep.filter((_, i) => !state.srcOff.has(i)).length : 0]
+    );
     return items;
   }
 
@@ -767,7 +786,9 @@
     closeDetail();
     const root = document.getElementById("explorer");
     const body = root.querySelector("#ex-body");
-    const [title, sub] = TITLES[k] || [k, ""];
+    /* A topic names itself, so adding one does not mean editing this table. */
+    const topic = (state.topics || []).find((t) => t.key === k);
+    const [title, sub] = TITLES[k] || (topic ? [topic.label, topic.sub] : [k, ""]);
     // A view that manages its own scrolling has to own the height, otherwise
     // its inner panes sit below the fold and can never be scrolled.
     root.querySelector("#ex-scroll").classList.toggle("fills", k === "chats" || k === "map");
@@ -786,6 +807,7 @@
     else if (k === "report") drawReport(body);
     else if (k === "chats") MViews.renderPeople(body, scopedLib(), viewCtx());
     else if (k === "map") MViews.renderMap(body, scopedLib(), viewCtx());
+    else if (typeof MTopics !== "undefined" && MTopics.has(k) && MTopics.draw(k, body, scopedLib())) { /* drawn */ }
     else if (state.actions.legacy) state.actions.legacy(k, body, viewCtx(), scopedLib());
     state.ctx.hydrate(body);
   }
