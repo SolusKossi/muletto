@@ -696,7 +696,7 @@ const MTopics = (function () {
             '<button type="button" class="au-b au-toggle" title="Play">' +
               '<span class="au-tri"></span></button>' +
             '<button type="button" class="au-b au-fwd" title="Forward 10 seconds">+10</button>' +
-            '<div class="au-bar"><i></i></div>' +
+            '<canvas class="au-wave" height="34"></canvas>' +
             '<span class="au-time">0:00</span>' +
           "</div>" +
         "</li>").join("") + "</ol>" +
@@ -718,17 +718,70 @@ const MTopics = (function () {
     audio.preload = "none";
     let row = null, url = "";
 
+    /* The shape of the sound, not a progress bar.
+     *
+     * A bar filling up tells you how far through you are and nothing else. On
+     * an hour-long recording the useful question is where the talking is, and
+     * a waveform answers it at a glance - which is why every phone draws one.
+     *
+     * Peaks are computed once per recording and kept on the row: decoding is
+     * the expensive part, and it must not happen again on every animation
+     * frame. */
+    const peaksOf = (buf, want) => {
+      const ch = buf.getChannelData(0);
+      const per = Math.max(1, Math.floor(ch.length / want));
+      const out = new Float32Array(want);
+      let top = 0.0001;
+      for (let i = 0; i < want; i++) {
+        let peak = 0;
+        const from = i * per, to = Math.min(ch.length, from + per);
+        // Step through rather than read every sample: an hour at 44.1 kHz is
+        // 158 million of them and the drawing is 600 pixels wide.
+        for (let j = from; j < to; j += Math.max(1, (to - from) >> 7)) {
+          const v = ch[j] < 0 ? -ch[j] : ch[j];
+          if (v > peak) peak = v;
+        }
+        out[i] = peak;
+        if (peak > top) top = peak;
+      }
+      for (let i = 0; i < want; i++) out[i] /= top;   // normalised, so a quiet
+      return out;                                     // recording is still legible
+    };
+
+    const drawWave = () => {
+      if (!row) return;
+      const c = row.querySelector(".au-wave");
+      if (!c) return;
+      const w = c.clientWidth || 240, h = c.height;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); }
+      const g = c.getContext("2d");
+      g.setTransform(dpr, 0, 0, 1, 0, 0);
+      g.clearRect(0, 0, w, h);
+      const peaks = row.__peaks;
+      const played = audio.duration ? audio.currentTime / audio.duration : 0;
+      const cs = getComputedStyle(row);
+      const done = cs.getPropertyValue("--wave-on").trim() || "#5b6cff";
+      const todo = cs.getPropertyValue("--wave-off").trim() || "#d5d7e0";
+      const bars = Math.max(24, Math.floor(w / 3));
+      for (let i = 0; i < bars; i++) {
+        const at = i / bars;
+        const v = peaks ? peaks[Math.floor(at * peaks.length)] || 0 : 0.12;
+        const bh = Math.max(2, v * (h - 4));
+        g.fillStyle = at <= played ? done : todo;
+        g.fillRect(i * 3, (h - bh) / 2, 2, bh);
+      }
+    };
+
     const paint = () => {
       if (!row) return;
-      const bar = row.querySelector(".au-bar i");
       const time = row.querySelector(".au-time");
-      const share = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
-      if (bar) bar.style.width = share.toFixed(2) + "%";
       if (time) {
         time.textContent = clock(audio.currentTime) +
           (isFinite(audio.duration) ? " / " + clock(audio.duration) : "");
       }
       row.classList.toggle("au-playing", !audio.paused);
+      drawWave();
     };
     audio.addEventListener("timeupdate", paint);
     audio.addEventListener("loadedmetadata", paint);
@@ -747,6 +800,19 @@ const MTopics = (function () {
         url = URL.createObjectURL(blob);
         audio.src = url;
         li.classList.remove("au-loading");
+        /* Decoded once and kept. Playback starts immediately either way - the
+           waveform arrives when it arrives rather than holding up the sound,
+           and a format the browser can play but not decode simply stays flat
+           rather than failing. */
+        if (!li.__peaks) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) {
+            blob.arrayBuffer()
+              .then((ab) => new AC().decodeAudioData(ab))
+              .then((buf) => { li.__peaks = peaksOf(buf, 900); if (row === li) drawWave(); })
+              .catch(() => { /* undecodable: the bars stay flat, the sound still plays */ });
+          }
+        }
         return true;
       } catch (err) {
         li.classList.remove("au-loading");
@@ -788,14 +854,45 @@ const MTopics = (function () {
       paint();
     });
 
-    // Scrubbing, on the bar itself.
-    el.addEventListener("pointerdown", (ev) => {
-      const bar = ev.target.closest && ev.target.closest(".au-bar");
-      if (!bar || !row || !bar.closest(".au") === row || !isFinite(audio.duration)) return;
-      const r = bar.getBoundingClientRect();
-      audio.currentTime = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * audio.duration;
+    /* Drag, not just click.
+     *
+     * Pressing jumps the playhead and holding keeps it under the finger, which
+     * is how every audio player works and what makes finding a moment in a
+     * long recording possible at all. Pointer capture means the drag survives
+     * leaving the canvas - without it, moving a few pixels above the waveform
+     * silently ends the scrub. */
+    let scrubbing = null;
+    const seekTo = (canvas, clientX) => {
+      if (!isFinite(audio.duration)) return;
+      const r = canvas.getBoundingClientRect();
+      const at = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+      audio.currentTime = at * audio.duration;
       paint();
+    };
+    el.addEventListener("pointerdown", (ev) => {
+      const canvas = ev.target.closest && ev.target.closest(".au-wave");
+      if (!canvas || !row || canvas.closest(".au") !== row) return;
+      ev.preventDefault();
+      scrubbing = canvas;
+      canvas.classList.add("au-scrub");
+      try { canvas.setPointerCapture(ev.pointerId); } catch (e) { /* older engines */ }
+      seekTo(canvas, ev.clientX);
     });
+    el.addEventListener("pointermove", (ev) => {
+      if (!scrubbing) return;
+      ev.preventDefault();
+      seekTo(scrubbing, ev.clientX);
+    });
+    const endScrub = () => {
+      if (!scrubbing) return;
+      scrubbing.classList.remove("au-scrub");
+      scrubbing = null;
+    };
+    el.addEventListener("pointerup", endScrub);
+    el.addEventListener("pointercancel", endScrub);
+
+    // Bars are laid out from the element's width, so a resize has to redraw.
+    window.addEventListener("resize", drawWave);
   }
 
   const AUDIO_MIME = { m4a: "audio/mp4", mp3: "audio/mpeg", wav: "audio/wav",
@@ -1024,6 +1121,61 @@ const MTopics = (function () {
     const EMPTY = /^(n\/?a|null|none|unknown|-|)$/i;
     const clean = (v) => { const s = String(v == null ? "" : v).trim(); return EMPTY.test(s) ? "" : s; };
 
+    /* What a user agent is actually saying.
+     *
+     * Apple writes these for its own services and they are not meant to be
+     * read: "com.apple.appstored/1.0 iOS/18.7.1 model/iPhone14,2 hwp/t8110
+     * build/22H31 (6; dt:254) AMS/". Every part of that is decodable, and a
+     * page of them unparsed is a page nobody can use - which is exactly the
+     * complaint this is answering.
+     *
+     * The marketing name of a model is deliberately NOT guessed. iPhone14,2 is
+     * an iPhone; saying which iPhone would mean shipping a lookup table and
+     * being confidently wrong about somebody's own device. The identifier is
+     * kept beside the family, so the reader can search it if they care. */
+    const APPS = [
+      [/com\.apple\.appstored|^AppStore\/|com\.apple\.storekitd/i, "App Store"],
+      [/itunesstored/i, "iTunes Store"],
+      [/com\.apple\.iCloudQuota|icloud/i, "iCloud"],
+      [/com\.apple\.Preferences/i, "Settings"],
+      [/com\.apple\.mobilesafari|safari/i, "Safari"],
+      [/com\.apple\.news/i, "News"],
+      [/com\.apple\.podcasts/i, "Podcasts"],
+      [/com\.apple\.Music|musicd/i, "Music"],
+      [/com\.apple\.tv/i, "TV"],
+      [/chrome/i, "Chrome"],
+      [/firefox/i, "Firefox"],
+      [/edg[e/]/i, "Edge"],
+    ];
+    const FAMILY = [
+      [/iPhone/i, "iPhone"], [/iPad/i, "iPad"], [/iPod/i, "iPod"],
+      [/Watch/i, "Apple Watch"], [/Mac|iMac|MacBook/i, "Mac"],
+      [/AppleTV/i, "Apple TV"], [/Android/i, "Android"],
+      [/Windows/i, "Windows"], [/Linux/i, "Linux"],
+    ];
+
+    function readable(raw) {
+      const s = String(raw || "");
+      if (!s) return "";
+      // Already English, and short enough to be somebody's device name.
+      if (s.length < 40 && !/\/|;/.test(s)) return s;
+
+      const app = (APPS.find((a) => a[0].test(s)) || [])[1] || "";
+      const model = (/model\/([A-Za-z0-9,]+)/.exec(s) || [])[1] || "";
+      const os = (/\b(iOS|iPadOS|macOS|watchOS|tvOS|Android)[ /]([0-9._]+)/i.exec(s) || []);
+      const family = (FAMILY.find((f) => f[0].test(model || s)) || [])[1] || "";
+
+      const bits = [];
+      const where = family ? family + (model ? " (" + model + ")" : "") : model;
+      // "App Store on iPhone", not "App Store, on iPhone".
+      if (app && where) bits.push(app + " on " + where);
+      else if (app) bits.push(app);
+      else if (where) bits.push(where);
+      if (os.length) bits.push(os[1] + " " + os[2]);
+      // Nothing recognised: hand back the original rather than a worse version.
+      return bits.length ? bits.join(", ") : s;
+    }
+
     const panel = (m) => {
       const t = m.table;
       const cols = t.columns || [];
@@ -1062,13 +1214,21 @@ const MTopics = (function () {
         '<p class="muted small">' + plural(t.rows.length, "record", "records") +
           (list.length < t.rows.length ? ", " + num(list.length) + " worth showing" : "") +
         "</p>" +
-        '<ul class="lg-list">' + list.slice(0, 40).map((x) =>
-          "<li>" +
-          (x.dev ? "<b>" + esc(x.dev.slice(0, 90)) + "</b>"
-                 : x.where ? "<b>" + esc(x.where) + "</b>" : "") +
-          '<span class="muted small">' +
-            [x.dev ? x.where : "", x.ip, x.when].filter(Boolean).map(esc).join(" &middot; ") +
-          "</span></li>").join("") + "</ul>" +
+        '<ul class="lg-list">' + list.slice(0, 40).map((x) => {
+          const name = readable(x.dev) || x.where;
+          /* The same value twice with a dot between it reads as a mistake,
+             because it is one - a table with both "City" and "Location" filled
+             in identically printed "NORDREFALE - NORDREFALE". */
+          const rest = [...new Set([x.dev ? x.where : "", x.ip, x.when].filter(Boolean))];
+          return "<li>" +
+            (name ? "<b>" + esc(name.slice(0, 110)) + "</b>" : "") +
+            '<span class="muted small">' + rest.map(esc).join(" &middot; ") + "</span>" +
+            /* The original is one hover away, because a decoded string is an
+               interpretation and the export said something exact. */
+            (name && x.dev && readable(x.dev) !== x.dev
+              ? '<span class="lg-raw" title="' + esc(x.dev) + '">as written</span>' : "") +
+          "</li>";
+        }).join("") + "</ul>" +
         (list.length > 40
           ? '<p class="muted small">' + num(list.length - 40) + " more under Records.</p>" : "") +
         "</article>";

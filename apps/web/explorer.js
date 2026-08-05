@@ -361,20 +361,29 @@
             ${counts.filter((s) => s.n > 0).map((g, gi) => {
               const all = g.idx.join(",");
               const many = g.files.length > 1;
+              /* The checkbox is its own target now, and the rest of the row
+                 opens the group. Wrapping the whole header in a <label> meant
+                 every click on a provider's name switched that provider off,
+                 which is a destructive default for the thing you touch to look
+                 inside. A single-archive provider has nothing to open, so
+                 there the name still toggles it. */
               return `
               <div class="ex-srcg${g.superseded ? " superseded" : ""}" data-g="${gi}">
                 <div class="ex-srch">
-                  <label class="ex-srcbox">
-                    <input type="checkbox" class="ex-srcall" data-src="${all}" checked />
+                  <input type="checkbox" class="ex-srcall" data-src="${all}" checked
+                    id="srcall-${gi}" aria-label="Include ${esc(g.label)}" />
+                  <button class="ex-srcname" type="button" data-many="${many ? 1 : 0}"
+                    data-for="srcall-${gi}"${many ? ` aria-expanded="false"` : ""}>
                     <i data-icon="${esc(g.slug || "box")}"></i>
                     <span>${esc(g.label)}</span>
-                  </label>
+                  </button>
                   <em>${num(g.n)}</em>
-                  ${many ? `<button class="ex-srctwist" type="button"
-                      aria-expanded="false" aria-label="Show the ${g.files.length} files">
-                      <span>${g.files.length}</span></button>` : ""}
+                  ${many ? `<span class="ex-srctwist" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m7 10 5 5 5-5"/></svg></span>` : ""}
                 </div>
-                ${many ? `<ul class="ex-srcf" hidden>
+                ${many ? `<ul class="ex-srcf">
                   ${g.files.map((f) => `
                     <li><label class="ex-srcbox">
                       <input type="checkbox" class="ex-srcone" data-src="${f.idx.join(",")}" checked />
@@ -479,13 +488,27 @@
       afterFilterChange(root);
     });
 
+    /* Opening a group, and the one case where the name still toggles.
+     *
+     * `hidden` is gone: the list animates open, which needs a real height to
+     * animate to, and `hidden` would win over any of it. The group carries the
+     * state as a class instead. */
     sources.addEventListener("click", (e) => {
-      const t = e.target.closest(".ex-srctwist");
-      if (!t) return;
-      const list = t.closest(".ex-srcg").querySelector(".ex-srcf");
-      const open = list.hidden;
-      list.hidden = !open;
-      t.setAttribute("aria-expanded", String(open));
+      const name = e.target.closest(".ex-srcname");
+      const twist = e.target.closest(".ex-srctwist");
+      if (!name && !twist) return;
+      const group = (name || twist).closest(".ex-srcg");
+      const btn = group.querySelector(".ex-srcname");
+
+      // Nothing to open: the name means what it used to mean.
+      if (btn && btn.dataset.many !== "1") {
+        const box = group.querySelector(".ex-srcall");
+        if (box) { box.checked = !box.checked; box.dispatchEvent(new Event("change", { bubbles: true })); }
+        return;
+      }
+      const open = !group.classList.contains("open");
+      group.classList.toggle("open", open);
+      if (btn) btn.setAttribute("aria-expanded", String(open));
     });
 
     root.querySelector("#ex-clearsrc").addEventListener("click", () => {

@@ -2601,20 +2601,41 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   white-space: nowrap; }
 .ex-srch > em { font-style: normal; font-size: 11.5px; color: var(--muted);
   font-variant-numeric: tabular-nums; flex: none; }
-.ex-srctwist { flex: none; border: 1px solid var(--line); background: transparent;
-  color: var(--muted); border-radius: 999px; font-size: 11px; padding: 1px 7px;
-  cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
-.ex-srctwist::after { content: "v"; font-size: 9px; transition: transform .15s ease; }
-.ex-srctwist[aria-expanded="true"]::after { transform: rotate(180deg); }
-.ex-srctwist:hover { color: var(--ink); border-color: var(--muted); }
+/* The name is the control that opens the group; the checkbox is the control
+   that includes or excludes it. Two jobs, two targets. */
+.ex-srcname { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px;
+  background: none; border: 0; padding: 0; font: inherit; color: inherit;
+  cursor: pointer; text-align: left; }
+.ex-srcname i { flex: none; width: 15px; height: 15px; display: inline-flex;
+  align-items: center; justify-content: center; color: var(--muted); }
+.ex-srcname i svg { width: 100%; height: 100%; }
+.ex-srcname span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.ex-srcname:hover span { color: var(--ink); }
+/* An SVG chevron. It used to be the letter v, which is what it looked like. */
+.ex-srctwist { flex: none; display: inline-flex; color: var(--muted);
+  width: 16px; height: 16px; pointer-events: none;
+  transition: transform .22s var(--ease), color var(--t) var(--ease); }
+.ex-srctwist svg { width: 100%; height: 100%; }
+.ex-srcg.open .ex-srctwist { transform: rotate(180deg); color: var(--ink); }
 
-.ex-srcf { list-style: none; margin: 2px 0 6px; padding: 0 11px 0 26px;
-  max-height: 210px; overflow-y: auto; }
+/* Grown open rather than switched on. A grid row from 0fr to 1fr animates to
+   the content own height without anyone having to guess a pixel value, and
+   without the jump a max-height guess gives when the guess is too large. */
+.ex-srcf { list-style: none; margin: 0; padding: 0 11px 0 26px;
+  display: grid; grid-template-rows: 0fr; opacity: 0;
+  transition: grid-template-rows .24s var(--ease), opacity .18s var(--ease),
+    margin .24s var(--ease);
+  overflow: hidden; }
+.ex-srcg.open .ex-srcf { grid-template-rows: 1fr; opacity: 1; margin: 2px 0 6px; }
+.ex-srcf > li { min-height: 0; }
 .ex-srcf li { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
-.ex-srcf .ex-srcbox { font-size: 12px; color: var(--muted); }
+.ex-srcf .ex-srcbox { font-size: 12px; color: var(--muted); flex: 1; min-width: 0; }
 .ex-srcf em { font-style: normal; font-size: 11px; color: var(--muted); flex: none;
   font-variant-numeric: tabular-nums; }
-
+@media (prefers-reduced-motion: reduce) {
+  .ex-srcf, .ex-srctwist, .au-ctl { transition: none; }
+}
 /* The "and N more" pill that stands in for the toasts held back. */
 .nt-more { align-self: flex-end; border: 1px solid var(--line); background: var(--surface);
   color: var(--muted); border-radius: 999px; font-size: 11.5px; padding: 4px 11px;
@@ -2791,36 +2812,50 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   overflow-wrap: anywhere; }
 
 /* Audio. One player for the whole list, moved to whichever row is playing.
-   The controls appear on hover and stay up once a row is chosen, so a list of
-   three hundred recordings is a list rather than three hundred players. */
+   The controls grow in on hover and stay once a row is chosen - nothing here
+   appears, everything arrives. */
 .au-list { list-style: none; margin: 0; padding: 0; }
-.au { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px;
+.au { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 12px;
   align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--line);
-  border-radius: 8px; cursor: pointer; }
-.au:hover { background: var(--surface-2); }
-.au-on { background: var(--surface-2); }
+  border-radius: 8px; cursor: pointer;
+  transition: background var(--t) var(--ease); }
+.au:hover, .au-on { background: var(--surface-2); }
 .au-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; min-width: 0; }
 .au-size { justify-self: end; }
-.au-ctl { grid-column: 1 / -1; display: none; align-items: center; gap: 8px;
-  margin-top: 4px; }
-.au:hover .au-ctl, .au-on .au-ctl { display: flex; }
+/* Height and opacity, not display:none - a box that flicks into existence is
+   the thing being complained about. */
+.au-ctl { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px;
+  max-height: 0; opacity: 0; margin-top: 0; overflow: hidden;
+  transform: translateY(-4px);
+  transition: max-height .22s var(--ease), opacity .18s var(--ease),
+    margin-top .22s var(--ease), transform .22s var(--ease); }
+.au:hover .au-ctl, .au-on .au-ctl { max-height: 60px; opacity: 1;
+  margin-top: 8px; transform: none; }
 .au-b { border: 1px solid var(--line); background: var(--surface); color: var(--body);
   border-radius: 7px; font: inherit; font-size: 11.5px; padding: 3px 7px; cursor: pointer;
-  min-width: 34px; }
+  min-width: 34px; transition: border-color var(--t) var(--ease),
+    background var(--t) var(--ease), transform .12s var(--ease); }
 .au-b:hover { border-color: var(--muted); }
+.au-b:active { transform: scale(.94); }
 .au-toggle { display: inline-flex; align-items: center; justify-content: center; }
-/* A triangle, flipped to two bars while playing - no icon font, no emoji. */
+/* A triangle that becomes two bars. Drawn in CSS so it inherits colour and
+   needs no icon font and no emoji. */
 .au-tri { border-style: solid; border-width: 5px 0 5px 8px;
-  border-color: transparent transparent transparent currentColor; }
+  border-color: transparent transparent transparent currentColor;
+  transition: border-width .16s var(--ease), width .16s var(--ease); }
 .au-playing .au-tri { border-width: 0; width: 8px; height: 10px;
   border-left: 3px solid currentColor; border-right: 3px solid currentColor; }
-.au-bar { flex: 1; height: 5px; min-width: 60px; border-radius: 3px;
-  background: var(--line); overflow: hidden; }
-.au-bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+/* The waveform. --wave-on and --wave-off are read by the canvas, so the
+   drawing follows the theme rather than hard-coding two greys. */
+.au-wave { flex: 1; min-width: 80px; height: 34px; display: block;
+  touch-action: none; cursor: pointer;
+  --wave-on: var(--accent); --wave-off: var(--line);
+  transition: opacity .15s var(--ease); }
+.au-wave.au-scrub { cursor: grabbing; opacity: .85; }
 .au-time { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums;
   white-space: nowrap; }
-.au-loading .au-time::after { content: "loading..."; }
+.au-loading .au-time::after { content: " loading..."; }
 .au-failed { opacity: .6; }
 
 /* Search and watch history: when on the left, what on the right. */

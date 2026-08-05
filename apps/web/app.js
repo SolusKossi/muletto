@@ -257,9 +257,19 @@ const SIGNATURES = [
    contain nothing that says "samsung" anywhere inside, so looking only at the
    entry names inside the zip identified them as nothing at all, and each one
    became its own provider named after its file. */
+/* Apple has exactly the same problem and it went unnoticed for longer, because
+   most of the eighteen archives do mention iCloud somewhere and a few do not.
+   AppleCare.zip holds two CSVs about support cases; nothing in it says Apple
+   in a way the content test recognises, so it arrived as its own provider,
+   sitting in the sidebar beside Apple with a cardboard-box icon. These are
+   Apple's own archive names, taken from a real export. */
+const APPLE_ARCHIVES =
+  /^(applecare|apple\.com and apple store|apple account and device information|apple media services|marketing communications|wallet activity|other data part \d+ of \d+|app install and push notification activity|game center|devices registered with apple messaging|icloud )/i;
+
 const NAME_SIGNATURES = [
   { slug: "samsung", label: "Samsung", test: (n) => /_gk\d+_\d{8}_access\.zip$/i.test(n) },
   { slug: "google", label: "Google Takeout", test: (n) => /^takeout[-_]/i.test(n) },
+  { slug: "apple", label: "Apple", test: (n) => APPLE_ARCHIVES.test(n.replace(/\s*\(\d+\)\s*(?=\.zip$)/i, "")) },
 ];
 
 function detectProvider(entries, fileName) {
