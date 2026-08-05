@@ -33,6 +33,12 @@ const MTopics = (function () {
   const colIndex = (t, re) => (t.columns || []).findIndex((c) => re.test(String(c)));
   const YT_ID = /^[A-Za-z0-9_-]{11}$/;
 
+  /* Escaped first, then the handles are marked up - never the other way round,
+     which would let a comment containing a bracket write markup into the page.
+     A mention is somebody's name and reads as one. */
+  const mentions = (s) => esc(s).replace(/(^|\s)(@[A-Za-z0-9._-]{2,60})/g,
+    (m, pre, h) => pre + '<span class="cmt-mention">' + h + "</span>");
+
   function asDate(v) {
     if (v == null || v === "") return null;
     const d = new Date(String(v));
@@ -40,6 +46,96 @@ const MTopics = (function () {
   }
   const shortDate = (d) => d.toLocaleDateString(undefined,
     { day: "numeric", month: "short", year: "numeric" });
+
+  /* ---------- what each provider actually ships ----------
+   *
+   * Shape detection alone was not enough, and the comments view proved it. "A
+   * text column" is true of YouTube's comment field and tells you nothing
+   * useful about it: every value is a JSON array of rich-text segments, so the
+   * view rendered
+   *
+   *   {"text":"@someone","mention":{"externalChannelId":"UC..."}},{"text":" nice"}
+   *
+   * at the reader, which is the raw row with a nicer border round it. Measured
+   * over a real export: 200 of 200 comment texts parse as segments, with keys
+   * text (391), mention (23) and videoLink (19).
+   *
+   * So provider knowledge comes first and shape detection is the fallback. It
+   * also buys the thing shape detection can never do: knowing what a provider
+   * *should* send means being able to say what is missing. An export with no
+   * comments file is different from an export whose comments we failed to
+   * recognise, and only a manifest can tell them apart.
+   */
+  const PROVIDERS = {
+    google: {
+      /* YouTube writes a comment as a sequence of segments rather than a
+         string, so that mentions and video links keep their targets. The cell
+         holds the segments without the enclosing brackets. */
+      commentText(raw) {
+        const s = String(raw == null ? "" : raw).trim();
+        if (!s || s[0] !== "{") return s;
+        let segs;
+        try { segs = JSON.parse("[" + s + "]"); } catch (err) { return s; }
+        if (!Array.isArray(segs)) return s;
+        return segs.map((x) => (x && typeof x.text === "string" ? x.text : "")).join("").trim() || s;
+      },
+      /* The author is the person who asked for the export, and both halves of
+         how YouTube shows them are in it: the title in channel.csv and the
+         vanity handle in channel URL configs.csv. */
+      identity(lib, slug) {
+        let name = "", handle = "";
+        for (const t of lib.tables || []) {
+          if (slug && t.srcSlug && t.srcSlug !== slug) continue;
+          const c = t.columns || [];
+          const ti = c.findIndex((x) => /^channel title/i.test(String(x)));
+          if (ti >= 0 && (t.rows || []).length && !name) name = String(t.rows[0][ti] || "").trim();
+          const vi = c.findIndex((x) => /vanity url/i.test(String(x)));
+          if (vi >= 0 && (t.rows || []).length && !handle) handle = String(t.rows[0][vi] || "").trim();
+        }
+        return (name || handle) ? { name, handle } : null;
+      },
+    },
+  };
+
+  /* The provider travels on the table, not on the library.
+   *
+   * Every view is handed the merged library - even when only one export is
+   * open - so `lib.provider.slug` is always "merged" and keying a reader off
+   * it silently matched nothing. That is precisely how the comment view came
+   * to render raw JSON while looking like it worked. `mergeSources` already
+   * tags each record with `srcSlug`, which is the real answer. */
+  const slugOf = (t) => (t && t.srcSlug) || "";
+  const readerFor = (t) => PROVIDERS[slugOf(t)] || {};
+
+  /* Says so when we are guessing.
+   *
+   * A provider with no reader here still gets the view, because something
+   * readable beats a blank page. But presenting a best effort as if it were
+   * the finished thing is the kind of quiet overclaiming this project does not
+   * do - and the person looking at it is the one who can fix it. */
+  function unsupportedNote(tables) {
+    const unknown = [...new Set(tables.filter((t) => !PROVIDERS[slugOf(t)])
+      .map((t) => t.srcLabel || slugOf(t) || "this export"))];
+    if (!unknown.length) return "";
+    return '<div class="tp-warn">' +
+      "<b>" + esc(unknown.join(", ")) + " is not a provider Muletto reads in a tailored way yet.</b>" +
+      "<p>Everything is shown, as the export wrote it, and some of it may look raw or arrive " +
+      "in the wrong order. Nothing is missing and nothing has been altered - we simply have " +
+      "not taught it this format.</p>" +
+      '<button type="button" class="btn secondary sm" id="tp-help" data-provider="' +
+        esc(unknown.join(", ")) + '">Help us support it</button>' +
+      "</div>";
+  }
+
+  /* Bound once, on the document, because a topic view is replaced wholesale
+     every time the sidebar changes. */
+  document.addEventListener("click", (ev) => {
+    const b = ev.target.closest && ev.target.closest("#tp-help");
+    if (!b) return;
+    if (typeof MContribute !== "undefined" && MContribute.openOffer) {
+      MContribute.openOffer([], [b.dataset.provider || "export"], "manual");
+    }
+  });
 
   /* ---------- comments ---------- */
 
@@ -55,6 +151,11 @@ const MTopics = (function () {
   function findComments(lib) {
     const found = [];
     for (const t of lib.tables || []) {
+      /* Provider first, shape second, and decided per table - a merged library
+         can hold YouTube comments and Instagram comments at once, and they are
+         not written the same way. */
+      const readText = readerFor(t).commentText ||
+        ((v) => String(v == null ? "" : v).trim());
       const ti = colIndex(t, COMMENT_TEXT);
       if (ti < 0 || !(t.rows || []).length) continue;
       const di = colIndex(t, COMMENT_TIME);
@@ -63,7 +164,7 @@ const MTopics = (function () {
       const idi = (t.columns || []).findIndex((c) => /^comment id$/i.test(String(c)));
       const items = [];
       for (const r of t.rows) {
-        const text = String(r[ti] == null ? "" : r[ti]).trim();
+        const text = readText(r[ti]);
         if (!text) continue;
         items.push({
           id: idi >= 0 ? String(r[idi] || "") : "",
@@ -73,12 +174,29 @@ const MTopics = (function () {
           video: vi >= 0 ? String(r[vi] || "").trim() : "",
         });
       }
-      if (items.length) found.push({ table: t, items });
+      if (items.length) found.push({ table: t, items, slug: slugOf(t) });
     }
     return found;
   }
 
-  function drawComments(el, match) {
+  function drawComments(el, match, lib) {
+    /* Identity comes from whichever provider these comments belong to, so a
+       merged library asks the right one. */
+    const slug = (match.find((m) => PROVIDERS[m.slug]) || {}).slug || "";
+    const who = (PROVIDERS[slug] && PROVIDERS[slug].identity
+      ? PROVIDERS[slug].identity(lib, slug) : null) || {};
+    /* No avatar. The export ships a banner *URL* on yt3.ggpht.com and no image
+       file at all, and fetching it would put a Google host in connect-src -
+       which is the privacy promise, not a detail. So the initial is drawn from
+       the name we already have. */
+    const initial = (who.name || who.handle || "?").trim().charAt(0).toUpperCase();
+    const at = who.handle ? "@" + who.handle.replace(/^@/, "") : "";
+    const author = '<div class="cmt-who">' +
+      '<span class="cmt-pfp" aria-hidden="true">' + esc(initial) + "</span>" +
+      "<b>" + esc(who.name || at || "You") + "</b>" +
+      (at && who.name ? '<span class="cmt-at">' + esc(at) + "</span>" : "") +
+      "</div>";
+
     const all = match.reduce((a, m) => a.concat(m.items), []);
     const byId = new Map(all.filter((c) => c.id).map((c) => [c.id, c]));
 
@@ -109,12 +227,13 @@ const MTopics = (function () {
       const reply = kids.get(c.id) || [];
       reply.sort((a, b) => (a.at ? +a.at : 0) - (b.at ? +b.at : 0));
       return '<li class="cmt' + (depth ? " cmt-reply" : "") + '">' +
-        '<div class="cmt-body">' + esc(c.text) + "</div>" +
+        author +
+        '<div class="cmt-body">' + mentions(c.text) + "</div>" +
         '<div class="cmt-meta">' +
           (c.at ? "<time>" + esc(shortDate(c.at)) + "</time>" : "") +
           (YT_ID.test(c.video)
             ? ' <a href="https://www.youtube.com/watch?v=' + encodeURIComponent(c.video) +
-              '" target="_blank" rel="noopener noreferrer nofollow">the video</a>' : "") +
+              '" target="_blank" rel="noopener noreferrer nofollow">Watch the video</a>' : "") +
           (reply.length ? " <em>" + plural(reply.length, "reply", "replies") + "</em>" : "") +
         "</div>" +
         (reply.length ? '<ol class="cmt-kids">' + reply.map((k) => one(k, depth + 1)).join("") + "</ol>" : "") +
@@ -125,6 +244,7 @@ const MTopics = (function () {
     const shown = roots.slice(0, PAGE);
 
     el.innerHTML =
+      unsupportedNote(match.map((m) => m.table)) +
       '<div class="tp-stats">' +
         '<div><b>' + num(all.length) + "</b><span>comments</span></div>" +
         (videos ? '<div><b>' + num(videos) + "</b><span>videos commented on</span></div>" : "") +
@@ -132,8 +252,11 @@ const MTopics = (function () {
                 "</b><span>from first to last</span></div>" : "") +
       "</div>" +
       (orphans
-        ? '<p class="muted small">' + plural(orphans, "reply is", "replies are") +
-          " shown on its own because the comment it answered is not in this export." +
+        ? '<p class="muted small">' +
+          (orphans === 1
+            ? "1 reply is shown on its own, because the comment it answered is not in this export."
+            : num(orphans) + " replies are shown on their own, because the comments they " +
+              "answered are not in this export.") +
           " Nothing has been dropped.</p>"
         : "") +
       (withVideo < all.length && withVideo
@@ -203,6 +326,7 @@ const MTopics = (function () {
     const missing = kinds.filter((k) => !have.has(k.key));
 
     el.innerHTML =
+      unsupportedNote(match.map((m) => m.table)) +
       '<div class="tp-stats">' +
         '<div><b>' + num(have.size) + "</b><span>kinds of data found</span></div>" +
         '<div><b>' + num(match.reduce((n, m) => n + m.table.rows.length, 0)) +
@@ -222,16 +346,37 @@ const MTopics = (function () {
 
   /* ---------- the registry ---------- */
 
+  /* `only` is the list of providers a topic can possibly apply to. An
+     Instagram export cannot contain Samsung Health readings, so there is no
+     reason to look - and more to the point, a topic that only ever makes sense
+     for one provider is a statement about that provider that belongs written
+     down rather than rediscovered from column names every time.
+   *
+   * A topic with no `only` is offered to everything, which is what keeps a
+   * provider nobody has taught us about from getting nothing at all. */
   const TOPICS = [
     { key: "comments", label: "Comments", icon: "chat",
       sub: "Everything you wrote, with replies under what they answered.",
+      only: null,
       find: findComments, draw: drawComments,
       count: (m) => m.reduce((n, x) => n + x.items.length, 0) },
     { key: "health", label: "Health", icon: "chart",
       sub: "What your devices recorded, and what they did not.",
+      only: ["samsung", "apple", "google"],
       find: findHealth, draw: drawHealth,
       count: (m) => m.reduce((n, x) => n + x.table.rows.length, 0) },
   ];
+
+  /* Ruled out per table, for the same reason readers are chosen per table: the
+     library is always the merged one. An Instagram export cannot hold Samsung
+     Health readings, so the health finder never runs over its tables - but a
+     library holding Instagram *and* Samsung still gets the Health tab. */
+  const appliesTo = (topic, lib) => {
+    if (!topic.only) return true;
+    const slugs = new Set((lib.tables || []).map(slugOf));
+    if (!slugs.size || (slugs.size === 1 && slugs.has(""))) return true;
+    return topic.only.some((s) => slugs.has(s));
+  };
 
   /* Which topics this library supports, with the matched data carried along so
      nothing has to be found twice. Called on every sidebar redraw, so it must
@@ -240,6 +385,7 @@ const MTopics = (function () {
   function detect(lib) {
     const out = [];
     for (const t of TOPICS) {
+      if (!appliesTo(t, lib)) continue;
       let m = null;
       try { m = t.find(lib); } catch (err) { m = null; }
       if (!m || !m.length) continue;
@@ -259,7 +405,7 @@ const MTopics = (function () {
         '<p class="muted">Your filter hides everything of this kind.</p></div>';
       return true;
     }
-    t.draw(el, m);
+    t.draw(el, m, lib);
     return true;
   }
 

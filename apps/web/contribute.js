@@ -26,6 +26,11 @@ const MContribute = (function () {
   const REPO = "https://github.com/SolusKossi/muletto";
   const SEEN_KEY = "muletto:contribute-asked";
 
+  /* This file had no escaper, because until now nothing outside it reached the
+     markup. The provider name does, and it comes from a file name. */
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
   /* A quarter of an archive producing nothing is well past anything a healthy
      export does, and 40 files stops it firing on a tiny one where a couple of
      unread PDFs are a large fraction of very little. */
@@ -117,12 +122,20 @@ const MContribute = (function () {
     return L.join("\n");
   }
 
-  function open(reports, providers, libraryKey) {
+  function open(reports, providers, libraryKey, opts) {
     const s = summarise(reports);
     remember(libraryKey);
+    /* The same dialog is reached two ways and they are not the same message.
+       Opened by the reconciliation, it reports a count. Opened by somebody
+       clicking "help us support this", there is no count to report - and
+       saying "0 of 0 files produced nothing" at them was nonsense. */
+    const manual = !!(opts && opts.manual);
+    const who = providers[0] || "this service";
 
-    const title = "[" + (providers[0] || "export") + "] " +
-      s.unread.toLocaleString() + " of " + s.total.toLocaleString() + " files not read";
+    const title = manual
+      ? "[" + who + "] Please support this export"
+      : "[" + (providers[0] || "export") + "] " +
+        s.unread.toLocaleString() + " of " + s.total.toLocaleString() + " files not read";
     const url = REPO + "/issues/new?labels=export&title=" +
       encodeURIComponent(title) + "&body=" + encodeURIComponent(issueBody(s, providers));
 
@@ -132,11 +145,17 @@ const MContribute = (function () {
       '<div class="xw-scrim"></div>' +
       '<div class="xw" role="dialog" aria-modal="true" aria-labelledby="cb-t">' +
         '<header class="xw-head"><div>' +
-          '<h2 id="cb-t">Some of this export was not read</h2>' +
-          '<p class="muted small">' + s.unread.toLocaleString() + " of " +
-            s.total.toLocaleString() + " files produced nothing. That is not always " +
-            "wrong, but it is more than usual, and it probably means Muletto does not " +
-            "understand part of what " + (providers[0] || "this service") + " sent you." +
+          '<h2 id="cb-t">' + (manual
+            ? "Help us read this export properly"
+            : "Some of this export was not read") + "</h2>" +
+          '<p class="muted small">' + (manual
+            ? "Muletto has no reader written for " + esc(who) + " yet, so it is showing " +
+              "the contents as the export wrote them. Telling us what this format looks " +
+              "like is what turns that into proper support."
+            : s.unread.toLocaleString() + " of " +
+              s.total.toLocaleString() + " files produced nothing. That is not always " +
+              "wrong, but it is more than usual, and it probably means Muletto does not " +
+              "understand part of what " + who + " sent you.") +
           "</p></div></header>" +
         '<div class="xw-body">' +
           "<p>If you want to help, the fastest thing is to open an issue. It takes a " +
@@ -183,7 +202,14 @@ const MContribute = (function () {
     return true;
   }
 
-  return { maybeOffer, shouldAsk, summarise, issueBody };
+  /* The same dialog, opened because somebody asked for it rather than because
+     the numbers tripped a threshold. A view that admits it is guessing has to
+     offer a way to fix that in the same breath, or it is just an apology. */
+  function openOffer(reports, providers, libraryKey) {
+    open(reports || [], providers || [], libraryKey || "manual", { manual: true });
+  }
+
+  return { maybeOffer, openOffer, shouldAsk, summarise, issueBody };
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MContribute;
