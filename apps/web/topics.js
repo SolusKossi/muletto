@@ -1217,7 +1217,10 @@ const MTopics = (function () {
   const MBOX = /\.mbox$/i;
 
   function findMail(lib, ctx) {
-    const files = filesLike(ctx, MBOX);
+    /* By name or by first bytes. Samsung ships mail as hashCode1539051287
+       with no extension at all, which the sniffer marks during parsing. */
+    const files = ((ctx && ctx.entries) || [])
+      .filter((e) => MBOX.test(e.name) || e.sniffedAs === "mbox");
     return files.length ? [{ files }] : [];
   }
 

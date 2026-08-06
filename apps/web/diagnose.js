@@ -283,7 +283,7 @@ const MDiagnose = (function () {
     /* Not `parts`: the loop below already declares `const parts` for the path
        segments, and a block-scoped shadow put this counter in the temporal
        dead zone - reconcile threw on every export. */
-    let containerParts = 0;
+    let containerParts = 0, empty = 0;
 
     /* A container we opened was read, by any sensible meaning of the word.
      *
@@ -295,12 +295,21 @@ const MDiagnose = (function () {
     const opened = new Set();
     for (const e of entries) if (e.nestedIn) opened.add(e.nestedIn);
 
+    /* A file recognised by its first bytes is a file we know and can show,
+       which is what read means everywhere else here. Samsung names three
+       saved web pages hashCode1539051287 and gives them no extension. */
+    for (const e of entries) if (e.sniffedAs) mark(e.name, e.sniffedAs);
+
     for (const e of entries) {
       if (used.has(e.name)) continue;
       if (opened.has(e.name)) { mark(e.name, "opened"); continue; }
       if (e.nestedIn && PART_OF.test(e.nestedIn) && !CARRIED.test(e.name)) { containerParts++; continue; }
       if (/\.zip$/i.test(e.name)) { nested.push(e.name); continue; }
       if (NOISE.test(e.name)) { noise++; continue; }
+      /* An empty file did not fail to be read - there was nothing in it.
+         A Samsung export ships a one-byte CSV and a header with no rows, and
+         calling those failures overstates what was missed. */
+      if ((e.size || 0) <= 2) { empty++; continue; }
       const x = (e.name.match(/\.([a-z0-9]{1,6})$/i) || [, "(none)"])[1].toLowerCase();
       unread.set(x, (unread.get(x) || 0) + 1);
       const parts = e.name.split("/");
@@ -317,6 +326,7 @@ const MDiagnose = (function () {
          we read" rather than counting the same note twice. */
       total: entries.length - containerParts,
       parts: containerParts,
+      empty,
       read: readCount,
       noise,
       nested: nested.length,

@@ -2373,7 +2373,7 @@ function renderFiles(panel, entries) {
     const entry = rows[Number(row.dataset.i)];
 
     /* Nothing this page can draw: open it, rather than explaining. */
-    if (!INLINE_EXT.test(entry.name)) {
+    if (!INLINE_EXT.test(entry.name) && !INLINE_SNIFFED.has(entry.sniffedAs)) {
       row.classList.remove("open");
       box.hidden = true;
       row.classList.add("fl-busy");
@@ -2427,6 +2427,7 @@ const FL_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
 /* Kinds the page can draw in place. Everything else opens in its own tab,
    because a paragraph explaining why a PDF cannot be embedded is not what
    somebody clicking a PDF wanted - they wanted the PDF. */
+const INLINE_SNIFFED = new Set(["webpage", "mbox"]);
 const INLINE_EXT = new RegExp("\\.(jpe?g|png|gif|webp|bmp|avif|heic|heif|" +
   "mp4|mov|m4v|webm|mp3|m4a|wav|aac|ogg|opus|flac|" +
   "json|csv|txt|xml|html?|vcf|ics|md|log|srt|tsv)$", "i");
@@ -2463,7 +2464,9 @@ async function previewHtml(entry) {
   }
 
   const TEXTY = ["json", "csv", "txt", "xml", "html", "htm", "vcf", "ics", "md", "log", "srt", "tsv"];
-  if (TEXTY.includes(ext)) {
+  /* Recognised by its first bytes rather than its name - a saved web page
+     with no extension is still text, and showing it beats showing nothing. */
+  if (TEXTY.includes(ext) || entry.sniffedAs === "webpage" || entry.sniffedAs === "mbox") {
     if ((entry.size || 0) > PREVIEW_MAX) {
       return '<p class="muted small">' + esc(fmtBytes(entry.size)) +
         " of text, which is more than is worth putting on screen at once.</p>";
