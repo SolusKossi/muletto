@@ -2914,3 +2914,17 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   background-color: transparent !important; }
 .ml-blocked { margin: 0 0 8px; font-size: 11.5px; color: var(--muted);
   border-left: 2px solid var(--line); padding-left: 8px; }
+
+/* The coverage line at the top of the timeline. It is the answer to "did I get
+   everything", so it sits where the eye lands rather than ninth in a list. */
+.ex-cover { display: flex; width: 100%; align-items: center; justify-content: space-between;
+  gap: 16px; text-align: left; font: inherit; cursor: pointer;
+  border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  background: var(--surface-2); border-radius: 10px; padding: 11px 14px; margin: 0 0 14px;
+  transition: border-color var(--t) var(--ease), background var(--t) var(--ease); }
+.ex-cover:hover { border-color: var(--muted); background: var(--surface); }
+.ex-cover span { font-size: 12.5px; color: var(--muted); }
+.ex-cover b { color: var(--ink); font-weight: 600; }
+.ex-cover em { font-style: normal; font-size: 15px; font-weight: 600; color: var(--ink);
+  font-variant-numeric: tabular-nums; flex: none; }
+.ex-cover-clean { border-left-color: var(--line); }

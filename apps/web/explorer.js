@@ -137,10 +137,7 @@
 
     items.push(
       ["highlights", "Highlights", "chart", lib.tables.length],
-      ["records", "Records", "table", lib.tables.reduce((n, t) => n + t.rows.length, 0)],
-      ["files", "All files", "folder", entries.length],
-      ["report", "What is in here", "table",
-        rep ? rep.filter((_, i) => !state.srcOff.has(i)).length : 0]
+      ["files", "All files", "folder", entries.length]
     );
     return items;
   }
@@ -298,7 +295,7 @@
       if (r) out.push(r);
       return out;
     }
-    if (view === "records") {
+    if (view === "files" && state.filesTab === "tables") {
       return [{ label: lib.tables.length === 1 ? "Table" : "Tables",
                 value: num(lib.tables.length), icon: "table" },
               { label: "Rows", value: num(lib.tables.reduce((n, t) => n + t.rows.length, 0)),
@@ -878,6 +875,10 @@
        it is a tab inside them. The old name still resolves, because plenty of
        buttons and saved state refer to it. */
     if (k === "cleanup") { state.photoTab = "cleanup"; k = "photos"; }
+    /* Records is a tab inside All files now. The old key still resolves,
+       because saved state and a couple of buttons still ask for it. */
+    if (k === "records") { state.filesTab = "tables"; k = "files"; }
+    else if (k === "files" && state.filesTab === undefined) state.filesTab = "files";
     state.view = k;
     if (state.rail) { state.rail.destroy(); state.rail = null; }
     if (state.thumbIo) { state.thumbIo.disconnect(); state.thumbIo = null; }
@@ -907,6 +908,7 @@
     if (k === "timeline") drawTimeline(body);
     else if (k === "photos") drawPhotos(body);
     else if (k === "report") drawReport(body);
+    else if (k === "files") drawFilesShell(body);
     else if (k === "chats") MViews.renderPeople(body, scopedLib(), viewCtx());
     else if (k === "map") MViews.renderMap(body, scopedLib(), viewCtx());
     else if (typeof MTopics !== "undefined" && MTopics.has(k) &&
@@ -967,6 +969,33 @@
     return false;
   }
 
+  /* "Did I get everything?" is the question this product exists to answer, and
+     it was the ninth entry in a sidebar under the name "What is in here" -
+     which sounds like a table of contents rather than an audit. Nobody reads
+     the ninth entry. It is a line at the top of the first screen now, saying
+     the number and offering the detail. */
+  function coverageBanner() {
+    const rep = state.actions.report && state.actions.report();
+    if (!rep || !rep.length) return "";
+    let total = 0, unread = 0;
+    for (let i = 0; i < rep.length; i++) {
+      if (state.srcOff.has(i)) continue;
+      const rc = rep[i] && rep[i].reconciled;
+      if (!rc) continue;
+      total += rc.total || 0;
+      unread += rc.unread || 0;
+    }
+    if (!total) return "";
+    const read = total - unread;
+    const share = Math.round((read / total) * 100);
+    return '<button type="button" class="ex-cover' + (unread ? "" : " ex-cover-clean") + '" id="ex-cover">' +
+      "<span><b>" + num(read) + " of " + num(total) + " files read</b>" +
+      (unread
+        ? " - " + num(unread) + " produced nothing, which is normal for some of them."
+        : " - everything in this export was understood.") +
+      "</span><em>" + share + "%</em></button>";
+  }
+
   function drawTimeline(body) {
     let days = filteredDays();
     days.forEach((d, i) => { d.di = i; });
@@ -991,12 +1020,15 @@
     }
     state.days = shown;
 
-    body.innerHTML = `
+    body.innerHTML = coverageBanner() + `
       <p class="muted small ex-count">${plural(total, "item", "items")} across
         ${plural(shown.length, "day", "days")}${capped
           ? `. ${num(capped)} older items are not shown - narrow it down with the search or a source.`
           : "."}</p>
       <div class="ex-tl" id="ex-tl">${shown.map(dayHtml).join("")}</div>`;
+
+    const cover = body.querySelector("#ex-cover");
+    if (cover) cover.addEventListener("click", () => showView("report"));
 
     const tl = body.querySelector("#ex-tl");
     state.ctx.hydrate(tl);
@@ -1546,6 +1578,43 @@
     const panel = body.querySelector("#ph-panel");
     if (tab === "cleanup") drawCleanup(panel);
     else drawLibrary(panel);
+  }
+
+  /* Files and the tables inside them, in one place.
+   *
+   * "Records" and "All files" sat beside each other as equals and they are not
+   * equals: a table is a file that could be read. Two sidebar entries for the
+   * same archive, one of them a subset of the other, is a question the reader
+   * has to answer before every click - and the answer was never obvious from
+   * the names. The same tab pattern the pictures already use. */
+  function drawFilesShell(body) {
+    const tab = state.filesTab === "tables" ? "tables" : "files";
+    const lib = scopedLib();
+    const entries = filtering() ? state.entries.filter((e) => srcOk(e)) : state.entries;
+
+    body.innerHTML =
+      '<div class="ph-tabs" role="tablist">' +
+        phTab("files", "Everything", entries.length, tab) +
+        phTab("tables", "Tables in them", lib.tables.length, tab) +
+      '</div><div id="fl-panel"></div>';
+
+    body.querySelector(".ph-tabs").addEventListener("click", (e) => {
+      const b = e.target.closest(".ph-tab");
+      if (!b || b.dataset.t === tab) return;
+      state.filesTab = b.dataset.t;
+      showView("files");
+    });
+
+    const root = document.getElementById("explorer");
+    root.querySelector("#ex-sub").textContent = tab === "tables"
+      ? "The spreadsheets and lists inside those files, as the service wrote them."
+      : "Everything inside the archive, including what could not be read.";
+
+    const panel = body.querySelector("#fl-panel");
+    if (state.actions.legacy) {
+      state.actions.legacy(tab === "tables" ? "records" : "files", panel, viewCtx(), lib);
+    }
+    state.ctx.hydrate(panel);
   }
 
   function phTab(k, label, n, on) {
