@@ -385,8 +385,11 @@ const MTopics = (function () {
           const cards = MInsight.cardsFor(entry.tables[0]) || [];
           const s = cards.find((c) => c.kind === "series");
           if (s) {
+            /* The unit and the word after it are separate elements, so the
+               space between them has to be real rather than assumed - it read
+               as "90.1 bpmaverage" and "56 kglatest". */
             card = '<div class="hl-figure"><b>' + esc(s.stat) +
-              (s.unit ? ' <em>' + esc(s.unit) + "</em>" : "") + "</b>" +
+              (s.unit ? ' <em>' + esc(s.unit) + "</em>" : "") + "</b> " +
               '<span class="muted small">' + esc(s.statLabel || "") + "</span></div>";
           }
         } catch (err) { /* a chart is a bonus, never the reason the panel exists */ }

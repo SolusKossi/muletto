@@ -2353,7 +2353,7 @@ function renderFiles(panel, entries) {
   panel.innerHTML = `
     <p class="muted small">${plural(pool.length, "file", "files")}${q ? ` matching "${esc(q)}"` : ""}${pool.length > rows.length ? ", showing the 500 largest" : ""}. Click one to look at it.</p>
     <div class="filelist">
-      ${rows.map((e, i) => `<div class="fl-row" data-i="${i}"><span>${esc(e.name)}</span><span class="sz">${fmtBytes(e.size)}</span>
+      ${rows.map((e, i) => `<div class="fl-row" data-i="${i}"><span class="fl-name">${esc(e.name)}<i class="fl-go">${FL_ARROW}</i></span><span class="sz">${fmtBytes(e.size)}</span>
         <div class="fl-view" hidden></div></div>`).join("")}
     </div>`;
 
@@ -2370,13 +2370,36 @@ function renderFiles(panel, entries) {
       box.hidden = true;
       return;
     }
+    const entry = rows[Number(row.dataset.i)];
+
+    /* Nothing this page can draw: open it, rather than explaining. */
+    if (!INLINE_EXT.test(entry.name)) {
+      row.classList.remove("open");
+      box.hidden = true;
+      row.classList.add("fl-busy");
+      try {
+        const src = current.sources[entry.src || 0];
+        const type = /\.pdf$/i.test(entry.name) ? "application/pdf" : "application/octet-stream";
+        const url = URL.createObjectURL(await MZip.extractBlob(src.file, entry, type));
+        objectUrls.push(url);
+        window.open(url, "_blank", "noopener");
+      } catch (err) {
+        box.hidden = false;
+        row.classList.add("open");
+        box.innerHTML = '<p class="muted small">That would not open: ' +
+          esc(String((err && err.message) || err)) + "</p>";
+      }
+      row.classList.remove("fl-busy");
+      return;
+    }
+
     row.classList.add("open");
     box.hidden = false;
     if (row.dataset.done) return;
     row.dataset.done = "1";
     box.innerHTML = '<p class="muted small">Reading...</p>';
     try {
-      box.innerHTML = await previewHtml(rows[Number(row.dataset.i)]);
+      box.innerHTML = await previewHtml(entry);
     } catch (err) {
       box.innerHTML = '<p class="muted small">That would not open: ' +
         esc(String((err && err.message) || err)) + "</p>";
@@ -2394,6 +2417,19 @@ function renderFiles(panel, entries) {
  * would like it to be - it gets a link that opens it in its own tab, which is
  * still local and still nothing fetched. */
 const PREVIEW_MAX = 2 * 1024 * 1024;
+
+/* Slides in on hover. A row that does something should look like a row that
+   does something before it is clicked, not after. */
+const FL_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+  'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg>';
+
+/* Kinds the page can draw in place. Everything else opens in its own tab,
+   because a paragraph explaining why a PDF cannot be embedded is not what
+   somebody clicking a PDF wanted - they wanted the PDF. */
+const INLINE_EXT = new RegExp("\\.(jpe?g|png|gif|webp|bmp|avif|heic|heif|" +
+  "mp4|mov|m4v|webm|mp3|m4a|wav|aac|ogg|opus|flac|" +
+  "json|csv|txt|xml|html?|vcf|ics|md|log|srt|tsv)$", "i");
 
 async function previewHtml(entry) {
   const src = current.sources[entry.src || 0];
@@ -2443,13 +2479,11 @@ async function previewHtml(entry) {
       (text.length > 200000 ? "\n\n... cut here" : "") + "</pre>";
   }
 
-  // Anything else - a PDF, a proprietary container - opens in its own tab.
-  const url = await blobFor(ext === "pdf" ? "application/pdf" : "application/octet-stream");
-  return '<p class="muted small">Muletto cannot draw a <code>.' + esc(ext) +
-    "</code> here" + (ext === "pdf"
-      ? ", because the page refuses embedded documents on purpose"
-      : "") + '. <a href="' + url + '" target="_blank" rel="noopener noreferrer">' +
-    "Open it in a new tab</a> - still from this machine, nothing fetched.</p>";
+  /* Unreachable in practice - the caller opens anything not on the inline
+     list in its own tab before getting here - but a kind that slips through
+     should say so rather than show an empty box. */
+  return '<p class="muted small">Nothing here can draw a <code>.' + esc(ext) +
+    "</code>.</p>";
 }
 
 /* ---------- Wiring ---------- */

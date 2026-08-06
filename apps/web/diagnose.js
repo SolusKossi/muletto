@@ -266,8 +266,28 @@ const MDiagnose = (function () {
     const unreadWhere = new Map();   // top folder -> count
     let noise = 0, insideNested = 0;
 
+    /* The innards of a container we opened on purpose.
+     *
+     * An S Note is a zip, so opening one to rescue the picture inside it also
+     * surfaces its `.page`, `.note`, `.dat` and `.bin` parts - 127 of them in
+     * a real Samsung export, from 21 notes. Every one was then counted as a
+     * file that produced nothing, and the coverage figure fell to 29% for
+     * doing more work than before.
+     *
+     * They are not files somebody has; they are the inside of a file somebody
+     * has, in a format Samsung has not published. Still listed under All
+     * files, because hiding them would be the other kind of dishonesty, but
+     * counted as parts rather than as failures. */
+    const PART_OF = /\.(spd|pages|numbers|key)$/i;
+    const CARRIED = /\.(jpe?g|png|gif|webp|heic|heif|mp4|mov|m4a|mp3|wav)$/i;
+    /* Not `parts`: the loop below already declares `const parts` for the path
+       segments, and a block-scoped shadow put this counter in the temporal
+       dead zone - reconcile threw on every export. */
+    let containerParts = 0;
+
     for (const e of entries) {
       if (used.has(e.name)) continue;
+      if (e.nestedIn && PART_OF.test(e.nestedIn) && !CARRIED.test(e.name)) { containerParts++; continue; }
       if (/\.zip$/i.test(e.name)) { nested.push(e.name); continue; }
       if (NOISE.test(e.name)) { noise++; continue; }
       const x = (e.name.match(/\.([a-z0-9]{1,6})$/i) || [, "(none)"])[1].toLowerCase();
@@ -281,7 +301,11 @@ const MDiagnose = (function () {
     const readCount = used.size;
     const unreadCount = [...unread.values()].reduce((a, b) => a + b, 0);
     return {
-      total: entries.length,
+      /* Parts of a container are taken off the total as well as out of the
+         unread pile, so the percentage answers "how much of what you have did
+         we read" rather than counting the same note twice. */
+      total: entries.length - containerParts,
+      parts: containerParts,
       read: readCount,
       noise,
       nested: nested.length,
