@@ -1322,7 +1322,11 @@ const MTopics = (function () {
    */
   const STRIP = "script,style,iframe,object,embed,link,meta,form,input,button,svg";
 
-  function renderMessage(raw) {
+  /* `why` is the sentence explaining why pictures were held back, because
+     the reason differs: a message image sits on the sender's server and
+     fetching it reports you, a saved page kept its images inside the file we
+     are not unpacking. Same rule, different truth. */
+  function renderMessage(raw, why) {
     const text = String(raw || "");
     const html = /<(html|body|div|table|p|br|a)\b/i.test(text);
     if (!html) {
@@ -1340,7 +1344,10 @@ const MTopics = (function () {
         if (name.startsWith("on")) n.removeAttribute(a.name);
         else if (name === "srcset") n.removeAttribute(a.name);
         else if (name === "src") {
-          if (!/^(data:image\/|cid:)/i.test(a.value)) { n.removeAttribute(a.name); blocked++; }
+          /* `cid:` points at another part of the same file, which is not
+             extracted, so keeping it draws a broken-image icon and tells the
+             reader nothing. Counted with the rest that were held back. */
+          if (!/^data:image\//i.test(a.value)) { n.removeAttribute(a.name); blocked++; }
         } else if (name === "href" && !/^(https?:|mailto:)/i.test(a.value)) {
           n.removeAttribute(a.name);
         }
@@ -1352,8 +1359,9 @@ const MTopics = (function () {
     });
     return (blocked
       ? '<p class="ml-blocked">' + plural(blocked, "image was", "images were") +
-        " not loaded. They live on the sender's server, and fetching one tells them " +
-        "you opened this.</p>"
+        " not loaded. " + (why ||
+          "They live on the sender's server, and fetching one tells them you opened this.") +
+        "</p>"
       : "") +
       '<div class="ml-html">' + doc.body.innerHTML + "</div>";
   }
@@ -1729,7 +1737,11 @@ const MTopics = (function () {
     }
   }
 
-  return Object.assign(api, { detect, draw, has, reset, precount, claims, TOPICS });
+  /* Shared with the file preview: a saved web page is somebody else's
+     markup for exactly the same reasons a message is, and there should be one
+     set of rules about what markup is allowed to do here. */
+  return Object.assign(api, { detect, draw, has, reset, precount, claims,
+                              safeHtml: renderMessage, TOPICS });
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MTopics;

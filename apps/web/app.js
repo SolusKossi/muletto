@@ -2353,7 +2353,7 @@ function renderFiles(panel, entries) {
   panel.innerHTML = `
     <p class="muted small">${plural(pool.length, "file", "files")}${q ? ` matching "${esc(q)}"` : ""}${pool.length > rows.length ? ", showing the 500 largest" : ""}. Click one to look at it.</p>
     <div class="filelist">
-      ${rows.map((e, i) => `<div class="fl-row" data-i="${i}"><span class="fl-name">${esc(e.name)}<i class="fl-go">${FL_ARROW}</i></span><span class="sz">${fmtBytes(e.size)}</span>
+      ${rows.map((e, i) => `<div class="fl-row" data-i="${i}"><span class="fl-name">${esc(e.name)}${SNIFF_LABEL[e.sniffedAs] ? `<em class="fl-kind">${SNIFF_LABEL[e.sniffedAs]}</em>` : ""}<i class="fl-go">${FL_ARROW}</i></span><span class="sz">${fmtBytes(e.size)}</span>
         <div class="fl-view" hidden></div></div>`).join("")}
     </div>`;
 
@@ -2428,6 +2428,62 @@ const FL_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
    because a paragraph explaining why a PDF cannot be embedded is not what
    somebody clicking a PDF wanted - they wanted the PDF. */
 const INLINE_SNIFFED = new Set(["webpage", "mbox"]);
+/* Samsung names a saved page hashCode1539051287 and gives it no extension, so
+   the only way anybody learns what it is, is if the row says so. */
+const SNIFF_LABEL = { webpage: "saved web page", mbox: "mail" };
+
+/* A saved web page, actually shown as one.
+ *
+ * MHTML is a MIME document: a boundary, then the page's HTML in one part and
+ * every image, stylesheet and script in the others. Dumping it as text - which
+ * is what this did first - puts a screenful of base64 in front of somebody who
+ * asked to see a page they saved, and counting that as "read" is the kind of
+ * overclaiming this file is otherwise careful about.
+ *
+ * The HTML part is pulled out, decoded, and put through the same sanitiser the
+ * mail view uses, because it is somebody else's markup for exactly the same
+ * reasons. The other parts are left alone: a page's images were saved as cid:
+ * references, and the Content-Security-Policy refuses those anyway. */
+function qpDecode(text) {
+  return String(text || "")
+    .replace(/=\r?\n/g, "")                               // soft line break
+    .replace(/=([0-9A-Fa-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
+}
+
+function mhtmlHtml(raw) {
+  const text = String(raw || "");
+  const boundary = (/boundary="?([^"\r\n;]+)"?/i.exec(text.slice(0, 4000)) || [])[1];
+  if (!boundary) return null;
+  const parts = text.split("--" + boundary);
+  let best = null;
+  for (const part of parts) {
+    const split = part.indexOf("\r\n\r\n") >= 0 ? part.indexOf("\r\n\r\n") : part.indexOf("\n\n");
+    if (split < 0) continue;
+    const head = part.slice(0, split);
+    if (!/content-type:\s*text\/html/i.test(head)) continue;
+    let body = part.slice(split).replace(/^(\r?\n){2}/, "");
+    const enc = ((/content-transfer-encoding:\s*([\w-]+)/i.exec(head) || [])[1] || "").toLowerCase();
+    const charset = ((/charset="?([\w-]+)"?/i.exec(head) || [])[1] || "utf-8").toLowerCase();
+    /* Both encodings hand back *bytes*, one per character position, and
+       stopping there is how an accented word came out with a stray capital A
+       in front of it - the same mistake mojibake.js exists to undo for Meta.
+       The bytes have to go to a decoder that knows the charset. */
+    const asBytes = (str) => {
+      const b8 = new Uint8Array(str.length);
+      for (let i = 0; i < str.length; i++) b8[i] = str.charCodeAt(i) & 0xff;
+      try { return new TextDecoder(charset).decode(b8); }
+      catch (e) { return new TextDecoder("utf-8").decode(b8); }
+    };
+    if (enc === "quoted-printable") body = asBytes(qpDecode(body));
+    else if (enc === "base64") {
+      try { body = asBytes(atob(body.replace(/\s+/g, ""))); }
+      catch (e) { /* leave it as written */ }
+    }
+    // The largest html part is the page; the rest are frames and fragments.
+    if (!best || body.length > best.length) best = body;
+  }
+  return best;
+}
 const INLINE_EXT = new RegExp("\\.(jpe?g|png|gif|webp|bmp|avif|heic|heif|" +
   "mp4|mov|m4v|webm|mp3|m4a|wav|aac|ogg|opus|flac|" +
   "json|csv|txt|xml|html?|vcf|ics|md|log|srt|tsv)$", "i");
@@ -2466,7 +2522,27 @@ async function previewHtml(entry) {
   const TEXTY = ["json", "csv", "txt", "xml", "html", "htm", "vcf", "ics", "md", "log", "srt", "tsv"];
   /* Recognised by its first bytes rather than its name - a saved web page
      with no extension is still text, and showing it beats showing nothing. */
-  if (TEXTY.includes(ext) || entry.sniffedAs === "webpage" || entry.sniffedAs === "mbox") {
+  if (entry.sniffedAs === "webpage") {
+    const raw = await MZip.extractText(src.file, entry);
+    const subject = ((/^subject:\s*(.+)$/im.exec(raw.slice(0, 2000)) || [])[1] || "").trim();
+    const when = ((/^date:\s*(.+)$/im.exec(raw.slice(0, 2000)) || [])[1] || "").trim();
+    const html = mhtmlHtml(raw);
+    const head = '<p class="muted small">A web page you saved in your browser' +
+      (when ? " on " + esc(when) : "") + ", shown from the archive.</p>";
+    if (!html) {
+      return head + '<p class="muted small">The page itself could not be pulled ' +
+        "out of the file.</p>";
+    }
+    return (subject ? "<h4>" + esc(subject) + "</h4>" : "") + head +
+      '<div class="fl-page">' +
+      (typeof MTopics !== "undefined" && MTopics.safeHtml
+        ? MTopics.safeHtml(html, "They were saved inside this file, which is not " +
+            "unpacked here - nothing was requested from the web to show this.")
+        : '<pre class="fl-text">' + esc(html.slice(0, 100000)) + "</pre>") +
+      "</div>";
+  }
+
+  if (TEXTY.includes(ext) || entry.sniffedAs === "mbox") {
     if ((entry.size || 0) > PREVIEW_MAX) {
       return '<p class="muted small">' + esc(fmtBytes(entry.size)) +
         " of text, which is more than is worth putting on screen at once.</p>";

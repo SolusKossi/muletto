@@ -2995,3 +2995,15 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .nt-pics img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px;
   background: var(--surface-2); }
 .nt-drawn h3 { margin-bottom: 8px; }
+
+/* What a file is, when its name refuses to say. */
+.fl-kind { flex: none; font-style: normal; font-size: 11px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; }
+/* A saved page is somebody else's markup - it gets the page's typography, and
+   is boxed so it cannot be mistaken for Muletto's own interface. */
+.fl-page { max-height: 46vh; overflow: auto; border-top: 1px solid var(--line);
+  margin-top: 8px; padding-top: 10px; font-size: 13px; line-height: 1.5; }
+.fl-page img { max-width: 100%; height: auto; }
+.fl-page * { max-width: 100% !important; font-family: inherit !important;
+  font-size: inherit !important; color: inherit !important;
+  background-color: transparent !important; }
