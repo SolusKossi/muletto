@@ -89,12 +89,23 @@
     state = null;
   }
 
-  /* Every section is always listed, whether or not it has anything in it.
-
-     Hiding the empty ones seemed tidy and was worse: a reader looking for
-     their messages found no Chats entry and had no way to tell whether the
-     export lacked messages or Muletto had lost them. An empty page that says
-     which is far more use than a missing one. */
+  /* Empty sections are not listed as places to go, but they are still named.
+   *
+   * The first rule here was that every section is always listed, because
+   * hiding them meant a reader looking for their messages found no Chats entry
+   * and could not tell whether the export lacked messages or Muletto had lost
+   * them. That reasoning was right and the conclusion no longer follows: the
+   * coverage line at the top of the timeline now answers "did anything get
+   * lost" directly, so an empty entry is no longer the only thing standing
+   * between the reader and that doubt.
+   *
+   * So they come out of the list and go underneath it as a quiet line of
+   * names - "Nothing here: chat history, location history". Still stated,
+   * still impossible to mistake for something we dropped, and no longer eight
+   * dead ends between the reader and the sections that do have their data.
+   *
+   * Topic views were never listed empty, so this only affects the fixed ones. */
+  const ALWAYS = new Set(["timeline", "files"]);
   function navItems() {
     const lib = scopedLib();
     const stream = !filtering() ? state.stream : MViews.buildStream(lib);
@@ -142,14 +153,27 @@
     return items;
   }
 
+  const liveItems = () => navItems().filter(([k, , , n]) => n > 0 || ALWAYS.has(k));
+  const emptyItems = () => navItems().filter(([k, , , n]) => !(n > 0) && !ALWAYS.has(k));
+
+  /* Named, not offered. The distinction is the whole point: "this export has
+     no chat history" is information, and a button leading to a page that says
+     so is a detour. */
+  function emptyNote() {
+    const gone = emptyItems();
+    if (!gone.length) return "";
+    return '<p class="ex-none">Nothing here: ' +
+      gone.map(([, label]) => esc(String(label).toLowerCase())).join(", ") + ".</p>";
+  }
+
   /* The sidebar counts and the headline figures answer "how much of this am I
      looking at", so they follow the filter. */
   function refreshCounts(root) {
     const nav = root.querySelector("#ex-nav");
     const on = state.view;
-    nav.innerHTML = navItems().map(([k, label, icon, n]) =>
+    nav.innerHTML = liveItems().map(([k, label, icon, n]) =>
       '<button class="ex-navi' + (k === on ? " on" : "") + '" data-k="' + k + '">' +
-        '<i data-icon="' + icon + '"></i><span>' + esc(label) + "</span><em>" + num(n) + "</em></button>").join("");
+        '<i data-icon="' + icon + '"></i><span>' + esc(label) + "</span><em>" + num(n) + "</em></button>").join("") + emptyNote();
     const box = root.querySelector(".ex-stats");
     if (box) {
       box.innerHTML = stats().map((s) => {
@@ -415,10 +439,11 @@
           </a>
 
           <nav class="ex-nav" id="ex-nav" aria-label="Sections">
-            ${navItems().map(([k, label, icon, n]) => `
+            ${liveItems().map(([k, label, icon, n]) => `
               <button class="ex-navi${k === state.view ? " on" : ""}" data-k="${k}">
                 <i data-icon="${icon}"></i><span>${esc(label)}</span><em>${num(n)}</em>
               </button>`).join("")}
+            ${emptyNote()}
           </nav>
 
           <div class="ex-sources">
@@ -536,6 +561,14 @@
        sidebar guessed with, so it says so and the sidebar redraws. */
     if (typeof MTopics !== "undefined") {
       MTopics.onCount = () => { try { refreshCounts(root); } catch (e) { /* gone */ } };
+      /* Counted now rather than when somebody clicks, so the sidebar is right
+         before it is read instead of correcting itself afterwards. */
+      if (MTopics.precount) {
+        setTimeout(() => {
+          MTopics.precount(scopedLib(), { entries: state.entries, sources: state.sources })
+            .catch(() => { /* the file counts stand */ });
+        }, 60);
+      }
     }
     // The shell has just replaced the page, taking the navigation bar with it.
     if (typeof MNotify !== "undefined" && MNotify.park) MNotify.park();
