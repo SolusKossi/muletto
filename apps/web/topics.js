@@ -322,24 +322,51 @@ const MTopics = (function () {
    * A table now has to sit somewhere that says health as well as matching a
    * kind. Samsung writes com.samsung.shealth.*, Google writes Takeout/Fit/,
    * Apple writes Health. A friends list in Game Center matches none of them. */
-  const HEALTH_CONTEXT = /health|shealth|\bfit\b|fitness|workout|exercise|wellness|activity metrics/i;
+  const HEALTH_CONTEXT = /health|shealth|\bfit\b|fitness|wellness|activity metrics/i;
+
+  /* Which matchers can stand on their own.
+   *
+   * Requiring health context from every kind was too blunt and broke the case
+   * it was meant to serve: Samsung writes its health tables as plain folders -
+   * Heart Rate, Weight, Goal, Food Goal - with the word health nowhere in the
+   * path, so the gate blocked all seven of them and the Health tab vanished
+   * from a real Samsung Health export.
+   *
+   * "Heart rate" and "blood pressure" mean one thing wherever they appear.
+   * "Friends", "rewards", "temperature" and "floor" do not, and those are the
+   * ones that dragged Apple's Game Center in. So the specific matchers stand
+   * alone, and the loose ones are only believed inside a source that has
+   * already proved itself health data some other way. */
+  const LOOSE_KINDS = new Set(["together", "rewards", "water", "food", "temp", "floors", "stress"]);
 
   function findHealth(lib) {
     const kinds = (typeof MCatalog !== "undefined" && MCatalog.HEALTH) || [];
+    const tables = (lib.tables || []).filter((t) => (t.rows || []).length);
+    const hayOf = (t) => String(t.path || "") + " " + String(t.name || "") + " " +
+                         (t.columns || []).join(" ");
+
+    /* A source earns health context by containing something unmistakable, or
+       by saying so in a path. Then the vaguer kinds in the same export are
+       read as health too, which is how Food Goal joins Heart Rate. */
+    const healthy = new Set();
+    for (const t of tables) {
+      const hay = hayOf(t);
+      const specific = kinds.some((k) => !LOOSE_KINDS.has(k.key) && k.match.test(hay));
+      if (specific || HEALTH_CONTEXT.test(hay)) healthy.add(t.src === undefined ? -1 : t.src);
+    }
+
     const out = [];
-    for (const t of lib.tables || []) {
-      if (!(t.rows || []).length) continue;
-      const where = String(t.path || "") + " " + String(t.name || "");
-      if (!HEALTH_CONTEXT.test(where)) continue;
-      const hay = where + " " + (t.columns || []).join(" ");
+    for (const t of tables) {
+      const hay = hayOf(t);
       const kind = kinds.find((k) => k.match.test(hay));
       if (!kind) continue;
+      if (LOOSE_KINDS.has(kind.key) && !healthy.has(t.src === undefined ? -1 : t.src)) continue;
       out.push({ kind, table: t, slug: slugOf(t) });
     }
     return out;
   }
 
-  function drawHealth(el, match) {
+  function drawHealth(el, match, lib) {
     const kinds = (typeof MCatalog !== "undefined" && MCatalog.HEALTH) || [];
     const have = new Map();
     for (const m of match) {
@@ -375,6 +402,12 @@ const MTopics = (function () {
 
     const missing = kinds.filter((k) => !have.has(k.key));
 
+    /* The breakdown of what this service records lives here now, beside the
+       readings it is about, rather than under Highlights where somebody
+       looking for their health data would never have found it. */
+    const groups = (typeof coverageHtml === "function" && lib)
+      ? coverageHtml(lib, "groups") : "";
+
     el.innerHTML =
       unsupportedNote(match.map((m) => m.table)) +
       '<div class="tp-stats">' +
@@ -383,6 +416,7 @@ const MTopics = (function () {
           "</b><span>readings in total</span></div>" +
       "</div>" +
       '<div class="hl-grid">' + [...have.values()].map(panel).join("") + "</div>" +
+      groups +
       /* The catalogue is Samsung Health's, so only a Samsung export can be
          told what Samsung Health would also have recorded. Saying it over
          Google Fit data was claiming knowledge of the wrong product. */
