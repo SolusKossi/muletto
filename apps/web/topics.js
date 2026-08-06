@@ -698,10 +698,31 @@ const MTopics = (function () {
   const NOTE_FILE = /(^|\/)(icloud )?notes?\//i;
   const TXT = /\.txt$/i;
 
+  /* A note that is a container rather than a text file.
+   *
+   * Samsung writes an S Note as an `.spd`, which is a zip holding a
+   * proprietary `.page` for the handwriting and ordinary JPEGs for anything
+   * drawn or pasted in. The page format is not published, so the words cannot
+   * be read - but the pictures can, and a picture that came out of a note
+   * belongs with that note rather than in a gallery of its own. Which is the
+   * only thing we know about it: not that it is a drawing, only where it was.
+   *
+   * 21 of these in a real Samsung export, with 21 pictures between them. */
+  const NOTE_CONTAINER = /\.(spd|snb)$/i;
+  const NOTE_IMAGE = /\.(jpe?g|png|gif|webp)$/i;
+
   function findNotes(lib, ctx) {
-    const files = ((ctx && ctx.entries) || [])
-      .filter((e) => TXT.test(e.name) && NOTE_FILE.test(e.name));
-    return files.length ? [{ files }] : [];
+    const entries = (ctx && ctx.entries) || [];
+    const files = entries.filter((e) => TXT.test(e.name) && NOTE_FILE.test(e.name));
+
+    const containers = new Map();
+    for (const e of entries) {
+      if (!e.nestedIn || !NOTE_CONTAINER.test(e.nestedIn)) continue;
+      if (!containers.has(e.nestedIn)) containers.set(e.nestedIn, { name: e.nestedIn, images: [] });
+      if (NOTE_IMAGE.test(e.name)) containers.get(e.nestedIn).images.push(e);
+    }
+    const notes = [...containers.values()];
+    return (files.length || notes.length) ? [{ files, notes }] : [];
   }
 
   async function drawNotes(el, match, lib, ctx) {
@@ -720,20 +741,63 @@ const MTopics = (function () {
       };
     }).filter((n) => n.body);
 
+    /* Notes that arrived as containers. The handwriting is unreadable, so what
+       is shown is the name and whatever was drawn or pasted into it - said
+       plainly, because a note with pictures and no words is not a note we read
+       badly, it is a note in a format nobody has published. */
+    const held = match[0].notes || [];
+    const pics = [];
+    for (const n of held) {
+      const shown = [];
+      for (const img of n.images.slice(0, 8)) {
+        const s = sourceOf(ctx, img);
+        if (!s || !s.file) continue;
+        try {
+          const url = URL.createObjectURL(
+            await MZip.extractBlob(s.file, img, MParse.mimeOf(img.name)));
+          shown.push(url);
+        } catch (err) { /* one picture short is not a reason to drop the note */ }
+      }
+      pics.push({ title: n.name.split("/").pop().replace(NOTE_CONTAINER, ""),
+                  urls: shown, total: n.images.length });
+    }
+    if (!el.isConnected) return;
+
     const words = notes.reduce((a, n) => a + n.words, 0);
+    const withPics = pics.filter((p) => p.urls.length);
+    const pictureCount = held.reduce((a, n) => a + n.images.length, 0);
+
     el.innerHTML =
       '<div class="tp-stats">' +
-        '<div><b>' + num(files.length) + "</b><span>notes</span></div>" +
-        '<div><b>' + num(words) + "</b><span>words in them</span></div>" +
+        '<div><b>' + num(files.length + held.length) + "</b><span>" +
+          (files.length + held.length === 1 ? "note" : "notes") + "</span></div>" +
+        (words ? '<div><b>' + num(words) + "</b><span>words in them</span></div>" : "") +
+        (pictureCount ? '<div><b>' + num(pictureCount) + "</b><span>" +
+          (pictureCount === 1 ? "picture inside them" : "pictures inside them") +
+          "</span></div>" : "") +
       "</div>" +
       (files.length > read.length
         ? '<p class="muted small">Showing the first ' + num(read.length) + ". Open " +
           "All files for the rest.</p>" : "") +
-      '<div class="nt-grid">' + notes.map((n) =>
-        '<article class="nt-note"><h3>' + esc(n.title.slice(0, 90)) + "</h3>" +
-        "<p>" + esc(n.body.slice(0, 400)) + (n.body.length > 400 ? "..." : "") + "</p>" +
-        '<footer class="muted small">' + plural(n.words, "word", "words") + "</footer>" +
-        "</article>").join("") + "</div>";
+      (held.length
+        ? '<p class="muted small">' + plural(held.length, "note", "notes") +
+          " arrived as S Note files. Samsung has not published that format, so the " +
+          "handwriting in them cannot be read here - the pictures put into them can, " +
+          "and are below. They are in Images too, so a saved copy still includes them.</p>"
+        : "") +
+      '<div class="nt-grid">' +
+        notes.map((n) =>
+          '<article class="nt-note"><h3>' + esc(n.title.slice(0, 90)) + "</h3>" +
+          "<p>" + esc(n.body.slice(0, 400)) + (n.body.length > 400 ? "..." : "") + "</p>" +
+          '<footer class="muted small">' + plural(n.words, "word", "words") + "</footer>" +
+          "</article>").join("") +
+        withPics.map((p) =>
+          '<article class="nt-note nt-drawn"><h3>' + esc(p.title.slice(0, 90)) + "</h3>" +
+          '<div class="nt-pics">' + p.urls.map((u) =>
+            '<img src="' + u + '" alt="" loading="lazy">').join("") + "</div>" +
+          '<footer class="muted small">' + plural(p.total, "picture", "pictures") +
+          ", handwriting not readable</footer></article>").join("") +
+      "</div>";
   }
 
   /* ---------- audio ---------- */
@@ -1502,7 +1566,7 @@ const MTopics = (function () {
       sub: "What you wrote down.",
       only: null, slow: true,
       find: findNotes, draw: drawNotes,
-      count: (m) => m[0].files.length },
+      count: (m) => m[0].files.length + (m[0].notes || []).length },
     { key: "activity", label: "Search and watch history", icon: "search",
       sub: "What you searched for, watched and opened, as Google recorded it.",
       only: ["google"], slow: true,
