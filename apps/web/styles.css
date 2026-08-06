@@ -1016,7 +1016,11 @@ body.no-scroll { overflow: hidden; }
    Still nothing fetched: this is Natural Earth 1:110m coastline, public
    domain, baked into the page at build time. Plotting where somebody has been
    must not involve asking a map server where that is. */
-.mm-sea { fill: #dce9f4; }
+/* Sea a shade deeper than the land, so the coastline is the boundary
+   between two materials rather than two greys. The land carries a soft
+   shadow, which is the cheapest thing that makes a flat shape read as a
+   landmass sitting in water. */
+.mm-sea { fill: #cfe0f0; }
 .mm-land { fill: #f2f0ea; stroke: #9aa7b4; stroke-width: 0.5;
   stroke-linejoin: round; paint-order: fill; }
 .mm-dots circle { fill: var(--accent); fill-opacity: 0.55; }

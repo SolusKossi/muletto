@@ -1552,6 +1552,33 @@ const MTopics = (function () {
   const has = (key) => TOPICS.some((t) => t.key === key);
   const reset = () => REAL.clear();
 
+  /* Which entries a topic view actually reads.
+   *
+   * The coverage figure is computed by walking the library - media, tables and
+   * conversations - and calling everything else unread. That was true when
+   * those were the only three things that read a file. It stopped being true
+   * the moment Notes, Contacts, Calendar and Audio started reading files
+   * directly, and nobody told the reconciliation: an Apple export said 466 of
+   * 1,402 read when 809 notes, 111 contacts and 319 recordings were all on
+   * screen and perfectly legible.
+   *
+   * Declared here rather than re-derived over there, so the answer comes from
+   * the code that does the reading. */
+  function claims(entries) {
+    const ctx = { entries: entries || [], sources: [] };
+    const out = new Set();
+    const add = (m) => {
+      for (const part of m || []) for (const f of part.files || []) out.add(f.name);
+    };
+    try { add(findContacts(null, ctx)); } catch (e) { /* none */ }
+    try { add(findCalendar(null, ctx)); } catch (e) { /* none */ }
+    try { add(findNotes(null, ctx)); } catch (e) { /* none */ }
+    try { add(findAudio(null, ctx)); } catch (e) { /* none */ }
+    try { add(findMail(null, ctx)); } catch (e) { /* none */ }
+    try { add(findActivity(null, ctx)); } catch (e) { /* none */ }
+    return out;
+  }
+
   /* Counting the file-shaped topics without waiting to be asked.
    *
    * The sidebar said Calendar 2 until you clicked it, and then said 7 - which
@@ -1598,7 +1625,7 @@ const MTopics = (function () {
     }
   }
 
-  return Object.assign(api, { detect, draw, has, reset, precount, TOPICS });
+  return Object.assign(api, { detect, draw, has, reset, precount, claims, TOPICS });
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MTopics;

@@ -613,10 +613,16 @@
       const max = Math.max(...list.map((b) => b.n));
       const bm = global.MBasemap;
       svg.innerHTML = `
+        <defs>
+          <filter id="mm-lift" x="-2%" y="-2%" width="104%" height="104%">
+            <feDropShadow dx="0" dy="0.6" stdDeviation="0.9"
+              flood-color="#39506b" flood-opacity="0.30"/>
+          </filter>
+        </defs>
         <rect x="0" y="0" width="${W}" height="${H}" class="mm-sea"/>
         ${[...Array(7)].map((_, i) => `<line x1="0" y1="${(i * H) / 6}" x2="${W}" y2="${(i * H) / 6}" class="sc-grid"/>`).join("")}
         ${[...Array(13)].map((_, i) => `<line x1="${(i * W) / 12}" y1="0" x2="${(i * W) / 12}" y2="${H}" class="sc-grid"/>`).join("")}
-        ${bm ? `<path d="${bm.path}" class="mm-land"/>` : ""}
+        ${bm ? `<path d="${bm.path}" class="mm-land" filter="url(#mm-lift)"/>` : ""}
         <g class="sc-dots">
           ${list.map((b) => `<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}"
              style="--r:${(2 + 4 * Math.sqrt(b.n / max)).toFixed(2)}"

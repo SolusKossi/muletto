@@ -229,6 +229,15 @@ const MDiagnose = (function () {
       for (const src of (c.paths || (c.path ? [c.path] : []))) mark(src, "messages");
     }
 
+    /* The topic views read files the library never holds - a note, a vCard, a
+       recording. Counting those as unread said an Apple export was 33 percent
+       understood while 809 notes and 319 recordings were on screen. */
+    if (typeof MTopics !== "undefined" && MTopics.claims) {
+      try {
+        for (const name of MTopics.claims(entries)) mark(name, "view");
+      } catch (err) { /* the older, gloomier count stands */ }
+    }
+
     /* A sidecar is read and then thrown away, so it never appears in the
        library. Rather than thread that through every parser, the pairing is
        re-derived here: a .json whose name reduces to the name of a picture we
