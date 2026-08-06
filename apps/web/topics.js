@@ -30,6 +30,25 @@ const MTopics = (function () {
   const num = (n) => (n || 0).toLocaleString();
   const plural = (n, one, many) => num(n) + " " + (n === 1 ? one : many);
 
+  /* What the sidebar number should say.
+   *
+   * A file-reading topic can only count files before it has read them, and for
+   * three of them that is the wrong unit: two .ics files hold 63 events, one
+   * mbox holds thousands of messages, two My Activity pages hold hundreds of
+   * searches. The sidebar said 2, 1 and 2 while the views said 33, 5 and 4.
+   *
+   * Counting properly up front would mean decompressing and parsing every
+   * candidate file on every sidebar redraw, which is exactly what the topic
+   * system was built to avoid. So the honest count is published once the view
+   * has actually read the files, and the sidebar corrects itself. */
+  const REAL = new Map();
+  const api = { onCount: null };
+  function setCount(key, n) {
+    if (REAL.get(key) === n) return;
+    REAL.set(key, n);
+    if (api.onCount) api.onCount();
+  }
+
   const colIndex = (t, re) => (t.columns || []).findIndex((c) => re.test(String(c)));
   const YT_ID = /^[A-Za-z0-9_-]{11}$/;
 
@@ -291,15 +310,31 @@ const MTopics = (function () {
      guessed - seventeen kinds with a matcher and a plain description of what
      each one holds. A table matches on its name or on its column names,
      because Samsung names the file and Apple names the column. */
+  /* Health data has to come from somewhere health-shaped.
+   *
+   * Matching on the kind alone was far too eager: the catalogue entry for
+   * challenges is /social|challenge|leaderboard|friends/, and an Apple export
+   * has a Game Center friends table in it - so an Apple archive with no health
+   * data at all grew a Health tab claiming "123 readings" and then listed the
+   * fifteen kinds of *Samsung Health* it was missing. Every part of that was
+   * wrong.
+   *
+   * A table now has to sit somewhere that says health as well as matching a
+   * kind. Samsung writes com.samsung.shealth.*, Google writes Takeout/Fit/,
+   * Apple writes Health. A friends list in Game Center matches none of them. */
+  const HEALTH_CONTEXT = /health|shealth|\bfit\b|fitness|workout|exercise|wellness|activity metrics/i;
+
   function findHealth(lib) {
     const kinds = (typeof MCatalog !== "undefined" && MCatalog.HEALTH) || [];
     const out = [];
     for (const t of lib.tables || []) {
       if (!(t.rows || []).length) continue;
-      const hay = String(t.name || "") + " " + (t.columns || []).join(" ");
+      const where = String(t.path || "") + " " + String(t.name || "");
+      if (!HEALTH_CONTEXT.test(where)) continue;
+      const hay = where + " " + (t.columns || []).join(" ");
       const kind = kinds.find((k) => k.match.test(hay));
       if (!kind) continue;
-      out.push({ kind, table: t });
+      out.push({ kind, table: t, slug: slugOf(t) });
     }
     return out;
   }
@@ -348,7 +383,10 @@ const MTopics = (function () {
           "</b><span>readings in total</span></div>" +
       "</div>" +
       '<div class="hl-grid">' + [...have.values()].map(panel).join("") + "</div>" +
-      (missing.length
+      /* The catalogue is Samsung Health's, so only a Samsung export can be
+         told what Samsung Health would also have recorded. Saying it over
+         Google Fit data was claiming knowledge of the wrong product. */
+      (missing.length && match.some((m) => m.slug === "samsung")
         ? '<h3 class="tp-h">Not in this export</h3>' +
           '<p class="muted small">Samsung Health records these too. They are absent here, ' +
           "which usually means no device ever recorded them.</p>" +
@@ -577,6 +615,7 @@ const MTopics = (function () {
     for (const r of read) events.push(...parseIcs(r.body));
     if (!el.isConnected) return;
 
+    setCount("calendar", events.length);
     events.sort((a, b) => (b.at ? +b.at : 0) - (a.at ? +a.at : 0));
     const dated = events.filter((e) => e.at);
     const from = dated.length ? dated[dated.length - 1].at : null;
@@ -1032,6 +1071,7 @@ const MTopics = (function () {
     }
     if (!el.isConnected) return;
 
+    setCount("activity", items.length);
     items.sort((a, b) => (b.at ? +b.at : 0) - (a.at ? +a.at : 0));
     const byProduct = new Map();
     for (const i of items) byProduct.set(i.product, (byProduct.get(i.product) || 0) + 1);
@@ -1096,6 +1136,7 @@ const MTopics = (function () {
       },
     });
     if (!el.isConnected) return;
+    setCount("mail", res.messages.length);
     const sum = MMbox.summarise(res);
     const dated = res.messages.filter((m) => m.at).sort((a, b) => b.at - a.at);
 
@@ -1473,7 +1514,7 @@ const MTopics = (function () {
       try { m = t.find(lib, ctx); } catch (err) { m = null; }
       if (!m || !m.length) continue;
       let n = 0;
-      try { n = t.count(m); } catch (err) { n = 0; }
+      try { n = REAL.has(t.key) ? REAL.get(t.key) : t.count(m); } catch (err) { n = 0; }
       if (!n) continue;
       out.push({ key: t.key, label: t.label, icon: t.icon, sub: t.sub, n, match: m, topic: t });
     }
@@ -1509,8 +1550,9 @@ const MTopics = (function () {
   }
 
   const has = (key) => TOPICS.some((t) => t.key === key);
+  const reset = () => REAL.clear();
 
-  return { detect, draw, has, TOPICS };
+  return Object.assign(api, { detect, draw, has, reset, TOPICS });
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MTopics;

@@ -72,6 +72,8 @@
       root.id = "explorer";
       document.body.appendChild(root);
     }
+    /* A new library means the counts a previous one published are stale. */
+    if (typeof MTopics !== "undefined" && MTopics.reset) MTopics.reset();
     document.body.classList.add("exploring");
     root.innerHTML = shellHtml();
     wireShell(root);
@@ -246,7 +248,73 @@
     });
   }
 
+  /* The headline figures describe the view you are looking at.
+   *
+   * They used to describe the timeline, always, on every screen - so Chat
+   * history read "Total items 15" directly above "No messages in this export",
+   * and Calendar read 15 above its own 33 events. Four tiles that contradicted
+   * the page under them, on every page but one.
+   *
+   * A view that draws its own summary gets no tiles at all, because two
+   * summaries of the same thing is how they came to disagree in the first
+   * place. */
+  const OWN_STATS = new Set(["comments", "health", "contacts", "calendar", "notes",
+                             "audio", "mail", "logins", "activity"]);
+
   function stats() {
+    const lib = scopedLib();
+    const view = state.view;
+    if (OWN_STATS.has(view)) return [];
+
+    const range = (items) => {
+      const dates = items.map((x) => x.at && +x.at).filter(Boolean).sort();
+      if (!dates.length) return null;
+      return { label: "Date range", wide: true, cls: "range", click: "ex-range", icon: "clock",
+               value: fmtShort(new Date(dates[0])) + " to " + fmtShort(new Date(dates[dates.length - 1])) };
+    };
+    const srcCount = state.sources.reduce((a, _, i) => a + (state.srcOff.has(i) ? 0 : 1), 0);
+
+    if (view === "chats") {
+      const msgs = lib.conversations.reduce((n, c) => n + c.messages.length, 0);
+      const out = [{ label: "Messages", value: num(msgs), icon: "chat" },
+                   { label: lib.conversations.length === 1 ? "Conversation" : "Conversations",
+                     value: num(lib.conversations.length), icon: "layers" }];
+      const r = range(lib.conversations.flatMap((c) => c.messages));
+      if (r) out.push(r);
+      return out;
+    }
+    if (view === "map") {
+      const withCoords = lib.places.filter((p) => isFinite(p.lat));
+      const out = [{ label: "Places", value: num(withCoords.length), icon: "pin" }];
+      const r = range(withCoords);
+      if (r) out.push(r);
+      return out;
+    }
+    if (view === "photos") {
+      const vids = lib.media.filter((m) => m.kind === "video").length;
+      const out = [{ label: "Images", value: num(lib.media.length - vids), icon: "image" }];
+      if (vids) out.push({ label: vids === 1 ? "Video" : "Videos", value: num(vids), icon: "video" });
+      const r = range(lib.media);
+      if (r) out.push(r);
+      return out;
+    }
+    if (view === "records") {
+      return [{ label: lib.tables.length === 1 ? "Table" : "Tables",
+                value: num(lib.tables.length), icon: "table" },
+              { label: "Rows", value: num(lib.tables.reduce((n, t) => n + t.rows.length, 0)),
+                icon: "layers" }];
+    }
+    if (view === "files") {
+      const entries = filtering() ? state.entries.filter((e) => srcOk(e)) : state.entries;
+      const bytes = entries.reduce((n, e) => n + (e.size || 0), 0);
+      return [{ label: "Files", value: num(entries.length), icon: "folder" },
+              { label: "Size", value: fmtBytes(bytes), icon: "layers" },
+              { label: srcCount === 1 ? "Archive" : "Archives", value: num(srcCount), icon: "box" }];
+    }
+    return timelineStats();
+  }
+
+  function timelineStats() {
     const lib = scopedLib();
     const stream = !filtering() ? state.stream : MViews.buildStream(lib);
     const sources = state.sources.filter((_, i) => !state.srcOff.has(i));
@@ -467,6 +535,11 @@
   function wireShell(root) {
     const { ctx } = state;
     ctx.hydrate(root);
+    /* A topic that has read its files knows better than the file count the
+       sidebar guessed with, so it says so and the sidebar redraws. */
+    if (typeof MTopics !== "undefined") {
+      MTopics.onCount = () => { try { refreshCounts(root); } catch (e) { /* gone */ } };
+    }
     // The shell has just replaced the page, taking the navigation bar with it.
     if (typeof MNotify !== "undefined" && MNotify.park) MNotify.park();
 
@@ -820,6 +893,10 @@
     root.querySelector("#ex-title").textContent = title;
     root.querySelector("#ex-sub").textContent = sub;
     root.querySelector("#ex-scroll").scrollTop = 0;
+    /* The headline figures belong to the view, so they are redrawn with it.
+       Rendering them only when a filter changed is why every screen carried
+       the timeline's numbers. */
+    refreshCounts(root);
 
     /* Whatever the last view had decoded goes back now, not whenever a view
        that happens to use thumbnails is next drawn. Leaving the pictures for
