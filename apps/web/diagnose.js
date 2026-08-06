@@ -285,8 +285,19 @@ const MDiagnose = (function () {
        dead zone - reconcile threw on every export. */
     let containerParts = 0;
 
+    /* A container we opened was read, by any sensible meaning of the word.
+     *
+     * The nested-archive branch below only recognised `.zip`, so the 21 `.spd`
+     * notes we had just taken 21 pictures out of were each counted as a file
+     * that produced nothing - the container penalised for the same work that
+     * made its contents available. Anything with something else nested inside
+     * it is something we opened. */
+    const opened = new Set();
+    for (const e of entries) if (e.nestedIn) opened.add(e.nestedIn);
+
     for (const e of entries) {
       if (used.has(e.name)) continue;
+      if (opened.has(e.name)) { mark(e.name, "opened"); continue; }
       if (e.nestedIn && PART_OF.test(e.nestedIn) && !CARRIED.test(e.name)) { containerParts++; continue; }
       if (/\.zip$/i.test(e.name)) { nested.push(e.name); continue; }
       if (NOISE.test(e.name)) { noise++; continue; }

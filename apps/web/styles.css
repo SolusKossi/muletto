@@ -2988,3 +2988,10 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .fl-row.open .fl-go { transform: rotate(90deg); }
 .fl-busy .fl-go { opacity: .4; }
 @media (prefers-reduced-motion: reduce) { .fl-go { transition: none; } }
+
+/* A note whose words we cannot read, shown by what was drawn into it. */
+.nt-pics { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 6px; margin: 0 0 8px; }
+.nt-pics img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px;
+  background: var(--surface-2); }
+.nt-drawn h3 { margin-bottom: 8px; }
