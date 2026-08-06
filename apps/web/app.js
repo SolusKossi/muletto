@@ -2101,7 +2101,12 @@ function cardHtml(c) {
    Samsung omits an archive entirely when a service holds nothing, so an export
    never says what is missing. Without this the reader cannot tell "I never
    used that" from "I asked for the wrong thing" - and the second is fixable. */
-function coverageHtml(lib) {
+/* `want` picks which half of the coverage a caller wants.
+   "services" is what the export sent as a whole and belongs with the other
+   summaries. "groups" is the breakdown inside one service - the seventeen
+   kinds of Samsung Health - and belongs on the Health page beside the
+   readings, not buried under Highlights where it was found. */
+function coverageHtml(lib, want) {
   if (typeof MCatalog === "undefined") return "";
   /* Only the sources still switched on. The library handed in here is already
      filtered, so the archives are read back out of it rather than from the
@@ -2143,7 +2148,9 @@ function coverageHtml(lib) {
         (svc.note ? '<p class="cov-need">' + esc(svc.note) + "</p>" : "") +
       "</li>";
 
-    out += '<section class="cov-block">' +
+    const wantServices = want !== "groups";
+    const wantGroups = want !== "services";
+    out += '<section class="cov-block">' + (!wantServices ? "" :
       "<h3>" + esc(c.label) + " sent " + c.found.length + " of " +
         (c.found.length + c.absent.length) + " services</h3>" +
       '<p class="muted small">A service that holds nothing for you is left out of the export ' +
@@ -2152,9 +2159,9 @@ function coverageHtml(lib) {
       '<ul class="cov-grid">' +
         c.found.map((x) => tile(x, true)).join("") +
         c.absent.map((x) => tile(x, false)).join("") +
-      "</ul>";
+      "</ul>");
 
-    for (const g of c.groups) {
+    for (const g of (wantGroups ? c.groups : [])) {
       const have = g.items.filter((i) => i.found).length;
       out += '<div class="cov-sub' + (g.active ? "" : " off") + '">' +
         "<h4>" + esc(g.title) + " - " + have + " of " + g.items.length + "</h4>" +
@@ -2171,7 +2178,7 @@ function coverageHtml(lib) {
 
 function renderHighlights(panel, lib) {
   const cards = (typeof MInsight !== "undefined" ? MInsight.build(lib.tables) : []);
-  const cover = coverageHtml(lib);
+  const cover = coverageHtml(lib, "services");
   if (!cards.length && !cover) {
     panel.innerHTML = '<div class="ex-empty"><h3>Nothing to summarise yet</h3>' +
       '<p class="muted">This is where the records an export ships get turned into ' +
@@ -2344,10 +2351,105 @@ function renderFiles(panel, entries) {
   const rows = [...pool].sort((a, b) => b.size - a.size).slice(0, 500);
   if (!pool.length) { panel.innerHTML = `<p class="muted small">No files match "${esc(q)}".</p>`; return; }
   panel.innerHTML = `
-    <p class="muted small">${plural(pool.length, "file", "files")}${q ? ` matching "${esc(q)}"` : ""}${pool.length > rows.length ? ", showing the 500 largest" : ""}.</p>
+    <p class="muted small">${plural(pool.length, "file", "files")}${q ? ` matching "${esc(q)}"` : ""}${pool.length > rows.length ? ", showing the 500 largest" : ""}. Click one to look at it.</p>
     <div class="filelist">
-      ${rows.map((e) => `<div><span>${esc(e.name)}</span><span class="sz">${fmtBytes(e.size)}</span></div>`).join("")}
+      ${rows.map((e, i) => `<div class="fl-row" data-i="${i}"><span>${esc(e.name)}</span><span class="sz">${fmtBytes(e.size)}</span>
+        <div class="fl-view" hidden></div></div>`).join("")}
     </div>`;
+
+  /* A list of file names you cannot open is a directory listing, not a way to
+     look at your own data - and All files is where everything the rest of the
+     app did not claim ends up, so it is exactly where being able to look
+     matters most. */
+  panel.addEventListener("click", async (ev) => {
+    const row = ev.target.closest && ev.target.closest(".fl-row");
+    if (!row || ev.target.closest(".fl-view")) return;
+    const box = row.querySelector(".fl-view");
+    if (row.classList.contains("open")) {
+      row.classList.remove("open");
+      box.hidden = true;
+      return;
+    }
+    row.classList.add("open");
+    box.hidden = false;
+    if (row.dataset.done) return;
+    row.dataset.done = "1";
+    box.innerHTML = '<p class="muted small">Reading...</p>';
+    try {
+      box.innerHTML = await previewHtml(rows[Number(row.dataset.i)]);
+    } catch (err) {
+      box.innerHTML = '<p class="muted small">That would not open: ' +
+        esc(String((err && err.message) || err)) + "</p>";
+    }
+  });
+}
+
+/* Everything is built from a blob made here, so looking at a file is still
+   the file never leaving the machine.
+ *
+ * What each kind gets is decided by what the Content-Security-Policy actually
+ * permits, not by what would be nice: `img-src` and `media-src` both allow
+ * `blob:`, so pictures, audio and video play inline. `object-src` is 'none'
+ * and there is no `frame-src`, so a PDF cannot be embedded however much one
+ * would like it to be - it gets a link that opens it in its own tab, which is
+ * still local and still nothing fetched. */
+const PREVIEW_MAX = 2 * 1024 * 1024;
+
+async function previewHtml(entry) {
+  const src = current.sources[entry.src || 0];
+  if (!src || !src.file) return '<p class="muted small">That archive is no longer open.</p>';
+  const name = entry.name.split("/").pop();
+  const ext = (name.split(".").pop() || "").toLowerCase();
+
+  const blobFor = async (type) => {
+    const b = await MZip.extractBlob(src.file, entry, type);
+    const url = URL.createObjectURL(b);
+    objectUrls.push(url);
+    return url;
+  };
+
+  if (["jpg", "jpeg", "png", "gif", "webp", "bmp", "avif"].includes(ext)) {
+    return '<img class="fl-img" alt="" src="' + (await blobFor(MParse.mimeOf(name))) + '">';
+  }
+  if (MParse.heifFamily && MParse.heifFamily(name) && typeof MHeif !== "undefined") {
+    const jpeg = await MHeif.toJpegBlob(await MZip.extract(src.file, entry), 0.85);
+    const url = URL.createObjectURL(jpeg);
+    objectUrls.push(url);
+    return '<img class="fl-img" alt="" src="' + url + '">';
+  }
+  if (["mp4", "mov", "m4v", "webm"].includes(ext)) {
+    return '<video class="fl-media" controls preload="metadata" src="' +
+      (await blobFor(MParse.mimeOf(name))) + '"></video>';
+  }
+  if (["mp3", "m4a", "wav", "aac", "ogg", "opus", "flac"].includes(ext)) {
+    return '<audio class="fl-media" controls preload="none" src="' +
+      (await blobFor(MParse.mimeOf(name))) + '"></audio>';
+  }
+
+  const TEXTY = ["json", "csv", "txt", "xml", "html", "htm", "vcf", "ics", "md", "log", "srt", "tsv"];
+  if (TEXTY.includes(ext)) {
+    if ((entry.size || 0) > PREVIEW_MAX) {
+      return '<p class="muted small">' + esc(fmtBytes(entry.size)) +
+        " of text, which is more than is worth putting on screen at once.</p>";
+    }
+    let text = await MZip.extractText(src.file, entry);
+    if (ext === "json") {
+      // Pretty-printed, because one line of minified JSON is not readable and
+      // this is the format most of an export arrives in.
+      try { text = JSON.stringify(JSON.parse(text), null, 2); } catch (e) { /* as written */ }
+    }
+    if (typeof MMoji !== "undefined" && MMoji.repair) text = MMoji.repair(text) || text;
+    return '<pre class="fl-text">' + esc(text.slice(0, 200000)) +
+      (text.length > 200000 ? "\n\n... cut here" : "") + "</pre>";
+  }
+
+  // Anything else - a PDF, a proprietary container - opens in its own tab.
+  const url = await blobFor(ext === "pdf" ? "application/pdf" : "application/octet-stream");
+  return '<p class="muted small">Muletto cannot draw a <code>.' + esc(ext) +
+    "</code> here" + (ext === "pdf"
+      ? ", because the page refuses embedded documents on purpose"
+      : "") + '. <a href="' + url + '" target="_blank" rel="noopener noreferrer">' +
+    "Open it in a new tab</a> - still from this machine, nothing fetched.</p>";
 }
 
 /* ---------- Wiring ---------- */
