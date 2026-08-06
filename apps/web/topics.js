@@ -1552,7 +1552,53 @@ const MTopics = (function () {
   const has = (key) => TOPICS.some((t) => t.key === key);
   const reset = () => REAL.clear();
 
-  return Object.assign(api, { detect, draw, has, reset, TOPICS });
+  /* Counting the file-shaped topics without waiting to be asked.
+   *
+   * The sidebar said Calendar 2 until you clicked it, and then said 7 - which
+   * is a number correcting itself in front of you, and reads as a bug even
+   * when it is not. Run once when the library opens instead, in the
+   * background, so it is right before anybody looks.
+   *
+   * Cheap on purpose: these read the files but count without building any DOM,
+   * and only the three whose unit is not files need it at all. */
+  async function precount(lib, ctx) {
+    const jobs = [
+      ["calendar", findCalendar, async (m) => {
+        const read = await readEach(ctx, m[0].files, 60, true);
+        return read.reduce((n, r) => n + parseIcs(r.body).length, 0);
+      }],
+      ["activity", findActivity, async (m) => {
+        let n = 0;
+        for (const f of m[0].files) {
+          if ((f.size || 0) > 20 * 1024 * 1024) continue;
+          const s = sourceOf(ctx, f);
+          if (!s || !s.file) continue;
+          try {
+            const product = (ACTIVITY_FILE.exec(f.name) || [])[1] || "Google";
+            n += parseActivity(await MZip.extractText(s.file, f), product).length;
+          } catch (err) { /* counted as none */ }
+        }
+        return n;
+      }],
+      ["mail", findMail, async (m) => {
+        if (typeof MMbox === "undefined") return 0;
+        const f = m[0].files[0];
+        const s = sourceOf(ctx, f);
+        if (!s || !s.file) return 0;
+        const res = await MMbox.index(await MZip.streamEntry(s.file, f),
+          { limit: 20000, bodyBytes: 0 });   // headers only: this is just a count
+        return res.messages.length;
+      }],
+    ];
+    for (const [key, find, count] of jobs) {
+      try {
+        const m = find(lib, ctx);
+        if (m && m.length) setCount(key, await count(m));
+      } catch (err) { /* leave the file count standing */ }
+    }
+  }
+
+  return Object.assign(api, { detect, draw, has, reset, precount, TOPICS });
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MTopics;

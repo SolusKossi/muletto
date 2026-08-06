@@ -27,7 +27,13 @@ const MStore = (function () {
      sectioned-CSV work an existing library kept showing the old three tables
      and there was nothing on screen to say why. When this does not match what
      is stored, the library is offered for re-reading instead of restored. */
-  const PARSE_VERSION = 4;
+  /* Bumped whenever the reading changes in a way a stored library would
+     carry forward wrongly. Provider detection counts: an Apple export saved
+     before AppleCare and the other archive names were recognised comes back
+     still labelled as itself, and every view built on the provider - the
+     grouping in the sidebar, the "not read in a tailored way" notice - goes
+     on being wrong until it is read again. */
+  const PARSE_VERSION = 5;
   const KEY = "current";
 
   /* One database, four stores, opened from three files. They must all name the

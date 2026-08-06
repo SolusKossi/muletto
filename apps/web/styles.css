@@ -490,7 +490,9 @@ footer.site.flush::before { display: none; }
    the dots and thicken the coastline along with the geography. --z carries the
    current zoom (view width over world width) so marks can be divided back down
    to a steady size on screen, and strokes opt out of scaling entirely. */
-.sc-grid { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+/* A graticule is reference, so it sits under the coastline and stays faint. */
+.sc-grid { stroke: #b9cbdb; stroke-width: 0.6; stroke-opacity: .5;
+  vector-effect: non-scaling-stroke; }
 .sc-dots circle { fill: var(--accent); fill-opacity: .55;
   r: calc(var(--r, 3) * var(--z, 1) * 1px); }
 .scatter { cursor: grab; touch-action: none; }
@@ -1004,8 +1006,19 @@ body.no-scroll { overflow: hidden; }
 
 .ex-minimap { border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
 .ex-minimap svg { display: block; width: 100%; height: 200px; }
-.mm-sea { fill: #eaf1f8; }
-.mm-land { fill: #dfe5ec; stroke: #c6ced9; stroke-width: 0.4; }
+/* Read as a map rather than as a chart with a shape on it.
+
+   Land and sea were within a hair of each other in lightness - #dfe5ec on
+   #eaf1f8 - so the coastline did no work and the whole thing looked like a
+   diagram. Real separation between the two, a coastline that is actually
+   drawn, and a graticule quiet enough to be reference rather than pattern.
+
+   Still nothing fetched: this is Natural Earth 1:110m coastline, public
+   domain, baked into the page at build time. Plotting where somebody has been
+   must not involve asking a map server where that is. */
+.mm-sea { fill: #dce9f4; }
+.mm-land { fill: #f2f0ea; stroke: #9aa7b4; stroke-width: 0.5;
+  stroke-linejoin: round; paint-order: fill; }
 .mm-dots circle { fill: var(--accent); fill-opacity: 0.55; }
 .mm-here { fill: #e5484d; stroke: #fff; stroke-width: 0.8; }
 
@@ -2928,3 +2941,18 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .ex-cover em { font-style: normal; font-size: 15px; font-weight: 600; color: var(--ink);
   font-variant-numeric: tabular-nums; flex: none; }
 .ex-cover-clean { border-left-color: var(--line); }
+
+/* Sections this export has nothing for. Named so nobody wonders whether they
+   were lost, but not offered as somewhere to go. */
+.ex-none { margin: 10px 11px 0; font-size: 11.5px; line-height: 1.45; color: var(--muted); }
+
+/* The tag sits on its own word, not across the row.
+
+   `.cal-what span` and `.cal-tag` both match the tag - it is a span - and the
+   two-class selector wins on specificity no matter which is written last, so
+   the tag inherited `flex: 1 1 100%` and stretched to 640px of an 844px row.
+   Named through its parent to outrank it. */
+.cal-what { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.cal-what > b { flex: 1 1 100%; }
+.cal-what > span:not(.cal-tag) { flex: 1 1 100%; }
+.cal-what > .cal-tag { flex: 0 0 auto; align-self: flex-start; width: auto; }
