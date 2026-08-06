@@ -362,6 +362,30 @@ const MParse = (function () {
         head[8] === 0x57 && head[9] === 0x45 && head[10] === 0x42 && head[11] === 0x50) {
       return { kind: "photo", mime: "image/webp", ext: ".webp" };
     }
+    /* "From " at the very start is an mbox, and mbox is mail.
+     *
+     * Samsung's Pinall folder names three of them hashCode1539051287 and so
+     * on, with no extension - sitting beside the PNGs this check already
+     * rescues, and unread for exactly the same reason. The mail reader only
+     * ever looked for `.mbox`.
+     *
+     * The separator is "From " followed by a sender, so the space matters:
+     * without it this would claim any text file beginning with the word From. */
+    if (head[0] === 0x46 && head[1] === 0x72 && head[2] === 0x6f &&
+        head[3] === 0x6d && head[4] === 0x20) {
+      return { kind: "mail", mime: "application/mbox", ext: ".mbox" };
+    }
+    /* "From:" with a colon is not mail, and the difference is that one byte.
+     *
+     * Samsung Internet saves a web page as MHTML, which is a MIME document -
+     * so it opens "From: <Saved by WebKit>" and looks exactly like a message
+     * until you read the fifth character. Three of them sit unnamed in a real
+     * Samsung export as hashCode1539051287 and the like. Calling those mail
+     * would have put somebody browsing history in their inbox. */
+    if (head[0] === 0x46 && head[1] === 0x72 && head[2] === 0x6f &&
+        head[3] === 0x6d && head[4] === 0x3a) {
+      return { kind: "page", mime: "multipart/related", ext: ".mht" };
+    }
     return null;
   }
 
@@ -389,6 +413,16 @@ const MParse = (function () {
       let hit = null;
       try { hit = sniff(await MZip.readHead(file, rec.entry, 32)); } catch { /* unreadable */ }
       if (!hit) continue;
+      /* Mail is not media, so it stays in the file list and is marked instead.
+         The Mail view looks for the mark as well as for the extension, which
+         is the whole point: the file never had one. */
+      if (hit.kind === "mail" || hit.kind === "page") {
+        const as = hit.kind === "mail" ? "mbox" : "webpage";
+        rec.entry.sniffedAs = as;
+        rec.sniffedAs = as;
+        if (as === "webpage") rec.name = rec.name + " (saved web page)";
+        continue;
+      }
       lib.files.splice(lib.files.indexOf(rec), 1);
       lib.media.push({
         name: rec.name + hit.ext, path: rec.path, size: rec.size, entry: rec.entry,
