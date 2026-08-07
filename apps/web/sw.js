@@ -28,14 +28,14 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "bec57e433f91";
+const VERSION = "d9db5b0592b1";
 const PRECACHE = [
   "/app.html",
-  "/styles.css?v=d2e0c600",
+  "/styles.css?v=629548cc",
   "/notify.js?v=7515182b",
   "/tips.js?v=0bdfdea4",
   "/jobs.js?v=3f996b9f",
-  "/store.js?v=0ad5ecd8",
+  "/store.js?v=1c0b6858",
   "/derived.js?v=b52d2219",
   "/credits.js?v=54539768",
   "/donate.js?v=e8f71043",
@@ -55,18 +55,18 @@ const PRECACHE = [
   "/diagnose.js?v=d97b3ff8",
   "/contribute.js?v=c3b34297",
   "/mojibake.js?v=38849a41",
-  "/parsers.js?v=d8a950c0",
+  "/parsers.js?v=43bbc88d",
   "/catalog.js?v=d7b44ec6",
   "/insights.js?v=48350dd1",
   "/basemap.js?v=cbb6dfca",
   "/rail.js?v=b4bc5944",
   "/charts.js?v=5c0f8d4a",
   "/topics.js?v=77b9cdfa",
-  "/views.js?v=a81b6d13",
+  "/views.js?v=eee0a621",
   "/export.js?v=58dc2cdb",
-  "/explorer.js?v=ea73dd21",
+  "/explorer.js?v=1a736488",
   "/disclose.js?v=b24e640b",
-  "/app.js?v=8da723bf",
+  "/app.js?v=4082bbc7",
   "/swreg.js?v=266bec3b",
   "/fonts/host-grotesk-var-italic.woff2",
   "/fonts/host-grotesk-var.woff2"

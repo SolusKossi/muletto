@@ -615,6 +615,123 @@ function enrich(file, extras) {
    pair is a real photograph with a real caption beside it rather than two
    invented rectangles. Named the way Snapchat names them - a shared prefix,
    then -main and -overlay. */
+/* A Reddit export, which is a flat bag of CSVs and nothing else.
+ *
+ * Built here rather than in make-sample-data.py because it needs no photos -
+ * it is text all the way down, which is what makes Reddit the easiest export
+ * any service ships and the least like the others.
+ *
+ * The IP column is in it on purpose. Reddit really does put the address you
+ * were connected from on every post and every comment, and a sample that
+ * quietly left that out would be demonstrating a friendlier export than the
+ * one people actually receive. */
+function buildReddit() {
+  const NL = String.fromCharCode(10);
+  const rnd = activitySeed(31);
+  const start = Date.UTC(2019, 4, 2), end = Date.UTC(2026, 6, 12);
+  const SUBS = ["DataHoarder", "selfhosted", "norge", "privacy", "photography",
+                "homelab", "AskHistorians", "bergen", "degoogle", "sourdough"];
+  const TITLES = [
+    "Finally got my Google Takeout down to something readable",
+    "What do you all do with the HEIC files?",
+    "Is there a way to see which photos are in both exports?",
+    "Six years of Snapchat memories, all links, all expired",
+    "PSA: your Reddit export has your IP on every comment",
+    "Best way to date photos that lost their EXIF?",
+    "Anyone else request everything at once and regret it?",
+    "Cheapest 4TB drive that is not garbage",
+  ];
+  const BODIES = [
+    "Turns out the dates were in a sidecar the whole time.",
+    "Took about a week to arrive, which is faster than I expected.",
+    "I ended up writing a script, but there must be an easier way.",
+    "This is the thing nobody warns you about before you request it.",
+    "Worth doing before the links expire, whatever you decide after.",
+    "Same here - I only noticed when I opened it on a different machine.",
+    "Thanks, that is exactly what I was looking for.",
+  ];
+  const IPS = ["81.166.4.10", "77.16.9.4", "45.10.2.7", "93.44.18.2"];
+
+  const stamp = (t) => new Date(t).toISOString().slice(0, 19) + "+00:00";
+  const pick = (a) => a[Math.floor(rnd() * a.length)];
+  const q = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+  const when = () => {
+    const t = new Date(start + rnd() * (end - start));
+    const r = rnd();
+    t.setUTCHours(r < 0.4 ? 19 + Math.floor(rnd() * 5)
+      : r < 0.75 ? 9 + Math.floor(rnd() * 8) : Math.floor(rnd() * 24),
+      Math.floor(rnd() * 60), Math.floor(rnd() * 60));
+    return +t;
+  };
+
+  const posts = [];
+  for (let i = 0; i < 96; i++) {
+    const t = when(), sub = pick(SUBS), id = "t3_" + (100000 + i).toString(36);
+    posts.push({ t, id, sub,
+      perma: "/r/" + sub + "/comments/" + id.slice(3) + "/",
+      line: [id, "/r/" + sub + "/comments/" + id.slice(3) + "/", stamp(t), pick(IPS),
+             sub, "", q(pick(TITLES)), "", q(pick(BODIES))].join(",") });
+  }
+  const comments = [];
+  for (let i = 0; i < 340; i++) {
+    const t = when(), sub = pick(SUBS), id = "t1_" + (200000 + i).toString(36);
+    comments.push({ t, id, sub,
+      perma: "/r/" + sub + "/comments/x/" + id.slice(3) + "/",
+      line: [id, "/r/" + sub + "/comments/x/" + id.slice(3) + "/", stamp(t), pick(IPS),
+             sub, "", "", "", q(pick(BODIES))].join(",") });
+  }
+  posts.sort((a, b) => b.t - a.t);
+  comments.sort((a, b) => b.t - a.t);
+
+  const votes = (n, prefix) => {
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const id = prefix + (300000 + i).toString(36);
+      out.push([id, "/r/" + pick(SUBS) + "/comments/" + id.slice(3) + "/",
+                rnd() < 0.86 ? "up" : "down"].join(","));
+    }
+    return out.join(NL);
+  };
+
+  const WHO = ["bjorn_a", "ingrid_k", "sanne_m"];
+  const msgs = [];
+  for (let i = 0; i < 34; i++) {
+    const t = when();
+    const other = "u/" + pick(WHO);
+    const mine = rnd() < 0.5;
+    msgs.push({ t, line: ["t4_" + (400000 + i).toString(36),
+      "/message/messages/" + (400000 + i).toString(36) + "/",
+      "thr_" + Math.floor(i / 3), stamp(t), pick(IPS),
+      mine ? "u/martin_l" : other, mine ? other : "u/martin_l",
+      q("Re: " + pick(TITLES).slice(0, 40)), q(pick(BODIES))].join(",") });
+  }
+  msgs.sort((a, b) => b.t - a.t);
+
+  const idPerma = (x) => x.id + "," + x.perma;
+
+  return [
+    ["posts.csv", "id,permalink,date,ip,subreddit,gildings,title,url,body" + NL +
+      posts.map((x) => x.line).join(NL) + NL],
+    ["comments.csv", "id,permalink,date,ip,subreddit,gildings,link,parent,body" + NL +
+      comments.map((x) => x.line).join(NL) + NL],
+    ["post_votes.csv", "id,permalink,direction" + NL + votes(180, "t3_") + NL],
+    ["comment_votes.csv", "id,permalink,direction" + NL + votes(420, "t1_") + NL],
+    ["saved_posts.csv", "id,permalink" + NL +
+      posts.slice(0, 22).map(idPerma).join(NL) + NL],
+    ["saved_comments.csv", "id,permalink" + NL +
+      comments.slice(0, 31).map(idPerma).join(NL) + NL],
+    ["hidden_posts.csv", "id,permalink" + NL +
+      posts.slice(30, 34).map(idPerma).join(NL) + NL],
+    ["subscribed_subreddits.csv", "subreddit" + NL + SUBS.join(NL) + NL],
+    ["messages.csv", "id,permalink,thread_id,date,ip,from,to,subject,body" + NL +
+      msgs.map((x) => x.line).join(NL) + NL],
+    ["friends.csv", "username,note" + NL + WHO.map((u) => u + ",").join(NL) + NL],
+    ["statistics.csv", "statistic,value" + NL +
+      "account_created," + stamp(start) + NL +
+      "comment_karma,4187" + NL + "post_karma,912" + NL],
+  ];
+}
+
 function enrichSnapchat() {
   const file = "snapchat-export.zip";
   const full = path.join(SAMPLES, file);
@@ -647,4 +764,16 @@ console.log("\nGiving the samples one of everything\n");
 enrich("apple-export.zip", APPLE_EXTRA);
 enrich("google-takeout.zip", GOOGLE_EXTRA);
 enrichSnapchat();
+
+/* Reddit is written whole rather than added to something, because there is
+   no Reddit archive to add to - it is the seventh sample and the only one
+   that is text all the way down. */
+{
+  const out = path.join(SAMPLES, "reddit-export.zip");
+  const files = buildReddit().map(([name, body]) =>
+    ({ name, bytes: Buffer.from(body, "utf8") }));
+  fs.writeFileSync(out, writeZip(files));
+  console.log("  reddit-export.zip: " + files.length + " files, " +
+    (fs.statSync(out).size / 1024).toFixed(1) + " KB");
+}
 console.log("\nRun node tools/build-site.js next, so the cache stamps move.\n");

@@ -417,22 +417,29 @@
    *
    * So the view opens on the shape and the conversations are one click away.
    * Nothing here is scored, inferred or guessed at - every number is a count
-   * of something that is in the export, and every sentence is built from one.
+   * of something that is in the export.
+   *
+   * Two things this got wrong first time round and now does not:
+   *
+   *   A strip per person is eight charts stacked, and eight charts stacked is
+   *   a wall. One line of volume over the whole record says "this is how much
+   *   you talked and when" in a single glance, and who you talked to is a
+   *   ranked list further down where it belongs.
+   *
+   *   Every panel was a <section>, and `#explorer section { padding: 0 }`
+   *   strips padding inside the explorer at a specificity no class can beat -
+   *   so every box rendered flush against its own border. The same trap had
+   *   already been fixed on the health page and written down, and it still
+   *   caught this. They are divs.
    */
   let chatMode = "stats";
 
   const MONTHS = ["January", "February", "March", "April", "May", "June", "July",
                   "August", "September", "October", "November", "December"];
-  const shortDay = (t) => {
-    const d = new Date(t);
-    return d.getDate() + " " + MONTHS[d.getMonth()].slice(0, 3) + " " + d.getFullYear();
-  };
 
-  /* Two letters from a name, the way every address book does it.
-   *
-   * Split on punctuation as well as spaces, because half the names in a chat
-   * export are handles - ingrid.k, bjorn_a - and splitting on whitespace
-   * alone gave every one of them a single letter. */
+  /* Two letters from a name, the way every address book does it. Split on
+     punctuation as well as spaces, because half the names in a chat export
+     are handles - ingrid.k, bjorn_a - and whitespace alone gives them one. */
   const initials = (name) => {
     const parts = String(name || "?").trim().split(/[\s._-]+/).filter(Boolean);
     return parts.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join("") || "?";
@@ -441,20 +448,25 @@
   function chatStatsHtml(people, lib) {
     const viz = typeof MCharts !== "undefined" ? MCharts : null;
     const all = [];
-    for (const p of people) for (const m of p.messages) if (m.at) all.push({ t: +m.at });
+    for (const p of people) for (const m of p.messages) if (m.at) all.push({ t: +m.at, v: 1 });
     all.sort((a, b) => a.t - b.t);
     const total = people.reduce((n, p) => n + p.messages.length, 0);
     if (!total) return "";
 
     const from = all.length ? all[0].t : 0;
     const to = all.length ? all[all.length - 1].t : 0;
-    const years = from && to
-      ? Math.max(1, Math.round((to - from) / (365.25 * 24 * 3600 * 1000))) : 0;
 
-    /* ---- the strips ---- */
-    const withDates = people
-      .map((p) => ({ p, pts: p.messages.filter((m) => m.at).map((m) => ({ t: +m.at })) }))
-      .filter((x) => x.pts.length);
+    /* One line. Messages per day, summed into the buckets the chart draws, so
+       a fortnight nobody spoke is a gap and a week of constant talk is a
+       spike - which is what "over time" is supposed to show. */
+    const perDay = new Map();
+    for (const m of all) {
+      const d = new Date(m.t);
+      const k = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+      perDay.set(k, (perDay.get(k) || 0) + 1);
+    }
+    const days = [...perDay.entries()].sort((a, b) => a[0] - b[0])
+      .map(([t, v]) => ({ t, v }));
 
     let axis = "";
     if (from && to) {
@@ -467,15 +479,6 @@
       }
     }
 
-    const strips = withDates.map(({ p, pts }) =>
-      '<div class="cs-person">' +
-        '<span class="cs-av">' + esc(initials(p.name)) + "</span>" +
-        '<span class="cs-who"><b>' + esc(p.name) + "</b><em>" +
-          plural(p.messages.length, "message", "messages") + "</em></span>" +
-        '<span class="cs-strip">' +
-          (viz ? viz.ticks(pts, { from, to, w: 900, h: 26 }) : "") + "</span>" +
-      "</div>").join("");
-
     /* ---- what changed ---- */
     const cards = [];
 
@@ -484,26 +487,22 @@
       const y = new Date(m.t).getFullYear();
       perYear.set(y, (perYear.get(y) || 0) + 1);
     }
-    const ranked = [...perYear.entries()].sort((a, b) => b[1] - a[1]);
-    if (ranked.length > 1) {
-      const [bestYear, bestN] = ranked[0];
+    const rankedYears = [...perYear.entries()].sort((a, b) => b[1] - a[1]);
+    if (rankedYears.length > 1) {
+      const [bestYear, bestN] = rankedYears[0];
       const rest = [...perYear.entries()].filter(([y]) => y !== bestYear);
       const avg = rest.reduce((s, [, n]) => s + n, 0) / Math.max(1, rest.length);
       const over = avg ? Math.round(((bestN - avg) / avg) * 100) : 0;
-      cards.push({
-        icon: "chart",
-        title: "You spoke most in " + bestYear,
+      cards.push({ icon: "chart", title: "You spoke most in " + bestYear,
         body: plural(bestN, "message", "messages") + " that year" +
-          (over > 8 ? ", about " + over + " percent above your other years" : "") + ".",
-      });
+          (over > 8 ? ", about " + over + " percent above your other years" : "") + "." });
     }
 
-    /* Somebody who is in every year of the record. Counted, not judged - the
-       card says how many years, and the reader decides what that means. */
     const spanYears = new Set([...perYear.keys()]);
     let constant = null;
-    for (const { p, pts } of withDates) {
-      const ys = new Set(pts.map((x) => new Date(x.t).getFullYear()));
+    for (const p of people) {
+      const ys = new Set(p.messages.filter((m) => m.at)
+        .map((m) => new Date(m.at).getFullYear()));
       let hit = 0;
       for (const y of spanYears) if (ys.has(y)) hit++;
       if (!constant || hit > constant.hit ||
@@ -512,25 +511,21 @@
       }
     }
     if (constant && constant.hit >= Math.max(2, spanYears.size - 1)) {
-      cards.push({
-        icon: "person",
+      cards.push({ icon: "person",
         title: esc(constant.p.name) + " stayed a constant",
         body: "In every one of the " + constant.hit + " years this export covers" +
           (constant.hit === spanYears.size ? "" : " but one") + ", with " +
-          plural(constant.p.messages.length, "message", "messages") + " in total.",
-      });
+          plural(constant.p.messages.length, "message", "messages") + " in total." });
     }
 
     const run = viz && viz.busiestRun ? viz.busiestRun(all) : null;
     if (run) {
-      cards.push({
-        icon: "clock",
+      cards.push({ icon: "clock",
         title: "Your messages cluster between " + run.from + " and " + run.to,
         body: run.share + " percent of everything falls in those " + run.hours +
           " hours, against the " + Math.round((run.hours / 24) * 100) +
           " percent an even day would put there." +
-          (run.quiet ? " Your quietest hour is " + run.quiet + "." : ""),
-      });
+          (run.quiet ? " Your quietest hour is " + run.quiet + "." : "") });
     }
 
     const rail = cards.length
@@ -547,59 +542,62 @@
       : "";
 
     const week = viz
-      ? '<section class="cs-card"><h3>A week in messages</h3>' +
+      ? '<div class="cs-card"><h3>A week in messages</h3>' +
         '<div class="cs-week">' +
           '<div class="cs-clockpanel"><h4>By hour of the day</h4>' +
-            '<div class="cs-clockrow">' + viz.clock(all, { size: 210 }) +
+            '<div class="cs-clockrow">' + viz.clock(all, { size: 190 }) +
             '<div class="cs-clocktext">' + runLine + "</div></div></div>" +
           '<div class="cs-heat"><h4>By day and hour</h4>' +
-            viz.grid(all, { noun: "message" }) + "</div>" +
-        "</div></section>"
+            '<div class="cs-heatscroll">' + viz.grid(all, { noun: "message" }) + "</div>" +
+          "</div>" +
+        "</div></div>"
       : "";
 
-    /* ---- where they came from ---- */
+    /* ---- who, and from where ---- */
+    const top = people.slice(0, 8).map((p) => ({
+      name: p.name, n: p.messages.length,
+      note: [...p.platforms.values()].join(", "),
+    }));
+
     const plats = new Map();
     for (const p of people) for (const [slug, label] of p.platforms) plats.set(slug, label);
     const joined = people.filter((p) => p.platforms.size > 1).length;
-    const platRow = plats.size
-      ? '<section class="cs-plat"><div class="cs-platwhat"><b>' +
-          (plats.size > 1 ? "Across " + [...plats.values()].join(", ") : [...plats.values()][0]) +
-          "</b>" +
-          '<p class="muted small">' + (joined
-            ? plural(joined, "person appears", "people appear") +
-              " on more than one, joined here by name."
-            : "Exports do not share an identifier between platforms, so only " +
-              "identical names are joined automatically.") + "</p></div>" +
+
+    const who = '<div class="cs-card"><h3>Who you talk to</h3>' +
+      (viz ? viz.ranked(top, { limit: 8 }) : "") + "</div>";
+
+    const where = plats.size
+      ? '<div class="cs-card"><h3>Where the messages came from</h3>' +
         '<div class="cs-chips">' + [...plats.entries()].map(([slug, label]) =>
           '<span class="cs-chip"><i data-icon="' + esc(slug) + '"></i>' +
-          esc(label) + "</span>").join("") + "</div></section>"
+          esc(label) + "</span>").join("") + "</div>" +
+        '<p class="muted small cs-platnote">' + (joined
+          ? plural(joined, "person appears", "people appear") +
+            " on more than one, joined here by name."
+          : "Exports do not share an identifier between platforms, so only " +
+            "identical names are joined automatically. Open anyone and use " +
+            '"Same person as" to join the rest yourself.') + "</p></div>"
       : "";
 
     return '<div class="cs">' +
-      '<header class="cs-head"><h2>Chat history</h2>' +
-        '<p class="muted">' + (years ? plural(years, "year", "years") + " of " : "") +
-        "conversations, grouped by the people in them.</p>" +
-        '<p class="cs-sum"><b>' + num(total) + "</b> messages " +
-        '<i aria-hidden="true">&middot;</i> <b>' + num(people.length) + "</b> " +
-        (people.length === 1 ? "person" : "people") +
-        (from ? ' <i aria-hidden="true">&middot;</i> ' + esc(shortDay(from)) +
-          " to " + esc(shortDay(to)) : "") + "</p></header>" +
-
       '<div class="cs-main">' +
-        '<section class="cs-card"><h3>Your conversations over time</h3>' +
+        '<div class="cs-card"><h3>Messages over time</h3>' +
+          '<p class="muted small">Every message, by the day it was sent.</p>' +
           (axis ? '<div class="cs-years">' + axis + "</div>" : "") +
-          '<div class="cs-people">' + strips + "</div>" +
-          '<div class="cs-legend"><span class="cs-key">' +
-            '<i class="cs-keyline"></i>Each mark is a message</span>' +
-            '<span class="cs-key">Fewer' +
-              [0.28, 0.45, 0.7, 0.95].map((o) =>
-                '<i class="cs-keysw" style="opacity:' + o + '"></i>').join("") +
-            "More</span></div>" +
-        "</section>" +
+          '<div class="cs-vol">' +
+            (viz && days.length > 3
+              ? viz.bars(days, { w: 900, h: 96, n: 130, meta: { unit: "messages" } })
+              : "") + "</div>" +
+          '<div class="cs-legend"><span class="cs-key">Fewer' +
+            [0.35, 0.55, 0.75, 0.95].map((o) =>
+              '<i class="cs-keysw" style="opacity:' + o + '"></i>').join("") +
+            "More messages that day</span></div>" +
+        "</div>" +
         rail +
       "</div>" +
 
-      week + platRow +
+      week +
+      '<div class="cs-two">' + who + where + "</div>" +
 
       '<div class="cs-go"><button class="btn primary" id="cs-open">Explore the full chat ' +
         "history</button>" +
@@ -645,7 +643,17 @@
 
     /* A search is a request to look inside the messages, so it goes straight
        to them rather than making somebody click past a summary first. */
+    /* The chat view is the one place the scroller is told to stop scrolling.
+     *
+     * `.ex-scroll.fills` sets `overflow: hidden` and hands its height to the
+     * two-pane conversation app, which wants a fixed frame with the thread
+     * scrolling inside it. That is right for the conversations and wrong for
+     * this, which is a long document - and it is why the summary could not be
+     * scrolled past the first screen at all. */
+    const scroller = document.querySelector("#ex-scroll");
+
     if (chatMode === "stats" && !q) {
+      if (scroller) scroller.classList.remove("fills");
       panel.innerHTML = chatStatsHtml(people, lib);
       const go = panel.querySelector("#cs-open");
       if (go) {
@@ -661,6 +669,7 @@
       return;
     }
 
+    if (scroller) scroller.classList.add("fills");
     const multi = people.filter((p) => p.platforms.size > 1).length;
     panel.innerHTML = `
       <button class="cs-back" id="cs-back" type="button">

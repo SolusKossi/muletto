@@ -490,7 +490,7 @@
 
           ${state.ctx.demo ? `<div class="ex-demo">
             <strong>This is sample data</strong>
-            <p>Five invented exports, so you can see what is in one before using anything of
+            <p>Six invented exports, so you can see what is in one before using anything of
             your own. Look at all of it - open any file, read the messages, scroll the years.
             Saving, comparing and describing are held back until it is your own data, and
             nothing here is written to your browser.</p>

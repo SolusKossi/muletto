@@ -1196,6 +1196,207 @@ const MParse = (function () {
       "library as black squares.");
   }
 
+  /* ---------- Reddit ----------
+   *
+   * A Reddit export is the plainest thing any of these services ships: a flat
+   * bag of CSVs, no folder, no manifest, no index page. That makes it easy to
+   * read and easy to get wrong, because "posts.csv" is a name anything could
+   * use - hence the detection on the set rather than on any one of them.
+   *
+   * Written from the format rather than from anybody's reader. There is a good
+   * open-source viewer for these exports, and it is AGPL, which Muletto's
+   * licence cannot take. The shape of a CSV is a fact and not the author's to
+   * license, so this reads the files and owes that project nothing but the
+   * courtesy of saying so.
+   *
+   * Columns are matched by pattern, never by position. Reddit has changed
+   * these before and will again, and a reader that assumes column four is the
+   * subreddit turns into silent nonsense the day they insert a column.
+   */
+  const RED_KIND = [
+    [/^posts?\.csv$/i, "posts", "Posts"],
+    [/^comments?\.csv$/i, "comments", "Comments"],
+    [/^post_votes?\.csv$/i, "post_votes", "Votes on posts"],
+    [/^comment_votes?\.csv$/i, "comment_votes", "Votes on comments"],
+    [/^saved_posts?\.csv$/i, "saved_posts", "Saved posts"],
+    [/^saved_comments?\.csv$/i, "saved_comments", "Saved comments"],
+    [/^hidden_posts?\.csv$/i, "hidden", "Hidden posts"],
+    [/^subscribed_subreddits?\.csv$/i, "subs", "Subreddits you follow"],
+    [/^messages?\.csv$/i, "messages", "Private messages"],
+    [/^chat_history\.csv$/i, "chat", "Chat"],
+    [/^drafts?\.csv$/i, "drafts", "Drafts"],
+    [/^friends?\.csv$/i, "friends", "Friends"],
+    [/^linked_identities\.csv$/i, "identities", "Linked accounts"],
+    [/^ip_logs?\.csv$/i, "iplog", "Sign-in addresses"],
+  ];
+
+  const redCol = (cols, re) => cols.findIndex((c) => re.test(String(c || "")));
+  const redAt = (row, i) => (i >= 0 ? parseDate(row[i]) : null);
+  const redVal = (row, i) => (i >= 0 ? String(row[i] == null ? "" : row[i]).trim() : "");
+
+  /* A subreddit comes back as "r/name", "/r/name" or a bare name depending on
+     which file it is in. One spelling, so the counts add up. */
+  const redSub = (v) => {
+    const s = String(v || "").trim().replace(/^\/?r\//i, "").replace(/\/$/, "");
+    return s ? "r/" + s : "";
+  };
+
+  async function reddit(file, entries) {
+    const lib = emptyLib("reddit", "Reddit");
+    await classifyFiles(lib, entries, file);
+
+    const csvs = withinBudget(entries.filter((e) => /\.csv$/i.test(e.name)));
+    noteDropped(lib, csvs.dropped, "record tables");
+
+    const found = new Map();
+    let withIp = 0, ipFiles = [];
+
+    for (const e of csvs.taken) {
+      let text;
+      try { text = await MZip.extractText(file, e); } catch { continue; }
+      const name = base(e.name);
+      const hit = RED_KIND.find(([re]) => re.test(name));
+      const key = hit ? hit[1] : null;
+
+      for (const sec of csvSections(text)) {
+        const cols = sec.columns || [];
+        const rows = sec.rows || [];
+        if (!cols.length || !rows.length) continue;
+
+        lib.tables.push({
+          name: hit ? hit[2] : name.replace(/\.csv$/i, ""),
+          path: e.name,
+          columns: cols.map(niceColumn),
+          rows,
+        });
+        if (key) found.set(key, (found.get(key) || 0) + rows.length);
+
+        /* Reddit puts the address you were using on every post and every
+           comment. It is the single most surprising thing in the archive and
+           the reason this reader says so out loud rather than filing it as
+           column six of a table nobody opens. */
+        const ipIdx = redCol(cols, /^ip[ _]?(address)?$/i);
+        if (ipIdx >= 0 && rows.some((r) => redVal(r, ipIdx))) {
+          withIp += rows.filter((r) => redVal(r, ipIdx)).length;
+          if (ipFiles.indexOf(name) < 0) ipFiles.push(name);
+        }
+
+        const dateIdx = redCol(cols, /^(date|created|created_?utc|timestamp|sent)/i);
+        const subIdx = redCol(cols, /subreddit/i);
+        const bodyIdx = redCol(cols, /^(body|text|content|message)$/i);
+        const titleIdx = redCol(cols, /^(title|subject)$/i);
+
+        /* Posts and comments become timeline entries, labelled with the
+           subreddit they were in - which is the part somebody scrolling their
+           own history actually recognises. */
+        if ((key === "posts" || key === "comments") && dateIdx >= 0) {
+          let added = 0;
+          for (const r of rows) {
+            const at = redAt(r, dateIdx);
+            if (!at || added >= 4000) continue;
+            const sub = redSub(redVal(r, subIdx));
+            const what = redVal(r, titleIdx) ||
+              redVal(r, bodyIdx).replace(/\s+/g, " ").slice(0, 120);
+            lib.events.push({
+              at,
+              kind: key === "posts" ? "post" : "comment",
+              label: (key === "posts" ? "Posted" : "Commented") +
+                (sub ? " in " + sub : "") + (what ? ": " + what : ""),
+            });
+            added++;
+          }
+        }
+
+        /* Messages and chat become conversations, grouped by who they were
+           with. Reddit's own chat export has one row per message with the
+           channel on it, and the private-message file has a subject instead -
+           two shapes, one view. */
+        if (key === "messages" || key === "chat") {
+          const fromIdx = redCol(cols, /^(from|author|username|sender)$/i);
+          const toIdx = redCol(cols, /^(to|recipient)$/i);
+          const chanIdx = redCol(cols, /^(channel_name|conversation|thread_id)/i);
+
+          /* Which name is yours.
+           *
+           * A private-message file has a from and a to and says nowhere which
+           * account it belongs to - so grouping by "from" titled half the
+           * threads with the reader's own handle, which is nobody's idea of a
+           * conversation. The account holder is the name on both sides of
+           * almost every row, so it is the one that appears most often across
+           * the two columns together. */
+          const seen = new Map();
+          for (const r of rows) {
+            for (const i of [fromIdx, toIdx]) {
+              const v = redVal(r, i);
+              if (v) seen.set(v, (seen.get(v) || 0) + 1);
+            }
+          }
+          let me = "";
+          for (const [name, count] of seen) {
+            if (!me || count > seen.get(me)) me = name;
+          }
+
+          const byThread = new Map();
+          for (const r of rows) {
+            const text = redVal(r, bodyIdx);
+            if (!text) continue;
+            const from = redVal(r, fromIdx), to = redVal(r, toIdx);
+            /* Whoever is not you. If both or neither match, the channel name
+               or the subject is a better title than a guess. */
+            const other = from && from !== me ? from : to && to !== me ? to : "";
+            const title = other || redVal(r, chanIdx) || redVal(r, titleIdx) || "Reddit";
+            if (!byThread.has(title)) byThread.set(title, []);
+            byThread.get(title).push({
+              at: redAt(r, dateIdx), text, from,
+              direction: me && from === me ? "sent" : "received",
+              type: "text",
+            });
+          }
+          for (const [title, msgs] of byThread) {
+            msgs.sort((a, b) => (a.at || 0) - (b.at || 0));
+            lib.conversations.push({ title, messages: msgs });
+          }
+        }
+      }
+    }
+
+    if (withIp) {
+      lib.notes.push("Reddit includes the internet address you were connected from on " +
+        plural(withIp, "row", "rows") + " of this export" +
+        (ipFiles.length ? " (" + ipFiles.slice(0, 3).join(", ") + ")" : "") +
+        ". Nobody expects that in a copy of their own posts, and it is worth knowing " +
+        "before you put the folder anywhere shared.");
+    }
+
+    const posts = found.get("posts") || 0, comments = found.get("comments") || 0;
+    if (posts || comments) {
+      lib.insights.push({
+        n: (posts + comments).toLocaleString(),
+        label: "Posts and comments",
+        note: posts && comments
+          ? plural(posts, "post", "posts") + " and " + plural(comments, "comment", "comments")
+          : "in this export",
+        accent: true,
+      });
+    }
+    if (found.get("subs")) {
+      lib.insights.push({
+        n: (found.get("subs")).toLocaleString(),
+        label: "Subreddits followed", note: "at the time of the export",
+      });
+    }
+
+    /* What Reddit ships that this export does not have. Said only for Reddit,
+       because it is a statement about Reddit. */
+    if (!found.size) {
+      lib.notes.push("This looks like a Reddit export, but none of the files it usually " +
+        "contains were found. If the download was split, open the other parts alongside it.");
+    }
+
+    lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
+    return lib;
+  }
+
   async function parse(file, entries, detected, say) {
     const slug = detected && detected.slug;
     const finish = async (libPromise) => {
@@ -1212,6 +1413,7 @@ const MParse = (function () {
     if (slug === "apple") return finish(apple(file, entries));
     if (slug === "google") return finish(google(file, entries));
     if (slug === "samsung") return finish(samsung(file, entries));
+    if (slug === "reddit") return finish(reddit(file, entries));
     if (slug === "facebook" || slug === "instagram") {
       return finish(meta(file, entries, slug, detected.label));
     }

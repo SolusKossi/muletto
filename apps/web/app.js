@@ -264,6 +264,14 @@ const SIGNATURES = [
   { slug: "snapchat", label: "Snapchat", pats: ["memories_history", "chat_history", "snap_history", "json/account.json"] },
   { slug: "apple", label: "Apple", pats: ["icloud", "apple media services", "apple id account", "apple_id"] },
   { slug: "samsung", label: "Samsung", pats: ["samsung", "com.sec.", "com.samsung"] },
+  /* A Reddit export is a flat bag of CSVs with no folder and no manifest, so
+     it has to be recognised by the set of names rather than by one of them.
+     "posts.csv" alone is far too common to trust; the three together are not.
+     Matched with a leading boundary so a file called "my_posts.csv" from
+     somewhere else does not count. */
+  { slug: "reddit", label: "Reddit",
+    pats: ["subscribed_subreddits.csv", "post_votes.csv", "comment_votes.csv",
+           "saved_posts.csv", "hidden_posts.csv", "reddit/"] },
 ];
 /* Some providers are recognisable from the archive's own name, and that was
    being thrown away.
@@ -287,6 +295,8 @@ const NAME_SIGNATURES = [
   { slug: "samsung", label: "Samsung", test: (n) => /_gk\d+_\d{8}_access\.zip$/i.test(n) },
   { slug: "google", label: "Google Takeout", test: (n) => /^takeout[-_]/i.test(n) },
   { slug: "apple", label: "Apple", test: (n) => APPLE_ARCHIVES.test(n.replace(/\s*\(\d+\)\s*(?=\.zip$)/i, "")) },
+  /* Reddit names the download after the account and the date it was made. */
+  { slug: "reddit", label: "Reddit", test: (n) => /^export_[a-z0-9_-]{3,}_\d{8}\.zip$/i.test(n) },
 ];
 
 function detectProvider(entries, fileName) {
@@ -1075,7 +1085,7 @@ let current = { sources: [], lib: null, entries: null, query: "", demo: false };
    someone's browser is a bad one.
  *
  * Before this, opening the samples stored the library like any other, so the
- * next visit restored five archives of invented people and offered to carry on
+ * next visit restored six archives of invented people and offered to carry on
  * where they left off. Anyone who had tried the demo once and come back to use
  * the product for real would be looking at somebody else's photos with no
  * obvious way to tell. That is worse than confusing - it undermines the exact
@@ -1095,7 +1105,7 @@ function demoBlocked(what) {
   if (!current.demo) return false;
   MNotify.push("Not available on the sample data", {
     kind: "warn",
-    body: what + " works on your own library, not on the demonstration. These five " +
+    body: what + " works on your own library, not on the demonstration. These six " +
       "archives are invented people, nothing here is saved to your browser, and it is " +
       "all gone when you close the tab. Open a real export and everything is available.",
   });
@@ -1765,7 +1775,7 @@ function renderLibrary(root, lib, sources, entries, demo) {
     <div class="reopen demo-done">
       <div>
         <strong>That was the sample data</strong>
-        <p class="muted small">Invented people, five archives, nothing saved and nothing
+        <p class="muted small">Invented people, six archives, nothing saved and nothing
         uploaded. Your own export opens the same way - and everything that was held back
         on the demonstration works on it.</p>
       </div>
@@ -2655,7 +2665,7 @@ async function previewHtml(entry) {
 /* Sample exports shipped with the site, so the opener can be tried before a
    real export has arrived. They mimic the real folder layouts at a tiny size. */
 const SAMPLES = ["snapchat-export.zip", "apple-export.zip", "google-takeout.zip",
-                "instagram-export.zip", "samsung-export.zip"];
+                "instagram-export.zip", "samsung-export.zip", "reddit-export.zip"];
 
 /* A content stamp for the archives, written by the build.
  *
@@ -2673,7 +2683,7 @@ const SAMPLES = ["snapchat-export.zip", "apple-export.zip", "google-takeout.zip"
  * The name the reader sees is still the plain one - the stamp is stripped
  * before the File is made. */
 /* BUILD:SAMPLES */
-const SAMPLES_V = "094fe186";
+const SAMPLES_V = "27911389";
 /* END:SAMPLES */
 
 async function loadSamples(btn) {
@@ -2723,7 +2733,7 @@ async function loadSamples(btn) {
     if (out) {
       const note = document.createElement("div");
       note.className = "note";
-      note.innerHTML = "These are <strong>sample exports</strong>, not your data - five small archives " +
+      note.innerHTML = "These are <strong>sample exports</strong>, not your data - six small archives " +
         "shaped like the real thing. The same photo appears in more than one of them, which is what the " +
         "duplicate and similar-photo tools are finding.";
       out.insertBefore(note, out.firstChild.nextSibling);

@@ -43,12 +43,13 @@
   "notes": [
     "Everything is CSV. There is no JSON option and no media of any kind.",
     "Comment bodies are raw markdown with embedded newlines and commas, so a naive spreadsheet import mangles them.",
-    "Your private messages are in messages_archive.csv rather than messages.csv, which is easy to miss."
+    "Your private messages are in messages_archive.csv rather than messages.csv, which is easy to miss.",
+    "Every post and every comment in this export carries the internet address you were connected from when you wrote it. That is not something most people expect in a copy of their own words, and it is worth knowing before the folder goes anywhere shared."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "reddit",
+    "status": "reads the CSVs: posts, comments, votes, saved, subscriptions and private messages"
   },
   "faq": [
     {
