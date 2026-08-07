@@ -1060,8 +1060,25 @@ Sitemap: ${SITE}/sitemap.xml
          running - is silently absent. There are no dependencies to install. */
       buildCommand: "node tools/build-site.js",
       outputDirectory: "apps/web",
+      /* Deliberately off. Turning it on makes /guides work, and also makes
+         Vercel redirect /guides.html to /guides - which every canonical link,
+         og:url and sitemap entry on this site points at. The canonical would
+         then name a URL that redirects, which is the one thing a canonical
+         must not do. The rewrites below get the same convenience without
+         moving the address of anything. */
       cleanUrls: false,
       trailingSlash: false,
+      /* Typing the name without .html should find the page.
+       *
+       * A rewrite rather than a redirect: the file is served under the address
+       * that was asked for, the .html URL stays the only one anything points
+       * at, and the canonical tag in the page settles which is which for a
+       * crawler. /admin is the one that prompted this - it is the address
+       * anybody would type, and it was a 404. */
+      rewrites: ["admin", "app", "guides", "pricing", "privacy"].map((n) => ({
+        source: "/" + n,
+        destination: "/" + n + ".html",
+      })),
       headers: sections.map((sec) => ({
         // Netlify and Cloudflare take /* and /*.css; Vercel wants a pattern.
         source: sec.source === "/*" ? "/(.*)"

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Not here - Muletto</title>
+  <meta name="description" content="That page does not exist. The guides, the opener and the privacy page all do." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/og.png" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="/guides.html">Guides</a>
+          <a href="/pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="/privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="/app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Absolute paths throughout, because this page is served for any URL
+         that matched nothing - including ones several folders deep, where a
+         relative link would resolve somewhere that does not exist either. -->
+    <section class="open-head wrap">
+      <h1>Not here</h1>
+      <p>Nothing lives at that address. Either it never did, or it moved and something
+        still points at where it was.</p>
+    </section>
+
+    <section class="wrap nf-wrap">
+      <div class="grid cards">
+        <div class="card">
+          <h3><a href="/app.html">Open an export</a></h3>
+          <p class="muted">The app itself. Drop in an archive from Apple, Google, Samsung,
+          Snapchat, Facebook or Instagram and read it in your browser.</p>
+        </div>
+        <div class="card">
+          <h3><a href="/guides.html">The export guides</a></h3>
+          <p class="muted">How to ask each service for your data, what comes back, and what
+          goes wrong on the way. Thirty of them.</p>
+        </div>
+        <div class="card">
+          <h3><a href="/privacy.html">Where your data goes</a></h3>
+          <p class="muted">Nowhere. The long version, because a promise you cannot check is
+          not worth much.</p>
+        </div>
+        <div class="card">
+          <h3><a href="https://github.com/SolusKossi/muletto/issues" target="_blank"
+                 rel="noopener noreferrer">A link that should work</a></h3>
+          <p class="muted">If something on this site sent you here, that is a bug and worth
+          saying so. It takes one sentence.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="/index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="/guides.html">Guides</a>
+        <a href="/app.html">Open export</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/privacy.html">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Counts that a page was missing, as /404.html and never as the address
+       that was asked for - that address comes from whoever typed it, and an
+       open list is a store anybody can fill with anything. Knowing how many
+       is the useful part; knowing which is what the server log is for. -->
+  <script src="/analytics.js"></script>
+</body>
+</html>
