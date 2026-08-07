@@ -65,6 +65,10 @@ const MTopics = (function () {
   }
   const shortDate = (d) => d.toLocaleDateString(undefined,
     { day: "numeric", month: "short", year: "numeric" });
+  /* With the time, which a mail header needs and a list does not. */
+  const longDate = (d) => d.toLocaleString(undefined,
+    { weekday: "short", day: "numeric", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit" });
 
   /* ---------- what each provider actually ships ----------
    *
@@ -1374,38 +1378,71 @@ const MTopics = (function () {
         "<div class='ml-when'>" + esc(shortDate(m.at)) + "</div>" +
         "<div><b>" + esc(m.subject || "(no subject)") + "</b>" +
         '<span class="muted small">' + esc((m.from && m.from.name) || "") + "</span></div>" +
-        '<div class="ml-body" hidden></div>' +
         "</li>").join("") +
       "</ol>";
 
-    /* Opened on click, like any inbox: the list shows who and what, and the
-       message itself only when asked for. */
+    const listHtml = el.innerHTML;
     const shown = dated.slice(0, 500);
+
+    /* A message opens, rather than unfolding.
+     *
+     * It used to expand inside its own row in the list, which is the one
+     * shape an email cannot survive: a real message is a page - a header
+     * block, a wide body, often a table layout built for six hundred pixels -
+     * and squeezing that into a row under a subject line makes every mail
+     * look broken regardless of how well it was rendered. Every mail client
+     * ever written replaces the list with the message, and then offers a way
+     * back.
+     *
+     * The body is drawn on a white card whatever theme the app is in, for the
+     * same reason Gmail does: the sender chose their colours against white,
+     * and putting their dark grey text on our dark grey surface is not
+     * neutral, it is wrong. */
+    const readHtml = (m, body) => {
+      const who = (m.from && m.from.name) || (m.from && m.from.address) || "Unknown sender";
+      const addr = (m.from && m.from.address) || "";
+      return '<button class="ml-back" type="button">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+          'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M15 5l-7 7 7 7"/></svg>Back to the list</button>' +
+        '<article class="ml-read">' +
+          '<h2 class="ml-subj">' + esc(m.subject || "(no subject)") + "</h2>" +
+          '<header class="ml-msghead">' +
+            '<span class="ml-av" aria-hidden="true">' +
+              esc(who.trim().charAt(0).toUpperCase() || "?") + "</span>" +
+            '<span class="ml-who"><b>' + esc(who) + "</b>" +
+              (addr && addr !== who ? "<em>" + esc(addr) + "</em>" : "") + "</span>" +
+            '<time class="ml-date">' + esc(m.at ? longDate(m.at) : "") + "</time>" +
+          "</header>" +
+          '<div class="ml-content">' + body + "</div>" +
+        "</article>";
+    };
+
     el.addEventListener("click", async (ev) => {
+      if (ev.target.closest && ev.target.closest(".ml-back")) {
+        el.innerHTML = listHtml;
+        el.scrollTop = 0;
+        return;
+      }
       const li = ev.target.closest && ev.target.closest(".ml-item");
-      if (!li || ev.target.closest(".ml-body")) return;
-      const pane = li.querySelector(".ml-body");
-      if (li.classList.contains("open")) {
-        li.classList.remove("open");
-        pane.hidden = true;
-        return;
-      }
-      li.classList.add("open");
-      pane.hidden = false;
-      if (li.dataset.done) return;
-      li.dataset.done = "1";
+      if (!li) return;
       const m = shown[Number(li.dataset.i)];
-      if (!m || !m.body) {
-        pane.innerHTML = '<p class="muted small">This message was past the amount of ' +
-          "mail kept for reading. Its headers are here; the text is still in the archive.</p>";
+      if (!m) return;
+      if (!m.body) {
+        el.innerHTML = readHtml(m, '<p class="muted small">This message was past the amount ' +
+          "of mail kept for reading. Its headers are here; the text is still in the archive.</p>");
         return;
       }
-      pane.innerHTML = '<p class="muted small">Reading...</p>';
+      el.innerHTML = readHtml(m, '<p class="muted small">Reading...</p>');
+      el.scrollTop = 0;
+      let body;
       try {
-        pane.innerHTML = renderMessage(await m.body.text());
+        body = renderMessage(await m.body.text());
       } catch (err) {
-        pane.innerHTML = '<p class="muted small">That message would not open.</p>';
+        body = '<p class="muted small">That message would not open.</p>';
       }
+      const slot = el.querySelector(".ml-content");
+      if (slot) slot.innerHTML = body;
     });
   }
 

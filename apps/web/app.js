@@ -1078,9 +1078,9 @@ function demoBlocked(what) {
   if (!current.demo) return false;
   MNotify.push("Not available on the sample data", {
     kind: "warn",
-    body: what + " needs your own library. These five archives are a demonstration - " +
-      "invented people, and nothing here is saved to your browser. Open a real export " +
-      "and everything works.",
+    body: what + " works on your own library, not on the demonstration. These five " +
+      "archives are invented people, nothing here is saved to your browser, and it is " +
+      "all gone when you close the tab. Open a real export and everything is available.",
   });
   return true;
 }
@@ -1584,6 +1584,7 @@ function renderLibrary(root, lib, sources, entries, demo) {
         else renderFiles(panel, use === lib ? entries : entries.filter((e) => e.src === undefined || use.files.some((f) => f.entry === e)));
       },
       save: () => {
+        if (demoBlocked("Saving a library")) return;
         if (!lib.media.length) {
           MNotify.push("Nothing to save", { kind: "warn",
             body: "This library has no photos or videos in it." });
@@ -1600,7 +1601,7 @@ function renderLibrary(root, lib, sources, entries, demo) {
         const f = $("#file");
         if (f) f.click();
       },
-      findSimilar: () => scanSimilar(),
+      findSimilar: () => demoBlocked("Comparing photographs") || scanSimilar(),
       plan: () => demoBlocked("Sorting by instruction") || MPlanUI.open({
         media: lib.media,
         thumb: (m) => ctx.thumb(m),
@@ -1621,13 +1622,14 @@ function renderLibrary(root, lib, sources, entries, demo) {
           MExplorer.refresh();
         },
       }),
-      manifest: downloadManifest,
+      manifest: () => demoBlocked("Writing a list of the files") || downloadManifest(),
       /* A copy of the work, as a file the user keeps.
 
          What is stored in the browser is enough to come back next month on
          this machine, but it is the browser's to evict and it does not travel.
          Anything that cost money must not depend on a cache. */
       saveWork: async (status) => {
+        if (demoBlocked("Saving your work to a file")) return;
         const n = await MDerived.count();
         if (!n) {
           status.textContent = "There is nothing worked out yet to save. Compare photos first, " +
@@ -1714,7 +1716,23 @@ function renderLibrary(root, lib, sources, entries, demo) {
      the current sources every time, cannot go stale. */
   const panel = document.getElementById("import-result") || root;
   panel.hidden = false;
-  panel.innerHTML = `
+  /* Closing the demo is the end of the demo.
+   *
+   * This card used to say "5 exports open - Back to your data" whatever you
+   * had been looking at, which on the samples is an offer to go back to
+   * somebody else's invented photographs. The demo is a thing you do once to
+   * decide whether to trust this with your own export; the moment it is shut,
+   * the only useful next step is the real one. */
+  panel.innerHTML = current.demo ? `
+    <div class="reopen demo-done">
+      <div>
+        <strong>That was the sample data</strong>
+        <p class="muted small">Invented people, five archives, nothing saved and nothing
+        uploaded. Your own export opens the same way - and everything that was held back
+        on the demonstration works on it.</p>
+      </div>
+      <button class="btn primary" id="reopen-real">Open my own export</button>
+    </div>` : `
     <div class="reopen">
       <div>
         <strong>${plural(sources.length, "export", "exports")} open</strong>
@@ -1723,8 +1741,15 @@ function renderLibrary(root, lib, sources, entries, demo) {
       </div>
       <button class="btn primary" id="reopen">Back to your data</button>
     </div>`;
-  $("#reopen", panel).addEventListener("click", () =>
-      renderLibrary(panel, lib, sources, entries, current.demo));
+  if (current.demo) {
+    $("#reopen-real", panel).addEventListener("click", () => {
+      const f = $("#file");
+      if (f) f.click();
+    });
+  } else {
+    $("#reopen", panel).addEventListener("click", () =>
+        renderLibrary(panel, lib, sources, entries, current.demo));
+  }
 
   // The "you had an export open" prompt is answered now.
   const stale = document.querySelector(".reopen-note");
@@ -2610,7 +2635,7 @@ const SAMPLES = ["snapchat-export.zip", "apple-export.zip", "google-takeout.zip"
  * The name the reader sees is still the plain one - the stamp is stripped
  * before the File is made. */
 /* BUILD:SAMPLES */
-const SAMPLES_V = "5b26f332";
+const SAMPLES_V = "62c1718a";
 /* END:SAMPLES */
 
 async function loadSamples(btn) {

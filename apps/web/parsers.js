@@ -909,8 +909,23 @@ const MParse = (function () {
           lib.tables.push({ name, path: e.name, columns: columns.map(niceColumn), rows });
           if (/health|step|sleep|exercise|heart|weight/i.test(e.name)) healthRows += rows.length;
 
+          /* A measurement is not a moment.
+           *
+           * Every dated health row used to become a timeline entry, and a
+           * watch worn for six years produces twenty-three thousand of them.
+           * The timeline became eight hundred consecutive days of "Activity -
+           * Samsung", nine to a day, with the photographs and messages
+           * somebody actually came to look at buried a thousand rows apart.
+           * Ninety-six percent of the timeline was skin temperature and
+           * blood oxygen readings.
+           *
+           * Those belong on the health page, where they are a line with a
+           * shape. What belongs on a timeline is the things that happened:
+           * a workout, a badge, a challenge. The readings are still read,
+           * still counted and still charted - they are just not events. */
+          const OCCASION = /exercise|workout|activity_?type|reward|badge|milestone|trophy|challenge|social/i;
           const dateIdx = columns.findIndex((c) => /start_time|create_time|day_time|date|time/i.test(c));
-          if (dateIdx >= 0 && rows.length <= 4000) {
+          if (dateIdx >= 0 && rows.length <= 4000 && OCCASION.test(e.name + " " + name)) {
             for (const r of rows) {
               const at = parseDate(r[dateIdx]);
               if (at) lib.events.push({ at, kind: "record", label: name });

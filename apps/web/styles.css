@@ -2967,6 +2967,40 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   transition: background var(--t) var(--ease); }
 .ml-item:hover { background: var(--surface-2); }
 .ml-item.open { background: var(--surface-2); }
+
+/* ---------- a message, opened ----------
+   A mail is a page, not a row. It replaces the list the way every mail client
+   does, and the body sits on white whatever theme the app is in - the sender
+   chose their colours against white, and putting their dark grey on our dark
+   grey is not neutral, it is wrong. */
+.ml-back { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px;
+  padding: 6px 12px 6px 8px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--body); font-size: 13px; cursor: pointer;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease); }
+.ml-back:hover { background: var(--surface-2); color: var(--ink); }
+.ml-back svg { width: 15px; height: 15px; }
+.ml-read { border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: #ffffff; color: #202124; overflow: hidden; max-width: 900px; }
+.ml-subj { margin: 0; padding: 20px 24px 0; font-size: 21px; font-weight: 500;
+  line-height: 1.3; color: #202124; overflow-wrap: anywhere; }
+.ml-msghead { display: flex; align-items: center; gap: 12px; padding: 16px 24px;
+  border-bottom: 1px solid #e8eaed; }
+.ml-av { flex: none; width: 38px; height: 38px; border-radius: 50%; background: #d7dbe0;
+  color: #3c4043; display: grid; place-items: center; font-size: 17px; font-weight: 500; }
+.ml-who { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; }
+.ml-who b { font-size: 14px; font-weight: 600; color: #202124; }
+.ml-who em { font-style: normal; font-size: 12.5px; color: #5f6368; overflow-wrap: anywhere; }
+.ml-date { flex: none; font-size: 12.5px; color: #5f6368; white-space: nowrap; }
+.ml-content { padding: 22px 24px 26px; font-size: 14px; line-height: 1.6; color: #202124; }
+.ml-content .ml-plain { font-family: var(--mono); font-size: 13px; }
+.ml-content .ml-blocked { background: #fef7e0; border: 1px solid #feefc3; color: #5f6368;
+  border-radius: 6px; padding: 8px 10px; margin: 0 0 14px; }
+@media (max-width: 640px) {
+  .ml-subj { padding: 16px 16px 0; font-size: 18px; }
+  .ml-msghead, .ml-content { padding-left: 16px; padding-right: 16px; }
+  .ml-date { display: none; }
+}
+
 .ml-body { grid-column: 1 / -1; margin-top: 10px; padding: 12px 14px;
   border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
   font-size: 13px; line-height: 1.55; max-height: 60vh; overflow: auto; }
@@ -2978,7 +3012,7 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .ml-html table { width: 100% !important; border-collapse: collapse; }
 .ml-html td, .ml-html th { padding: 2px 4px; }
 .ml-html a { color: var(--accent); }
-.ml-html * { max-width: 100% !important; font-family: inherit !important;
+.ml-html * { max-width: 100% !important;
   font-size: inherit !important; color: inherit !important;
   background-color: transparent !important; }
 .ml-blocked { margin: 0 0 8px; font-size: 11.5px; color: var(--muted);
@@ -3069,3 +3103,9 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .hl-trend span { color: var(--muted); }
 .hl-trend.steady { color: var(--muted); }
 .hl-range { white-space: nowrap; }
+
+/* A control that needs your own data. Dimmed rather than disabled, and still
+   clickable: clicking one is how you find out why, and a disabled button
+   explains nothing. */
+.held-back { opacity: .55; }
+.held-back:hover { opacity: .8; }
