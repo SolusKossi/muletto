@@ -1,66 +1,66 @@
 {
- "slug": "whatsapp",
- "provider": "WhatsApp",
- "icon": "box",
- "confirmed": {
-  "flow": null,
-  "import": null
- },
- "difficulty": "medium",
- "wait_time": "about three days for the account report; chat exports are instant",
- "delivery": "download",
- "format": "either a .zip report, or per-chat .txt with media",
- "data_types": [
-  "messages"
- ],
- "request": {
-  "url": "https://faq.whatsapp.com/1180140111893485",
-  "label": "WhatsApp data request"
- },
- "steps": [
-  {
-   "title": "Decide which of the two you want",
-   "detail": "They are completely different. The account report is metadata about you. Exporting a chat gives you the actual messages."
+  "slug": "whatsapp",
+  "provider": "WhatsApp",
+  "icon": "whatsapp",
+  "confirmed": {
+    "flow": null,
+    "import": null
   },
-  {
-   "title": "For the account report: Settings, Account, Request account info",
-   "detail": "Available on the phone or on WhatsApp Web, but not on the Windows or Mac apps. It takes about three days."
+  "difficulty": "medium",
+  "wait_time": "about three days for the account report; chat exports are instant",
+  "delivery": "download",
+  "format": "either a .zip report, or per-chat .txt with media",
+  "data_types": [
+    "messages"
+  ],
+  "request": {
+    "url": "https://faq.whatsapp.com/1180140111893485",
+    "label": "WhatsApp data request"
   },
-  {
-   "title": "For your messages: open a chat",
-   "detail": "Tap the contact name, scroll down, then Export chat. Choose with or without media."
+  "steps": [
+    {
+      "title": "Decide which of the two you want",
+      "detail": "They are completely different. The account report is metadata about you. Exporting a chat gives you the actual messages."
+    },
+    {
+      "title": "For the account report: Settings, Account, Request account info",
+      "detail": "Available on the phone or on WhatsApp Web, but not on the Windows or Mac apps. It takes about three days."
+    },
+    {
+      "title": "For your messages: open a chat",
+      "detail": "Tap the contact name, scroll down, then Export chat. Choose with or without media."
+    },
+    {
+      "title": "Send it somewhere you can keep it",
+      "detail": "The export is handed to the share sheet rather than saved, so pick your email, a file app or cloud storage."
+    },
+    {
+      "title": "Repeat for each conversation",
+      "detail": "There is no way to export every chat at once. This is the part people find out too late."
+    }
+  ],
+  "notes": [
+    "The account report contains no messages at all. It is your phone number, profile, group memberships, settings and counts.",
+    "A chat export is one text file plus the media as separate files. iOS and Android name and format them differently.",
+    "A chat with Advanced Chat Privacy switched on cannot be exported at all."
+  ],
+  "muletto_support": {
+    "importable": false,
+    "adapter": null,
+    "status": "none"
   },
-  {
-   "title": "Send it somewhere you can keep it",
-   "detail": "The export is handed to the share sheet rather than saved, so pick your email, a file app or cloud storage."
-  },
-  {
-   "title": "Repeat for each conversation",
-   "detail": "There is no way to export every chat at once. This is the part people find out too late."
-  }
- ],
- "notes": [
-  "The account report contains no messages at all. It is your phone number, profile, group memberships, settings and counts.",
-  "A chat export is one text file plus the media as separate files. iOS and Android name and format them differently.",
-  "A chat with Advanced Chat Privacy switched on cannot be exported at all."
- ],
- "muletto_support": {
-  "importable": false,
-  "adapter": null,
-  "status": "none"
- },
- "faq": [
-  {
-   "q": "Does a WhatsApp data request include my messages?",
-   "a": "No. The account information report holds metadata: your number, profile, group memberships, settings and message counts, but not a single message. To get messages you export each conversation individually from within the app."
-  },
-  {
-   "q": "How do I export all my WhatsApp chats at once?",
-   "a": "You cannot. Export chat works one conversation at a time and there is no bulk option."
-  },
-  {
-   "q": "Why can I not export a particular WhatsApp chat?",
-   "a": "If Advanced Chat Privacy is switched on for that conversation, exporting is blocked entirely."
-  }
- ]
+  "faq": [
+    {
+      "q": "Does a WhatsApp data request include my messages?",
+      "a": "No. The account information report holds metadata: your number, profile, group memberships, settings and message counts, but not a single message. To get messages you export each conversation individually from within the app."
+    },
+    {
+      "q": "How do I export all my WhatsApp chats at once?",
+      "a": "You cannot. Export chat works one conversation at a time and there is no bulk option."
+    },
+    {
+      "q": "Why can I not export a particular WhatsApp chat?",
+      "a": "If Advanced Chat Privacy is switched on for that conversation, exporting is blocked entirely."
+    }
+  ]
 }

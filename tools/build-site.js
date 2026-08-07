@@ -126,7 +126,7 @@ function footer(depth) {
   </footer>`;
 }
 
-function page({ depth, title, description, canonical, body, jsonld, active, noindex }) {
+function page({ depth, title, description, canonical, body, jsonld, active, noindex, extraScript }) {
   const up = depth ? "../" : "";
   return `<!doctype html>
 <html lang="en">
@@ -162,6 +162,7 @@ ${footer(depth)}
   <!-- Counts that a guide was read. See privacy.html. -->
   <script src="${up}analytics.js"></script>
   <script src="${up}app.js"></script>
+${extraScript ? `  <script src="${up}${extraScript}"></script>\n` : ""}
 </body>
 </html>
 `;
@@ -483,28 +484,80 @@ function guidePage(g, all, dests) {
 
 /* ---------- guides index ---------- */
 
-function card(g, href) {
-  return `        <a class="card" href="${esc(href)}">
-          <div class="glyph" data-icon="${esc(g.icon)}"></div>
-          <h3>${esc(g.provider)}</h3>
-          <div class="meta">
-            <span class="badge ${esc(g.difficulty)}">${esc(g.difficulty)}</span>
-            <span>${esc(g.wait_time)}</span>
-          </div>
+/* One line per service.
+ *
+ * The old card stacked a logo, a name, a badge and a full wait sentence, and
+ * every one of them was a different height - so the index was a ragged column
+ * of boxes rather than a list you could run your eye down. The name and the
+ * badge are the thing being chosen between; the wait is a number, and it goes
+ * on the right where numbers go. */
+function card(g, href, kind) {
+  return `        <a class="svc" href="${esc(href)}"
+          data-kind="${esc(kind || "service")}" data-service="${esc(g.slug)}"
+          data-difficulty="${esc(g.difficulty || "")}"
+          data-time="${esc(timeBucket(g.wait_time))}"
+          data-text="${esc(String(g.provider || "").toLowerCase() + " " + esc(g.slug))}">
+          <span class="svc-ic" data-icon="${esc(g.icon)}"></span>
+          <span class="svc-name">${esc(g.provider)}${g.difficulty
+            ? `<em class="badge ${esc(g.difficulty)}">${esc(g.difficulty)}</em>` : ""}</span>
+          <span class="svc-time">${CLOCK}${esc(shortTime(g.wait_time))}</span>
         </a>`;
 }
+
+/* The wait, as a phrase rather than a sentence.
+ *
+ * The guides say things like "up to 7 days (Apple emails you when it is
+ * ready)" and "about three days for the account report; chat exports are
+ * instant". Both are the right thing to say on the guide itself and both wrap
+ * to three lines in a list. The first clause is the answer; the rest is the
+ * detail, and the detail is what the page is for. */
+function shortTime(raw) {
+  let t = String(raw || "").split(/[,;(]/)[0].trim();
+  /* Then the trailing clause, whatever joins it on. "an hour of your
+     attention" is an hour; "a weekend if you request everything at once" is a
+     weekend. The qualification is worth reading - on the guide, which is what
+     the guide is for - and is three wrapped lines in a list. */
+  const cut = t.replace(/\s+\b(for|depending|if|when|while|but|and|spread|of your)\b.*$/i, "").trim();
+  if (cut.length >= 3) t = cut;
+  return t || "varies";
+}
+
+/* Which bucket a wait falls in, for the filter. Largest unit named wins,
+   because "minutes to a few days" is a wait of days to anybody planning
+   around it. */
+function timeBucket(raw) {
+  const t = String(raw || "").toLowerCase();
+  if (/month|week|thirty days|30 days/.test(t)) return "weeks";
+  if (/\bdays?\b|weekend|overnight|evening/.test(t)) return "days";
+  if (/\bhours?\b/.test(t)) return "hours";
+  if (/minute|instant|immediate/.test(t)) return "minutes";
+  return "days";
+}
+
+const CLOCK = '<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+  'stroke-width="1.8" stroke-linecap="round" aria-hidden="true">' +
+  '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>';
+const ARROW = '<svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" ' +
+  'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M1 6h16"/><path d="M12.5 1.5 17 6l-4.5 4.5"/></svg>';
 
 /* A whole job reads differently from a single guide, so it gets its own card:
    what you end up with matters more than how long the request takes. */
 function flowCard(f) {
   const conf = confirmation(f);
-  return `        <a class="card flow-card" href="guides/${esc(f.slug)}.html">
-          <div class="glyph" data-icon="route"></div>
-          <h3>${esc(f.title)}</h3>
-          <p class="muted">${esc(f.outcome)}</p>
-          <div class="meta" style="margin-top:12px">
-              <span>${esc(f.effort)}</span>
-          </div>
+  return `        <a class="jobcard" href="guides/${esc(f.slug)}.html"
+          data-kind="job" data-service="${esc(f.from || "any")}"
+          data-difficulty="" data-time="${esc(timeBucket(f.effort))}"
+          data-text="${esc((f.title + " " + f.outcome).toLowerCase())}">
+          <span class="jobcard-ic" data-icon="${esc(f.icon || "route")}"></span>
+          <span class="jobcard-body">
+            <span class="jobcard-t">${esc(f.title)}</span>
+            <span class="jobcard-d">${esc(f.outcome)}</span>
+          </span>
+          <span class="jobcard-foot">
+            <span class="jobcard-time">${CLOCK}${esc(shortTime(f.effort))}</span>
+            <span class="jobcard-go">${ARROW}</span>
+          </span>
         </a>`;
 }
 
@@ -523,39 +576,88 @@ const FAQ = [
    "Ordinary folders of ordinary files, with the real dates and locations written into the photographs themselves, duplicates across services removed, and your messages, location history and account records readable. Nothing needs this site afterwards."],
 ];
 
+/* The filter bar.
+ *
+ * Thirty guides in three sections is a lot to scan, and the thing somebody
+ * arrives knowing is usually one of four: which service, how hard, how long,
+ * or a word from the title. Four selects and a search box answer all of them
+ * without a page load.
+ *
+ * It is written as real markup with real options rather than built by script,
+ * so the page works with the script off - the filters simply do nothing, and
+ * every guide is visible, which is the right way for this to fail. */
+function filterBar(all, dests, flows) {
+  const services = all.map((g) => ({ v: g.slug, t: g.provider }))
+    .sort((a, b) => a.t.localeCompare(b.t));
+  const sel = (id, label, opts) => `
+        <label class="gd-sel">
+          <span class="vh">${esc(label)}</span>
+          <select id="${esc(id)}">
+            ${opts.map(([v, t]) =>
+              `<option value="${esc(v)}">${esc(t)}</option>`).join("\n            ")}
+          </select>
+        </label>`;
+
+  return `      <div class="gd-filters">
+${sel("gd-kind", "Which kind of guide", [
+    ["", "All guides"], ["job", "Whole jobs"],
+    ["service", "Getting data out"], ["dest", "Where to keep it"]])}
+${sel("gd-service", "Which service", [["", "All services"]]
+    .concat(services.map((x) => [x.v, x.t])))}
+${sel("gd-difficulty", "How hard", [
+    ["", "All difficulty"], ["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"]])}
+${sel("gd-time", "How long the wait is", [
+    ["", "All time"], ["minutes", "Minutes"], ["hours", "Hours"],
+    ["days", "Days"], ["weeks", "Weeks or more"]])}
+        <label class="gd-search">
+          <span class="vh">Search the guides</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          <input id="gd-q" type="search" placeholder="Search guides..." autocomplete="off" />
+        </label>
+      </div>
+      <p class="gd-none" id="gd-none" hidden>Nothing matches that. <button class="linkish"
+        id="gd-clear">Clear the filters</button></p>`;
+}
+
 function guidesIndex(all, dests, flows) {
   const body = `    <section class="page-head wrap">
       <h1>Guides</h1>
       <p>How to get a complete copy of your data out of any major service, what you will get back, and where to put it afterwards. All free to read, no account.</p>
     </section>
 
-    <section class="wrap tight">
-      <div class="section-head">
-        <h2>Whole jobs</h2>
-        <p>Start to finish: request it, open it, tidy it up, put it where it is going. Begin here if you know where you want to end up.</p>
-      </div>
-      <div class="grid cards">
+    <section class="wrap gd-wrap">
+${filterBar(all, dests, flows)}
+
+      <div class="gd-sec" data-sec="job">
+        <div class="section-head">
+          <h2>Whole jobs</h2>
+          <p>Start to finish: request it, open it, tidy it up, put it where it is going. Begin here if you know where you want to end up.</p>
+        </div>
+        <div class="jobgrid">
 ${(flows || []).map(flowCard).join("\n")}
+        </div>
       </div>
-    </section>
 
-    <section class="wrap tight">
-      <div class="section-head">
-        <h2>Getting your data out</h2>
-        <p>One service at a time, with what to expect and the parts people get wrong.</p>
+      <div class="gd-sec" data-sec="service">
+        <div class="section-head">
+          <h2>Getting your data out</h2>
+          <p>One service at a time, with what to expect and the parts people get wrong.</p>
+        </div>
+        <div class="svcgrid">
+${all.map((g) => card(g, `guides/${g.slug}.html`, "service")).join("\n")}
+        </div>
       </div>
-      <div class="grid cards">
-${all.map((g) => card(g, `guides/${g.slug}.html`)).join("\n")}
-      </div>
-    </section>
 
-    <section class="wrap tight">
-      <div class="section-head">
-        <h2>Where to keep it</h2>
-        <p>Once your data is cleaned up, put it somewhere you control. These guides cover network drives, external disks, self-hosted servers, and getting a tidied library back into a cloud service.</p>
-      </div>
-      <div class="grid cards">
-${dests.map((g) => card(g, `guides/${g.slug}.html`)).join("\n")}
+      <div class="gd-sec" data-sec="dest">
+        <div class="section-head">
+          <h2>Where to keep it</h2>
+          <p>Once your data is cleaned up, put it somewhere you control. These guides cover network drives, external disks, self-hosted servers, and getting a tidied library back into a cloud service.</p>
+        </div>
+        <div class="svcgrid">
+${dests.map((g) => card(g, `guides/${g.slug}.html`, "dest")).join("\n")}
+        </div>
       </div>
     </section>
 
@@ -588,6 +690,7 @@ ${FAQ.map(([q, a]) => `        <details class="faq-item"><summary>${esc(q)}</sum
       })),
     }],
     body,
+    extraScript: "guidefilter.js",
   });
 }
 

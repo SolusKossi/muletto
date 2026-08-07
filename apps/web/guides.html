@@ -15,7 +15,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="og.png" />
-  <link rel="stylesheet" href="styles.css?v=ba0b3696" />
+  <link rel="stylesheet" href="styles.css?v=7cbfc627" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"Muletto export guides","description":"Guides for exporting your personal data from major services.","url":"https://muletto.app/guides.html"}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does it cost anything?","acceptedAnswer":{"@type":"Answer","text":"The guides are free to read and the app is free to use. Opening an export, merging several, finding duplicates, repairing dates and writing the library back out all run on your own machine and cost nothing. The only paid part is having an AI describe your photographs so you can search them by what is in them, and that is optional and off unless you turn it on."}},{"@type":"Question","name":"Do I need an account?","acceptedAnswer":{"@type":"Answer","text":"No. There is no sign-up, no email address and no password, because there is no server holding anything to sign in to."}},{"@type":"Question","name":"Are my files uploaded anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. Your archives are read inside your browser, on your own machine. The page is served with a Content-Security-Policy that permits connections to almost nothing, so the browser itself refuses to send your files regardless of what the code asks for. Turn off your wifi and everything except the optional AI step still works."}},{"@type":"Question","name":"How long do the exports take to arrive?","acceptedAnswer":{"@type":"Answer","text":"It varies enormously. Meta is often minutes to hours, Google hours to days, Apple up to seven days, and Snapchat up to thirty. The waits run in parallel, so if you want several, request them all on the same day."}},{"@type":"Question","name":"Which services can I open an export from?","acceptedAnswer":{"@type":"Answer","text":"Apple, Google, Samsung, Snapchat, Facebook and Instagram each have their own guide, and the app reads the zip archives all of them produce. Several exports can be opened together and become one library."}},{"@type":"Question","name":"What do I get back at the end?","acceptedAnswer":{"@type":"Answer","text":"Ordinary folders of ordinary files, with the real dates and locations written into the photographs themselves, duplicates across services removed, and your messages, location history and account records readable. Nothing needs this site afterwards."}}]}</script>
 </head>
@@ -42,270 +42,388 @@
       <p>How to get a complete copy of your data out of any major service, what you will get back, and where to put it afterwards. All free to read, no account.</p>
     </section>
 
-    <section class="wrap tight">
-      <div class="section-head">
-        <h2>Whole jobs</h2>
-        <p>Start to finish: request it, open it, tidy it up, put it where it is going. Begin here if you know where you want to end up.</p>
-      </div>
-      <div class="grid cards">
-        <a class="card flow-card" href="guides/flow-icloud-to-nas.html">
-          <div class="glyph" data-icon="route"></div>
-          <h3>Move your iCloud photos to a NAS</h3>
-          <p class="muted">Every photo and video Apple holds, on a drive in your own home, in dated folders, with the real capture dates written back in and the duplicates gone.</p>
-          <div class="meta" style="margin-top:12px">
-              <span>an hour of your attention, spread over the days Apple takes</span>
-          </div>
-        </a>
-        <a class="card flow-card" href="guides/flow-google-to-immich.html">
-          <div class="glyph" data-icon="route"></div>
-          <h3>Move Google Photos into Immich</h3>
-          <p class="muted">Your whole Google Photos library running on your own server, with the dates Google kept in sidecar files written into the photos themselves so Immich sorts them correctly.</p>
-          <div class="meta" style="margin-top:12px">
-              <span>an evening, most of it waiting</span>
-          </div>
-        </a>
-        <a class="card flow-card" href="guides/flow-everything-to-drive.html">
-          <div class="glyph" data-icon="route"></div>
-          <h3>Put everything on one external drive</h3>
-          <p class="muted">Every service you use, merged into a single dated library on a disk you can hold, with duplicates across services removed and an index of what is in it.</p>
-          <div class="meta" style="margin-top:12px">
-              <span>a weekend if you request everything at once</span>
-          </div>
-        </a>
-        <a class="card flow-card" href="guides/flow-snapchat-memories.html">
-          <div class="glyph" data-icon="route"></div>
-          <h3>Rescue your Snapchat Memories before they expire</h3>
-          <p class="muted">The photos and videos behind years of Memories, saved as ordinary files you can open anywhere, rather than links that stop working.</p>
-          <div class="meta" style="margin-top:12px">
-              <span>under an hour, but it has a deadline</span>
-          </div>
-        </a>
-      </div>
-    </section>
+    <section class="wrap gd-wrap">
+      <div class="gd-filters">
 
-    <section class="wrap tight">
-      <div class="section-head">
-        <h2>Getting your data out</h2>
-        <p>One service at a time, with what to expect and the parts people get wrong.</p>
-      </div>
-      <div class="grid cards">
-        <a class="card" href="guides/apple.html">
-          <div class="glyph" data-icon="apple"></div>
-          <h3>Apple</h3>
-          <div class="meta">
-            <span class="badge medium">medium</span>
-            <span>up to 7 days (Apple emails you when it is ready)</span>
-          </div>
-        </a>
-        <a class="card" href="guides/google.html">
-          <div class="glyph" data-icon="google"></div>
-          <h3>Google</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>minutes to a few days depending on size</span>
-          </div>
-        </a>
-        <a class="card" href="guides/snapchat.html">
-          <div class="glyph" data-icon="snapchat"></div>
-          <h3>Snapchat</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>hours to days, and Snapchat emails you when it is ready</span>
-          </div>
-        </a>
-        <a class="card" href="guides/samsung.html">
-          <div class="glyph" data-icon="samsung"></div>
-          <h3>Samsung</h3>
-          <div class="meta">
-            <span class="badge medium">medium</span>
-            <span>a few days</span>
-          </div>
-        </a>
-        <a class="card" href="guides/facebook.html">
-          <div class="glyph" data-icon="facebook"></div>
-          <h3>Facebook</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>minutes to a few days depending on size</span>
-          </div>
-        </a>
-        <a class="card" href="guides/instagram.html">
-          <div class="glyph" data-icon="instagram"></div>
-          <h3>Instagram</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>minutes to a few days depending on size</span>
-          </div>
-        </a>
-        <a class="card" href="guides/x-twitter.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>X (Twitter)</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>usually within a day, sometimes several</span>
-          </div>
-        </a>
-        <a class="card" href="guides/tiktok.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>TikTok</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>a few hours to four days</span>
-          </div>
-        </a>
-        <a class="card" href="guides/amazon.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>Amazon</h3>
-          <div class="meta">
-            <span class="badge medium">medium</span>
-            <span>six hours to a month, and genuinely unpredictable</span>
-          </div>
-        </a>
-        <a class="card" href="guides/spotify.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>Spotify</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>a few days for account data, up to thirty days for the full history</span>
-          </div>
-        </a>
-        <a class="card" href="guides/discord.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>Discord</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>up to thirty days</span>
-          </div>
-        </a>
-        <a class="card" href="guides/reddit.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>Reddit</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>up to thirty days, usually a few days</span>
-          </div>
-        </a>
-        <a class="card" href="guides/linkedin.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>LinkedIn</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>minutes for the small files, up to twenty-four hours for the rest</span>
-          </div>
-        </a>
-        <a class="card" href="guides/whatsapp.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>WhatsApp</h3>
-          <div class="meta">
-            <span class="badge medium">medium</span>
-            <span>about three days for the account report; chat exports are instant</span>
-          </div>
-        </a>
-        <a class="card" href="guides/google-fit-fitbit.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>Fitbit and Google Health</h3>
-          <div class="meta">
-            <span class="badge medium">medium</span>
-            <span>hours to days, depending on which route</span>
-          </div>
-        </a>
-        <a class="card" href="guides/strava.html">
-          <div class="glyph" data-icon="box"></div>
-          <h3>Strava</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>a few hours, up to ten days for a large account</span>
-          </div>
-        </a>
-      </div>
-    </section>
+        <label class="gd-sel">
+          <span class="vh">Which kind of guide</span>
+          <select id="gd-kind">
+            <option value="">All guides</option>
+            <option value="job">Whole jobs</option>
+            <option value="service">Getting data out</option>
+            <option value="dest">Where to keep it</option>
+          </select>
+        </label>
 
-    <section class="wrap tight">
-      <div class="section-head">
-        <h2>Where to keep it</h2>
-        <p>Once your data is cleaned up, put it somewhere you control. These guides cover network drives, external disks, self-hosted servers, and getting a tidied library back into a cloud service.</p>
+        <label class="gd-sel">
+          <span class="vh">Which service</span>
+          <select id="gd-service">
+            <option value="">All services</option>
+            <option value="amazon">Amazon</option>
+            <option value="apple">Apple</option>
+            <option value="discord">Discord</option>
+            <option value="facebook">Facebook</option>
+            <option value="google-fit-fitbit">Fitbit and Google Health</option>
+            <option value="google">Google</option>
+            <option value="instagram">Instagram</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="reddit">Reddit</option>
+            <option value="samsung">Samsung</option>
+            <option value="snapchat">Snapchat</option>
+            <option value="spotify">Spotify</option>
+            <option value="strava">Strava</option>
+            <option value="tiktok">TikTok</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="x-twitter">X (Twitter)</option>
+          </select>
+        </label>
+
+        <label class="gd-sel">
+          <span class="vh">How hard</span>
+          <select id="gd-difficulty">
+            <option value="">All difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+
+        <label class="gd-sel">
+          <span class="vh">How long the wait is</span>
+          <select id="gd-time">
+            <option value="">All time</option>
+            <option value="minutes">Minutes</option>
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+            <option value="weeks">Weeks or more</option>
+          </select>
+        </label>
+        <label class="gd-search">
+          <span class="vh">Search the guides</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          <input id="gd-q" type="search" placeholder="Search guides..." autocomplete="off" />
+        </label>
       </div>
-      <div class="grid cards">
-        <a class="card" href="guides/dest-nas-generic.html">
-          <div class="glyph" data-icon="server"></div>
-          <h3>Any NAS (network folder)</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>minutes to connect, an hour or more to copy</span>
-          </div>
+      <p class="gd-none" id="gd-none" hidden>Nothing matches that. <button class="linkish"
+        id="gd-clear">Clear the filters</button></p>
+
+      <div class="gd-sec" data-sec="job">
+        <div class="section-head">
+          <h2>Whole jobs</h2>
+          <p>Start to finish: request it, open it, tidy it up, put it where it is going. Begin here if you know where you want to end up.</p>
+        </div>
+        <div class="jobgrid">
+        <a class="jobcard" href="guides/flow-icloud-to-nas.html"
+          data-kind="job" data-service="apple"
+          data-difficulty="" data-time="days"
+          data-text="move your icloud photos to a nas every photo and video apple holds, on a drive in your own home, in dated folders, with the real capture dates written back in and the duplicates gone.">
+          <span class="jobcard-ic" data-icon="cloudup"></span>
+          <span class="jobcard-body">
+            <span class="jobcard-t">Move your iCloud photos to a NAS</span>
+            <span class="jobcard-d">Every photo and video Apple holds, on a drive in your own home, in dated folders, with the real capture dates written back in and the duplicates gone.</span>
+          </span>
+          <span class="jobcard-foot">
+            <span class="jobcard-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>an hour</span>
+            <span class="jobcard-go"><svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h16"/><path d="M12.5 1.5 17 6l-4.5 4.5"/></svg></span>
+          </span>
         </a>
-        <a class="card" href="guides/dest-synology.html">
-          <div class="glyph" data-icon="server"></div>
-          <h3>Synology</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>minutes to copy, hours to index</span>
-          </div>
+        <a class="jobcard" href="guides/flow-google-to-immich.html"
+          data-kind="job" data-service="google"
+          data-difficulty="" data-time="days"
+          data-text="move google photos into immich your whole google photos library running on your own server, with the dates google kept in sidecar files written into the photos themselves so immich sorts them correctly.">
+          <span class="jobcard-ic" data-icon="photos"></span>
+          <span class="jobcard-body">
+            <span class="jobcard-t">Move Google Photos into Immich</span>
+            <span class="jobcard-d">Your whole Google Photos library running on your own server, with the dates Google kept in sidecar files written into the photos themselves so Immich sorts them correctly.</span>
+          </span>
+          <span class="jobcard-foot">
+            <span class="jobcard-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>an evening</span>
+            <span class="jobcard-go"><svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h16"/><path d="M12.5 1.5 17 6l-4.5 4.5"/></svg></span>
+          </span>
         </a>
-        <a class="card" href="guides/dest-qnap.html">
-          <div class="glyph" data-icon="server"></div>
-          <h3>QNAP</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>minutes to copy, hours to index</span>
-          </div>
+        <a class="jobcard" href="guides/flow-everything-to-drive.html"
+          data-kind="job" data-service="any"
+          data-difficulty="" data-time="weeks"
+          data-text="put everything on one external drive every service you use, merged into a single dated library on a disk you can hold, with duplicates across services removed and an index of what is in it.">
+          <span class="jobcard-ic" data-icon="disk"></span>
+          <span class="jobcard-body">
+            <span class="jobcard-t">Put everything on one external drive</span>
+            <span class="jobcard-d">Every service you use, merged into a single dated library on a disk you can hold, with duplicates across services removed and an index of what is in it.</span>
+          </span>
+          <span class="jobcard-foot">
+            <span class="jobcard-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>a weekend</span>
+            <span class="jobcard-go"><svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h16"/><path d="M12.5 1.5 17 6l-4.5 4.5"/></svg></span>
+          </span>
         </a>
-        <a class="card" href="guides/dest-drive.html">
-          <div class="glyph" data-icon="drive"></div>
-          <h3>External drive</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>an hour to copy, then a check once a year</span>
-          </div>
+        <a class="jobcard" href="guides/flow-snapchat-memories.html"
+          data-kind="job" data-service="snapchat"
+          data-difficulty="" data-time="hours"
+          data-text="rescue your snapchat memories before they expire the photos and videos behind years of memories, saved as ordinary files you can open anywhere, rather than links that stop working.">
+          <span class="jobcard-ic" data-icon="snapchat"></span>
+          <span class="jobcard-body">
+            <span class="jobcard-t">Rescue your Snapchat Memories before they expire</span>
+            <span class="jobcard-d">The photos and videos behind years of Memories, saved as ordinary files you can open anywhere, rather than links that stop working.</span>
+          </span>
+          <span class="jobcard-foot">
+            <span class="jobcard-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>under an hour</span>
+            <span class="jobcard-go"><svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h16"/><path d="M12.5 1.5 17 6l-4.5 4.5"/></svg></span>
+          </span>
         </a>
-        <a class="card" href="guides/dest-immich.html">
-          <div class="glyph" data-icon="server"></div>
-          <h3>Immich (self-hosted)</h3>
-          <div class="meta">
-            <span class="badge medium">medium</span>
-            <span>an evening to set up, then minutes per import</span>
-          </div>
+        </div>
+      </div>
+
+      <div class="gd-sec" data-sec="service">
+        <div class="section-head">
+          <h2>Getting your data out</h2>
+          <p>One service at a time, with what to expect and the parts people get wrong.</p>
+        </div>
+        <div class="svcgrid">
+        <a class="svc" href="guides/apple.html"
+          data-kind="service" data-service="apple"
+          data-difficulty="medium"
+          data-time="days"
+          data-text="apple apple">
+          <span class="svc-ic" data-icon="apple"></span>
+          <span class="svc-name">Apple<em class="badge medium">medium</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>up to 7 days</span>
         </a>
-        <a class="card" href="guides/dest-photoprism.html">
-          <div class="glyph" data-icon="server"></div>
-          <h3>PhotoPrism (self-hosted)</h3>
-          <div class="meta">
-            <span class="badge medium">medium</span>
-            <span>an evening to set up, then an indexing run</span>
-          </div>
+        <a class="svc" href="guides/google.html"
+          data-kind="service" data-service="google"
+          data-difficulty="easy"
+          data-time="days"
+          data-text="google google">
+          <span class="svc-ic" data-icon="google"></span>
+          <span class="svc-name">Google<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>minutes to a few days</span>
         </a>
-        <a class="card" href="guides/dest-nextcloud.html">
-          <div class="glyph" data-icon="server"></div>
-          <h3>Nextcloud (self-hosted)</h3>
-          <div class="meta">
-            <span class="badge medium">medium</span>
-            <span>an evening to set up, then a scan and an index</span>
-          </div>
+        <a class="svc" href="guides/snapchat.html"
+          data-kind="service" data-service="snapchat"
+          data-difficulty="easy"
+          data-time="days"
+          data-text="snapchat snapchat">
+          <span class="svc-ic" data-icon="snapchat"></span>
+          <span class="svc-name">Snapchat<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>hours to days</span>
         </a>
-        <a class="card" href="guides/dest-ente.html">
-          <div class="glyph" data-icon="server"></div>
-          <h3>Ente (end-to-end encrypted)</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>an upload, on your own machine</span>
-          </div>
+        <a class="svc" href="guides/samsung.html"
+          data-kind="service" data-service="samsung"
+          data-difficulty="medium"
+          data-time="days"
+          data-text="samsung samsung">
+          <span class="svc-ic" data-icon="samsung"></span>
+          <span class="svc-name">Samsung<em class="badge medium">medium</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>a few days</span>
         </a>
-        <a class="card" href="guides/dest-google-photos.html">
-          <div class="glyph" data-icon="google"></div>
-          <h3>Back into Google Photos</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>hours to upload, depending on your connection</span>
-          </div>
+        <a class="svc" href="guides/facebook.html"
+          data-kind="service" data-service="facebook"
+          data-difficulty="easy"
+          data-time="days"
+          data-text="facebook facebook">
+          <span class="svc-ic" data-icon="facebook"></span>
+          <span class="svc-name">Facebook<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>minutes to a few days</span>
         </a>
-        <a class="card" href="guides/dest-icloud.html">
-          <div class="glyph" data-icon="apple"></div>
-          <h3>Back into iCloud Photos</h3>
-          <div class="meta">
-            <span class="badge easy">easy</span>
-            <span>minutes to import, longer for iCloud to sync</span>
-          </div>
+        <a class="svc" href="guides/instagram.html"
+          data-kind="service" data-service="instagram"
+          data-difficulty="easy"
+          data-time="days"
+          data-text="instagram instagram">
+          <span class="svc-ic" data-icon="instagram"></span>
+          <span class="svc-name">Instagram<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>minutes to a few days</span>
         </a>
+        <a class="svc" href="guides/x-twitter.html"
+          data-kind="service" data-service="x-twitter"
+          data-difficulty="easy"
+          data-time="days"
+          data-text="x (twitter) x-twitter">
+          <span class="svc-ic" data-icon="x-twitter"></span>
+          <span class="svc-name">X (Twitter)<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>usually within a day</span>
+        </a>
+        <a class="svc" href="guides/tiktok.html"
+          data-kind="service" data-service="tiktok"
+          data-difficulty="easy"
+          data-time="days"
+          data-text="tiktok tiktok">
+          <span class="svc-ic" data-icon="tiktok"></span>
+          <span class="svc-name">TikTok<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>a few hours to four days</span>
+        </a>
+        <a class="svc" href="guides/amazon.html"
+          data-kind="service" data-service="amazon"
+          data-difficulty="medium"
+          data-time="weeks"
+          data-text="amazon amazon">
+          <span class="svc-ic" data-icon="amazon"></span>
+          <span class="svc-name">Amazon<em class="badge medium">medium</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>six hours to a month</span>
+        </a>
+        <a class="svc" href="guides/spotify.html"
+          data-kind="service" data-service="spotify"
+          data-difficulty="easy"
+          data-time="weeks"
+          data-text="spotify spotify">
+          <span class="svc-ic" data-icon="spotify"></span>
+          <span class="svc-name">Spotify<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>a few days</span>
+        </a>
+        <a class="svc" href="guides/discord.html"
+          data-kind="service" data-service="discord"
+          data-difficulty="easy"
+          data-time="weeks"
+          data-text="discord discord">
+          <span class="svc-ic" data-icon="discord"></span>
+          <span class="svc-name">Discord<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>up to thirty days</span>
+        </a>
+        <a class="svc" href="guides/reddit.html"
+          data-kind="service" data-service="reddit"
+          data-difficulty="easy"
+          data-time="weeks"
+          data-text="reddit reddit">
+          <span class="svc-ic" data-icon="reddit"></span>
+          <span class="svc-name">Reddit<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>up to thirty days</span>
+        </a>
+        <a class="svc" href="guides/linkedin.html"
+          data-kind="service" data-service="linkedin"
+          data-difficulty="easy"
+          data-time="hours"
+          data-text="linkedin linkedin">
+          <span class="svc-ic" data-icon="linkedin"></span>
+          <span class="svc-name">LinkedIn<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>minutes</span>
+        </a>
+        <a class="svc" href="guides/whatsapp.html"
+          data-kind="service" data-service="whatsapp"
+          data-difficulty="medium"
+          data-time="days"
+          data-text="whatsapp whatsapp">
+          <span class="svc-ic" data-icon="whatsapp"></span>
+          <span class="svc-name">WhatsApp<em class="badge medium">medium</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>about three days</span>
+        </a>
+        <a class="svc" href="guides/google-fit-fitbit.html"
+          data-kind="service" data-service="google-fit-fitbit"
+          data-difficulty="medium"
+          data-time="days"
+          data-text="fitbit and google health google-fit-fitbit">
+          <span class="svc-ic" data-icon="heart"></span>
+          <span class="svc-name">Fitbit and Google Health<em class="badge medium">medium</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>hours to days</span>
+        </a>
+        <a class="svc" href="guides/strava.html"
+          data-kind="service" data-service="strava"
+          data-difficulty="easy"
+          data-time="days"
+          data-text="strava strava">
+          <span class="svc-ic" data-icon="strava"></span>
+          <span class="svc-name">Strava<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>a few hours</span>
+        </a>
+        </div>
+      </div>
+
+      <div class="gd-sec" data-sec="dest">
+        <div class="section-head">
+          <h2>Where to keep it</h2>
+          <p>Once your data is cleaned up, put it somewhere you control. These guides cover network drives, external disks, self-hosted servers, and getting a tidied library back into a cloud service.</p>
+        </div>
+        <div class="svcgrid">
+        <a class="svc" href="guides/dest-nas-generic.html"
+          data-kind="dest" data-service="dest-nas-generic"
+          data-difficulty="easy"
+          data-time="hours"
+          data-text="any nas (network folder) dest-nas-generic">
+          <span class="svc-ic" data-icon="server"></span>
+          <span class="svc-name">Any NAS (network folder)<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>minutes to connect</span>
+        </a>
+        <a class="svc" href="guides/dest-synology.html"
+          data-kind="dest" data-service="dest-synology"
+          data-difficulty="easy"
+          data-time="hours"
+          data-text="synology dest-synology">
+          <span class="svc-ic" data-icon="server"></span>
+          <span class="svc-name">Synology<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>minutes to copy</span>
+        </a>
+        <a class="svc" href="guides/dest-qnap.html"
+          data-kind="dest" data-service="dest-qnap"
+          data-difficulty="easy"
+          data-time="hours"
+          data-text="qnap dest-qnap">
+          <span class="svc-ic" data-icon="server"></span>
+          <span class="svc-name">QNAP<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>minutes to copy</span>
+        </a>
+        <a class="svc" href="guides/dest-drive.html"
+          data-kind="dest" data-service="dest-drive"
+          data-difficulty="easy"
+          data-time="hours"
+          data-text="external drive dest-drive">
+          <span class="svc-ic" data-icon="drive"></span>
+          <span class="svc-name">External drive<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>an hour to copy</span>
+        </a>
+        <a class="svc" href="guides/dest-immich.html"
+          data-kind="dest" data-service="dest-immich"
+          data-difficulty="medium"
+          data-time="days"
+          data-text="immich (self-hosted) dest-immich">
+          <span class="svc-ic" data-icon="server"></span>
+          <span class="svc-name">Immich (self-hosted)<em class="badge medium">medium</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>an evening to set up</span>
+        </a>
+        <a class="svc" href="guides/dest-photoprism.html"
+          data-kind="dest" data-service="dest-photoprism"
+          data-difficulty="medium"
+          data-time="days"
+          data-text="photoprism (self-hosted) dest-photoprism">
+          <span class="svc-ic" data-icon="server"></span>
+          <span class="svc-name">PhotoPrism (self-hosted)<em class="badge medium">medium</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>an evening to set up</span>
+        </a>
+        <a class="svc" href="guides/dest-nextcloud.html"
+          data-kind="dest" data-service="dest-nextcloud"
+          data-difficulty="medium"
+          data-time="days"
+          data-text="nextcloud (self-hosted) dest-nextcloud">
+          <span class="svc-ic" data-icon="server"></span>
+          <span class="svc-name">Nextcloud (self-hosted)<em class="badge medium">medium</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>an evening to set up</span>
+        </a>
+        <a class="svc" href="guides/dest-ente.html"
+          data-kind="dest" data-service="dest-ente"
+          data-difficulty="easy"
+          data-time="days"
+          data-text="ente (end-to-end encrypted) dest-ente">
+          <span class="svc-ic" data-icon="server"></span>
+          <span class="svc-name">Ente (end-to-end encrypted)<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>an upload</span>
+        </a>
+        <a class="svc" href="guides/dest-google-photos.html"
+          data-kind="dest" data-service="dest-google-photos"
+          data-difficulty="easy"
+          data-time="hours"
+          data-text="back into google photos dest-google-photos">
+          <span class="svc-ic" data-icon="google"></span>
+          <span class="svc-name">Back into Google Photos<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>hours to upload</span>
+        </a>
+        <a class="svc" href="guides/dest-icloud.html"
+          data-kind="dest" data-service="dest-icloud"
+          data-difficulty="easy"
+          data-time="minutes"
+          data-text="back into icloud photos dest-icloud">
+          <span class="svc-ic" data-icon="apple"></span>
+          <span class="svc-name">Back into iCloud Photos<em class="badge easy">easy</em></span>
+          <span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>minutes to import</span>
+        </a>
+        </div>
       </div>
     </section>
 
@@ -340,6 +458,8 @@
   <script src="disclose.js?v=b24e640b"></script>
   <!-- Counts that a guide was read. See privacy.html. -->
   <script src="analytics.js?v=e2665599"></script>
-  <script src="app.js?v=26ca82cf"></script>
+  <script src="app.js?v=29737606"></script>
+  <script src="guidefilter.js?v=3be1d60a"></script>
+
 </body>
 </html>

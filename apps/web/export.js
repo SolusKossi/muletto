@@ -77,6 +77,7 @@ const MExport = (function () {
       layout: "year-month",
       datePrefix: false,
       writeDates: true,
+      toJpeg: false,
       sidecars: false,
       manifest: true,
       includeData: false,
@@ -174,6 +175,16 @@ const MExport = (function () {
         <em>The JSON and CSV your services shipped - messages, history, account records.
         Off by default because most people want the pictures.</em></span>
       </label>
+
+      ${state.lib.media.some((m) => m.heif) ? `
+      <label class="xw-opt">
+        <input type="checkbox" data-o="toJpeg" ${o.toJpeg ? "checked" : ""} />
+        <span><b>Turn HEIC photos into JPEG</b>
+        <em>${plural(state.lib.media.filter((m) => m.heif).length, "photo is", "photos are")}
+        HEIC, which is what an iPhone shoots and what Apple exports. Windows, most older
+        software and a lot of the web cannot open one. Converting is done here on your
+        machine, keeps the date and place, and roughly doubles the file size.</em></span>
+      </label>` : ""}
 
       <label class="xw-opt">
         <input type="checkbox" data-o="includeWork" ${o.includeWork ? "checked" : ""} />
@@ -289,9 +300,14 @@ const MExport = (function () {
   /* ---------- doing it ---------- */
 
   function nameFor(m) {
-    if (!state.opt.datePrefix || !m.at) return m.name;
+    /* A converted photo must not keep the old extension. A JPEG called .HEIC
+       opens in about half the places a .jpg does, which would undo the point
+       of converting it. */
+    let name = m.name;
+    if (state.opt.toJpeg && m.heif) name = name.replace(/.(heic|heif)$/i, ".jpg");
+    if (!state.opt.datePrefix || !m.at) return name;
     const d = m.at;
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${m.name}`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${name}`;
   }
 
   function sidecarFor(m) {
@@ -354,9 +370,33 @@ const MExport = (function () {
       ? new Uint8Array(await merged.arrayBuffer())
       : await MZip.extract(file, m.entry);
     const drawn = !!merged;
+
+    /* HEIC out, JPEG in, if that was asked for.
+     *
+     * Apple exports what the camera shot, and what an iPhone shoots is HEIC.
+     * It is a better format and it is unopenable on a lot of what people
+     * actually own, so the copy somebody takes away is often a folder of
+     * files their own computer will not preview. Converting is a real loss -
+     * a re-encode, and about twice the bytes - so it is asked for rather than
+     * assumed, and the original archive is untouched either way.
+     *
+     * Done before the date is written in, because what comes out is a JPEG
+     * and a JPEG is exactly what MExif can write a date into. That is the
+     * whole reason this ordering matters: a HEIC could never carry the
+     * repaired date, so converting is also what lets the date survive. */
+    let converted = false;
+    if (state.opt.toJpeg && m.heif && typeof MHeif !== "undefined") {
+      try {
+        const jpeg = await MHeif.toJpegBlob(bytes, 0.92);
+        if (jpeg) {
+          bytes = new Uint8Array(await jpeg.arrayBuffer());
+          converted = true;
+        }
+      } catch (err) { /* keep the original rather than lose the photograph */ }
+    }
     const jpeg = MExif.isJpeg(bytes);
     if (!jpeg || (!wantDate && !wantDesc)) {
-      return { bytes, drawn, repaired: false, unrepairable: (wantDate || wantDesc) && !jpeg };
+      return { bytes, drawn, converted, repaired: false, unrepairable: (wantDate || wantDesc) && !jpeg };
     }
     let repaired = false, captioned = false;
     try {
@@ -370,8 +410,8 @@ const MExport = (function () {
         bytes = MExif.writeDescription(bytes, m.caption);
         captioned = true;
       }
-    } catch { return { bytes, drawn, repaired, captioned, unrepairable: true }; }
-    return { bytes, drawn, repaired, captioned };
+    } catch { return { bytes, drawn, converted, repaired, captioned, unrepairable: true }; }
+    return { bytes, drawn, converted, repaired, captioned };
   }
 
   async function run() {
@@ -401,7 +441,7 @@ const MExport = (function () {
         try {
           const dir = LAYOUTS[o.layout].dir(m);
           const name = nameFor(m);
-          const { bytes, size, drawn, repaired, captioned, unrepairable } = await bytesFor(m);
+          const { bytes, size, drawn, converted, repaired, captioned, unrepairable } = await bytesFor(m);
           await writer.file(dir, name, bytes, m.at);
           /* A caption that could not be drawn on - a video, or a picture the
              browser would not decode - is written beside its memory rather
@@ -414,6 +454,7 @@ const MExport = (function () {
             res.captions = (res.captions || 0) + 1;
           }
           if (drawn) res.drawn = (res.drawn || 0) + 1;
+          if (converted) res.converted = (res.converted || 0) + 1;
           if (repaired) res.repaired++;
           if (captioned) res.captioned++;
           if (unrepairable) res.unrepairable++;
@@ -598,6 +639,7 @@ const MExport = (function () {
           ${r.captioned ? `<li>Wrote ${plural(r.captioned, "description", "descriptions")} into the photos themselves, where Lightroom, Immich, digiKam and Photos can search them.</li>` : ""}
           ${r.drawn ? `<li>Drew the caption back onto ${plural(r.drawn, "memory", "memories")} that Snapchat had split into two files, so each one is the picture as you wrote it rather than a photo and a black square.</li>` : ""}
           ${r.captions ? `<li>${plural(r.captions, "caption", "captions")} could not be drawn on - a video would have to be re-encoded - so each was written beside its memory as <strong>-caption.png</strong>.</li>` : ""}
+          ${r.converted ? `<li>Turned ${plural(r.converted, "HEIC photo", "HEIC photos")} into JPEG, so they open on anything - and, because a date can only be written into a JPEG, those now carry their real capture date as well.</li>` : ""}
           ${r.sidecars ? `<li>Wrote ${plural(r.sidecars, "sidecar", "sidecars")} beside the pictures.</li>` : ""}
           ${r.dataFiles ? `<li>Included ${plural(r.dataFiles, "data file", "data files")} from the original exports.</li>` : ""}
           ${state.opt.manifest ? "<li>Wrote <strong>muletto-index.csv</strong> listing everything.</li>" : ""}
