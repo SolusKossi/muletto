@@ -86,19 +86,36 @@ module.exports = async function handler(req, res) {
   const country = String(req.headers["x-vercel-ip-country"] || "??").slice(0, 2).toUpperCase();
   const mobile = body.m === true ? "mobile" : "desktop";
 
-  const K = (kind) => "mu:" + kind + ":" + day;
+  /* One key per day, one field per thing counted.
+   *
+   * This was six sorted sets and six EXPIREs and an index - thirteen commands
+   * for one page view - which matters because the store is billed by the
+   * command. A hash does the same job in six, reads back in one instead of
+   * six, and needs a single expiry rather than six. The whole day is one key,
+   * so it also expires as one thing.
+   *
+   * The prefixes are how a field says what it is. Anything unrecognised is
+   * ignored on the way out, so a field added later cannot break an older
+   * reader. */
+  const key = "mu:d:" + day;
   const cmds = [
-    ["INCR", K("pv")], ["EXPIRE", K("pv"), TTL],
-    ["ZINCRBY", K("path"), 1, path || "/"], ["EXPIRE", K("path"), TTL],
-    ["ZINCRBY", K("ref"), 1, ref], ["EXPIRE", K("ref"), TTL],
-    ["ZINCRBY", K("geo"), 1, country], ["EXPIRE", K("geo"), TTL],
-    ["ZINCRBY", K("ua"), 1, browser], ["EXPIRE", K("ua"), TTL],
-    ["ZINCRBY", K("dev"), 1, mobile], ["EXPIRE", K("dev"), TTL],
-    /* The index of days that have anything in them, so reading does not have
-       to guess at date ranges. */
-    ["ZADD", "mu:days", Date.parse(day), day],
+    ["HINCRBY", key, "pv", 1],
+    ["HINCRBY", key, "p:" + path, 1],
+    ["HINCRBY", key, "r:" + ref, 1],
+    ["HINCRBY", key, "g:" + country, 1],
+    ["HINCRBY", key, "u:" + browser, 1],
+    ["HINCRBY", key, "d:" + mobile, 1],
   ];
 
-  try { await pipeline(cmds); } catch { /* a lost count is not worth an error */ }
+  try {
+    const out = await pipeline(cmds);
+    /* The expiry is set once, by whoever counted the first view of the day,
+       rather than on every view for the rest of it. HINCRBY returns the new
+       total, so a 1 is that first view. Costs one command a day instead of
+       one per view. */
+    if (out && Number(out[0]) === 1) {
+      await pipeline([["EXPIRE", key, TTL]]);
+    }
+  } catch { /* a lost count is not worth an error */ }
   return done(204);
 };
