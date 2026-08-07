@@ -81,16 +81,22 @@ const MNotify = (function () {
         place();
       }
     });
-    addEventListener("resize", () => { if (!q("#nt-panel").hidden) place(); });
+    /* The bell lives inside the explorer, and these three listeners live on
+       the document and the window, which outlast it. Closing the explorer
+       removed the panel and left them asking a null for its `hidden`, so
+       every click and every Escape after that threw - silently, since nothing
+       was watching the console. */
+    const panelOr = (fn) => { const p = q("#nt-panel"); if (p) fn(p); };
+    addEventListener("resize", () => panelOr((p) => { if (!p.hidden) place(); }));
     q("#nt-clear").addEventListener("click", () => {
       items.length = 0;
       drawList();
     });
     document.addEventListener("click", (e) => {
-      if (!hub.contains(e.target)) q("#nt-panel").hidden = true;
+      if (!hub.contains(e.target)) panelOr((p) => { p.hidden = true; });
     });
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") q("#nt-panel").hidden = true;
+      if (e.key === "Escape") panelOr((p) => { p.hidden = true; });
     });
     return root;
   }

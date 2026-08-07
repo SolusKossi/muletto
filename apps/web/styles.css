@@ -3109,3 +3109,67 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    explains nothing. */
 .held-back { opacity: .55; }
 .held-back:hover { opacity: .8; }
+
+/* A day that is nowhere near the viewport costs nothing.
+   The browser skips layout and paint for a section it cannot see, which is
+   what makes fourteen hundred sticky headers affordable. The intrinsic size
+   is a guess that the browser replaces with the real one the first time the
+   section is measured, so the scrollbar settles rather than jumping. */
+.ex-day { content-visibility: auto; contain-intrinsic-size: auto 320px; }
+/* The sentinel that asks for the next batch. It has to have height, or an
+   observer would never see it arrive. */
+.ex-tlend { height: 1px; }
+
+/* ===== the opener page, rebuilt =====
+   One action, made the biggest thing on the page, with everything that used
+   to compete with it demoted to a line or folded away. */
+.open-head { padding-top: 88px; padding-bottom: 0; }
+.open-head h1 { font-size: clamp(32px, 5vw, 46px); }
+.open-head p { color: var(--muted); font-size: 18px; line-height: 1.6; margin-top: 14px;
+  max-width: 54ch; }
+.open-wrap { padding-top: 30px; max-width: 700px; }
+
+/* The drop zone is the page. Taller, with the arrow doing the explaining that
+   three lines of small print used to do badly. */
+.open-wrap .drop { padding: 62px 24px 58px; display: grid; gap: 14px; justify-items: center; }
+.drop-ic { width: 40px; height: 40px; color: var(--muted); }
+.drop:hover .drop-ic, .drop.hot .drop-ic { color: var(--accent); }
+.open-wrap .drop p { margin: 0; display: grid; gap: 5px; }
+.open-wrap .drop strong { font-size: 19px; font-weight: 600; }
+.open-wrap .drop span { font-size: 14px; color: var(--muted); }
+
+.drop-fine { margin: 12px 2px 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+
+/* The samples, as one sentence rather than a card that competes with the
+   drop zone for the same decision. */
+.open-alt { margin: 26px 0 0; padding-top: 20px; border-top: 1px solid var(--line-2);
+  font-size: 14.5px; color: var(--muted); }
+.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--ink);
+  font-weight: 560; cursor: pointer; text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.linkish:hover { color: var(--accent); }
+
+/* The proof, folded away. It is the best thing this product can say about
+   itself and it was also three long paragraphs standing between somebody and
+   the only button that matters. */
+.open-check { margin: 22px 0 0; border-top: 1px solid var(--line-2); }
+.open-check > summary { cursor: pointer; list-style: none; padding: 15px 0;
+  font-size: 14.5px; font-weight: 560; color: var(--body);
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.open-check > summary::-webkit-details-marker { display: none; }
+.open-check > summary:hover { color: var(--ink); }
+.open-check > summary::after { content: ""; flex: none; width: 12px; height: 12px;
+  background:
+    linear-gradient(currentColor, currentColor) center / 12px 1.5px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1.5px 12px no-repeat;
+  color: var(--muted); transition: transform .26s var(--disclose-ease),
+    background-size .26s var(--disclose-ease); }
+.open-check[open] > summary::after { transform: rotate(180deg);
+  background-size: 12px 1.5px, 1.5px 0; }
+.open-check ol { margin: 0 0 16px; padding-left: 20px; }
+.open-check li { font-size: 14px; line-height: 1.65; color: var(--muted);
+  margin-bottom: 12px; max-width: 68ch; }
+.open-check li strong { color: var(--body); }
+.open-check .fine { max-width: 68ch; }
+
+.open-wrap .import-result { margin: 0 0 20px; }

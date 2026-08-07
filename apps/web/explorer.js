@@ -995,7 +995,9 @@
 
      Beyond this many rows the browser starts to struggle, and a cap with a
      visible note is better than a page that will not scroll. */
-  const ROW_CAP = 8000;
+  /* How many day sections are built at a time. Sixty is roughly two
+     screenfuls on a laptop, so the next batch is always already there. */
+  const DAY_CHUNK = 60;
 
   function filteredDays() {
     const q = state.query;
@@ -1059,37 +1061,129 @@
       return;
     }
 
-    let total = 0, capped = 0;
-    const shown = [];
-    for (const d of days) {
-      if (total >= ROW_CAP) { capped += d.items.length; continue; }
-      shown.push(d);
-      total += d.items.length;
-    }
-    state.days = shown;
+    /* Every day is kept; only the ones near the viewport are built.
+     *
+     * This used to put the lot into the DOM and stop at eight thousand rows,
+     * which failed at both ends. Three thousand items came to forty-three
+     * thousand elements and fourteen hundred sticky headers, and a single
+     * relayout measured thirty-six milliseconds - two frames gone, on every
+     * frame of a scroll. And somebody with a real Takeout would have hit the
+     * cap and been told the rest of their own life was "not shown".
+     *
+     * Reducing the data would have been the wrong fix for exactly that
+     * reason: a real timeline is much larger than this, and the answer has to
+     * scale with it. Days are appended a chunk at a time as the end comes
+     * into view, so what it costs to scroll depends on how far you have
+     * scrolled rather than on how much you have. */
+    state.days = days;
+    const total = days.reduce((n, d) => n + d.items.length, 0);
 
     body.innerHTML = coverageBanner() + `
       <p class="muted small ex-count">${plural(total, "item", "items")} across
-        ${plural(shown.length, "day", "days")}${capped
-          ? `. ${num(capped)} older items are not shown - narrow it down with the search or a source.`
-          : "."}</p>
-      <div class="ex-tl" id="ex-tl">${shown.map(dayHtml).join("")}</div>`;
+        ${plural(days.length, "day", "days")}.</p>
+      <div class="ex-tl" id="ex-tl"></div>
+      <div class="ex-tlend" id="ex-tlend" aria-hidden="true"></div>`;
 
     const cover = body.querySelector("#ex-cover");
     if (cover) cover.addEventListener("click", () => showView("report"));
 
     const tl = body.querySelector("#ex-tl");
-    state.ctx.hydrate(tl);
-    watchThumbs(tl);
+    state.tl = { el: tl, drawn: 0 };
+    growTimeline(DAY_CHUNK);
 
     tl.addEventListener("click", (e) => {
       const row = e.target.closest(".ex-row");
       if (row) selectItem(row.dataset.day, Number(row.dataset.i));
     });
 
-    attachRail(shown.map((d, i) => ({ date: d.date, index: i })),
+    /* The end of the list, watched. Generous margin so the next chunk is
+       already there by the time it would have been needed. */
+    if (state.tlIo) { state.tlIo.disconnect(); state.tlIo = null; }
+    if (state.tlScroll) { state.tlScroll(); state.tlScroll = null; }
+    const end = body.querySelector("#ex-tlend");
+    const scroller = document.getElementById("explorer").querySelector("#ex-scroll");
+    if (end && "IntersectionObserver" in window) {
+      state.tlIo = new IntersectionObserver((es) => {
+        if (es.some((e) => e.isIntersecting)) growTimeline(state.tl.drawn + DAY_CHUNK);
+      }, { root: scroller, rootMargin: "1200px" });
+      state.tlIo.observe(end);
+    }
+
+    /* And a plain scroll handler behind it.
+     *
+     * An observer that does not fire leaves somebody looking at sixty days of
+     * their own life with no way to reach the rest, which is a far worse
+     * failure than the one this replaced. A scroll position is a number that
+     * is always true, so it is the thing to fall back on. Both are kept: the
+     * observer is better when it works, and this costs a comparison. */
+    if (scroller) {
+      let queued = false;
+      const onScroll = () => {
+        if (queued) return;
+        queued = true;
+        setTimeout(() => {
+          queued = false;
+          if (!state.tl || !state.tl.el.isConnected) return;
+          const left = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
+          if (left < 1200) growTimeline(state.tl.drawn + DAY_CHUNK);
+        }, 120);
+      };
+      scroller.addEventListener("scroll", onScroll, { passive: true });
+      state.tlScroll = () => scroller.removeEventListener("scroll", onScroll);
+      /* Sixty days may not reach the bottom of the window on a tall screen,
+         and nothing scrolls a page that does not overflow - so it would sit
+         there having never asked for more. */
+      const fill = () => {
+        if (!state.tl || !state.tl.el.isConnected) return;
+        if (state.tl.drawn >= state.days.length) return;
+        if (scroller.scrollHeight <= scroller.clientHeight + 400) {
+          growTimeline(state.tl.drawn + DAY_CHUNK);
+          setTimeout(fill, 60);
+        }
+      };
+      setTimeout(fill, 60);
+    }
+
+    attachRail(days.map((d, i) => ({ date: d.date, index: i })),
       (i) => document.querySelector(`#ex-tl .ex-day[data-di="${i}"]`),
-      (i) => document.querySelector(`#ex-tl .ex-day[data-di="${i}"]`));
+      /* locate() is allowed to build what it needs first - the rail was
+         written for this, and it is what lets a drag to 2020 land on a day
+         that has never been rendered. */
+      (i) => {
+        growTimeline(i + 1);
+        return document.querySelector(`#ex-tl .ex-day[data-di="${i}"]`);
+      });
+  }
+
+  /* Build day sections until at least `upTo` of them exist. */
+  function growTimeline(upTo) {
+    const t = state.tl;
+    if (!t || !t.el.isConnected) return;
+    const end = Math.min(state.days.length, upTo);
+    if (end <= t.drawn) return;
+
+    const from = t.drawn;
+    t.el.insertAdjacentHTML("beforeend",
+      state.days.slice(from, end).map(dayHtml).join(""));
+    t.drawn = end;
+
+    const fresh = [...t.el.children].slice(from);
+    for (const sec of fresh) state.ctx.hydrate(sec);
+
+    /* The first batch sets the observer up; later ones join the one that is
+       already running, because rebuilding it would drop everything it was
+       already watching. */
+    if (!state.thumbIo) {
+      watchThumbs(t.el);
+    } else {
+      for (const sec of fresh) {
+        sec.querySelectorAll("[data-thumb]").forEach((el) => state.thumbIo.observe(el));
+      }
+    }
+    if (t.drawn >= state.days.length && state.tlIo) {
+      state.tlIo.disconnect();
+      state.tlIo = null;
+    }
   }
 
   /* One rail per view. Rebuilt rather than updated, because switching views
