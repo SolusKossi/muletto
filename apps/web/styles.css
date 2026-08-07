@@ -3302,3 +3302,124 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   .jobcard-ic { width: 56px; height: 56px; border-radius: 13px; }
   .jobcard-ic svg { width: 26px; height: 26px; }
 }
+
+/* ===== health =====
+   A dashboard rather than a table of charts. Everything is currentColor at
+   varying opacity, so it stays in the site's greyscale and follows light and
+   dark without a second set of rules. */
+.hv { display: block; width: 100%; height: auto; }
+
+/* ---- the summary at the top ---- */
+.hh { border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--surface); padding: 26px 28px 22px; margin: 0 0 18px; }
+.hh-head h2 { margin: 0 0 4px; font-size: 22px; font-weight: 620; letter-spacing: -.015em; }
+.hh-head p { margin: 0 0 22px; font-size: 14px; }
+.hh-axis { position: relative; height: 15px; margin-left: 188px; margin-bottom: 4px; }
+.hh-axis span { position: absolute; transform: translateX(-50%); font-size: 11.5px;
+  color: var(--muted); font-variant-numeric: tabular-nums; }
+.hh-rows { display: grid; gap: 4px; }
+.hh-row { display: grid; grid-template-columns: 188px minmax(0, 1fr); align-items: center; }
+.hh-what { display: grid; grid-template-columns: auto 1fr; column-gap: 11px; align-items: center; }
+.hh-what i { grid-row: 1 / 3; display: inline-flex; width: 30px; height: 30px;
+  align-items: center; justify-content: center; color: var(--muted); }
+.hh-what i svg { width: 20px; height: 20px; }
+.hh-what b { font-size: 14.5px; font-weight: 600; }
+.hh-what em { font-style: normal; font-size: 12px; color: var(--muted); }
+/* The ridge is the row. The pills sit on it because they describe that band
+   and nothing else - put them in a legend and you have to look twice. */
+.hh-shape { position: relative; color: var(--ink); }
+.hh-shape .hv-ridge { height: 78px; }
+.hh-pills { position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: flex-end; gap: 8px; padding-right: 10px; pointer-events: none; }
+.hh-pill { background: var(--surface); border: 1px solid var(--line);
+  border-radius: 999px; padding: 4px 11px; font-size: 12px; color: var(--body);
+  white-space: nowrap; box-shadow: var(--shadow-sm); }
+
+.hh-stand { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line-2); }
+.hh-stand h3 { margin: 0 0 12px; font-size: 11.5px; font-weight: 620; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--muted); }
+.hh-cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.hh-card { border: 1px solid var(--line); border-radius: 13px; padding: 15px 16px;
+  background: var(--surface-2); }
+.hh-card i { display: inline-flex; width: 30px; height: 30px; align-items: center;
+  justify-content: center; border-radius: 50%; background: var(--surface);
+  border: 1px solid var(--line); color: var(--muted); margin-bottom: 10px; }
+.hh-card i svg { width: 16px; height: 16px; }
+.hh-card b { display: block; font-size: 14.5px; font-weight: 600; margin-bottom: 5px; }
+.hh-card p { margin: 0; line-height: 1.55; }
+
+/* ---- where things stand now ---- */
+.hb, .hx, .hs { margin: 18px 0; }
+.hb-head h3 { margin: 0 0 3px; font-size: 16px; font-weight: 620; }
+.hb-head p { margin: 0 0 14px; }
+.hb-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.hb-tile { display: flex; align-items: center; gap: 20px; padding: 20px 22px;
+  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface);
+  color: var(--ink); }
+.hb-tile .hv-dial { width: 118px; height: 118px; flex: none; }
+.hb-band { width: 96px; height: 118px; flex: none; }
+.hb-band .hv { height: 118px; }
+.hb-bars { width: 132px; height: 118px; flex: none; display: flex; align-items: flex-end; }
+.hb-bars .hv { height: 96px; }
+.hb-read { min-width: 0; }
+.hb-read b { display: block; font-size: 30px; font-weight: 600; letter-spacing: -.025em;
+  line-height: 1.05; }
+.hb-read b em { font-style: normal; font-size: 14px; font-weight: 500; color: var(--muted);
+  margin-left: 5px; }
+.hb-read span { display: block; margin-top: 4px; font-size: 13px; color: var(--muted); }
+.hb-chip { display: inline-block; margin-top: 11px; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2);
+  font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+
+/* ---- every signal ---- */
+.hx-fam { margin-bottom: 22px; }
+.hx-fam h4 { display: flex; align-items: center; gap: 9px; margin: 0 0 11px;
+  font-size: 13px; font-weight: 620; }
+.hx-fam h4 i { display: inline-flex; width: 17px; height: 17px; color: var(--muted); }
+.hx-fam h4 i svg { width: 100%; height: 100%; }
+.hx-fam h4 em { font-style: normal; font-weight: 400; font-size: 12.5px; }
+.hx-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.hx-card { border: 1px solid var(--line); border-radius: 14px; padding: 16px 17px;
+  background: var(--surface); color: var(--ink); }
+.hx-card h5 { margin: 0 0 8px; font-size: 13.5px; font-weight: 600; }
+.hx-fig b { font-size: 23px; font-weight: 600; letter-spacing: -.02em; }
+.hx-fig b em { font-style: normal; font-size: 13px; font-weight: 500; color: var(--muted);
+  margin-left: 4px; }
+.hx-fig span { margin-left: 7px; font-size: 12px; color: var(--muted); }
+.hx-chart { margin: 12px 0 4px; color: var(--ink); }
+.hx-chart .hv { height: 62px; }
+.hx-trend { margin: 8px 0 0; font-size: 12.5px; color: var(--body);
+  font-variant-numeric: tabular-nums; }
+.hx-trend span { color: var(--muted); }
+.hx-holds { margin: 8px 0 0; line-height: 1.5; }
+.hx-n { margin: 8px 0 0; font-size: 11.5px; color: var(--muted); }
+.hx-range { white-space: nowrap; }
+
+/* ---- which export it came out of ---- */
+.hs { display: flex; align-items: center; gap: 26px; flex-wrap: wrap;
+  padding: 18px 22px; border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--surface-2); }
+.hs-what { flex: 1 1 280px; min-width: 0; }
+.hs-what b { display: block; font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.hs-what p { margin: 0; max-width: 56ch; }
+.hs-list { display: flex; gap: 9px; flex-wrap: wrap; }
+.hs-src { display: inline-flex; flex-direction: column; padding: 9px 14px;
+  border: 1px solid var(--line); border-radius: 11px; background: var(--surface); }
+.hs-src b { font-size: 13px; font-weight: 560; }
+.hs-src em { font-style: normal; font-size: 11.5px; color: var(--muted); }
+
+@media (max-width: 860px) {
+  .hh { padding: 20px; }
+  .hh-axis { margin-left: 0; }
+  .hh-row { grid-template-columns: 1fr; gap: 2px; }
+  .hh-pills { position: static; justify-content: flex-start; padding: 6px 0 0; }
+  .hb-tile { gap: 14px; padding: 16px; }
+}
+.hh-card p strong { color: var(--ink); font-weight: 600; }
+.hx-stages { margin: 10px 0 2px; color: var(--ink); }
+.hx-stages .hv-stack { height: 13px; }
+.hx-legend { display: flex; gap: 13px; flex-wrap: wrap; margin-top: 7px;
+  font-size: 11.5px; color: var(--muted); }
+.hx-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.hx-legend i { width: 8px; height: 8px; border-radius: 2px; background: currentColor;
+  color: var(--ink); display: inline-block; }

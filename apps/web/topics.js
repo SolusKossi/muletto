@@ -385,6 +385,91 @@ const MTopics = (function () {
     return out;
   }
 
+  /* Which family a signal belongs to, and how it should be drawn.
+   *
+   * The page used to be one sparkline repeated fourteen times, which made
+   * fourteen unrelated measurements look like the same measurement. The chart
+   * is now chosen from what the number means: a daily count is bars, a slow
+   * measure is a line, a nightly spread is a band, an occasion is dots, and
+   * the two readings everybody has a sense of the range for get a dial.
+   *
+   * `lead` marks the one signal that stands for its family in the summary at
+   * the top - steps for movement, sleep for recovery, weight for the body -
+   * because a summary of everything is a summary of nothing. */
+  const SHAPE = {
+    steps:    { family: "move", chart: "bars", lead: true },
+    floors:   { family: "move", chart: "bars" },
+    exercise: { family: "move", chart: "dots" },
+    sleep:    { family: "rest", chart: "band", lead: true },
+    stress:   { family: "rest", chart: "line" },
+    hrv:      { family: "rest", chart: "line" },
+    resp:     { family: "rest", chart: "line" },
+    weight:   { family: "body", chart: "line", lead: true },
+    heart:    { family: "body", chart: "dial" },
+    bp:       { family: "body", chart: "line" },
+    spo2:     { family: "body", chart: "dial" },
+    temp:     { family: "body", chart: "line" },
+    ecg:      { family: "body", chart: "line" },
+    food:     { family: "log",  chart: "bars" },
+    water:    { family: "log",  chart: "bars" },
+    rewards:  { family: "log",  chart: "none" },
+    together: { family: "log",  chart: "none" },
+  };
+
+  const FAMILY = [
+    { key: "move", name: "Movement", holds: "Activity and workouts", icon: "activity" },
+    { key: "rest", name: "Recovery", holds: "Sleep and stress", icon: "clock" },
+    { key: "body", name: "Body", holds: "Vitals and composition", icon: "heart" },
+    { key: "log",  name: "Logged by hand", holds: "Meals, drinks and badges", icon: "note" },
+  ];
+
+  /* What the numbers did between the two ends of the record.
+   *
+   * The first and last sixth are averaged rather than a line being fitted:
+   * steady enough not to swing on one bad night, and simple enough that the
+   * figure on screen is one anybody could check by hand.
+   *
+   * It says what changed and stops. Weight down and steps up are both
+   * "better" to most people and neither is ours to declare - this is a record,
+   * not a verdict. */
+  const trendOf = (points) => {
+    if (!points || points.length < 8) return null;
+    const k = Math.max(2, Math.round(points.length / 6));
+    const mean = (a) => a.reduce((s, p) => s + p.v, 0) / a.length;
+    const from = mean(points.slice(0, k)), to = mean(points.slice(-k));
+    if (!isFinite(from) || !isFinite(to) || !from) return null;
+    const pct = ((to - from) / Math.abs(from)) * 100;
+    const round = (v) => (Math.abs(v) >= 100 ? Math.round(v)
+      : Math.abs(v) >= 10 ? Math.round(v * 10) / 10 : Math.round(v * 100) / 100);
+    return { from: round(from), to: round(to), pct: Math.round(pct),
+             up: to > from, steady: Math.abs(pct) < 3 };
+  };
+
+  const yearsOf = (span) => {
+    if (!span || !span.from || !span.to) return 0;
+    return (span.to - span.from) / (365.25 * 24 * 3600 * 1000);
+  };
+
+  /* The last stretch of the record, which is what "now" means for a number
+     taken every day for six years. */
+  function recent(points, days) {
+    if (!points || !points.length) return [];
+    const last = points[points.length - 1].t;
+    const cut = last - days * 24 * 3600 * 1000;
+    const out = points.filter((p) => p.t >= cut);
+    return out.length >= 3 ? out : points.slice(-Math.min(points.length, 30));
+  }
+
+  const mean = (pts) => (pts.length
+    ? pts.reduce((s, p) => s + p.v, 0) / pts.length : 0);
+
+  /* Minutes read as hours, once, where it is shown. Samsung writes sleep in
+     minutes and the figure "413" means nothing to anybody. */
+  const asHours = (mins) => {
+    const h = Math.floor(mins / 60), m = Math.round(mins - h * 60);
+    return h + "h " + String(m).padStart(2, "0") + "m";
+  };
+
   function drawHealth(el, match, lib) {
     const kinds = (typeof MCatalog !== "undefined" && MCatalog.HEALTH) || [];
     const have = new Map();
@@ -393,157 +478,314 @@ const MTopics = (function () {
       have.get(m.kind.key).tables.push(m.table);
     }
 
-    /* What the numbers did over the years the export covers.
-     *
-     * A health page that only ever shows an average is the least interesting
-     * thing it could show. Somebody who has worn a watch since 2020 already
-     * knows roughly what their resting heart rate is; what they cannot see
-     * anywhere - not in Samsung Health, not in Apple Health - is that it came
-     * down eleven beats over six years, because those apps show you a month.
-     *
-     * Measured from the ends of the series rather than a fitted line: the
-     * first and last sixth are averaged, which is steady enough not to swing
-     * on one bad night and simple enough to be obviously honest.
-     *
-     * Deliberately not labelled better or worse. Weight down and steps up are
-     * both "improvement" to most people and neither is ours to declare, so
-     * this says what changed and stops. */
-    const trendOf = (points) => {
-      if (!points || points.length < 8) return null;
-      const k = Math.max(2, Math.round(points.length / 6));
-      const mean = (a) => a.reduce((s, p) => s + p.v, 0) / a.length;
-      const from = mean(points.slice(0, k)), to = mean(points.slice(-k));
-      if (!isFinite(from) || !isFinite(to) || !from) return null;
-      const pct = ((to - from) / Math.abs(from)) * 100;
-      if (Math.abs(pct) < 3) return { steady: true };
-      const round = (v) => (Math.abs(v) >= 100 ? Math.round(v)
-        : Math.abs(v) >= 10 ? Math.round(v * 10) / 10 : Math.round(v * 100) / 100);
-      return { from: num(round(from)), to: num(round(to)),
-               pct: Math.abs(Math.round(pct)), up: to > from };
-    };
-
-    const years = (span) => {
-      if (!span || !span.from || !span.to) return "";
-      const y = (span.to - span.from) / (365.25 * 24 * 3600 * 1000);
-      if (y < 0.5) return "";
-      return y < 1.5 ? "over a year" : "over " + Math.round(y) + " years";
-    };
-
-    const panel = (entry) => {
-      const rows = entry.tables.reduce((n, t) => n + t.rows.length, 0);
-      /* The chart comes from insights, which already knows how to find the
-         one column in a health table worth plotting and how to degrade when
-         there are four readings rather than four hundred thousand. */
-      let figure = "", chart = "", trend = "", range = "";
+    /* Every table for a kind is asked and the one with the most readings
+       wins. It used to ask only the first, which is whichever export happened
+       to open first - Google's ninety-row summary sat in front of Samsung's
+       two thousand daily step counts. */
+    const signal = new Map();
+    for (const [key, entry] of have) {
+      let best = null;
       if (typeof MInsight !== "undefined" && MInsight.cardsFor) {
-        try {
-          /* Every table for this kind is asked, and the one with the most
-             readings behind it wins.
-
-             It used to ask only the first, which is whichever export happened
-             to be opened first: Google's ninety-row activity summary sat in
-             front of Samsung's two thousand daily step counts, so the Steps
-             panel showed a figure from the wrong table while the count
-             underneath it described both. */
-          let s = null;
-          for (const t of entry.tables) {
+        for (const t of entry.tables) {
+          try {
             const c = (MInsight.cardsFor(t) || []).find((x) => x.kind === "series");
-            if (c && (!s || (c.n || 0) > (s.n || 0))) s = c;
-          }
-          if (s) {
-            /* The unit and the word after it are separate elements, so the
-               space between them has to be real rather than assumed - it read
-               as "90.1 bpmaverage" and "56 kglatest". */
-            figure = '<div class="hl-figure"><b>' + esc(s.stat) +
-              (s.unit ? ' <em>' + esc(s.unit) + "</em>" : "") + "</b> " +
-              '<span class="muted small">' + esc(s.statLabel || "") + "</span></div>";
-
-            /* The chart was computed every time this page drew and then
-               thrown away, so every panel was one number and a sentence. */
-            if (s.chart && typeof sparkline === "function") {
-              chart = '<div class="hl-chart">' + sparkline(s.points, 300, 54) + "</div>";
-              range = '<span class="hl-range">' + esc(s.low) + " to " + esc(s.high) +
-                (s.unit ? " " + esc(s.unit) : "") + "</span>";
-            }
-            const t = s.chart ? trendOf(s.points) : null;
-            if (t && t.steady) {
-              trend = '<p class="hl-trend steady">Steady ' + esc(years(s.span) || "throughout") + ".</p>";
-            } else if (t) {
-              trend = '<p class="hl-trend ' + (t.up ? "up" : "down") + '">' +
-                esc(t.from) + " to " + esc(t.to) + (s.unit ? " " + esc(s.unit) : "") +
-                ' <span>' + (t.up ? "up" : "down") + " " + t.pct + "%" +
-                (years(s.span) ? " " + esc(years(s.span)) : "") + "</span></p>";
-            }
-          }
-        } catch (err) { /* a chart is a bonus, never the reason the panel exists */ }
+            if (c && (!best || (c.n || 0) > (best.n || 0))) best = c;
+          } catch (err) { /* a chart is a bonus, never the reason a panel exists */ }
+        }
       }
-      return '<article class="hl-card' + (chart ? " has-chart" : "") + '">' +
-        "<h3>" + esc(entry.kind.name) + "</h3>" +
-        figure + chart + trend +
-        '<p class="muted small">' + esc(entry.kind.holds || "") + "</p>" +
-        '<p class="hl-n">' + plural(rows, "reading", "readings") +
-          (entry.tables.length > 1 ? " across " + plural(entry.tables.length, "table", "tables") : "") +
-          (range ? " &middot; " + range : "") +
-        "</p></article>";
-    };
-
-    const missing = kinds.filter((k) => !have.has(k.key));
-
-    /* The breakdown of what this service records lives here now, beside the
-       readings it is about, rather than under Highlights where somebody
-       looking for their health data would never have found it. */
-    const groups = (typeof coverageHtml === "function" && lib)
-      ? coverageHtml(lib, "groups") : "";
-
-    /* The panels that have a chart go first. Sorting by reading count put
-       Food and Water above Heart rate and Sleep, which is backwards: the ones
-       with a shape to show are the reason to be on this page. */
-    const drawn = [...have.values()].map((e) => ({ e, html: panel(e) }));
-    drawn.sort((a, b) => (b.html.includes("has-chart") ? 1 : 0) - (a.html.includes("has-chart") ? 1 : 0));
-
-    /* How far back the record goes. Six years of readings is the thing that
-       makes this worth looking at, and it was nowhere on the page. */
-    let first = null, last = null;
-    for (const m of match) {
-      const s = m.table.span || null;
-      if (!s) continue;
-      if (!first || s.from < first) first = s.from;
-      if (!last || s.to > last) last = s.to;
+      const shape = SHAPE[key] || { family: "log", chart: "line" };
+      signal.set(key, {
+        kind: entry.kind,
+        tables: entry.tables,
+        rows: entry.tables.reduce((n, t) => n + t.rows.length, 0),
+        series: best,
+        shape,
+        /* Only for things that are a measurement. A badge level and a
+           challenge rank move for reasons that have nothing to do with
+           health, and "Badges and records is down 26%" is not a fact about
+           anybody. */
+        trend: best && best.chart && shape.chart !== "none" ? trendOf(best.points) : null,
+      });
     }
-    if (!first) {
-      for (const ev of (lib && lib.events) || []) {
-        if (!ev.at) continue;
-        const t = +ev.at;
-        if (!first || t < first) first = t;
-        if (!last || t > last) last = t;
-      }
-    }
-    const spanYears = first && last
-      ? Math.max(1, Math.round((last - first) / (365.25 * 24 * 3600 * 1000))) : 0;
+
+    const viz = typeof MHealthViz !== "undefined" ? MHealthViz : null;
+    const drawn = [...signal.values()].filter((s) => s.series && s.series.chart);
+    const span = drawn.reduce((acc, s) => {
+      const sp = s.series.span;
+      if (!sp) return acc;
+      return { from: Math.min(acc.from || sp.from, sp.from),
+               to: Math.max(acc.to || sp.to, sp.to) };
+    }, {});
+    const years = Math.round(yearsOf(span));
 
     el.innerHTML =
       unsupportedNote(match.map((m) => m.table)) +
-      '<div class="tp-stats">' +
-        '<div><b>' + num(have.size) + "</b><span>kinds of data found</span></div>" +
-        '<div><b>' + num(match.reduce((n, m) => n + m.table.rows.length, 0)) +
-          "</b><span>readings in total</span></div>" +
-        (spanYears ? '<div><b>' + num(spanYears) +
-          "</b><span>" + (spanYears === 1 ? "year covered" : "years covered") + "</span></div>" : "") +
-      "</div>" +
-      '<div class="hl-grid">' + drawn.map((d) => d.html).join("") + "</div>" +
-      groups +
-      /* The catalogue is Samsung Health's, so only a Samsung export can be
-         told what Samsung Health would also have recorded. Saying it over
-         Google Fit data was claiming knowledge of the wrong product. */
-      (missing.length && match.some((m) => m.slug === "samsung")
-        ? '<h3 class="tp-h">Not in this export</h3>' +
-          '<p class="muted small">Samsung Health records these too. They are absent here, ' +
-          "which usually means no device ever recorded them.</p>" +
-          '<ul class="hl-missing">' + missing.map((k) =>
-            "<li><b>" + esc(k.name) + "</b>" +
-            (k.needs ? '<span class="muted small">' + esc(k.needs) + "</span>" : "") +
-            "</li>").join("") + "</ul>"
-        : "");
+      heroHtml(signal, span, years, viz) +
+      baselineHtml(signal, viz) +
+      exploreHtml(signal, viz) +
+      sourcesHtml(match, signal) +
+      missingHtml(kinds, have, match);
+  }
+
+  /* ---------- the summary at the top ----------
+   *
+   * One ridge per family across the whole record, with the change written on
+   * it. Deliberately not a chart you read numbers off - there is no axis, and
+   * the precise version of everything here is a few hundred pixels below. It
+   * answers "what does six years of this look like from a distance", which is
+   * the question somebody opening a health page actually has. */
+  function heroHtml(signal, span, years, viz) {
+    if (!viz) return "";
+    const rows = [];
+    for (const fam of FAMILY) {
+      if (fam.key === "log") continue;               // nothing to say from a distance
+      const members = [...signal.values()].filter((s) => s.shape.family === fam.key && s.series);
+      if (!members.length) continue;
+      const lead = members.find((s) => s.shape.lead) || members[0];
+      if (!lead.series.chart) continue;
+      const pills = members
+        .filter((s) => s.trend && !s.trend.steady)
+        .sort((a, b) => Math.abs(b.trend.pct) - Math.abs(a.trend.pct))
+        .slice(0, 2)
+        .map((s) => '<span class="hh-pill">' + esc(s.kind.name) + " " +
+          (s.trend.up ? "up" : "down") + " " + Math.abs(s.trend.pct) + "%</span>")
+        .join("");
+      rows.push(
+        '<div class="hh-row">' +
+          '<div class="hh-what"><i data-icon="' + esc(fam.icon) + '"></i>' +
+            "<b>" + esc(fam.name) + "</b><em>" + esc(fam.holds) + "</em></div>" +
+          '<div class="hh-shape">' + viz.ridge(lead.series.points, { w: 1000, h: 78 }) +
+            '<div class="hh-pills">' + pills + "</div></div>" +
+        "</div>");
+    }
+    if (!rows.length) return "";
+
+    /* The years across the top, from the record rather than from a guess. */
+    let axis = "";
+    if (span.from && span.to) {
+      const y0 = new Date(span.from).getFullYear(), y1 = new Date(span.to).getFullYear();
+      const total = span.to - span.from || 1;
+      for (let y = y0; y <= y1; y++) {
+        const at = Date.UTC(y, 0, 1);
+        if (at < span.from || at > span.to) continue;
+        axis += '<span style="left:' + (((at - span.from) / total) * 100).toFixed(2) +
+          '%">' + y + "</span>";
+      }
+    }
+
+    return '<section class="hh">' +
+      '<header class="hh-head"><h2>Health, over time</h2>' +
+      '<p class="muted">' + (years ? esc(plural(years, "year", "years")) + " of " : "") +
+      "readings from your own devices. Patterns, not prescriptions.</p></header>" +
+      (axis ? '<div class="hh-axis">' + axis + "</div>" : "") +
+      '<div class="hh-rows">' + rows.join("") + "</div>" +
+      standoutHtml(signal) +
+      "</section>";
+  }
+
+  /* The two or three things that moved most, said in a sentence each. */
+  function standoutHtml(signal) {
+    const movers = [...signal.values()]
+      .filter((s) => s.trend && !s.trend.steady && s.series && s.series.chart)
+      .sort((a, b) => Math.abs(b.trend.pct) - Math.abs(a.trend.pct))
+      .slice(0, 3);
+    if (!movers.length) return "";
+    return '<div class="hh-stand"><h3>What stands out</h3><div class="hh-cards">' +
+      movers.map((s) => {
+        const t = s.trend, u = s.series.unit ? " " + s.series.unit : "";
+        return '<article class="hh-card">' +
+          '<i data-icon="' + esc(SHAPE[s.kind.key] && SHAPE[s.kind.key].family === "rest"
+            ? "clock" : s.shape.family === "body" ? "heart" : "activity") + '"></i>' +
+          "<b>" + esc(s.kind.name) + "</b>" +
+          '<p class="muted small"><strong>' + (t.up ? "Up " : "Down ") + Math.abs(t.pct) +
+          "%</strong> across the record, from " + esc(num(t.from)) + esc(u) + " to " +
+          esc(num(t.to)) + esc(u) + ".</p></article>";
+      }).join("") + "</div></div>";
+  }
+
+  /* ---------- where things stand now ----------
+   *
+   * Three different drawings on purpose, and they are the clearest argument
+   * for the whole change: a resting pulse is a value inside a range, so it is
+   * a dial; sleep is a spread of nights, so it is a band; steps are a stack of
+   * days, so they are bars. Drawing all three the same way was what made this
+   * page look like a spreadsheet. */
+  function baselineHtml(signal, viz) {
+    if (!viz) return "";
+    const tiles = [];
+
+    const heart = signal.get("heart");
+    if (heart && heart.series && heart.series.chart) {
+      const pts = recent(heart.series.points, 60);
+      const v = mean(pts);
+      const lo = Math.min(45, Math.floor(v - 20)), hi = Math.max(95, Math.ceil(v + 20));
+      tiles.push('<article class="hb-tile">' + viz.dial(v, lo, hi) +
+        '<div class="hb-read"><b>' + esc(num(Math.round(v))) + '<em>bpm</em></b>' +
+        "<span>Resting heart rate</span>" + deltaChip(heart.trend) + "</div></article>");
+    }
+
+    const sleep = signal.get("sleep");
+    if (sleep && sleep.series && sleep.series.chart) {
+      const pts = recent(sleep.series.points, 60);
+      const v = mean(pts);
+      const minutes = (sleep.series.unit || "").indexOf("min") === 0;
+      tiles.push('<article class="hb-tile">' +
+        '<div class="hb-band">' + viz.band(pts, { w: 120, h: 118, n: 26 }) + "</div>" +
+        '<div class="hb-read"><b>' + esc(minutes ? asHours(v) : num(Math.round(v * 10) / 10)) +
+        (minutes ? "" : '<em>' + esc(sleep.series.unit || "") + "</em>") + "</b>" +
+        "<span>Time asleep, per night</span>" + deltaChip(sleep.trend) + "</div></article>");
+    }
+
+    const steps = signal.get("steps");
+    if (steps && steps.series && steps.series.chart) {
+      const pts = recent(steps.series.points, 60);
+      tiles.push('<article class="hb-tile">' +
+        '<div class="hb-bars">' + viz.bars(pts, { w: 150, h: 118, n: 22 }) + "</div>" +
+        '<div class="hb-read"><b>' + esc(num(Math.round(mean(pts)))) + "</b>" +
+        "<span>Steps a day</span>" + deltaChip(steps.trend) + "</div></article>");
+    }
+
+    if (!tiles.length) return "";
+    return '<section class="hb"><header class="hb-head"><h3>Where things stand now</h3>' +
+      '<p class="muted small">The most recent sixty days of the record.</p></header>' +
+      '<div class="hb-grid">' + tiles.join("") + "</div></section>";
+  }
+
+  function deltaChip(t) {
+    if (!t) return "";
+    if (t.steady) return '<span class="hb-chip">steady across the record</span>';
+    return '<span class="hb-chip ' + (t.up ? "up" : "down") + '">' +
+      (t.up ? "up " : "down ") + Math.abs(t.pct) + "% across the record</span>";
+  }
+
+  /* ---------- every signal, drawn as itself ---------- */
+  function exploreHtml(signal, viz) {
+    const byFamily = new Map();
+    for (const s of signal.values()) {
+      const f = s.shape.family;
+      if (!byFamily.has(f)) byFamily.set(f, []);
+      byFamily.get(f).push(s);
+    }
+    let out = "";
+    for (const fam of FAMILY) {
+      const list = (byFamily.get(fam.key) || [])
+        .sort((a, b) => (b.series && b.series.chart ? 1 : 0) - (a.series && a.series.chart ? 1 : 0));
+      if (!list.length) continue;
+      out += '<div class="hx-fam"><h4><i data-icon="' + esc(fam.icon) + '"></i>' +
+        esc(fam.name) + '<em class="muted">' + esc(fam.holds) + "</em></h4>" +
+        '<div class="hx-grid">' + list.map((s) => panelHtml(s, viz)).join("") + "</div></div>";
+    }
+    if (!out) return "";
+    return '<section class="hx"><header class="hb-head"><h3>Every signal, in full</h3>' +
+      '<p class="muted small">Each one drawn the way it behaves, rather than all of them ' +
+      "the same way.</p></header>" + out + "</section>";
+  }
+
+  /* What a night is actually made of.
+   *
+   * Only drawn when the export breaks sleep into stages, which most do not.
+   * A composition invented from a total would be the worst thing on this
+   * page - so this reads the columns, and draws nothing if they are absent. */
+  function stagesHtml(s, viz) {
+    if (!viz || s.kind.key !== "sleep") return "";
+    const WANT = [[/deep/i, "Deep"], [/rem/i, "REM"], [/light|core/i, "Light"]];
+    for (const t of s.tables) {
+      const cols = t.columns || [];
+      const found = WANT.map(([re, label]) => {
+        const i = cols.findIndex((c) => re.test(String(c)));
+        return i < 0 ? null : { label, i };
+      });
+      if (found.some((f) => !f)) continue;
+      const totals = found.map((f) => {
+        let sum = 0, seen = 0;
+        for (const row of t.rows) {
+          const v = Number(String(row[f.i]).replace(/[^0-9.-]/g, ""));
+          if (isFinite(v)) { sum += v; seen++; }
+        }
+        return { label: f.label, v: seen ? sum / seen : 0 };
+      });
+      if (!totals.some((x) => x.v > 0)) continue;
+      const whole = totals.reduce((a, b) => a + b.v, 0) || 1;
+      return '<div class="hx-stages">' + viz.stack(totals, { w: 300, h: 13 }) +
+        '<div class="hx-legend">' + totals.map((x, i) =>
+          '<span><i style="opacity:' + (0.75 - i * 0.22).toFixed(2) + '"></i>' +
+          esc(x.label) + " " + Math.round((x.v / whole) * 100) + "%</span>").join("") +
+        "</div></div>";
+    }
+    return "";
+  }
+
+  function panelHtml(s, viz) {
+    const c = s.series;
+    let chart = "";
+    if (viz && c && c.chart) {
+      const kindOf = s.shape.chart;
+      if (kindOf === "bars") chart = viz.bars(c.points, { w: 300, h: 62 });
+      else if (kindOf === "band") chart = viz.band(c.points, { w: 300, h: 62 });
+      else if (kindOf === "dots") chart = viz.dots(c.points, { w: 300, h: 62 });
+      else if (kindOf === "dial") chart = "";        // the dial is a now, not a history
+      else if (kindOf !== "none") chart = viz.line(c.points, { w: 300, h: 62 });
+      if (kindOf === "dial") chart = viz.line(c.points, { w: 300, h: 62 });
+    }
+    const unit = c && c.unit ? " " + c.unit : "";
+    const figure = c
+      ? '<div class="hx-fig"><b>' + esc(c.stat) + (c.unit ? '<em>' + esc(c.unit) + "</em>" : "") +
+        "</b><span>" + esc(c.statLabel || "") + "</span></div>"
+      : "";
+    const t = s.trend;
+    const trend = t
+      ? '<p class="hx-trend">' + (t.steady
+          ? "Steady across the record."
+          : esc(num(t.from)) + esc(unit) + " to " + esc(num(t.to)) + esc(unit) +
+            ' <span class="' + (t.up ? "up" : "down") + '">' +
+            (t.up ? "up " : "down ") + Math.abs(t.pct) + "%</span>") + "</p>"
+      : "";
+    const range = c && c.chart
+      ? '<span class="hx-range">' + esc(c.low) + " to " + esc(c.high) + esc(unit) + "</span>" : "";
+    return '<article class="hx-card' + (chart ? " has-chart" : "") + '">' +
+      "<h5>" + esc(s.kind.name) + "</h5>" +
+      figure +
+      (chart ? '<div class="hx-chart">' + chart + "</div>" : "") +
+      stagesHtml(s, viz) +
+      trend +
+      '<p class="muted small hx-holds">' + esc(s.kind.holds || "") + "</p>" +
+      '<p class="hx-n">' + plural(s.rows, "reading", "readings") +
+        (s.tables.length > 1 ? " across " + plural(s.tables.length, "table", "tables") : "") +
+        (range ? " &middot; " + range : "") + "</p></article>";
+  }
+
+  /* ---------- which export each signal came out of ---------- */
+  function sourcesHtml(match, signal) {
+    const by = new Map();
+    for (const m of match) {
+      const label = m.table.srcLabel || "This export";
+      by.set(label, (by.get(label) || 0) + m.table.rows.length);
+    }
+    if (by.size < 1) return "";
+    const rows = [...by.entries()].sort((a, b) => b[1] - a[1]);
+    return '<section class="hs"><div class="hs-what"><b>' +
+      esc(plural(signal.size, "kind of health data", "kinds of health data")) + " found</b>" +
+      '<p class="muted small">A phone records a little of this. A watch records most of it, ' +
+      "every day. Which is why the counts below are so lopsided.</p></div>" +
+      '<div class="hs-list">' + rows.map(([label, n]) =>
+        '<span class="hs-src"><b>' + esc(label) + "</b><em>" +
+        esc(plural(n, "reading", "readings")) + "</em></span>").join("") + "</div></section>";
+  }
+
+  /* ---------- what this service records and this export does not ---------- */
+  function missingHtml(kinds, have, match) {
+    const missing = kinds.filter((k) => !have.has(k.key));
+    /* The catalogue is Samsung Health's, so only a Samsung export can be told
+       what Samsung Health would also have recorded. Saying it over Google Fit
+       data was claiming knowledge of the wrong product. */
+    if (!missing.length || !match.some((m) => m.slug === "samsung")) return "";
+    return '<section class="hx"><h3 class="tp-h">Not in this export</h3>' +
+      '<p class="muted small">Samsung Health records these too. They are absent here, ' +
+      "which usually means no device ever recorded them.</p>" +
+      '<ul class="hl-missing">' + missing.map((k) =>
+        "<li><b>" + esc(k.name) + "</b>" +
+        (k.needs ? '<span class="muted small">' + esc(k.needs) + "</span>" : "") +
+        "</li>").join("") + "</ul></section>";
   }
 
   /* ---------- topics that live in files, not tables ----------
