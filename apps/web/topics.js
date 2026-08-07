@@ -451,14 +451,24 @@ const MTopics = (function () {
   };
 
   /* The last stretch of the record, which is what "now" means for a number
-     taken every day for six years. */
-  function recent(points, days) {
+     taken every day for six years.
+   *
+   * These points arrive already bucketed - sixty of them, whatever the record
+   * covers - so a bucket from a six-year archive is about five weeks wide.
+   * Asking for "the last sixty days" therefore returned one point, and the
+   * fallback quietly served the last three years under a heading that said
+   * sixty days. It now takes a fixed number of buckets and the caller says
+   * which dates that turned out to be. */
+  function recent(points, want) {
     if (!points || !points.length) return [];
-    const last = points[points.length - 1].t;
-    const cut = last - days * 24 * 3600 * 1000;
-    const out = points.filter((p) => p.t >= cut);
-    return out.length >= 3 ? out : points.slice(-Math.min(points.length, 30));
+    return points.slice(-Math.min(points.length, want || 10));
   }
+
+  const spanWords = (pts) => {
+    if (!pts || pts.length < 2) return "";
+    const a = new Date(pts[0].t), b = new Date(pts[pts.length - 1].t);
+    return shortDate(a) + " to " + shortDate(b);
+  };
 
   const mean = (pts) => (pts.length
     ? pts.reduce((s, p) => s + p.v, 0) / pts.length : 0);
@@ -468,6 +478,14 @@ const MTopics = (function () {
   const asHours = (mins) => {
     const h = Math.floor(mins / 60), m = Math.round(mins - h * 60);
     return h + "h " + String(m).padStart(2, "0") + "m";
+  };
+
+  /* What a chart needs in order to say its own numbers out loud. Sleep is
+     written in minutes and read in hours, everywhere it is shown. */
+  const metaFor = (s) => {
+    const unit = (s.series && s.series.unit) || "";
+    return { unit: /^min/.test(unit) ? "" : unit,
+             hours: s.kind.key === "sleep" && /^min/.test(unit) };
   };
 
   function drawHealth(el, match, lib) {
@@ -525,6 +543,11 @@ const MTopics = (function () {
       exploreHtml(signal, viz) +
       sourcesHtml(match, signal) +
       missingHtml(kinds, have, match);
+
+    /* One listener for the whole view. The charts are rebuilt every time it
+       redraws, so anything attached per chart would have to be re-attached
+       each time or would leak. */
+    if (viz && viz.hover) viz.hover(el.closest("#ex-scroll") || el);
   }
 
   /* ---------- the summary at the top ----------
@@ -554,7 +577,7 @@ const MTopics = (function () {
         '<div class="hh-row">' +
           '<div class="hh-what"><i data-icon="' + esc(fam.icon) + '"></i>' +
             "<b>" + esc(fam.name) + "</b><em>" + esc(fam.holds) + "</em></div>" +
-          '<div class="hh-shape">' + viz.ridge(lead.series.points, { w: 1000, h: 78 }) +
+          '<div class="hh-shape">' + viz.ridge(lead.series.points, { w: 1000, h: 78, meta: metaFor(lead) }) +
             '<div class="hh-pills">' + pills + "</div></div>" +
         "</div>");
     }
@@ -613,10 +636,12 @@ const MTopics = (function () {
   function baselineHtml(signal, viz) {
     if (!viz) return "";
     const tiles = [];
+    let window = "";
 
     const heart = signal.get("heart");
     if (heart && heart.series && heart.series.chart) {
-      const pts = recent(heart.series.points, 60);
+      const pts = recent(heart.series.points, 10);
+      window = window || spanWords(pts);
       const v = mean(pts);
       const lo = Math.min(45, Math.floor(v - 20)), hi = Math.max(95, Math.ceil(v + 20));
       tiles.push('<article class="hb-tile">' + viz.dial(v, lo, hi) +
@@ -626,11 +651,12 @@ const MTopics = (function () {
 
     const sleep = signal.get("sleep");
     if (sleep && sleep.series && sleep.series.chart) {
-      const pts = recent(sleep.series.points, 60);
+      const pts = recent(sleep.series.points, 10);
+      window = window || spanWords(pts);
       const v = mean(pts);
       const minutes = (sleep.series.unit || "").indexOf("min") === 0;
       tiles.push('<article class="hb-tile">' +
-        '<div class="hb-band">' + viz.band(pts, { w: 120, h: 118, n: 26 }) + "</div>" +
+        '<div class="hb-band">' + viz.band(pts, { w: 120, h: 118, n: 26, meta: metaFor(sleep) }) + "</div>" +
         '<div class="hb-read"><b>' + esc(minutes ? asHours(v) : num(Math.round(v * 10) / 10)) +
         (minutes ? "" : '<em>' + esc(sleep.series.unit || "") + "</em>") + "</b>" +
         "<span>Time asleep, per night</span>" + deltaChip(sleep.trend) + "</div></article>");
@@ -638,16 +664,18 @@ const MTopics = (function () {
 
     const steps = signal.get("steps");
     if (steps && steps.series && steps.series.chart) {
-      const pts = recent(steps.series.points, 60);
+      const pts = recent(steps.series.points, 10);
+      window = window || spanWords(pts);
       tiles.push('<article class="hb-tile">' +
-        '<div class="hb-bars">' + viz.bars(pts, { w: 150, h: 118, n: 22 }) + "</div>" +
+        '<div class="hb-bars">' + viz.bars(pts, { w: 150, h: 118, n: 22, meta: metaFor(steps) }) + "</div>" +
         '<div class="hb-read"><b>' + esc(num(Math.round(mean(pts)))) + "</b>" +
         "<span>Steps a day</span>" + deltaChip(steps.trend) + "</div></article>");
     }
 
     if (!tiles.length) return "";
     return '<div class="hb"><header class="hb-head"><h3>Where things stand now</h3>' +
-      '<p class="muted small">The most recent sixty days of the record.</p></header>' +
+      '<p class="muted small">The most recent stretch of the record' +
+      (window ? ", " + esc(window) : "") + ".</p></header>" +
       '<div class="hb-grid">' + tiles.join("") + "</div></div>";
   }
 
@@ -720,12 +748,12 @@ const MTopics = (function () {
     let chart = "";
     if (viz && c && c.chart) {
       const kindOf = s.shape.chart;
-      if (kindOf === "bars") chart = viz.bars(c.points, { w: 300, h: 62 });
-      else if (kindOf === "band") chart = viz.band(c.points, { w: 300, h: 62 });
-      else if (kindOf === "dots") chart = viz.dots(c.points, { w: 300, h: 62 });
-      else if (kindOf === "dial") chart = "";        // the dial is a now, not a history
-      else if (kindOf !== "none") chart = viz.line(c.points, { w: 300, h: 62 });
-      if (kindOf === "dial") chart = viz.line(c.points, { w: 300, h: 62 });
+      const o = { w: 300, h: 62, meta: metaFor(s) };
+      /* A dial says where a value sits now; its history is still a line. */
+      if (kindOf === "bars") chart = viz.bars(c.points, o);
+      else if (kindOf === "band") chart = viz.band(c.points, o);
+      else if (kindOf === "dots") chart = viz.dots(c.points, o);
+      else if (kindOf !== "none") chart = viz.line(c.points, o);
     }
     const unit = c && c.unit ? " " + c.unit : "";
     const figure = c

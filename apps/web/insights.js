@@ -299,18 +299,31 @@ const MInsight = (function () {
        50,000 readings, and a heavy Samsung Health export is far larger than
        that. Points arrive sorted, so a running index is enough. */
     const sums = new Float64Array(want), counts = new Float64Array(want);
+    /* The smallest and largest in each bucket are kept alongside the mean.
+     *
+     * A mean on its own throws away the thing that matters for anything
+     * measured repeatedly: a month of seven-hour nights and a month of
+     * five-to-nine nights have the same mean and are not the same month. The
+     * health page draws sleep as a band for exactly that reason, and until
+     * this was here the band had nothing to be a band of - it was drawing the
+     * mean as both of its own edges, so a spread rendered as a hairline. */
+    const mins = new Float64Array(want).fill(Infinity);
+    const maxs = new Float64Array(want).fill(-Infinity);
     for (const p of points) {
       let b = Math.floor(((p.t - first) / span) * want);
       if (b >= want) b = want - 1;
       if (b < 0) b = 0;
       sums[b] += p.v;
       counts[b]++;
+      if (p.v < mins[b]) mins[b] = p.v;
+      if (p.v > maxs[b]) maxs[b] = p.v;
     }
     const out = [];
     for (let i = 0; i < want; i++) {
       if (!counts[i]) continue;
       out.push({ t: Math.round(first + (span * (i + 0.5)) / want),
-                 v: sums[i] / counts[i], n: counts[i] });
+                 v: sums[i] / counts[i], n: counts[i],
+                 lo: mins[i], hi: maxs[i] });
     }
     return out;
   }
