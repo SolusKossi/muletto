@@ -2673,7 +2673,7 @@ const SAMPLES = ["snapchat-export.zip", "apple-export.zip", "google-takeout.zip"
  * The name the reader sees is still the plain one - the stamp is stripped
  * before the File is made. */
 /* BUILD:SAMPLES */
-const SAMPLES_V = "6a6317af";
+const SAMPLES_V = "094fe186";
 /* END:SAMPLES */
 
 async function loadSamples(btn) {

@@ -415,94 +415,192 @@
    * person only ever speak on Sunday evenings, not who you actually talk to
    * as against who you think you do.
    *
-   * So the view opens on the shape and the conversations are one click away,
-   * rather than the other way round. Nothing here is computed that is not
-   * already in the messages - there is no scoring, no sentiment, and nothing
-   * inferred about anybody.
+   * So the view opens on the shape and the conversations are one click away.
+   * Nothing here is scored, inferred or guessed at - every number is a count
+   * of something that is in the export, and every sentence is built from one.
    */
   let chatMode = "stats";
 
   const MONTHS = ["January", "February", "March", "April", "May", "June", "July",
                   "August", "September", "October", "November", "December"];
+  const shortDay = (t) => {
+    const d = new Date(t);
+    return d.getDate() + " " + MONTHS[d.getMonth()].slice(0, 3) + " " + d.getFullYear();
+  };
+
+  /* Two letters from a name, the way every address book does it.
+   *
+   * Split on punctuation as well as spaces, because half the names in a chat
+   * export are handles - ingrid.k, bjorn_a - and splitting on whitespace
+   * alone gave every one of them a single letter. */
+  const initials = (name) => {
+    const parts = String(name || "?").trim().split(/[\s._-]+/).filter(Boolean);
+    return parts.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join("") || "?";
+  };
 
   function chatStatsHtml(people, lib) {
     const viz = typeof MCharts !== "undefined" ? MCharts : null;
     const all = [];
-    for (const p of people) for (const m of p.messages) if (m.at) all.push({ t: +m.at, v: 1 });
+    for (const p of people) for (const m of p.messages) if (m.at) all.push({ t: +m.at });
     all.sort((a, b) => a.t - b.t);
     const total = people.reduce((n, p) => n + p.messages.length, 0);
     if (!total) return "";
 
-    /* Per month, from the messages themselves. A count of messages is a count
-       of days that had any, and bars are what a count of days looks like. */
-    const perMonth = new Map();
+    const from = all.length ? all[0].t : 0;
+    const to = all.length ? all[all.length - 1].t : 0;
+    const years = from && to
+      ? Math.max(1, Math.round((to - from) / (365.25 * 24 * 3600 * 1000))) : 0;
+
+    /* ---- the strips ---- */
+    const withDates = people
+      .map((p) => ({ p, pts: p.messages.filter((m) => m.at).map((m) => ({ t: +m.at })) }))
+      .filter((x) => x.pts.length);
+
+    let axis = "";
+    if (from && to) {
+      const y0 = new Date(from).getFullYear(), y1 = new Date(to).getFullYear();
+      for (let y = y0; y <= y1; y++) {
+        const at = new Date(y, 0, 1).getTime();
+        if (at < from || at > to) continue;
+        axis += '<span style="left:' + (((at - from) / (to - from)) * 100).toFixed(2) +
+          '%">' + y + "</span>";
+      }
+    }
+
+    const strips = withDates.map(({ p, pts }) =>
+      '<div class="cs-person">' +
+        '<span class="cs-av">' + esc(initials(p.name)) + "</span>" +
+        '<span class="cs-who"><b>' + esc(p.name) + "</b><em>" +
+          plural(p.messages.length, "message", "messages") + "</em></span>" +
+        '<span class="cs-strip">' +
+          (viz ? viz.ticks(pts, { from, to, w: 900, h: 26 }) : "") + "</span>" +
+      "</div>").join("");
+
+    /* ---- what changed ---- */
+    const cards = [];
+
+    const perYear = new Map();
     for (const m of all) {
-      const d = new Date(m.t);
-      const k = d.getFullYear() * 12 + d.getMonth();
-      perMonth.set(k, (perMonth.get(k) || 0) + 1);
+      const y = new Date(m.t).getFullYear();
+      perYear.set(y, (perYear.get(y) || 0) + 1);
     }
-    const months = [...perMonth.entries()].sort((a, b) => a[0] - b[0]).map(([k, n]) => ({
-      t: Date.UTC(Math.floor(k / 12), k % 12, 15), v: n,
-    }));
-    const busiest = months.slice().sort((a, b) => b.v - a.v)[0];
-
-    const first = all.length ? new Date(all[0].t) : null;
-    const last = all.length ? new Date(all[all.length - 1].t) : null;
-    const years = first && last
-      ? Math.max(1, Math.round((last - first) / (365.25 * 24 * 3600 * 1000))) : 0;
-
-    /* Sent against received, when the export says which. Some do not, and a
-       guess would be worse than the gap. */
-    let mine = 0, theirs = 0;
-    for (const p of people) for (const m of p.messages) {
-      if (m.direction === "sent") mine++;
-      else if (m.direction === "received") theirs++;
+    const ranked = [...perYear.entries()].sort((a, b) => b[1] - a[1]);
+    if (ranked.length > 1) {
+      const [bestYear, bestN] = ranked[0];
+      const rest = [...perYear.entries()].filter(([y]) => y !== bestYear);
+      const avg = rest.reduce((s, [, n]) => s + n, 0) / Math.max(1, rest.length);
+      const over = avg ? Math.round(((bestN - avg) / avg) * 100) : 0;
+      cards.push({
+        icon: "chart",
+        title: "You spoke most in " + bestYear,
+        body: plural(bestN, "message", "messages") + " that year" +
+          (over > 8 ? ", about " + over + " percent above your other years" : "") + ".",
+      });
     }
-    const known = mine + theirs;
 
-    const tiles =
-      '<div class="tp-stats">' +
-        "<div><b>" + num(total) + "</b><span>messages</span></div>" +
-        "<div><b>" + num(people.length) + "</b><span>" +
-          (people.length === 1 ? "person" : "people") + "</span></div>" +
-        (years ? "<div><b>" + num(years) + "</b><span>" +
-          (years === 1 ? "year" : "years") + " of it</span></div>" : "") +
-        (known ? "<div><b>" + Math.round((mine / known) * 100) + "%</b><span>sent by you</span></div>" : "") +
-      "</div>";
+    /* Somebody who is in every year of the record. Counted, not judged - the
+       card says how many years, and the reader decides what that means. */
+    const spanYears = new Set([...perYear.keys()]);
+    let constant = null;
+    for (const { p, pts } of withDates) {
+      const ys = new Set(pts.map((x) => new Date(x.t).getFullYear()));
+      let hit = 0;
+      for (const y of spanYears) if (ys.has(y)) hit++;
+      if (!constant || hit > constant.hit ||
+          (hit === constant.hit && p.messages.length > constant.p.messages.length)) {
+        constant = { p, hit };
+      }
+    }
+    if (constant && constant.hit >= Math.max(2, spanYears.size - 1)) {
+      cards.push({
+        icon: "person",
+        title: esc(constant.p.name) + " stayed a constant",
+        body: "In every one of the " + constant.hit + " years this export covers" +
+          (constant.hit === spanYears.size ? "" : " but one") + ", with " +
+          plural(constant.p.messages.length, "message", "messages") + " in total.",
+      });
+    }
 
-    const top = people.slice(0, 8).map((p) => ({
-      name: p.name,
-      n: p.messages.length,
-      note: [...p.platforms.values()].join(", "),
-    }));
+    const run = viz && viz.busiestRun ? viz.busiestRun(all) : null;
+    if (run) {
+      cards.push({
+        icon: "clock",
+        title: "Your messages cluster between " + run.from + " and " + run.to,
+        body: run.share + " percent of everything falls in those " + run.hours +
+          " hours, against the " + Math.round((run.hours / 24) * 100) +
+          " percent an even day would put there." +
+          (run.quiet ? " Your quietest hour is " + run.quiet + "." : ""),
+      });
+    }
 
-    const busiestLine = busiest
-      ? '<p class="cs-note">Busiest month: <b>' +
-        esc(MONTHS[new Date(busiest.t).getUTCMonth()]) + " " +
-        new Date(busiest.t).getUTCFullYear() + "</b>, " +
-        esc(plural(busiest.v, "message", "messages")) + ".</p>"
+    const rail = cards.length
+      ? '<aside class="cs-rail"><h3>What changed</h3>' + cards.map((c) =>
+          '<article class="cs-ins"><i data-icon="' + esc(c.icon) + '"></i>' +
+          "<b>" + c.title + "</b><p>" + c.body + "</p></article>").join("") + "</aside>"
       : "";
 
-    return '<div class="cs">' + tiles +
-      '<div class="cs-grid">' +
-        '<section class="cs-card cs-wide"><h3>Messages over the years</h3>' +
-          (viz && months.length > 2
-            ? '<div class="cs-chart">' + viz.bars(months, { w: 600, h: 92, n: 60,
-                meta: { unit: "messages" } }) + "</div>"
-            : '<p class="muted small">Not enough dated messages to draw a shape.</p>') +
-          busiestLine +
-        "</section>" +
+    /* ---- a week in messages ---- */
+    const runLine = run
+      ? "<p>You are most active between <b>" + esc(run.from) + "</b> and <b>" +
+        esc(run.to) + "</b> - " + run.share + " percent of everything.</p>" +
+        (run.quiet ? '<p class="muted">Your quietest hour is ' + esc(run.quiet) + ".</p>" : "")
+      : "";
 
-        '<section class="cs-card"><h3>Who you talk to</h3>' +
-          (viz ? viz.ranked(top, { limit: 8 }) : "") +
-        "</section>" +
+    const week = viz
+      ? '<section class="cs-card"><h3>A week in messages</h3>' +
+        '<div class="cs-week">' +
+          '<div class="cs-clockpanel"><h4>By hour of the day</h4>' +
+            '<div class="cs-clockrow">' + viz.clock(all, { size: 210 }) +
+            '<div class="cs-clocktext">' + runLine + "</div></div></div>" +
+          '<div class="cs-heat"><h4>By day and hour</h4>' +
+            viz.grid(all, { noun: "message" }) + "</div>" +
+        "</div></section>"
+      : "";
 
-        '<section class="cs-card cs-wide"><h3>When you talk</h3>' +
-          '<p class="muted small">Every message, by the hour of the day and the day of the ' +
-          "week it was sent.</p>" +
-          (viz ? viz.grid(all, { noun: "message" }) : "") +
+    /* ---- where they came from ---- */
+    const plats = new Map();
+    for (const p of people) for (const [slug, label] of p.platforms) plats.set(slug, label);
+    const joined = people.filter((p) => p.platforms.size > 1).length;
+    const platRow = plats.size
+      ? '<section class="cs-plat"><div class="cs-platwhat"><b>' +
+          (plats.size > 1 ? "Across " + [...plats.values()].join(", ") : [...plats.values()][0]) +
+          "</b>" +
+          '<p class="muted small">' + (joined
+            ? plural(joined, "person appears", "people appear") +
+              " on more than one, joined here by name."
+            : "Exports do not share an identifier between platforms, so only " +
+              "identical names are joined automatically.") + "</p></div>" +
+        '<div class="cs-chips">' + [...plats.entries()].map(([slug, label]) =>
+          '<span class="cs-chip"><i data-icon="' + esc(slug) + '"></i>' +
+          esc(label) + "</span>").join("") + "</div></section>"
+      : "";
+
+    return '<div class="cs">' +
+      '<header class="cs-head"><h2>Chat history</h2>' +
+        '<p class="muted">' + (years ? plural(years, "year", "years") + " of " : "") +
+        "conversations, grouped by the people in them.</p>" +
+        '<p class="cs-sum"><b>' + num(total) + "</b> messages " +
+        '<i aria-hidden="true">&middot;</i> <b>' + num(people.length) + "</b> " +
+        (people.length === 1 ? "person" : "people") +
+        (from ? ' <i aria-hidden="true">&middot;</i> ' + esc(shortDay(from)) +
+          " to " + esc(shortDay(to)) : "") + "</p></header>" +
+
+      '<div class="cs-main">' +
+        '<section class="cs-card"><h3>Your conversations over time</h3>' +
+          (axis ? '<div class="cs-years">' + axis + "</div>" : "") +
+          '<div class="cs-people">' + strips + "</div>" +
+          '<div class="cs-legend"><span class="cs-key">' +
+            '<i class="cs-keyline"></i>Each mark is a message</span>' +
+            '<span class="cs-key">Fewer' +
+              [0.28, 0.45, 0.7, 0.95].map((o) =>
+                '<i class="cs-keysw" style="opacity:' + o + '"></i>').join("") +
+            "More</span></div>" +
         "</section>" +
+        rail +
       "</div>" +
+
+      week + platRow +
+
       '<div class="cs-go"><button class="btn primary" id="cs-open">Explore the full chat ' +
         "history</button>" +
         '<span class="muted small">Every conversation, in full, with search.</span></div>' +
