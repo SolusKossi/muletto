@@ -159,6 +159,8 @@ ${footer(depth)}
 
   <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="${up}disclose.js"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="${up}analytics.js"></script>
   <script src="${up}app.js"></script>
 </body>
 </html>

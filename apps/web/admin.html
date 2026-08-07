@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Usage - Muletto</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css?v=d7f64ddc" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="index.html">muletto</a>
+        <div class="nav-links"><span class="muted">Usage</span></div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="open-head wrap">
+      <h1>Usage</h1>
+      <p>Everything the site records, which is less than it sounds. Counts per day, and
+        nothing attached to anybody.</p>
+    </section>
+
+    <section class="wrap adm-wrap">
+      <!-- The password goes to the server and is checked there. This page is a
+           viewer; it cannot let anyone in, because it is not what is asked.
+
+           The submit is always cancelled and the value sent by fetch. If the
+           script ever failed to load, a form with no action would submit to
+           this same URL by GET and put the password in the address bar - and
+           the Content-Security-Policy's form-action 'none' refuses that
+           outright. Two things have to fail before it can leak. -->
+      <form class="adm-gate" id="gate">
+        <label for="pw">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" required />
+        <button class="btn primary" type="submit" id="go">Show me</button>
+        <p class="adm-err" id="err" hidden></p>
+      </form>
+
+      <div id="dash" hidden></div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <p class="fine">No cookies were set to show you this page, and none were set to
+        collect what is on it.</p>
+    </div>
+  </footer>
+
+  <script src="admin.js?v=f0df8483"></script>
+</body>
+</html>

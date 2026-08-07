@@ -1090,6 +1090,7 @@
 
     const tl = body.querySelector("#ex-tl");
     state.tl = { el: tl };
+    railHeight = -1;                 // a new list; nothing measured about it yet
 
     tl.addEventListener("click", (e) => {
       const row = e.target.closest(".ex-row");
@@ -1104,6 +1105,12 @@
        rather than waited for: an observer that never fires would otherwise
        leave the view blank, and blank is the one failure worth ruling out. */
     fillDays(0, 25);
+
+    /* Now there is something real to measure, so the reservation for the
+       other fourteen hundred days can stop being a guess. Done before the
+       observers, and before anybody has scrolled, so the height it corrects
+       does not move the ground under a scroll already in progress. */
+    if (measureDay()) reserveDays();
 
     if ("IntersectionObserver" in window) {
       state.tlIo = new IntersectionObserver((es) => {
@@ -1127,7 +1134,21 @@
         setTimeout(() => { queued = false; fillVisible(scroller); }, 100);
       };
       scroller.addEventListener("scroll", onScroll, { passive: true });
-      state.tlScroll = () => scroller.removeEventListener("scroll", onScroll);
+      /* A row is 80px wide-screen and 60px narrow, so crossing that
+         breakpoint changes what every unrendered day should be reserving.
+         Without this, dragging a window narrower leaves fourteen hundred
+         reservations describing the layout it used to have. */
+      let sized = null;
+      const onResize = () => {
+        clearTimeout(sized);
+        sized = setTimeout(() => { if (measureDay()) reserveDays(); }, 200);
+      };
+      window.addEventListener("resize", onResize);
+      state.tlScroll = () => {
+        scroller.removeEventListener("scroll", onScroll);
+        window.removeEventListener("resize", onResize);
+        clearTimeout(sized);
+      };
       setTimeout(() => fillVisible(scroller), 80);
     }
 
@@ -1138,24 +1159,105 @@
 
   /* An empty section, holding the space its contents will need.
    *
-   * The estimate is a header and its margins plus a row each. It does not
-   * have to be exact - contain-intrinsic-size is declared `auto`, so the
-   * browser keeps the real measurement once it has drawn the section - it
-   * only has to be close enough that the scrollbar does not lurch while you
-   * are dragging it. */
-  const DAY_HEAD_H = 72;
-  const DAY_ROW_H = 80;
+   * These are the starting numbers, and they are only right at the wide
+   * breakpoint - a row is 80px there because the thumbnail is 62px, and 60px
+   * on a narrower window where the thumbnail is 42px. Hard-coding the wide
+   * pair meant every unrendered day was reserved twenty pixels a row too
+   * tall, so the reserved space ran ahead of the real content and the error
+   * compounded down the list: scrolling to 2024 landed in 2023, because a
+   * year's worth of over-estimate had accumulated above it.
+   *
+   * So they are a starting guess, replaced by measurement as soon as there is
+   * something real to measure. See measureDay(). */
+  let dayHeadH = 72;
+  let dayRowH = 80;
+
+  const dayHeight = (d) => dayHeadH + d.items.length * dayRowH;
 
   function dayShellHtml(d) {
-    const h = DAY_HEAD_H + d.items.length * DAY_ROW_H;
     return `<section class="ex-day" data-day="${esc(d.key)}" data-di="${d.di}"
-      style="contain-intrinsic-size: auto ${h}px"></section>`;
+      style="contain-intrinsic-size: auto ${dayHeight(d)}px"></section>`;
+  }
+
+  /* What a day section actually costs, taken from the page rather than from
+   * the stylesheet.
+   *
+   * Two rendered days with different item counts give both numbers exactly
+   * and with no reasoning about margin collapsing: the difference in height
+   * over the difference in items is one row, and the rest is the header.
+   * Reading the CSS instead is how the wrong pair got hard-coded in the first
+   * place - the rule that mattered was in a media query.
+   *
+   * Returns true when the numbers moved, so the caller knows to re-reserve. */
+  function measureDay() {
+    const t = state.tl;
+    if (!t || !t.el.isConnected) return false;
+    const seen = [];
+    for (const sec of t.el.children) {
+      if (!sec.firstElementChild) continue;
+      const d = state.days[Number(sec.dataset.di)];
+      const h = sec.offsetHeight;
+      if (!d || !h) continue;
+      seen.push({ n: d.items.length, h });
+      if (seen.length > 40) break;
+    }
+    if (seen.length < 2) return false;
+    let lo = seen[0], hi = seen[0];
+    for (const s of seen) { if (s.n < lo.n) lo = s; if (s.n > hi.n) hi = s; }
+    if (hi.n === lo.n) return false;
+    const row = (hi.h - lo.h) / (hi.n - lo.n);
+    const head = lo.h - row * lo.n;
+    if (!(row > 4) || !(head > 4)) return false;
+    if (Math.abs(row - dayRowH) < 1 && Math.abs(head - dayHeadH) < 1) return false;
+    dayRowH = row;
+    dayHeadH = head;
+    return true;
+  }
+
+  /* Re-reserve the days that have not been drawn. The drawn ones are left
+     alone: `auto` means the browser is already holding their real size, which
+     is better than anything computed here. */
+  function reserveDays() {
+    const t = state.tl;
+    if (!t || !t.el.isConnected) return;
+    for (const sec of t.el.children) {
+      if (sec.firstElementChild) continue;
+      const d = state.days[Number(sec.dataset.di)];
+      if (d) sec.style.containIntrinsicSize = "auto " + Math.round(dayHeight(d)) + "px";
+    }
   }
 
   function dayInnerHtml(d) {
     return `<h3 class="ex-dayh">${esc(fmtDay(d.date))}<span>${
       plural(d.items.length, "item", "items")}</span></h3>
       <div class="ex-rows">${d.items.map((it, i) => rowHtml(it, d.key, i)).join("")}</div>`;
+  }
+
+  /* The rail measures the whole list once and caches it.
+   *
+   * That was safe when the whole list was built up front and never moved
+   * again. It is not safe now: a day that fills swaps its reserved height for
+   * its real one, and every cached offset below it is then wrong by the
+   * difference. The rail went on reporting the position it had measured
+   * minutes ago, so the label said 2024 while the screen showed 2023 - and
+   * dragging it landed by the same amount out.
+   *
+   * Re-measuring is a bounding rect per month, so it is debounced and skipped
+   * unless the document has actually changed height since the last time. */
+  let railPending = null;
+  let railHeight = -1;
+  function railChanged() {
+    if (!state.rail) return;
+    clearTimeout(railPending);
+    railPending = setTimeout(() => {
+      if (!state.rail) return;
+      const sc = document.getElementById("explorer");
+      const scroller = sc && sc.querySelector("#ex-scroll");
+      if (!scroller) return;
+      if (scroller.scrollHeight === railHeight) return;
+      railHeight = scroller.scrollHeight;
+      state.rail.remeasure();
+    }, 220);
   }
 
   /* Write one day's rows in, if they are not there already. */
@@ -1165,6 +1267,7 @@
     if (!d) return;
     sec.innerHTML = dayInnerHtml(d);
     state.ctx.hydrate(sec);
+    railChanged();
     if (!state.thumbIo) watchThumbs(state.tl.el);
     else sec.querySelectorAll("[data-thumb]").forEach((el) => state.thumbIo.observe(el));
   }
