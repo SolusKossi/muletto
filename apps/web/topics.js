@@ -573,14 +573,14 @@ const MTopics = (function () {
       }
     }
 
-    return '<section class="hh">' +
+    return '<div class="hh">' +
       '<header class="hh-head"><h2>Health, over time</h2>' +
       '<p class="muted">' + (years ? esc(plural(years, "year", "years")) + " of " : "") +
-      "readings from your own devices. Patterns, not prescriptions.</p></header>" +
+      "readings, taken by your own devices and kept together here.</p></header>" +
       (axis ? '<div class="hh-axis">' + axis + "</div>" : "") +
       '<div class="hh-rows">' + rows.join("") + "</div>" +
       standoutHtml(signal) +
-      "</section>";
+      "</div>";
   }
 
   /* The two or three things that moved most, said in a sentence each. */
@@ -646,9 +646,9 @@ const MTopics = (function () {
     }
 
     if (!tiles.length) return "";
-    return '<section class="hb"><header class="hb-head"><h3>Where things stand now</h3>' +
+    return '<div class="hb"><header class="hb-head"><h3>Where things stand now</h3>' +
       '<p class="muted small">The most recent sixty days of the record.</p></header>' +
-      '<div class="hb-grid">' + tiles.join("") + "</div></section>";
+      '<div class="hb-grid">' + tiles.join("") + "</div></div>";
   }
 
   function deltaChip(t) {
@@ -676,9 +676,9 @@ const MTopics = (function () {
         '<div class="hx-grid">' + list.map((s) => panelHtml(s, viz)).join("") + "</div></div>";
     }
     if (!out) return "";
-    return '<section class="hx"><header class="hb-head"><h3>Every signal, in full</h3>' +
-      '<p class="muted small">Each one drawn the way it behaves, rather than all of them ' +
-      "the same way.</p></header>" + out + "</section>";
+    return '<div class="hx"><header class="hb-head"><h3>Every signal, in full</h3>' +
+      '<p class="muted small">Each one drawn the way it behaves.</p></header>' +
+      out + "</div>";
   }
 
   /* What a night is actually made of.
@@ -763,13 +763,13 @@ const MTopics = (function () {
     }
     if (by.size < 1) return "";
     const rows = [...by.entries()].sort((a, b) => b[1] - a[1]);
-    return '<section class="hs"><div class="hs-what"><b>' +
+    return '<div class="hs"><div class="hs-what"><b>' +
       esc(plural(signal.size, "kind of health data", "kinds of health data")) + " found</b>" +
       '<p class="muted small">A phone records a little of this. A watch records most of it, ' +
-      "every day. Which is why the counts below are so lopsided.</p></div>" +
+      "every day.</p></div>" +
       '<div class="hs-list">' + rows.map(([label, n]) =>
         '<span class="hs-src"><b>' + esc(label) + "</b><em>" +
-        esc(plural(n, "reading", "readings")) + "</em></span>").join("") + "</div></section>";
+        esc(plural(n, "reading", "readings")) + "</em></span>").join("") + "</div></div>";
   }
 
   /* ---------- what this service records and this export does not ---------- */
@@ -779,13 +779,13 @@ const MTopics = (function () {
        what Samsung Health would also have recorded. Saying it over Google Fit
        data was claiming knowledge of the wrong product. */
     if (!missing.length || !match.some((m) => m.slug === "samsung")) return "";
-    return '<section class="hx"><h3 class="tp-h">Not in this export</h3>' +
+    return '<div class="hx"><h3 class="tp-h">Not in this export</h3>' +
       '<p class="muted small">Samsung Health records these too. They are absent here, ' +
       "which usually means no device ever recorded them.</p>" +
       '<ul class="hl-missing">' + missing.map((k) =>
         "<li><b>" + esc(k.name) + "</b>" +
         (k.needs ? '<span class="muted small">' + esc(k.needs) + "</span>" : "") +
-        "</li>").join("") + "</ul></section>";
+        "</li>").join("") + "</ul></div>";
   }
 
   /* ---------- topics that live in files, not tables ----------

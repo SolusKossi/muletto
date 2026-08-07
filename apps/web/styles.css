@@ -3306,7 +3306,16 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 /* ===== health =====
    A dashboard rather than a table of charts. Everything is currentColor at
    varying opacity, so it stays in the site's greyscale and follows light and
-   dark without a second set of rules. */
+   dark without a second set of rules.
+
+   Every panel here is a div and not a section, on purpose. `#explorer section
+   { padding: 0 }` strips the site's page-level padding inside the explorer,
+   and an id selector outranks any class - so a <section> with a padding rule
+   silently renders flush to its own border. It did: the whole health page
+   shipped with every box's contents against the edge. Elsewhere in this file
+   that is worked around by writing `#explorer .thing`; these are panels
+   inside a view rather than sections of a page, so they sidestep it by not
+   being sections at all. */
 .hv { display: block; width: 100%; height: auto; }
 
 /* ---- the summary at the top ---- */
