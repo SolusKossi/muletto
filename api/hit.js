@@ -33,7 +33,11 @@ const TTL = DAYS_KEPT * 24 * 60 * 60;
 
 /* Only pages that exist, and never the app. An open list would let anyone
    fill the store with invented paths. */
-const ALLOWED = /^\/(?:index\.html|guides\.html|pricing\.html|privacy\.html|guides\/[a-z0-9-]{1,60}\.html|)$/;
+/* 404.html is in the list, and it is counted as itself rather than as the
+   address that was asked for. How many people hit a missing page is worth
+   knowing; which addresses they asked for comes from whoever typed them, and
+   accepting those would be an open list anybody could fill with anything. */
+const ALLOWED = /^\/(?:index\.html|guides\.html|pricing\.html|privacy\.html|404\.html|guides\/[a-z0-9-]{1,60}\.html|)$/;
 
 const BROWSERS = [
   [/\bEdg\//, "Edge"],
