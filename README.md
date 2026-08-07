@@ -1,16 +1,54 @@
 # Muletto
 
-**Open the data export a service sends you, and actually read it.**
+**A GDPR data export viewer that runs in your browser.**
 
-Google, Apple, Samsung, Facebook, Instagram, Snapchat. Everything happens in
-your browser, and nothing is uploaded.
+Open the export zip that Apple, Google, Samsung, Snapchat, Reddit, Facebook or
+Instagram sends you, and actually read what is inside it. Nothing is uploaded,
+there is no account, and there is nothing to install.
 
 ## [Open muletto.app](https://muletto.app)
 
-Free, no account, nothing to install. Drop your export in and it opens.
+Drop the archive in and it opens. If you would rather not use your own data
+yet, six sample exports are one click away on the same page.
 
-The whole thing is in this repository too, so anyone curious about how it works
-can see exactly what it does.
+### What it does
+
+- **Opens the archive without unpacking it.** A 38 GB Takeout or an 18-part
+  Apple export is read where it sits.
+- **Merges several exports into one library.** Your photographs from Google,
+  Apple and Snapchat in one place, with the ones that appear in more than one
+  found automatically.
+- **Puts the dates and locations back.** Google keeps a photograph's capture
+  date in a JSON file beside it, and every other tool throws that away.
+- **Reads the parts nobody else does** - messages across services, health
+  records, location history, sign-in logs, saved web pages, Siri recordings.
+- **Writes it back out as ordinary folders**, with the real dates written into
+  the files themselves, so nothing afterwards depends on this site.
+
+### Which exports it reads
+
+| Service | Status |
+|---|---|
+| Google (Takeout) | Photos, videos, location history, messages, mail, activity |
+| Apple | Notes, contacts, calendar, audio, purchases, device records |
+| Samsung | Health, account and service records - including encrypted archives |
+| Snapchat | Memories, chat history, split captions merged back on |
+| Reddit | Posts, comments, votes, saved items, private messages |
+| Instagram and Facebook | Messages, posts, account records |
+| Anything else | Opened, listed, and read where the shape is recognisable |
+
+[PROVIDERS.md](PROVIDERS.md) says exactly what is read from each, what is not,
+and which claims have been measured against a real export rather than inferred
+from documentation.
+
+### Guides
+
+Thirty hand-written guides for [requesting and opening a GDPR
+export](https://muletto.app/guides.html) from each service - what actually
+arrives, how long it takes, and the part people get wrong.
+
+The whole application is in this repository, so anyone curious about how it
+works can see exactly what it does.
 
 ---
 
