@@ -31,9 +31,36 @@ const MHealthViz = (function () {
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  const svg = (w, h, inner, cls) =>
+  /* The points travel with the drawing.
+   *
+   * A chart that cannot say what is under the pointer is a picture, and a
+   * picture of your own step count is a poor substitute for the number. The
+   * readout needs the values, so they are written onto the element that was
+   * drawn from them rather than looked up again from somewhere else - there
+   * is then no way for the two to disagree.
+   *
+   * Only what is drawn: the buckets, not the twenty thousand readings behind
+   * them. A year of daily steps is forty numbers here. */
+  function carry(pts, meta) {
+    const slim = pts.map((p) => {
+      const o = { t: Math.round(p.t), v: Math.round(p.v * 100) / 100 };
+      if (p.lo !== undefined && p.lo !== p.v) o.lo = Math.round(p.lo * 100) / 100;
+      if (p.hi !== undefined && p.hi !== p.v) o.hi = Math.round(p.hi * 100) / 100;
+      return o;
+    });
+    return " data-hv='" + JSON.stringify(slim).replace(/'/g, "&#39;") + "'" +
+      " data-hv-meta='" + JSON.stringify(meta || {}).replace(/'/g, "&#39;") + "'";
+  }
+
+  /* The cursor, drawn once per chart and moved rather than rebuilt. */
+  const CURSOR = '<g class="hv-cur" opacity="0">' +
+    '<line class="hv-cur-l" y1="0" y2="100%" stroke="currentColor" stroke-width="1" ' +
+    'opacity="0.45" vector-effect="non-scaling-stroke"/>' +
+    '<circle class="hv-cur-d" r="3" fill="currentColor"/></g>';
+
+  const svg = (w, h, inner, cls, data) =>
     '<svg class="hv ' + (cls || "") + '" viewBox="0 0 ' + w + " " + h +
-    '" preserveAspectRatio="none" aria-hidden="true">' + inner + "</svg>";
+    '" preserveAspectRatio="none"' + (data || "") + ">" + inner + CURSOR + "</svg>";
 
   const nums = (pts) => pts.map((p) => p.v).filter((v) => isFinite(v));
   const extent = (vals) => ({ lo: Math.min.apply(null, vals), hi: Math.max.apply(null, vals) });
@@ -49,11 +76,16 @@ const MHealthViz = (function () {
       const inside = pts.filter((p) => p.t >= a && (i === n - 1 ? p.t <= b : p.t < b));
       if (!inside.length) continue;
       const vals = nums(inside);
+      /* A point that already knows its own spread keeps it. These arrive
+         pre-bucketed from MInsight, and taking the min and max of the means
+         instead would narrow the band every time it was drawn - which is how
+         a chart whose whole purpose is showing a spread ended up showing a
+         hairline. */
       out.push({
         t: (a + b) / 2,
         v: vals.reduce((s, x) => s + x, 0) / vals.length,
-        lo: Math.min.apply(null, vals),
-        hi: Math.max.apply(null, vals),
+        lo: Math.min.apply(null, inside.map((q) => (q.lo === undefined ? q.v : q.lo))),
+        hi: Math.max.apply(null, inside.map((q) => (q.hi === undefined ? q.v : q.hi))),
       });
     }
     return out;
@@ -79,7 +111,7 @@ const MHealthViz = (function () {
         '" width="' + bw.toFixed(1) + '" height="' + bh.toFixed(1) +
         '" rx="0.8" fill="currentColor" opacity="' + (0.28 + 0.5 * (p.v / top)).toFixed(2) + '"/>';
     });
-    return svg(w, h, out, "hv-bars");
+    return svg(w, h, out, "hv-bars", carry(b, o.meta));
   }
 
   /* ---------- a slow measure ---------- */
@@ -105,7 +137,7 @@ const MHealthViz = (function () {
       '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.6" ' +
       'stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
       '<circle cx="' + x(b.length - 1).toFixed(1) + '" cy="' + y(b[b.length - 1].v).toFixed(1) +
-      '" r="2.4" fill="currentColor"/>', "hv-line");
+      '" r="2.4" fill="currentColor"/>', "hv-line", carry(b, o.meta));
   }
 
   /* ---------- a nightly range ---------- */
@@ -134,7 +166,7 @@ const MHealthViz = (function () {
     return svg(w, h,
       '<path d="' + topEdge + " " + botEdge + ' Z" fill="currentColor" opacity="0.14"/>' +
       '<path d="' + mid + '" fill="none" stroke="currentColor" stroke-width="1.4" ' +
-      'stroke-linecap="round" vector-effect="non-scaling-stroke"/>', "hv-band");
+      'stroke-linecap="round" vector-effect="non-scaling-stroke"/>', "hv-band", carry(b, o.meta));
   }
 
   /* ---------- an occasion ---------- */
@@ -162,7 +194,7 @@ const MHealthViz = (function () {
       out += '<circle cx="' + x + '" cy="' + (h - 1 - r - 1).toFixed(1) + '" r="' + r.toFixed(1) +
         '" fill="currentColor" opacity="0.5"/>';
     }
-    return svg(w, h, out, "hv-dots");
+    return svg(w, h, out, "hv-dots", carry(pts.filter((_, i) => i % step === 0), o.meta));
   }
 
   /* ---------- a bounded reading ---------- */
@@ -241,10 +273,10 @@ const MHealthViz = (function () {
         (mid + amp(b[i].v)).toFixed(1));
     }
     return '<svg class="hv hv-ridge" viewBox="0 0 ' + w + " " + h +
-      '" preserveAspectRatio="none" aria-hidden="true">' +
+      '" preserveAspectRatio="none"' + carry(b, o.meta) + ">" +
       '<path d="' + top + " " + back.join(" ") + ' Z" fill="currentColor" opacity="0.17"/>' +
       '<path d="' + top + '" fill="none" stroke="currentColor" stroke-width="1" ' +
-      'opacity="0.45" vector-effect="non-scaling-stroke"/>' + "</svg>";
+      'opacity="0.45" vector-effect="non-scaling-stroke"/>' + CURSOR + "</svg>";
   }
 
   /* ---------- a composition ---------- */
@@ -261,13 +293,134 @@ const MHealthViz = (function () {
       const bw = (p.v / total) * w;
       out += '<rect x="' + x.toFixed(1) + '" y="0" width="' + Math.max(0, bw - 1.5).toFixed(1) +
         '" height="' + h + '" rx="3" fill="currentColor" opacity="' +
-        (0.75 - i * 0.22).toFixed(2) + '"/>';
+        (0.75 - i * 0.22).toFixed(2) + '"><title>' + esc(p.label) + " " +
+        Math.round((p.v / total) * 100) + "%</title></rect>";
       x += bw;
     });
     return svg(w, h, out, "hv-stack");
   }
 
-  return { bars, line, band, dots, dial, ridge, stack, bucket, esc };
+  /* ---------- what is under the pointer ---------- */
+
+  const MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const day = (t) => {
+    const d = new Date(t);
+    return d.getDate() + " " + MONTH[d.getMonth()] + " " + d.getFullYear();
+  };
+  const monthOf = (t) => {
+    const d = new Date(t);
+    return MONTH[d.getMonth()] + " " + d.getFullYear();
+  };
+
+  /* Minutes are shown as hours wherever they are shown. "413" is not a
+     quantity of sleep anybody recognises. */
+  const asHours = (mins) => {
+    const h = Math.floor(mins / 60), m = Math.round(mins - h * 60);
+    return h + "h " + String(m).padStart(2, "0") + "m";
+  };
+
+  function fmtValue(v, meta) {
+    if (meta && meta.hours) return asHours(v);
+    const n = Math.abs(v) >= 100 ? Math.round(v)
+      : Math.abs(v) >= 10 ? Math.round(v * 10) / 10 : Math.round(v * 100) / 100;
+    return n.toLocaleString() + (meta && meta.unit ? " " + meta.unit : "");
+  }
+
+  /* The wording depends on the drawing, because the drawings mean different
+     things. A bar is a stretch of days averaged, so it says which stretch. A
+     band is a spread, so it says the spread and not only the middle. A dot is
+     one occasion, so it says the day it happened. */
+  function readout(kind, pt, meta) {
+    const when = kind === "hv-bars" || kind === "hv-ridge" ? monthOf(pt.t) : day(pt.t);
+    if (kind === "hv-band" && pt.lo !== undefined && pt.hi !== undefined) {
+      return "<b>" + esc(fmtValue(pt.lo, meta)) + " to " + esc(fmtValue(pt.hi, meta)) +
+        "</b><em>" + esc(when) + ", middle " + esc(fmtValue(pt.v, meta)) + "</em>";
+    }
+    return "<b>" + esc(fmtValue(pt.v, meta)) + "</b><em>" + esc(when) + "</em>";
+  }
+
+  let tip = null;
+  function tipEl() {
+    if (tip && tip.isConnected) return tip;
+    tip = document.createElement("div");
+    tip.className = "hv-tip";
+    tip.hidden = true;
+    document.body.appendChild(tip);
+    return tip;
+  }
+
+  function hide() {
+    if (tip) tip.hidden = true;
+    document.querySelectorAll(".hv .hv-cur").forEach((g) => g.setAttribute("opacity", "0"));
+  }
+
+  function show(chart, clientX) {
+    let pts, meta;
+    try {
+      pts = JSON.parse(chart.getAttribute("data-hv") || "[]");
+      meta = JSON.parse(chart.getAttribute("data-hv-meta") || "{}");
+    } catch (e) { return; }
+    if (!pts.length) return;
+
+    const rect = chart.getBoundingClientRect();
+    if (!rect.width) return;
+    const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const i = Math.min(pts.length - 1, Math.max(0, Math.round(frac * (pts.length - 1))));
+    const pt = pts[i];
+
+    /* The cursor is positioned in the chart's own coordinates, which are not
+       the screen's - preserveAspectRatio is none, so the box is stretched. */
+    const box = (chart.getAttribute("viewBox") || "0 0 100 100").split(/\s+/).map(Number);
+    const vw = box[2] || 100, vh = box[3] || 100;
+    const cx = (i / Math.max(1, pts.length - 1)) * vw;
+    const cur = chart.querySelector(".hv-cur");
+    if (cur) {
+      const l = cur.querySelector(".hv-cur-l");
+      const d = cur.querySelector(".hv-cur-d");
+      if (l) { l.setAttribute("x1", cx); l.setAttribute("x2", cx); }
+      if (d) {
+        const vals = pts.map((q) => q.v);
+        let lo = Math.min.apply(null, pts.map((q) => (q.lo === undefined ? q.v : q.lo)));
+        let hi = Math.max.apply(null, pts.map((q) => (q.hi === undefined ? q.v : q.hi)));
+        if (hi === lo) { lo -= 1; hi += 1; }
+        d.setAttribute("cx", cx);
+        d.setAttribute("cy", vh - 3 - ((pt.v - lo) / (hi - lo)) * (vh - 6));
+      }
+      cur.setAttribute("opacity", "1");
+    }
+
+    const el = tipEl();
+    el.innerHTML = readout(chart.classList.contains("hv-band") ? "hv-band"
+      : chart.classList.contains("hv-bars") ? "hv-bars"
+      : chart.classList.contains("hv-dots") ? "hv-dots"
+      : chart.classList.contains("hv-ridge") ? "hv-ridge" : "hv-line", pt, meta);
+    el.hidden = false;
+    const tw = el.offsetWidth;
+    el.style.left = Math.max(6, Math.min(window.innerWidth - tw - 6,
+      rect.left + frac * rect.width - tw / 2)) + "px";
+    el.style.top = Math.max(6, rect.top - el.offsetHeight - 9) + "px";
+  }
+
+  /* One listener for every chart in a view, rather than one per chart. The
+     charts are rebuilt whenever the view redraws, and a per-chart listener
+     would have to be re-attached each time or leak. */
+  function hover(scope) {
+    if (!scope || scope.dataset.hvWired) return;
+    scope.dataset.hvWired = "1";
+    scope.addEventListener("pointermove", (e) => {
+      const chart = e.target.closest && e.target.closest(".hv[data-hv]");
+      if (!chart) { hide(); return; }
+      show(chart, e.clientX);
+    });
+    scope.addEventListener("pointerleave", hide);
+    /* A scroll moves the chart out from under a tooltip that is positioned
+       against the window. */
+    scope.addEventListener("scroll", hide, true);
+  }
+
+  return { bars, line, band, dots, dial, ridge, stack, bucket, esc, hover, asHours };
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MHealthViz;
