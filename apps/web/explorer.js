@@ -2430,5 +2430,36 @@
 
   function currentView() { return state ? state.view : null; }
 
-  global.MExplorer = { open, close, showView, refresh, currentView, status };
+  /* The side panel, for a view that is not the timeline.
+   *
+   * All files used to open a preview inside the row it belonged to, which
+   * pushed every row below it down the page and left a picture squeezed into
+   * the width of a file name. The timeline had a perfectly good panel for
+   * exactly this - full height, beside the list, with the list still legible
+   * next to it - and there was no reason for the two to differ.
+   *
+   * Returns the element so the caller can fill it in asynchronously, which is
+   * the normal case: the bytes have to come out of the archive first. */
+  function showPanel(title, subtitle, iconKey) {
+    const panel = document.getElementById("ex-detail");
+    if (!panel) return null;
+    panel.hidden = false;
+    const ex = document.querySelector("#explorer .ex");
+    if (ex) ex.classList.add("detail-open");
+    panel.innerHTML = `
+      <header class="ex-dh">
+        <span class="ex-ic lg c-slate" data-icon="${esc(iconKey || "file")}"></span>
+        <span class="ex-dh-t"><b>${esc(title)}</b><em>${esc(subtitle || "")}</em></span>
+        <span class="ex-dh-a">
+          <button class="ex-nav-btn" id="ex-x" title="Close">&times;</button>
+        </span>
+      </header>
+      <div class="ex-dbody" id="ex-dbody"><div id="ex-dmain"></div></div>`;
+    panel.querySelector("#ex-x").addEventListener("click", closeDetail);
+    if (state && state.ctx && state.ctx.hydrate) state.ctx.hydrate(panel);
+    return panel.querySelector("#ex-dmain");
+  }
+
+  global.MExplorer = { open, close, showView, refresh, currentView, status,
+                       showPanel, closePanel: closeDetail };
 })(window);

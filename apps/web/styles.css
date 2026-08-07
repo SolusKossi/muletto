@@ -24,6 +24,10 @@
 }
 
 :root {
+  /* One curve for every disclosure on the site, so a question on the front
+     page and a branch of the data tree in the app open at the same speed and
+     with the same weight. Matched to disclose.js, which animates the height. */
+  --disclose-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --bg: #f6f6f6;
   --surface: #ffffff;
   --surface-2: #fafafa;
@@ -742,8 +746,18 @@ body.no-scroll { overflow: hidden; }
 .tv-node > summary { cursor: pointer; color: var(--muted); font-size: 12.5px;
   padding: 1px 0; list-style: none; }
 .tv-node > summary::-webkit-details-marker { display: none; }
-.tv-node > summary::before { content: "+ "; font-family: ui-monospace, monospace; }
-.tv-node[open] > summary::before { content: "- "; }
+/* A drawn plus rather than a typed one, so it folds into the minus while the
+   branch is opening. The width matches the monospace "+ " it replaces, so the
+   tree lines up exactly as it did. */
+.tv-node > summary::before { content: ""; display: inline-block; vertical-align: middle;
+  width: 8px; height: 8px; margin-right: 4px;
+  background:
+    linear-gradient(currentColor, currentColor) center / 8px 1.4px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1.4px 8px no-repeat;
+  transition: transform .26s var(--disclose-ease),
+    background-size .26s var(--disclose-ease); }
+.tv-node[open] > summary::before { transform: rotate(180deg);
+  background-size: 8px 1.4px, 1.4px 0; }
 .tv-kids { margin-left: 14px; padding-left: 12px; border-left: 1px solid var(--line); }
 .tv-row { display: flex; gap: 12px; align-items: baseline; padding: 2px 0; }
 .tv-k { flex: 0 0 auto; min-width: 150px; color: var(--muted); font-size: 12.5px; }
@@ -1893,6 +1907,25 @@ stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
 .rp-more:hover { text-decoration: underline; }
 .rp-hidden { margin-top: 10px; }
 
+/* The three disclosures that never had a marker of their own and were showing
+   the browser's triangle, which cannot be animated. Given the same folding
+   plus as everything else so the whole site opens the same way. */
+.rp-shape > summary, .cx-other > summary, .cx-redeem > summary { list-style: none; }
+.rp-shape > summary::-webkit-details-marker,
+.cx-other > summary::-webkit-details-marker,
+.cx-redeem > summary::-webkit-details-marker { display: none; }
+.rp-shape > summary::before, .cx-other > summary::before, .cx-redeem > summary::before {
+  content: ""; display: inline-block; vertical-align: middle;
+  width: 9px; height: 9px; margin-right: 7px;
+  background:
+    linear-gradient(currentColor, currentColor) center / 9px 1.4px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1.4px 9px no-repeat;
+  transition: transform .26s var(--disclose-ease),
+    background-size .26s var(--disclose-ease); }
+.rp-shape[open] > summary::before, .cx-other[open] > summary::before,
+.cx-redeem[open] > summary::before { transform: rotate(180deg);
+  background-size: 9px 1.4px, 1.4px 0; }
+
 .rp-shapes { display: flex; flex-direction: column; gap: 6px; }
 .rp-shape { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
 .rp-shape summary { padding: 10px 14px; cursor: pointer; font-size: 13px; }
@@ -2393,10 +2426,19 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   font-weight: 560; color: var(--ink); list-style: none; display: flex;
   align-items: center; justify-content: space-between; gap: 16px; }
 .faq-item summary::-webkit-details-marker { display: none; }
-.faq-item summary::after { content: "+"; font-size: 19px; color: var(--muted);
-  font-weight: 400; line-height: 1; flex: none; }
-.faq-item[open] summary::after { content: "-"; }
+/* A plus drawn as two bars rather than typed as a character, because the
+   vertical one can then fold away into the minus instead of the glyph being
+   swapped out from under you. Same size and weight as the "+" it replaces. */
+.faq-item summary::after { content: ""; flex: none; width: 13px; height: 13px;
+  background:
+    linear-gradient(currentColor, currentColor) center / 13px 1.6px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1.6px 13px no-repeat;
+  color: var(--muted); transition: transform .26s var(--disclose-ease),
+    background-size .26s var(--disclose-ease); }
+.faq-item[open] summary::after { transform: rotate(180deg);
+  background-size: 13px 1.6px, 1.6px 0; }
 .faq-item summary:hover { color: var(--accent); }
+.faq-item summary:hover::after { color: var(--accent); }
 .faq-item p { margin: 0 0 16px; padding-right: 36px; font-size: 15px;
   line-height: 1.65; color: var(--body); max-width: 78ch; }
 
@@ -2457,7 +2499,7 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   cursor: pointer; list-style: none; white-space: nowrap; }
 .src-co > summary::-webkit-details-marker { display: none; }
 .src-co > summary::after { content: "v"; font-size: 10px; color: var(--muted);
-  transition: transform .15s ease; }
+  transition: transform .26s var(--disclose-ease); }
 .src-co[open] > summary::after { transform: rotate(180deg); }
 .src-n { color: var(--muted); font-size: 12px; }
 .src-co > ul { margin: 0; padding: 2px 10px 8px 28px; list-style: none;
@@ -2711,9 +2753,16 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   list-style: none; display: flex; align-items: baseline; justify-content: space-between;
   gap: 12px; }
 .faq-q > summary::-webkit-details-marker { display: none; }
-.faq-q > summary::after { content: "+"; color: var(--muted); font-weight: 400;
-  font-size: 17px; line-height: 1; flex: none; }
-.faq-q[open] > summary::after { content: "-"; }
+/* Two bars, so it folds rather than swaps. See .faq-item above. */
+.faq-q > summary::after { content: ""; flex: none; width: 12px; height: 12px;
+  align-self: center;
+  background:
+    linear-gradient(currentColor, currentColor) center / 12px 1.5px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1.5px 12px no-repeat;
+  color: var(--muted); transition: transform .26s var(--disclose-ease),
+    background-size .26s var(--disclose-ease); }
+.faq-q[open] > summary::after { transform: rotate(180deg);
+  background-size: 12px 1.5px, 1.5px 0; }
 .faq-q > p { margin: 0 0 13px; font-size: 14px; line-height: 1.6; color: var(--muted);
   max-width: 62ch; }
 
@@ -2968,14 +3017,15 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .fl-row { cursor: pointer; border-radius: 8px;
   transition: background var(--t) var(--ease); }
 .fl-row:hover { background: var(--surface-2); }
-.fl-row.open { background: var(--surface-2); }
-.fl-view { grid-column: 1 / -1; margin: 8px 0 4px; padding: 10px 12px;
-  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+/* The selected row, while its preview is open in the side panel. There is
+   no in-row box any more - the preview moved to the panel the timeline uses,
+   so a picture gets the width of a panel rather than the width of a name. */
+.fl-row.on { background: var(--surface-2); box-shadow: inset 2px 0 0 var(--ink); }
 .fl-text { margin: 0; font-family: var(--mono); font-size: 12px; line-height: 1.5;
   white-space: pre-wrap; overflow-wrap: anywhere; max-height: 46vh; overflow: auto; }
-.fl-img { display: block; max-width: 100%; max-height: 46vh; border-radius: 6px; }
-.fl-media { width: 100%; max-height: 46vh; }
-.fl-view code { font-family: var(--mono); font-size: 11.5px; }
+.fl-img { display: block; max-width: 100%; max-height: 60vh; border-radius: 8px; }
+.fl-media { width: 100%; max-height: 60vh; }
+.ex-dbody code { font-family: var(--mono); font-size: 11.5px; }
 
 /* A row that does something should look like it before it is clicked. */
 .fl-name { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
@@ -3007,3 +3057,15 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .fl-page * { max-width: 100% !important; font-family: inherit !important;
   font-size: inherit !important; color: inherit !important;
   background-color: transparent !important; }
+
+/* The health panels, once they had something to draw.
+   Each one is a figure, the shape it made over the years, and what changed
+   between the two ends of that shape. */
+.hl-card.has-chart { padding-bottom: 12px; }
+.hl-chart { margin: 8px 0 2px; color: var(--muted); }
+.hl-chart .spark { display: block; width: 100%; height: 54px; }
+.hl-trend { margin: 6px 0 0; font-size: 12.5px; color: var(--body);
+  font-variant-numeric: tabular-nums; }
+.hl-trend span { color: var(--muted); }
+.hl-trend.steady { color: var(--muted); }
+.hl-range { white-space: nowrap; }

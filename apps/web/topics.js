@@ -355,10 +355,25 @@ const MTopics = (function () {
       if (specific || HEALTH_CONTEXT.test(hay)) healthy.add(t.src === undefined ? -1 : t.src);
     }
 
+    /* What a table is called beats what its columns are called.
+     *
+     * Matching the whole haystack in catalogue order put three different
+     * tables under Heart rate, because `heart_rate_variability` and
+     * `mean_heart_rate` both contain `heart_rate` and Heart rate comes first
+     * in the list. So HRV had no panel of its own and neither did Workouts -
+     * both were folded into a card that then claimed ten thousand heart rate
+     * readings and a range of 44 to 103, which was three unrelated
+     * measurements averaged together.
+     *
+     * The file name is the thing the service chose to call this, so it is
+     * asked first, on its own. Columns are the fallback, and they are what
+     * make Apple's tables work at all, since Apple names the column and not
+     * the file. */
     const out = [];
     for (const t of tables) {
-      const hay = hayOf(t);
-      const kind = kinds.find((k) => k.match.test(hay));
+      const named = String(t.path || "") + " " + String(t.name || "");
+      const kind = kinds.find((k) => k.match.test(named)) ||
+                   kinds.find((k) => k.match.test(hayOf(t)));
       if (!kind) continue;
       if (LOOSE_KINDS.has(kind.key) && !healthy.has(t.src === undefined ? -1 : t.src)) continue;
       out.push({ kind, table: t, slug: slugOf(t) });
@@ -374,32 +389,97 @@ const MTopics = (function () {
       have.get(m.kind.key).tables.push(m.table);
     }
 
+    /* What the numbers did over the years the export covers.
+     *
+     * A health page that only ever shows an average is the least interesting
+     * thing it could show. Somebody who has worn a watch since 2020 already
+     * knows roughly what their resting heart rate is; what they cannot see
+     * anywhere - not in Samsung Health, not in Apple Health - is that it came
+     * down eleven beats over six years, because those apps show you a month.
+     *
+     * Measured from the ends of the series rather than a fitted line: the
+     * first and last sixth are averaged, which is steady enough not to swing
+     * on one bad night and simple enough to be obviously honest.
+     *
+     * Deliberately not labelled better or worse. Weight down and steps up are
+     * both "improvement" to most people and neither is ours to declare, so
+     * this says what changed and stops. */
+    const trendOf = (points) => {
+      if (!points || points.length < 8) return null;
+      const k = Math.max(2, Math.round(points.length / 6));
+      const mean = (a) => a.reduce((s, p) => s + p.v, 0) / a.length;
+      const from = mean(points.slice(0, k)), to = mean(points.slice(-k));
+      if (!isFinite(from) || !isFinite(to) || !from) return null;
+      const pct = ((to - from) / Math.abs(from)) * 100;
+      if (Math.abs(pct) < 3) return { steady: true };
+      const round = (v) => (Math.abs(v) >= 100 ? Math.round(v)
+        : Math.abs(v) >= 10 ? Math.round(v * 10) / 10 : Math.round(v * 100) / 100);
+      return { from: num(round(from)), to: num(round(to)),
+               pct: Math.abs(Math.round(pct)), up: to > from };
+    };
+
+    const years = (span) => {
+      if (!span || !span.from || !span.to) return "";
+      const y = (span.to - span.from) / (365.25 * 24 * 3600 * 1000);
+      if (y < 0.5) return "";
+      return y < 1.5 ? "over a year" : "over " + Math.round(y) + " years";
+    };
+
     const panel = (entry) => {
       const rows = entry.tables.reduce((n, t) => n + t.rows.length, 0);
       /* The chart comes from insights, which already knows how to find the
          one column in a health table worth plotting and how to degrade when
          there are four readings rather than four hundred thousand. */
-      let card = "";
+      let figure = "", chart = "", trend = "", range = "";
       if (typeof MInsight !== "undefined" && MInsight.cardsFor) {
         try {
-          const cards = MInsight.cardsFor(entry.tables[0]) || [];
-          const s = cards.find((c) => c.kind === "series");
+          /* Every table for this kind is asked, and the one with the most
+             readings behind it wins.
+
+             It used to ask only the first, which is whichever export happened
+             to be opened first: Google's ninety-row activity summary sat in
+             front of Samsung's two thousand daily step counts, so the Steps
+             panel showed a figure from the wrong table while the count
+             underneath it described both. */
+          let s = null;
+          for (const t of entry.tables) {
+            const c = (MInsight.cardsFor(t) || []).find((x) => x.kind === "series");
+            if (c && (!s || (c.n || 0) > (s.n || 0))) s = c;
+          }
           if (s) {
             /* The unit and the word after it are separate elements, so the
                space between them has to be real rather than assumed - it read
                as "90.1 bpmaverage" and "56 kglatest". */
-            card = '<div class="hl-figure"><b>' + esc(s.stat) +
+            figure = '<div class="hl-figure"><b>' + esc(s.stat) +
               (s.unit ? ' <em>' + esc(s.unit) + "</em>" : "") + "</b> " +
               '<span class="muted small">' + esc(s.statLabel || "") + "</span></div>";
+
+            /* The chart was computed every time this page drew and then
+               thrown away, so every panel was one number and a sentence. */
+            if (s.chart && typeof sparkline === "function") {
+              chart = '<div class="hl-chart">' + sparkline(s.points, 300, 54) + "</div>";
+              range = '<span class="hl-range">' + esc(s.low) + " to " + esc(s.high) +
+                (s.unit ? " " + esc(s.unit) : "") + "</span>";
+            }
+            const t = s.chart ? trendOf(s.points) : null;
+            if (t && t.steady) {
+              trend = '<p class="hl-trend steady">Steady ' + esc(years(s.span) || "throughout") + ".</p>";
+            } else if (t) {
+              trend = '<p class="hl-trend ' + (t.up ? "up" : "down") + '">' +
+                esc(t.from) + " to " + esc(t.to) + (s.unit ? " " + esc(s.unit) : "") +
+                ' <span>' + (t.up ? "up" : "down") + " " + t.pct + "%" +
+                (years(s.span) ? " " + esc(years(s.span)) : "") + "</span></p>";
+            }
           }
         } catch (err) { /* a chart is a bonus, never the reason the panel exists */ }
       }
-      return '<article class="hl-card">' +
+      return '<article class="hl-card' + (chart ? " has-chart" : "") + '">' +
         "<h3>" + esc(entry.kind.name) + "</h3>" +
-        card +
+        figure + chart + trend +
         '<p class="muted small">' + esc(entry.kind.holds || "") + "</p>" +
         '<p class="hl-n">' + plural(rows, "reading", "readings") +
           (entry.tables.length > 1 ? " across " + plural(entry.tables.length, "table", "tables") : "") +
+          (range ? " &middot; " + range : "") +
         "</p></article>";
     };
 
@@ -411,14 +491,42 @@ const MTopics = (function () {
     const groups = (typeof coverageHtml === "function" && lib)
       ? coverageHtml(lib, "groups") : "";
 
+    /* The panels that have a chart go first. Sorting by reading count put
+       Food and Water above Heart rate and Sleep, which is backwards: the ones
+       with a shape to show are the reason to be on this page. */
+    const drawn = [...have.values()].map((e) => ({ e, html: panel(e) }));
+    drawn.sort((a, b) => (b.html.includes("has-chart") ? 1 : 0) - (a.html.includes("has-chart") ? 1 : 0));
+
+    /* How far back the record goes. Six years of readings is the thing that
+       makes this worth looking at, and it was nowhere on the page. */
+    let first = null, last = null;
+    for (const m of match) {
+      const s = m.table.span || null;
+      if (!s) continue;
+      if (!first || s.from < first) first = s.from;
+      if (!last || s.to > last) last = s.to;
+    }
+    if (!first) {
+      for (const ev of (lib && lib.events) || []) {
+        if (!ev.at) continue;
+        const t = +ev.at;
+        if (!first || t < first) first = t;
+        if (!last || t > last) last = t;
+      }
+    }
+    const spanYears = first && last
+      ? Math.max(1, Math.round((last - first) / (365.25 * 24 * 3600 * 1000))) : 0;
+
     el.innerHTML =
       unsupportedNote(match.map((m) => m.table)) +
       '<div class="tp-stats">' +
         '<div><b>' + num(have.size) + "</b><span>kinds of data found</span></div>" +
         '<div><b>' + num(match.reduce((n, m) => n + m.table.rows.length, 0)) +
           "</b><span>readings in total</span></div>" +
+        (spanYears ? '<div><b>' + num(spanYears) +
+          "</b><span>" + (spanYears === 1 ? "year covered" : "years covered") + "</span></div>" : "") +
       "</div>" +
-      '<div class="hl-grid">' + [...have.values()].map(panel).join("") + "</div>" +
+      '<div class="hl-grid">' + drawn.map((d) => d.html).join("") + "</div>" +
       groups +
       /* The catalogue is Samsung Health's, so only a Samsung export can be
          told what Samsung Health would also have recorded. Saying it over

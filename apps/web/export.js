@@ -336,10 +336,27 @@ const MExport = (function () {
                repaired: false, unrepairable: wantDate || wantDesc };
     }
 
-    let bytes = await MZip.extract(file, m.entry);
+    /* A caption Snapchat sent separately is drawn back on before anything
+       else happens, so the saved copy is the memory as it was written rather
+       than the memory plus a black square beside it. Photographs only - a
+       video would need re-encoding, and that overlay is written out beside it
+       instead. */
+    let merged = null;
+    if (typeof MOverlay !== "undefined" && MOverlay.canMerge(m)) {
+      try {
+        merged = await MOverlay.merge(
+          await MZip.extractBlob(file, m.entry, m.mime),
+          await MZip.extractBlob(file, m.overlay, "image/png"),
+          m.mime);
+      } catch (err) { merged = null; }
+    }
+    let bytes = merged
+      ? new Uint8Array(await merged.arrayBuffer())
+      : await MZip.extract(file, m.entry);
+    const drawn = !!merged;
     const jpeg = MExif.isJpeg(bytes);
     if (!jpeg || (!wantDate && !wantDesc)) {
-      return { bytes, repaired: false, unrepairable: (wantDate || wantDesc) && !jpeg };
+      return { bytes, drawn, repaired: false, unrepairable: (wantDate || wantDesc) && !jpeg };
     }
     let repaired = false, captioned = false;
     try {
@@ -353,8 +370,8 @@ const MExport = (function () {
         bytes = MExif.writeDescription(bytes, m.caption);
         captioned = true;
       }
-    } catch { return { bytes, repaired, captioned, unrepairable: true }; }
-    return { bytes, repaired, captioned };
+    } catch { return { bytes, drawn, repaired, captioned, unrepairable: true }; }
+    return { bytes, drawn, repaired, captioned };
   }
 
   async function run() {
@@ -384,8 +401,19 @@ const MExport = (function () {
         try {
           const dir = LAYOUTS[o.layout].dir(m);
           const name = nameFor(m);
-          const { bytes, size, repaired, captioned, unrepairable } = await bytesFor(m);
+          const { bytes, size, drawn, repaired, captioned, unrepairable } = await bytesFor(m);
           await writer.file(dir, name, bytes, m.at);
+          /* A caption that could not be drawn on - a video, or a picture the
+             browser would not decode - is written beside its memory rather
+             than thrown away, under a name that says what it is and sorts
+             next to it. Losing it would be worse than the black square. */
+          if (m.overlay && !drawn) {
+            const capName = name.replace(/\.[^.]+$/, "") + "-caption.png";
+            const capFrom = state.sources[m.src || 0].file;
+            await writer.file(dir, capName, await MZip.extract(capFrom, m.overlay), m.at);
+            res.captions = (res.captions || 0) + 1;
+          }
+          if (drawn) res.drawn = (res.drawn || 0) + 1;
           if (repaired) res.repaired++;
           if (captioned) res.captioned++;
           if (unrepairable) res.unrepairable++;
@@ -568,6 +596,8 @@ const MExport = (function () {
             ? `<li>Left out ${plural(state.lib.media.filter((m) => m.drop).length, "file", "files")} you set aside in Clean up.</li>` : ""}
           ${r.unrepairable ? `<li>${plural(r.unrepairable, "file", "files")} could not have a date written in - only JPEG can.</li>` : ""}
           ${r.captioned ? `<li>Wrote ${plural(r.captioned, "description", "descriptions")} into the photos themselves, where Lightroom, Immich, digiKam and Photos can search them.</li>` : ""}
+          ${r.drawn ? `<li>Drew the caption back onto ${plural(r.drawn, "memory", "memories")} that Snapchat had split into two files, so each one is the picture as you wrote it rather than a photo and a black square.</li>` : ""}
+          ${r.captions ? `<li>${plural(r.captions, "caption", "captions")} could not be drawn on - a video would have to be re-encoded - so each was written beside its memory as <strong>-caption.png</strong>.</li>` : ""}
           ${r.sidecars ? `<li>Wrote ${plural(r.sidecars, "sidecar", "sidecars")} beside the pictures.</li>` : ""}
           ${r.dataFiles ? `<li>Included ${plural(r.dataFiles, "data file", "data files")} from the original exports.</li>` : ""}
           ${state.opt.manifest ? "<li>Wrote <strong>muletto-index.csv</strong> listing everything.</li>" : ""}

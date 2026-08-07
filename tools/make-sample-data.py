@@ -157,18 +157,34 @@ PLACES = [
 
 # Trips give the map and the timeline something with shape, rather than a
 # uniform scatter that tells you nothing.
-# (start, days, place, photos per day). The last entry is deliberately long and
-# dense: May 2026 is the month the screenshots are taken from, and a half-empty
-# grid undersells what the library view actually looks like for a real person.
+# (start, days, place, photos per day).
+#
+# Spread across every year rather than piled into one month. There used to be
+# a sixteen-day block in May 2026 producing four to seven photographs a day -
+# nearly half the library in a single month - because that was the month the
+# screenshots were taken from. Scrolling the timeline meant six years of near
+# nothing and then a wall, which is not what anybody's library looks like and
+# made the scroll itself feel broken. Two or three trips a year, and a denser
+# scatter of ordinary days below, gives every month something in it.
 TRIPS = [
-    (dt.date(2021, 6, 11), 5, "Berlin", (2, 4)),
-    (dt.date(2022, 3, 18), 4, "Lisbon", (2, 4)),
-    (dt.date(2022, 9, 2), 3, "Bergen", (2, 4)),
-    (dt.date(2023, 2, 10), 4, "Tromso", (2, 4)),
-    (dt.date(2023, 7, 21), 6, "Rome", (2, 4)),
-    (dt.date(2024, 5, 9), 3, "Copenhagen", (2, 4)),
-    (dt.date(2025, 8, 14), 5, "Berlin", (2, 4)),
-    (dt.date(2026, 5, 4), 16, "Rome", (4, 7)),
+    (dt.date(2020, 6, 20), 3, "Bergen", (1, 3)),
+    (dt.date(2020, 10, 9), 3, "Copenhagen", (1, 3)),
+    (dt.date(2021, 2, 19), 3, "Tromso", (1, 3)),
+    (dt.date(2021, 6, 11), 4, "Berlin", (1, 3)),
+    (dt.date(2021, 11, 5), 3, "Rome", (1, 3)),
+    (dt.date(2022, 3, 18), 3, "Lisbon", (1, 3)),
+    (dt.date(2022, 9, 2), 3, "Bergen", (1, 3)),
+    (dt.date(2022, 12, 27), 3, "Berlin", (1, 3)),
+    (dt.date(2023, 2, 10), 3, "Tromso", (1, 3)),
+    (dt.date(2023, 7, 21), 5, "Rome", (1, 3)),
+    (dt.date(2023, 10, 13), 3, "Lisbon", (1, 3)),
+    (dt.date(2024, 1, 26), 3, "Copenhagen", (1, 3)),
+    (dt.date(2024, 5, 9), 3, "Copenhagen", (1, 3)),
+    (dt.date(2024, 9, 20), 4, "Rome", (1, 3)),
+    (dt.date(2025, 3, 7), 3, "Lisbon", (1, 3)),
+    (dt.date(2025, 8, 14), 4, "Berlin", (1, 3)),
+    (dt.date(2025, 11, 21), 3, "Bergen", (1, 3)),
+    (dt.date(2026, 5, 4), 6, "Rome", (2, 4)),
 ]
 
 FRIENDS = [
@@ -242,9 +258,12 @@ def build_history():
             photos.append((when, lat + RNG.uniform(-.03, .03), lon + RNG.uniform(-.03, .03),
                            where, PHOTO_IDS[pid_i % len(PHOTO_IDS)]))
             pid_i += 1
-    # Ordinary days at home, so the record is not all holidays.
+    # Ordinary days at home, so the record is not all holidays. Raised from
+    # 1.2% to 4%, which is about a photograph a month between trips:
+    # enough that no month is empty, and the timeline scrolls at an even pace
+    # instead of jumping from nothing to a holiday and back.
     home_days = [d for d in daterange_days(start, end)
-                 if d not in trip_days and RNG.random() < 0.012]
+                 if d not in trip_days and RNG.random() < 0.04]
     for day in home_days:
         when = dt.datetime.combine(day, dt.time(RNG.randint(9, 22), RNG.randint(0, 59)))
         photos.append((when, HOME[0] + RNG.uniform(-.05, .05), HOME[1] + RNG.uniform(-.05, .05),
@@ -467,6 +486,223 @@ def build_instagram(h):
     return files
 
 
+# --------------------------------------------------------------- Samsung Health
+
+# Samsung Health is the export the health catalogue was written from - all
+# seventeen kinds in MCatalog.HEALTH are its - so it is the only sample that
+# can show the health page with something in every panel. Without it the demo
+# had one table of ninety rows and the page looked like a stub.
+#
+# The numbers move. Somebody who has worn a watch for six years has a resting
+# heart rate that came down, a weight that came down and then held, sleep that
+# got longer, and a step count that went up - and a health page that cannot
+# show that is just a pile of averages. Every series here has a trend, a
+# seasonal wobble and day-to-day noise on top, because a straight line is as
+# unconvincing as a flat one.
+#
+# ECG is deliberately absent, so "Not in this export" has something true to
+# say rather than being a section that never appears.
+
+def _season(day, amp):
+    """A yearly wobble, peaking in summer. Real activity data has one."""
+    import math
+    return amp * math.sin((day.timetuple().tm_yday - 80) / 365.0 * 2 * math.pi)
+
+
+def _trend(day, start, end, lo, hi):
+    """Where between lo and hi this day falls, as a fraction of the whole span."""
+    span = (end - start).days or 1
+    return lo + (hi - lo) * ((day - start).days / span)
+
+
+def shealth(service, columns, rows):
+    """A Samsung Health CSV, service line and all.
+
+    The first line is the service name and a version, not a header - the real
+    headers are the second line. This is not decoration: it is the quirk the
+    Samsung reader exists to handle, and a sample without it would test
+    nothing.
+    """
+    out = [service + ",1", ",".join(columns)]
+    for r in rows:
+        out.append(",".join("" if v is None else str(v) for v in r))
+    return ("\n".join(out) + "\n").encode("utf-8")
+
+
+def build_samsung(h):
+    import math
+    start, end = h["start"], h["end"]
+    days = list(daterange_days(start, end))
+    files = []
+    stamp = end.strftime("%Y%m%d%H%M%S")
+
+    def name(service):
+        return "%s.%s.csv" % (service, stamp)
+
+    def ts(day, hour=12, minute=0):
+        return dt.datetime.combine(day, dt.time(hour, minute)).strftime("%Y-%m-%d %H:%M:%S")
+
+    # Steps: 6,200 a day rising to 11,400, more in summer, less at weekends.
+    rows = []
+    for d in days:
+        base = _trend(d, start, end, 6200, 11400) + _season(d, 1100)
+        if d.weekday() >= 5:
+            base += 1400
+        n = max(600, int(RNG.gauss(base, 1900)))
+        rows.append([ts(d), n, round(n * 0.00075, 2), int(n * 0.041),
+                     round(n * 0.0007 * 62, 1)])
+    files.append((name("com.samsung.shealth.step_daily_trend"), shealth(
+        "com.samsung.shealth.step_daily_trend",
+        ["day_time", "count", "distance", "active_time", "calorie"], rows)))
+
+    # Resting heart rate: 74 down to 58. The single clearest "this got better".
+    rows = []
+    for d in days:
+        for hour in (7, 14, 22):
+            base = _trend(d, start, end, 74, 58) + (14 if hour == 14 else 0)
+            rows.append([ts(d, hour, RNG.randint(0, 59)),
+                         max(44, int(RNG.gauss(base, 5.5))), "watch"])
+    files.append((name("com.samsung.health.heart_rate"), shealth(
+        "com.samsung.health.heart_rate",
+        ["start_time", "heart_rate", "source"], rows)))
+
+    # Sleep: 6h20 to 7h25, with the stages underneath.
+    rows = []
+    for d in days:
+        mins = int(RNG.gauss(_trend(d, start, end, 380, 445), 42))
+        mins = max(240, min(600, mins))
+        deep = int(mins * RNG.uniform(0.13, 0.21))
+        rem = int(mins * RNG.uniform(0.18, 0.25))
+        rows.append([ts(d - dt.timedelta(days=1), 23, RNG.randint(0, 59)),
+                     ts(d, 6, RNG.randint(0, 59)), mins, deep, rem,
+                     mins - deep - rem, round(RNG.uniform(58, 92), 1)])
+    files.append((name("com.samsung.shealth.sleep"), shealth(
+        "com.samsung.shealth.sleep",
+        ["start_time", "end_time", "sleep_duration", "deep_minutes", "rem_minutes",
+         "light_minutes", "sleep_score"], rows)))
+
+    # Workouts: twice a week, getting faster.
+    EX = [(1001, "Running"), (11007, "Cycling"), (13001, "Swimming"),
+          (14001, "Strength"), (1002, "Walking")]
+    rows = []
+    for d in days:
+        if RNG.random() > 0.28:
+            continue
+        code, label = RNG.choice(EX)
+        mins = RNG.randint(24, 78)
+        pace = _trend(d, start, end, 6.55, 5.20) + RNG.gauss(0, 0.22)
+        km = round(mins / pace, 2) if code in (1001, 1002) else round(mins * 0.42, 2)
+        rows.append([ts(d, RNG.randint(6, 20), RNG.randint(0, 59)), code, label, mins * 60,
+                     km, int(mins * RNG.uniform(8.5, 12.5)),
+                     int(_trend(d, start, end, 158, 146) + RNG.gauss(0, 7)),
+                     round(pace, 2)])
+    files.append((name("com.samsung.shealth.exercise"), shealth(
+        "com.samsung.shealth.exercise",
+        ["start_time", "exercise_type", "exercise_name", "duration", "distance",
+         "calorie", "mean_heart_rate", "mean_pace"], rows)))
+
+    # Weight: 88.4 kg down to 79.1, then holding. Body fat follows it down.
+    rows = []
+    for d in days[::7]:
+        frac = (d - start).days / ((end - start).days or 1)
+        # Most of the loss happens in the first two thirds, then it levels.
+        eased = min(1.0, frac / 0.66)
+        kg = 88.4 - 9.3 * eased + RNG.gauss(0, 0.55) + _season(d, 0.6)
+        rows.append([ts(d, 7, 20), round(kg, 1), round(kg * 0.0338 - 0.4, 1),
+                     round(24.1 - 2.6 * eased + RNG.gauss(0, .2), 1),
+                     round(kg * 0.415 + RNG.gauss(0, .4), 1)])
+    files.append((name("com.samsung.health.weight"), shealth(
+        "com.samsung.health.weight",
+        ["start_time", "weight", "body_fat", "body_mass_index", "skeletal_muscle"], rows)))
+
+    # Everything a watch records overnight without being asked.
+    rows = [[ts(d, RNG.randint(9, 21), RNG.randint(0, 59)),
+             max(8, int(RNG.gauss(_trend(d, start, end, 46, 32), 12)))] for d in days]
+    files.append((name("com.samsung.shealth.stress"), shealth(
+        "com.samsung.shealth.stress", ["start_time", "score"], rows)))
+
+    rows = [[ts(d, 4, RNG.randint(0, 59)), round(RNG.gauss(96.6, 1.1), 1)] for d in days]
+    files.append((name("com.samsung.health.oxygen_saturation"), shealth(
+        "com.samsung.health.oxygen_saturation", ["start_time", "spo2"], rows)))
+
+    rows = [[ts(d, 4, RNG.randint(0, 59)),
+             max(14, int(RNG.gauss(_trend(d, start, end, 31, 52), 8)))] for d in days]
+    files.append((name("com.samsung.health.hrv"), shealth(
+        "com.samsung.health.hrv", ["start_time", "heart_rate_variability"], rows)))
+
+    rows = [[ts(d, 4, RNG.randint(0, 59)), round(RNG.gauss(14.6, 1.4), 1)] for d in days]
+    files.append((name("com.samsung.health.respiratory_rate"), shealth(
+        "com.samsung.health.respiratory_rate", ["start_time", "breaths_per_minute"], rows)))
+
+    rows = [[ts(d, 4, RNG.randint(0, 59)), round(RNG.gauss(33.4, 0.5) + _season(d, 0.3), 2)]
+            for d in days]
+    files.append((name("com.samsung.health.skin_temperature"), shealth(
+        "com.samsung.health.skin_temperature", ["start_time", "temperature"], rows)))
+
+    rows = []
+    for d in days[::7]:
+        sys_ = int(RNG.gauss(_trend(d, start, end, 132, 119), 6))
+        rows.append([ts(d, 8, RNG.randint(0, 59)), sys_, int(sys_ * 0.64 + RNG.gauss(0, 3))])
+    files.append((name("com.samsung.health.blood_pressure"), shealth(
+        "com.samsung.health.blood_pressure", ["start_time", "systolic", "diastolic"], rows)))
+
+    rows = [[ts(d), max(0, int(RNG.gauss(_trend(d, start, end, 6, 13) + _season(d, 2), 4)))]
+            for d in days]
+    files.append((name("com.samsung.shealth.floors_climbed"), shealth(
+        "com.samsung.shealth.floors_climbed", ["day_time", "floor"], rows)))
+
+    MEALS = [("Oats and berries", 1, 410), ("Coffee", 1, 15), ("Rye bread and egg", 2, 520),
+             ("Salad with chicken", 2, 610), ("Salmon and potatoes", 3, 780),
+             ("Pasta", 3, 850), ("Apple", 4, 95), ("Yoghurt", 4, 160)]
+    rows = []
+    for d in days:
+        for label, meal, kcal in RNG.sample(MEALS, RNG.randint(2, 4)):
+            rows.append([ts(d, 7 + meal * 3, RNG.randint(0, 59)), label, meal,
+                         int(RNG.gauss(kcal, kcal * 0.12)),
+                         round(kcal * 0.04, 1), round(kcal * 0.03, 1)])
+    files.append((name("com.samsung.shealth.food_intake"), shealth(
+        "com.samsung.shealth.food_intake",
+        ["start_time", "title", "meal_type", "calorie", "protein", "fat"], rows)))
+
+    # "amount" rather than "glasses": Samsung names the measured column amount,
+    # and a reader looking for the water in a water table should not have to
+    # know that "glasses" is it. Charting picked caffeine when it did not.
+    rows = [[ts(d), RNG.randint(3, 9) * 250, RNG.randint(0, 4)] for d in days]
+    files.append((name("com.samsung.shealth.water_intake"), shealth(
+        "com.samsung.shealth.water_intake", ["day_time", "amount", "caffeine"], rows)))
+
+    BADGES = ["10,000 steps", "First 5 km run", "Seven days in a row",
+              "Best step count", "30 days of sleep tracking", "First 10 km run",
+              "Longest workout", "100 workouts", "Best weekly distance"]
+    rows = []
+    for i, d in enumerate(days[::71]):
+        rows.append([ts(d, 21, 0), RNG.choice(BADGES), RNG.randint(1, 9)])
+    files.append((name("com.samsung.shealth.rewards"), shealth(
+        "com.samsung.shealth.rewards", ["start_time", "title", "level"], rows)))
+
+    CHALLENGES = ["October step challenge", "Weekend warriors", "Office 100k",
+                  "Spring 10k", "New year reset", "Summer streak"]
+    rows = []
+    for i, d in enumerate(days[::119]):
+        rows.append([ts(d), RNG.choice(CHALLENGES), RNG.randint(3, 12),
+                     RNG.randint(1, 8), RNG.randint(40000, 260000)])
+    files.append((name("com.samsung.shealth.social_challenge"), shealth(
+        "com.samsung.shealth.social_challenge",
+        ["start_time", "title", "friends", "finish_rank", "total_steps"], rows)))
+
+    # The device that recorded it, which is what makes the readings believable.
+    files.append(("jsons/device_profile.json", js({
+        "devices": [
+            {"name": "Galaxy Watch6", "model": "SM-R930", "type": "watch",
+             "first_seen": ts(start), "last_seen": ts(end)},
+            {"name": "Galaxy S23", "model": "SM-S911B", "type": "phone",
+             "first_seen": ts(start), "last_seen": ts(end)},
+            {"name": "Galaxy Ring", "model": "SM-Q500", "type": "ring",
+             "first_seen": ts(days[len(days) // 2]), "last_seen": ts(end)},
+        ]})))
+    return files
+
+
 def main():
     print("Building a shared history...")
     h = build_history()
@@ -478,7 +714,8 @@ def main():
     for name, build in [("snapchat-export.zip", build_snapchat),
                         ("apple-export.zip", build_apple),
                         ("google-takeout.zip", build_google),
-                        ("instagram-export.zip", build_instagram)]:
+                        ("instagram-export.zip", build_instagram),
+                        ("samsung-export.zip", build_samsung)]:
         size, n = zwrite(name, build(h))
         print("  %-24s %3d files  %7.1f KB" % (name, n, size / 1024))
 

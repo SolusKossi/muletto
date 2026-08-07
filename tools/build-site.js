@@ -157,6 +157,8 @@ ${body}
 
 ${footer(depth)}
 
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="${up}disclose.js"></script>
   <script src="${up}app.js"></script>
 </body>
 </html>
@@ -877,6 +879,41 @@ function main() {
       if (after !== before) { fs.writeFileSync(f, after, "utf8"); stamped++; }
     }
     console.log("stamped assets in " + stamped + " page" + (stamped === 1 ? "" : "s"));
+
+    /* The sample archives, stamped into app.js rather than into a page.
+     *
+     * They are the one asset requested from script rather than named in HTML,
+     * so the rewrite above never saw them - and they are also the one asset
+     * the service worker deliberately keeps, which made them the only thing
+     * on the site that could be served stale indefinitely. One stamp over the
+     * whole set: they are rebuilt together and there is no benefit to
+     * revalidating them apart.
+     *
+     * This has to run after the loop above, because changing app.js changes
+     * app.js's own stamp - and it is rewritten before the pages are stamped
+     * on the next pass, which is why the build is run twice in CI. */
+    {
+      const dir = path.join(WEB, "samples");
+      let v = "";
+      if (fs.existsSync(dir)) {
+        const h = crypto.createHash("sha256");
+        for (const f of fs.readdirSync(dir).sort()) {
+          h.update(f).update(fs.readFileSync(path.join(dir, f)));
+        }
+        v = h.digest("hex").slice(0, 8);
+      }
+      const appJs = path.join(WEB, "app.js");
+      const before = fs.readFileSync(appJs, "utf8");
+      const after = before.replace(
+        /\/\* BUILD:SAMPLES \*\/[\s\S]*?\/\* END:SAMPLES \*\//,
+        "/* BUILD:SAMPLES */\nconst SAMPLES_V = " + JSON.stringify(v) + ";\n/* END:SAMPLES */");
+      if (after !== before) {
+        fs.writeFileSync(appJs, after, "utf8");
+        console.log("samples stamped " + v + " (app.js restamped on the next build)");
+      } else {
+        console.log("samples stamped " + v);
+      }
+    }
     /* The commit stamp, into the hand-written pages as well.
 
        The generated guides get it from footer(), but index.html and app.html

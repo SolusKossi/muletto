@@ -28,14 +28,14 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "9d12bfbc17c4";
+const VERSION = "9576fd90707d";
 const PRECACHE = [
   "/app.html",
-  "/styles.css?v=17b5c3fc",
+  "/styles.css?v=03225bcb",
   "/notify.js?v=f2cf1cf3",
   "/tips.js?v=0bdfdea4",
   "/jobs.js?v=3f996b9f",
-  "/store.js?v=a83aa2c4",
+  "/store.js?v=0ad5ecd8",
   "/derived.js?v=b52d2219",
   "/credits.js?v=54539768",
   "/donate.js?v=e8f71043",
@@ -47,6 +47,7 @@ const PRECACHE = [
   "/zip.js?v=08665d7b",
   "/tar.js?v=535cfda4",
   "/zipout.js?v=5c9c3222",
+  "/overlay.js?v=aaede613",
   "/exif.js?v=7b45a4ab",
   "/heif.js?v=d0ffffd5",
   "/video.js?v=a66813af",
@@ -54,16 +55,17 @@ const PRECACHE = [
   "/diagnose.js?v=d97b3ff8",
   "/contribute.js?v=c3b34297",
   "/mojibake.js?v=38849a41",
-  "/parsers.js?v=8cf7ab45",
+  "/parsers.js?v=3351bb0d",
   "/catalog.js?v=d7b44ec6",
-  "/insights.js?v=362a2b0d",
+  "/insights.js?v=7a919f92",
   "/basemap.js?v=cbb6dfca",
   "/rail.js?v=b4bc5944",
-  "/topics.js?v=a80134ea",
+  "/topics.js?v=4512d1d4",
   "/views.js?v=8afcc6f8",
-  "/export.js?v=bad236d2",
-  "/explorer.js?v=9dcb12aa",
-  "/app.js?v=92b1a9c9",
+  "/export.js?v=c82b191b",
+  "/explorer.js?v=b83614bc",
+  "/disclose.js?v=b24e640b",
+  "/app.js?v=ed31d2b9",
   "/swreg.js?v=266bec3b",
   "/fonts/host-grotesk-var-italic.woff2",
   "/fonts/host-grotesk-var.woff2"

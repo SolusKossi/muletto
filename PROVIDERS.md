@@ -160,6 +160,26 @@ media themselves are largely **download links rather than files**.
 |---|---|
 | Chat history | **Read** - conversations |
 | Memories metadata | **Read** - events and places |
+| Split captions | **Merged** - see below |
+
+**Split captions.** A memory with a caption, sticker or drawing on it is
+exported as two files, not one: `<id>-main.jpg` and `<id>-overlay.png`, the
+second being the caption alone on a transparent background. Import the folder
+anywhere else and every overlay arrives as white writing on a black square,
+sitting beside the memory it belonged to. Muletto pairs them by the name they
+share and draws the caption back on, so the picture you see and the picture you
+save are the one you wrote.
+
+A video cannot be merged - burning a caption into an mp4 means re-encoding it -
+so those keep the overlay and it is written beside the memory as
+`-caption.png`. An overlay whose memory is not in the export is left alone and
+named in a note, because it is a real file and quietly dropping it would be
+worse.
+
+**Verified on the sample export only.** The pairing, the merge and the export
+have been run and measured; no real Snapchat export has been opened, so the
+naming is from Snapchat's documented convention rather than from a file that
+came out of Snapchat.
 
 **Known gaps:** the media are links, and a link is not your data. Worth saying
 loudly in the guide, because a Snapchat export is far emptier than people
