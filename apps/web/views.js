@@ -487,17 +487,10 @@
       const y = new Date(m.t).getFullYear();
       perYear.set(y, (perYear.get(y) || 0) + 1);
     }
-    const rankedYears = [...perYear.entries()].sort((a, b) => b[1] - a[1]);
-    if (rankedYears.length > 1) {
-      const [bestYear, bestN] = rankedYears[0];
-      const rest = [...perYear.entries()].filter(([y]) => y !== bestYear);
-      const avg = rest.reduce((s, [, n]) => s + n, 0) / Math.max(1, rest.length);
-      const over = avg ? Math.round(((bestN - avg) / avg) * 100) : 0;
-      cards.push({ icon: "chart", title: "You spoke most in " + bestYear,
-        body: plural(bestN, "message", "messages") + " that year" +
-          (over > 8 ? ", about " + over + " percent above your other years" : "") + "." });
-    }
-
+    /* "You spoke most in 2025" used to be the first of three. It is the one
+       thing on this page the chart beside it already says - the tallest bars
+       are the busiest year - so it went, and two cards stretch to the height
+       of the chart rather than three ending short of it. */
     const spanYears = new Set([...perYear.keys()]);
     let constant = null;
     for (const p of people) {
@@ -580,6 +573,9 @@
       : "";
 
     return '<div class="cs">' +
+      '<div class="cs-go"><button class="btn primary" id="cs-open">Explore the full chat ' +
+        "history</button>" +
+        '<span class="muted small">Every conversation, in full, with search.</span></div>' +
       '<div class="cs-main">' +
         '<div class="cs-card"><h3>Messages over time</h3>' +
           '<p class="muted small">Every message, by the day it was sent.</p>' +
@@ -598,10 +594,6 @@
 
       week +
       '<div class="cs-two">' + who + where + "</div>" +
-
-      '<div class="cs-go"><button class="btn primary" id="cs-open">Explore the full chat ' +
-        "history</button>" +
-        '<span class="muted small">Every conversation, in full, with search.</span></div>' +
       "</div>";
   }
 

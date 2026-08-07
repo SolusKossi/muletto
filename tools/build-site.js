@@ -1090,18 +1090,41 @@ function main() {
   /* Only indexable pages go in the sitemap. Listing a page that carries a
      noindex is a contradiction, and Search Console reports it as one - which
      is why the superseded home page is absent from this list. */
+  /* When each page last actually changed.
+   *
+   * The sitemap had a priority on every entry and a date on none, which is
+   * the wrong way round: Google has said for years that it ignores priority,
+   * and it does use lastmod as a hint about what is worth re-fetching. A
+   * sitemap without dates asks a crawler to re-read thirty-five pages to find
+   * the two that moved.
+   *
+   * Taken from the file's own mtime after it is written, so it is the truth
+   * rather than a build timestamp stamped on everything - a build that
+   * changes one guide should say that one guide changed. */
+  const when = (rel) => {
+    try {
+      return fs.statSync(path.join(WEB, rel)).mtime.toISOString().slice(0, 10);
+    } catch (e) { return null; }
+  };
+
   const urls = [
-    { loc: `${SITE}/`, pri: "1.0" },
-    { loc: `${SITE}/guides.html`, pri: "0.9" },
-    { loc: `${SITE}/app.html`, pri: "0.9" },
-    { loc: `${SITE}/pricing.html`, pri: "0.7" },
-    { loc: `${SITE}/privacy.html`, pri: "0.7" },
-    ...flows.map((f) => ({ loc: `${SITE}/guides/${f.slug}.html`, pri: "0.85" })),
-    ...[...all, ...dests].map((g) => ({ loc: `${SITE}/guides/${g.slug}.html`, pri: "0.8" })),
+    { loc: `${SITE}/`, pri: "1.0", file: "index.html" },
+    { loc: `${SITE}/guides.html`, pri: "0.9", file: "guides.html" },
+    { loc: `${SITE}/app.html`, pri: "0.9", file: "app.html" },
+    { loc: `${SITE}/pricing.html`, pri: "0.7", file: "pricing.html" },
+    { loc: `${SITE}/privacy.html`, pri: "0.7", file: "privacy.html" },
+    ...flows.map((f) => ({ loc: `${SITE}/guides/${f.slug}.html`, pri: "0.85",
+                           file: "guides/" + f.slug + ".html" })),
+    ...[...all, ...dests].map((g) => ({ loc: `${SITE}/guides/${g.slug}.html`, pri: "0.8",
+                                        file: "guides/" + g.slug + ".html" })),
   ];
   fs.writeFileSync(path.join(WEB, "sitemap.xml"),
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-    urls.map((u) => `  <url><loc>${u.loc}</loc><priority>${u.pri}</priority></url>`).join("\n") +
+    urls.map((u) => {
+      const d = when(u.file);
+      return `  <url><loc>${u.loc}</loc>` + (d ? `<lastmod>${d}</lastmod>` : "") +
+        `<priority>${u.pri}</priority></url>`;
+    }).join("\n") +
     `\n</urlset>\n`, "utf8");
   /* Crawling is allowed, and the sitemap is advertised.
    *
