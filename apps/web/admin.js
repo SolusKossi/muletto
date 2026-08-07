@@ -79,10 +79,22 @@
     dash.hidden = false;
 
     if (d.configured === false) {
+      const found = d.found || [];
       dash.innerHTML = '<div class="adm-note"><strong>Signed in, but nothing is being counted.</strong>' +
-        '<p>No counter store is attached to this deployment. Add Vercel KV to the project and it ' +
-        "sets the two variables the endpoint looks for. Until then the site works exactly as it " +
-        "always has and records nothing.</p></div>";
+        "<p>No counter store is attached to this deployment, so the site is working exactly as it " +
+        "always has and recording nothing.</p>" +
+        "<p>In Vercel: <strong>Storage</strong>, then <strong>Upstash</strong>, then " +
+        "<strong>Redis</strong>. Connect it to this project and redeploy. Upstash is the one that " +
+        "speaks over HTTP, which is what a function here can reach without pulling in a client " +
+        "library - the plain Redis option cannot be used this way.</p>" +
+        "<p>The endpoint accepts either naming: <code>KV_REST_API_URL</code> and " +
+        "<code>KV_REST_API_TOKEN</code>, or <code>UPSTASH_REDIS_REST_URL</code> and " +
+        "<code>UPSTASH_REDIS_REST_TOKEN</code>. " +
+        (found.length
+          ? "Found so far: <code>" + found.map(esc).join("</code>, <code>") +
+            "</code> - so one of the pair is missing."
+          : "Neither pair is set on this deployment yet.") +
+        "</p></div>";
       return;
     }
 
