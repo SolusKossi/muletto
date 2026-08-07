@@ -2,7 +2,7 @@
 
 /* Muletto - keeping an opened library between visits.
 
-   Re-choosing four archives and waiting for them to be read again, every time
+   Re-choosing five archives and waiting for them to be read again, every time
    you come back, is a bad trade for nothing. So what was worked out from an
    export is kept on this device: the parsed library, the file list, and a
    reference to each archive.

@@ -887,7 +887,11 @@ const MParse = (function () {
           .replace(/^com\.samsung\.(shealth\.|health\.)?/i, "")
           // GalaxyStore_<account>_<date>_access, ANS_gk<id>_<date>_access
           .replace(/[_-][a-z]{0,3}\d{6,}[_-]\d{6,}[_-]access$/i, "")
-          .replace(/[_-]\d{6,}$/, "").replace(/[_-]+$/, "").trim();
+          /* Samsung stamps the export time onto the end of the file name, and
+             separates it with a dot as often as with an underscore. Only the
+             underscore was stripped, so half the tables were called things
+             like "step_daily_trend.20260720000000". */
+          .replace(/[._-]\d{6,}$/, "").replace(/[._-]+$/, "").trim();
 
         for (const sec of csvSections(text)) {
           let columns = sec.columns;
@@ -1108,11 +1112,81 @@ const MParse = (function () {
     }
   }
 
+  /* Snapchat sends a captioned memory as two files.
+   *
+   *   2024-10-31_D00F8CF2-...-main.mp4       the picture or clip
+   *   2024-10-31_D00F8CF2-...-overlay.png    the caption, stickers and drawing,
+   *                                          on a transparent background
+   *
+   * This is by design, not a broken export, and it is the single worst thing
+   * about a Snapchat export: import the folder into Photos and every overlay
+   * arrives as white text on a black square, sitting beside the memory it
+   * belongs to. Somebody with two thousand memories and captions on half of
+   * them has a thousand of those.
+   *
+   * Paired here by the name they share. The overlay stops being a picture in
+   * its own right - which is what produced the black squares - and becomes a
+   * property of the memory it was drawn on.
+   */
+  const OVERLAY_RE = /^(.*?)[-_]overlay\.[a-z0-9]+$/i;
+  /* The other half is usually named -main, but not always: some exports drop
+     the suffix and leave the bare shared name. Both are tried, longest first,
+     so a file that does say -main is never matched to the wrong memory. */
+  const stems = (path) => {
+    const cut = path.replace(/\.[^.\/]+$/, "");
+    const bare = cut.replace(/[-_]main$/i, "");
+    return bare === cut ? [cut] : [bare, cut];
+  };
+
+  function pairOverlays(lib) {
+    const overlays = new Map();
+    for (const m of lib.media || []) {
+      const hit = OVERLAY_RE.exec(m.path);
+      if (hit) overlays.set(hit[1], m);
+    }
+    if (!overlays.size) return;
+
+    let paired = 0;
+    for (const m of lib.media || []) {
+      if (OVERLAY_RE.test(m.path)) continue;
+      let over = null;
+      for (const s of stems(m.path)) { over = overlays.get(s); if (over) break; }
+      if (!over || over.isOverlay) continue;
+      m.overlay = over.entry;
+      m.overlaySize = over.size;
+      over.isOverlay = true;
+      paired++;
+    }
+    /* An overlay whose memory is not in the export cannot be put back on
+       anything, and it is the black square in person: white writing on
+       nothing, sitting in the library as though it were a photograph. It
+       stays, because it is a real file and quietly dropping somebody's data
+       is worse, but it is named for what it is so nobody has to work it out
+       from a thumbnail. */
+    const stranded = (lib.media || []).filter(
+      (m) => !m.isOverlay && OVERLAY_RE.test(m.path)).length;
+    if (stranded) {
+      lib.notes.push(plural(stranded, "caption is", "captions are") + " in this export " +
+        "without the memory they were drawn on - Snapchat sends the two as separate " +
+        "files, and only one arrived. They show up as writing on a transparent " +
+        "background, because that is all they are.");
+    }
+    if (!paired) return;
+
+    // The overlays themselves leave the library: they are not memories.
+    lib.media = lib.media.filter((m) => !m.isOverlay);
+    lib.notes.push(plural(paired, "memory has", "memories have") + " a caption or " +
+      "sticker that Snapchat sent as a separate transparent picture. They have been " +
+      "put back onto the memory they belong to, so they are not sitting in your " +
+      "library as black squares.");
+  }
+
   async function parse(file, entries, detected, say) {
     const slug = detected && detected.slug;
     const finish = async (libPromise) => {
       if (say) say("Working out what is in " + (detected && detected.label ? detected.label : "this export") + "...");
       const lib = await libPromise;
+      pairOverlays(lib);
       await addSpreadsheets(lib, file, entries, say);
       mergePagedTables(lib);
       await readPhotoDates(lib, file, 800, say);

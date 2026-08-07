@@ -1058,7 +1058,7 @@ let current = { sources: [], lib: null, entries: null, query: "", demo: false };
    someone's browser is a bad one.
  *
  * Before this, opening the samples stored the library like any other, so the
- * next visit restored four archives of invented people and offered to carry on
+ * next visit restored five archives of invented people and offered to carry on
  * where they left off. Anyone who had tried the demo once and come back to use
  * the product for real would be looking at somebody else's photos with no
  * obvious way to tell. That is worse than confusing - it undermines the exact
@@ -1078,7 +1078,7 @@ function demoBlocked(what) {
   if (!current.demo) return false;
   MNotify.push("Not available on the sample data", {
     kind: "warn",
-    body: what + " needs your own library. These four archives are a demonstration - " +
+    body: what + " needs your own library. These five archives are a demonstration - " +
       "invented people, and nothing here is saved to your browser. Open a real export " +
       "and everything works.",
   });
@@ -1554,7 +1554,7 @@ function renderLibrary(root, lib, sources, entries, demo) {
       let url = null;
       try {
         const src = current.sources[m.src || 0].file;
-        const blob = await MZip.extractBlob(src, m.entry, m.mime);
+        const blob = await mediaBlob(m, src);
         if (blob) { url = URL.createObjectURL(blob); objectUrls.push(url); }
       } catch { url = null; }
       thumbCache.set(key, url);
@@ -1860,6 +1860,12 @@ async function buildThumbs(media, say) {
           const clip = await MZip.extractBlob(file, m.entry, m.mime);
           const poster = clip ? await MVideo.posterFrame(clip) : null;
           bytes = poster ? await poster.arrayBuffer() : null;
+        } else if (typeof MOverlay !== "undefined" && MOverlay.canMerge(m)) {
+          /* Merged here rather than in the worker, because the caption has to
+             go on before the picture is shrunk - a small copy made from the
+             bare memory would be missing it for good, and this pass is what
+             fills the disk cache the grid reads from afterwards. */
+          bytes = await (await mediaBlob(m, file)).arrayBuffer();
         } else {
           bytes = await MZip.extract(file, m.entry);
         }
@@ -1898,6 +1904,23 @@ async function buildThumbs(media, say) {
    the normal case here, with the visible tiles and the background warming pass
    both walking the library from the top. Every picture near the start was
    being inflated, shrunk and encoded twice. */
+/* The picture as it was written, rather than as Snapchat filed it.
+
+   Snapchat splits a captioned memory into the photograph and a transparent
+   picture holding the caption, and hands you both. Everywhere a memory is
+   shown, it is shown with its caption drawn back on, because that is what the
+   person remembers taking. If the merge fails for any reason the original is
+   used, so the worst case is the picture without its caption rather than no
+   picture at all. */
+async function mediaBlob(m, src) {
+  const blob = await MZip.extractBlob(src, m.entry, m.mime);
+  if (typeof MOverlay === "undefined" || !MOverlay.canMerge(m)) return blob;
+  try {
+    const over = await MZip.extractBlob(src, m.overlay, "image/png");
+    return (await MOverlay.merge(blob, over, m.mime)) || blob;
+  } catch { return blob; }
+}
+
 function thumbUrl(m) {
   const key = (m.src || 0) + "|" + m.path;
   if (thumbCache.has(key)) return thumbCache.get(key);
@@ -1933,7 +1956,7 @@ async function makeThumb(m) {
     } else if (m.heif) {
       blob = await MHeif.toJpegBlob(await MZip.extract(src, m.entry), 0.85);
     } else if (m.renderable) {
-      blob = await MZip.extractBlob(src, m.entry, m.mime);
+      blob = await mediaBlob(m, src);
     }
     if (blob) { url = URL.createObjectURL(blob); objectUrls.push(url); }
   } catch { url = null; }
@@ -2353,29 +2376,24 @@ function renderFiles(panel, entries) {
   panel.innerHTML = `
     <p class="muted small">${plural(pool.length, "file", "files")}${q ? ` matching "${esc(q)}"` : ""}${pool.length > rows.length ? ", showing the 500 largest" : ""}. Click one to look at it.</p>
     <div class="filelist">
-      ${rows.map((e, i) => `<div class="fl-row" data-i="${i}"><span class="fl-name">${esc(e.name)}${SNIFF_LABEL[e.sniffedAs] ? `<em class="fl-kind">${SNIFF_LABEL[e.sniffedAs]}</em>` : ""}<i class="fl-go">${FL_ARROW}</i></span><span class="sz">${fmtBytes(e.size)}</span>
-        <div class="fl-view" hidden></div></div>`).join("")}
+      ${rows.map((e, i) => `<div class="fl-row" data-i="${i}"><span class="fl-name">${esc(e.name)}${SNIFF_LABEL[e.sniffedAs] ? `<em class="fl-kind">${SNIFF_LABEL[e.sniffedAs]}</em>` : ""}<i class="fl-go">${FL_ARROW}</i></span><span class="sz">${fmtBytes(e.size)}</span></div>`).join("")}
     </div>`;
 
   /* A list of file names you cannot open is a directory listing, not a way to
      look at your own data - and All files is where everything the rest of the
      app did not claim ends up, so it is exactly where being able to look
-     matters most. */
+     matters most.
+   *
+   * Opened in the side panel, the same one the timeline uses. It used to
+   * expand inside its own row, which pushed the rest of the list down the
+   * page and gave a photograph the width of a file name to be shown in. */
   panel.addEventListener("click", async (ev) => {
     const row = ev.target.closest && ev.target.closest(".fl-row");
-    if (!row || ev.target.closest(".fl-view")) return;
-    const box = row.querySelector(".fl-view");
-    if (row.classList.contains("open")) {
-      row.classList.remove("open");
-      box.hidden = true;
-      return;
-    }
+    if (!row) return;
     const entry = rows[Number(row.dataset.i)];
 
     /* Nothing this page can draw: open it, rather than explaining. */
     if (!INLINE_EXT.test(entry.name) && !INLINE_SNIFFED.has(entry.sniffedAs)) {
-      row.classList.remove("open");
-      box.hidden = true;
       row.classList.add("fl-busy");
       try {
         const src = current.sources[entry.src || 0];
@@ -2384,19 +2402,23 @@ function renderFiles(panel, entries) {
         objectUrls.push(url);
         window.open(url, "_blank", "noopener");
       } catch (err) {
-        box.hidden = false;
-        row.classList.add("open");
-        box.innerHTML = '<p class="muted small">That would not open: ' +
-          esc(String((err && err.message) || err)) + "</p>";
+        const box = MExplorer.showPanel(entry.name.split("/").pop(), entry.name, "note");
+        if (box) {
+          box.innerHTML = '<p class="muted small">That would not open: ' +
+            esc(String((err && err.message) || err)) + "</p>";
+        }
       }
       row.classList.remove("fl-busy");
       return;
     }
 
-    row.classList.add("open");
-    box.hidden = false;
-    if (row.dataset.done) return;
-    row.dataset.done = "1";
+    panel.querySelectorAll(".fl-row.on").forEach((r) => r.classList.remove("on"));
+    row.classList.add("on");
+
+    const name = entry.name.split("/").pop();
+    const where = [fmtBytes(entry.size), entry.name].filter(Boolean).join(" - ");
+    const box = MExplorer.showPanel(name, where, "note");
+    if (!box) return;
     box.innerHTML = '<p class="muted small">Reading...</p>';
     try {
       box.innerHTML = await previewHtml(entry);
@@ -2569,7 +2591,27 @@ async function previewHtml(entry) {
 
 /* Sample exports shipped with the site, so the opener can be tried before a
    real export has arrived. They mimic the real folder layouts at a tiny size. */
-const SAMPLES = ["snapchat-export.zip", "apple-export.zip", "google-takeout.zip", "instagram-export.zip"];
+const SAMPLES = ["snapchat-export.zip", "apple-export.zip", "google-takeout.zip",
+                "instagram-export.zip", "samsung-export.zip"];
+
+/* A content stamp for the archives, written by the build.
+ *
+ * The samples were the only asset on the site served under a name that could
+ * change meaning, and it bit twice. The service worker answers from its cache
+ * first, and it deliberately keeps the samples - they are nine megabytes and
+ * the page tells people to pull their connection - so a rebuilt archive under
+ * the same URL is a cached archive forever, or at least until the shell
+ * version happens to roll and the reader happens to close every tab.
+ *
+ * `cache: "no-cache"` below was the first attempt and it is not enough: it
+ * revalidates with the server, and the service worker never asks the server.
+ * A stamped URL is a different URL, so there is nothing to answer from.
+ *
+ * The name the reader sees is still the plain one - the stamp is stripped
+ * before the File is made. */
+/* BUILD:SAMPLES */
+const SAMPLES_V = "5b26f332";
+/* END:SAMPLES */
 
 async function loadSamples(btn) {
   const label = btn.textContent;
@@ -2600,7 +2642,8 @@ async function loadSamples(btn) {
          * `no-cache` asks the server whether it changed rather than assuming
          * it did not. Offline this still throws, and the message below is the
          * one that matters. */
-        res = await fetch("samples/" + name, { cache: "no-cache" });
+        res = await fetch("samples/" + name + (SAMPLES_V ? "?v=" + SAMPLES_V : ""),
+                          { cache: "no-cache" });
       } catch (err) {
         throw new Error(navigator.onLine
           ? "The sample exports could not be fetched."
@@ -2617,7 +2660,7 @@ async function loadSamples(btn) {
     if (out) {
       const note = document.createElement("div");
       note.className = "note";
-      note.innerHTML = "These are <strong>sample exports</strong>, not your data - four small archives " +
+      note.innerHTML = "These are <strong>sample exports</strong>, not your data - five small archives " +
         "shaped like the real thing. The same photo appears in more than one of them, which is what the " +
         "duplicate and similar-photo tools are finding.";
       out.insertBefore(note, out.firstChild.nextSibling);

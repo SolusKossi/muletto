@@ -231,6 +231,9 @@ const MInsight = (function () {
   /* A number with no unit is a number nobody can read. The unit is not in the
      data, so it comes from what the table is called. */
   const UNITS = [
+    /* Before heart rate, deliberately: "heart_rate_variability" contains
+       "heart_rate", and the first match wins. */
+    [/\bhrv\b|variability/i, { unit: "ms", label: "Heart rate variability", agg: "mean" }],
     [/heart[ _]?rate|\bbpm\b|pulse/i, { unit: "bpm", label: "Heart rate", agg: "mean" }],
     [/weight/i, { unit: "kg", label: "Weight", agg: "last" }],
     [/height/i, { unit: "cm", label: "Height", agg: "last" }],
@@ -241,10 +244,19 @@ const MInsight = (function () {
     [/blood[ _]?pressure/i, { unit: "mmHg", label: "Blood pressure", agg: "mean" }],
     [/oxygen|spo2/i, { unit: "%", label: "Blood oxygen", agg: "mean" }],
     [/stress/i, { unit: "", label: "Stress", agg: "mean" }],
+    /* A watch records these every night and nothing here knew what they were,
+       so six panels on the health page showed a reading count and no shape at
+       all - which is the one thing a nightly measurement is good for. */
+    [/respirat|breathing/i, { unit: "br/min", label: "Breathing rate", agg: "mean" }],
+    [/skin[ _]?temp|temperature/i, { unit: "C", label: "Skin temperature", agg: "mean" }],
+    [/floor/i, { unit: "floors", label: "Floors climbed", agg: "sum" }],
+    [/water|caffeine|hydration/i, { unit: "", label: "Water", agg: "sum" }],
     [/exercise|workout|activity/i, { unit: "", label: "Exercise", agg: "count" }],
   ];
   function unitFor(name) {
-    for (const [re, u] of UNITS) if (re.test(name)) return u;
+    /* The rule travels with the unit it chose, so the column search below can
+       ask it directly instead of guessing from the label. */
+    for (const [re, u] of UNITS) if (re.test(name)) return Object.assign({ re }, u);
     return null;
   }
 
@@ -369,17 +381,42 @@ const MInsight = (function () {
        read "1 bpm average" - a wrong number stated confidently, which is worse
        than no card at all. Match the whole name first, and never take a column
        that is an offset, an index or a running total. */
-    const NOT_A_MEASURE = /offset|index|_?id$|count$|version|flag|zone|order/i;
+    /* `type` earns its place here: Samsung writes the kind of workout as a
+       code - 1001 for running, 13001 for swimming - and it is the first
+       numeric column in the table, so the Workouts panel charted those codes
+       and reported the average of them falling by seven percent. A category
+       that happens to be written as a number is not a measurement. */
+    const NOT_A_MEASURE = /offset|index|_?id$|count$|type$|version|flag|zone|order/i;
     const norm = (x) => String(x).toLowerCase().replace(/[^a-z0-9]/g, "");
     const usable = numbers.filter((c) => !NOT_A_MEASURE.test(c.name));
+    /* A column named exactly `amount` or `value` is the measurement, whatever
+       else is in the table. This used to come last, after a loose match on
+       the rule that chose the unit, and the water table has both `amount` and
+       `caffeine` in it - so /water|caffeine|hydration/ found caffeine and the
+       Water panel charted cups of coffee. */
+    const PLAIN = /^(value|amount|total|score|level|duration)$/i;
     let measure = null;
     if (unit) {
       const want = norm(unit.label);
       measure = usable.find((c) => norm(c.name) === want) ||
                 usable.find((c) => norm(c.name).indexOf(want) >= 0) ||
+                usable.find((c) => PLAIN.test(c.name.trim())) ||
+                /* The label is a plural or a phrase and the column is not:
+                   "Calories" never found "calorie", so the food table fell
+                   through to the first numeric column and charted meal_type -
+                   the numbers 1 to 4, presented as a calorie count. Asking
+                   the rule that chose this unit in the first place is both
+                   simpler and right. */
+                usable.find((c) => unit.re && unit.re.test(c.name)) ||
                 usable.find((c) => norm(c.name) === norm(t.name));
     }
-    if (!measure) measure = usable.find((c) => /^(value|amount|total|score|level|duration)$/i.test(c.name.trim()));
+    if (!measure) measure = usable.find((c) => PLAIN.test(c.name.trim()));
+    /* Drawn from every numeric column rather than the filtered ones, because
+       `count$` is excluded above for good reason - Samsung's heart rate table
+       has heart_beat_count in it - and yet a column named exactly `count` is
+       the measurement in its step table. An exact name is a strong enough
+       signal to override a rule about suffixes. */
+    if (!measure) measure = numbers.find((c) => /^count$/i.test(c.name.trim()));
     if (!measure && unit) measure = usable[0];
     if (when && measure && rows.length >= 2) {
       const mi = r.idx(measure);
@@ -392,13 +429,20 @@ const MInsight = (function () {
       if (pts.length >= 2) {
         const e = extent(pts.map((p) => p.v));
         const agg = (unit && unit.agg) || "mean";
+        /* Sleep is written in minutes by Samsung and in hours by others, and
+           the column says "duration" either way. Guessing from the name gave
+           "413.2 h average", which is seventeen days asleep. The numbers
+           themselves settle it: nobody sleeps twenty-four hours, so anything
+           above that is minutes. */
+        let unitText = (unit && unit.unit) || "";
+        if (unitText === "h" && e.mean > 24) unitText = "min";
         const head = agg === "sum" ? e.sum
           : agg === "last" ? pts[pts.length - 1].v
           : agg === "count" ? pts.length
           : e.mean;
         out.push({
           kind: "series", title: (unit && unit.label) || t.name, source: t.source, path: t.path,
-          unit: (unit && unit.unit) || "",
+          unit: unitText,
           stat: fmtNum(head),
           statLabel: agg === "sum" ? "total" : agg === "last" ? "latest" : agg === "count" ? "records" : "average",
           low: fmtNum(e.min), high: fmtNum(e.max),

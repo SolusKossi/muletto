@@ -128,6 +128,141 @@ function wav(seconds, hz) {
   return b;
 }
 
+/* ---------- a Snapchat caption, as Snapchat sends it ----------
+ *
+ * Snapchat does not burn a caption into the memory. It exports the picture,
+ * and beside it a second file of the same scene holding only the caption on a
+ * transparent background. Dropped into any photo app that is a black square
+ * with white writing on it, sitting next to the memory it belonged to.
+ *
+ * The sample needs a real one of these or there is no way to see that Muletto
+ * puts them back together. It is a genuine RGBA PNG - transparent everywhere
+ * except the letters - written with nothing but zlib, so this script keeps its
+ * promise of needing no packages.
+ *
+ * The font is 5x7 and covers only the letters these two captions use. It is
+ * not meant to look like Snapchat's; it is meant to be legible enough that
+ * somebody looking at the merged result can tell the caption arrived. */
+
+const GLYPHS = {
+  A: "01110 10001 10001 11111 10001 10001 10001",
+  B: "11110 10001 10001 11110 10001 10001 11110",
+  D: "11110 10001 10001 10001 10001 10001 11110",
+  E: "11111 10000 10000 11110 10000 10000 11111",
+  H: "10001 10001 10001 11111 10001 10001 10001",
+  L: "10000 10000 10000 10000 10000 10000 11111",
+  O: "01110 10001 10001 10001 10001 10001 01110",
+  S: "01111 10000 10000 01110 00001 00001 11110",
+  T: "11111 00100 00100 00100 00100 00100 00100",
+  Y: "10001 10001 01010 00100 00100 00100 00100",
+  " ": "00000 00000 00000 00000 00000 00000 00000",
+  "!": "00100 00100 00100 00100 00100 00000 00100",
+};
+
+function png(w, h, rgba) {
+  const zlib = require("zlib");
+  const raw = Buffer.alloc(h * (1 + w * 4));
+  for (let y = 0; y < h; y++) {
+    raw[y * (1 + w * 4)] = 0;
+    rgba.copy(raw, y * (1 + w * 4) + 1, y * w * 4, (y + 1) * w * 4);
+  }
+  const chunk = (type, data) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length, 0);
+    const body = Buffer.concat([Buffer.from(type, "latin1"), data]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(body), 0);
+    return Buffer.concat([len, body, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
+    chunk("IHDR", ihdr),
+    chunk("IDAT", zlib.deflateSync(raw, { level: 9 })),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+/* The size of the memory the caption belongs to, read out of the JPEG itself.
+   A real Snapchat overlay is the shape of the screen it was written on, so an
+   invented one that is the wrong shape would be testing the fitting code
+   rather than the merge. */
+function jpegSize(buf) {
+  let i = 2;
+  while (i < buf.length - 9) {
+    if (buf[i] !== 0xFF) { i++; continue; }
+    const marker = buf[i + 1];
+    if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+      return { w: buf.readUInt16BE(i + 7), h: buf.readUInt16BE(i + 5) };
+    }
+    i += 2 + buf.readUInt16BE(i + 2);
+  }
+  return null;
+}
+
+/* The same picture, but not the same bytes.
+ *
+ * The captioned memories here are copies of memories the archive already has,
+ * so that the pair is a real photograph rather than an invented rectangle. A
+ * straight copy does not survive: an export is deduplicated by CRC before it is
+ * ever parsed, so the copy was dropped and its caption was left behind with
+ * nothing to attach to - which is precisely the black square the whole feature
+ * exists to prevent. Found by opening the sample rather than by reading it.
+ *
+ * A JPEG comment segment straight after the SOI marker changes the bytes and
+ * the CRC while leaving the image identical, which is what a genuinely
+ * different photograph would look like to the reader. */
+function tweakJpeg(buf, text) {
+  const body = Buffer.from(text, "latin1");
+  const seg = Buffer.alloc(4 + body.length);
+  seg[0] = 0xFF; seg[1] = 0xFE;
+  seg.writeUInt16BE(body.length + 2, 2);
+  body.copy(seg, 4);
+  return Buffer.concat([buf.slice(0, 2), seg, buf.slice(2)]);
+}
+
+/* White letters with a soft dark shadow behind them, which is what makes a
+   caption readable over a bright photograph - and what makes the merge
+   obviously right or obviously wrong when you look at it. */
+function overlayPng(text, w, h) {
+  const rgba = Buffer.alloc(w * h * 4);
+  const up = text.toUpperCase();
+  const scale = Math.max(2, Math.floor(w / (up.length * 8)));
+  const tw = up.length * 6 * scale;
+  const x0 = Math.floor((w - tw) / 2);
+  const y0 = Math.floor(h * 0.72);
+
+  const put = (x, y, r, g, b, a) => {
+    if (x < 0 || y < 0 || x >= w || y >= h) return;
+    const i = (y * w + x) * 4;
+    if (rgba[i + 3] >= a) return;
+    rgba[i] = r; rgba[i + 1] = g; rgba[i + 2] = b; rgba[i + 3] = a;
+  };
+
+  for (let c = 0; c < up.length; c++) {
+    const rows = (GLYPHS[up[c]] || GLYPHS[" "]).split(" ");
+    for (let ry = 0; ry < rows.length; ry++) {
+      for (let rx = 0; rx < 5; rx++) {
+        if (rows[ry][rx] !== "1") continue;
+        for (let sy = 0; sy < scale; sy++) {
+          for (let sx = 0; sx < scale; sx++) {
+            const x = x0 + c * 6 * scale + rx * scale + sx;
+            const y = y0 + ry * scale + sy;
+            const blur = Math.max(1, Math.round(scale / 3));
+            for (let dy = -blur; dy <= blur; dy++) {
+              for (let dx = -blur; dx <= blur; dx++) put(x + dx, y + dy, 0, 0, 0, 150);
+            }
+            put(x, y, 255, 255, 255, 255);
+          }
+        }
+      }
+    }
+  }
+  return png(w, h, rgba);
+}
+
 /* ---------- the invented content ---------- */
 
 const vcard = (fn, org, title, tel, mail, adr) =>
@@ -278,7 +413,41 @@ function enrich(file, extras) {
   console.log("  " + file + ": " + had.length + " -> " + (had.length + add.length) + " entries");
 }
 
+/* The split-caption memories, which have to be built from what the archive
+   already holds: the picture is a copy of a memory that is in there, so the
+   pair is a real photograph with a real caption beside it rather than two
+   invented rectangles. Named the way Snapchat names them - a shared prefix,
+   then -main and -overlay. */
+function enrichSnapchat() {
+  const file = "snapchat-export.zip";
+  const full = path.join(SAMPLES, file);
+  if (!fs.existsSync(full)) { console.log("  skip " + file + " (not here)"); return; }
+  const had = readZip(fs.readFileSync(full));
+  const have = new Set(had.map((e) => e.name));
+  const base = had.filter((e) => /^memories\/.*\.jpg$/i.test(e.name));
+  if (!base.length) { console.log("  " + file + ": no memory to copy"); return; }
+
+  const pairs = [
+    ["2021-07-04_8f2c41ab-6d0e-4b19-9a55-31c7e0d4f8aa", "BEST DAY!", base[0]],
+    ["2021-08-19_3d71c9e4-2fb8-4a06-8c13-7e5029ab6d10", "HELLO OSLO", base[1] || base[0]],
+  ];
+  const add = [];
+  for (const [id, text, from] of pairs) {
+    const main = "memories/" + id + "-main.jpg";
+    const over = "memories/" + id + "-overlay.png";
+    if (have.has(main)) continue;
+    const size = jpegSize(from.bytes) || { w: 720, h: 1280 };
+    add.push({ name: main, bytes: tweakJpeg(from.bytes, "Muletto sample memory " + id.slice(0, 10)) });
+    add.push({ name: over, bytes: overlayPng(text, size.w, size.h) });
+  }
+  if (!add.length) { console.log("  " + file + " already has its caption pairs"); return; }
+  fs.writeFileSync(full, writeZip(had.concat(add)));
+  console.log("  " + file + ": " + had.length + " -> " + (had.length + add.length) +
+    " entries (" + (add.length / 2) + " caption pairs)");
+}
+
 console.log("\nGiving the samples one of everything\n");
 enrich("apple-export.zip", APPLE_EXTRA);
 enrich("google-takeout.zip", GOOGLE_EXTRA);
+enrichSnapchat();
 console.log("\nRun node tools/build-site.js next, so the cache stamps move.\n");
