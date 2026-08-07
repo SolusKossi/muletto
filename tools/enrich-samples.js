@@ -73,26 +73,39 @@ function readZip(buf) {
 }
 
 function writeZip(files) {
+  const zlib = require("zlib");
   const parts = [], central = [];
   let off = 0;
   for (const f of files) {
     const name = Buffer.from(f.name, "utf8");
-    const body = Buffer.from(f.bytes);
-    const c = crc32(body);
+    const raw = Buffer.from(f.bytes);
+    const c = crc32(raw);
+    /* Deflated when it is worth it. This wrote everything stored, which was
+       a reasonable call when the additions were a few kilobytes of CSV and a
+       poor one once they included a thousand rows of near-identical activity
+       markup - most of a megabyte that compresses to a few percent of that,
+       on a demo the visitor downloads. Anything that does not get smaller is
+       still stored, so a JPEG is never re-packed for nothing. */
+    const packed = zlib.deflateRawSync(raw, { level: 9 });
+    const deflated = packed.length < raw.length;
+    const body = deflated ? packed : raw;
+    const method = deflated ? 8 : 0;
     const head = Buffer.alloc(30);
     head.writeUInt32LE(0x04034b50, 0);
     head.writeUInt16LE(20, 4);
+    head.writeUInt16LE(method, 8);
     head.writeUInt32LE(c, 14);
     head.writeUInt32LE(body.length, 18);
-    head.writeUInt32LE(body.length, 22);
+    head.writeUInt32LE(raw.length, 22);
     head.writeUInt16LE(name.length, 26);
     parts.push(head, name, body);
     const cd = Buffer.alloc(46);
     cd.writeUInt32LE(0x02014b50, 0);
     cd.writeUInt16LE(20, 4); cd.writeUInt16LE(20, 6);
+    cd.writeUInt16LE(method, 10);
     cd.writeUInt32LE(c, 16);
     cd.writeUInt32LE(body.length, 20);
-    cd.writeUInt32LE(body.length, 24);
+    cd.writeUInt32LE(raw.length, 24);
     cd.writeUInt16LE(name.length, 28);
     cd.writeUInt32LE(off, 42);
     central.push(cd, name);
@@ -263,6 +276,73 @@ function overlayPng(text, w, h) {
   return png(w, h, rgba);
 }
 
+/* Google's My Activity pages, in the markup Google actually writes.
+ *
+ * Enough of them, over enough time, that the views which summarise a history
+ * have a history to summarise. The hours are not uniform: real activity
+ * clusters in the evening and thins out overnight, and a flat scatter would
+ * make the hour-of-day grid look like a bug.
+ *
+ * Deterministic - the seed is fixed, like everything else here - so a rebuild
+ * does not churn the archive. */
+function activitySeed(n) {
+  let x = 20260728 + n * 7919;
+  return () => { x = (x * 1103515245 + 12345) & 0x7fffffff; return x / 0x7fffffff; };
+}
+
+const MONTH3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function activityHtml(product, verb, phrases, hrefBase, count, seedN) {
+  const rnd = activitySeed(seedN);
+  const start = Date.UTC(2020, 2, 1), end = Date.UTC(2026, 6, 20);
+  const rows = [];
+  for (let i = 0; i < count; i++) {
+    const t = new Date(start + rnd() * (end - start));
+    /* Evenings and lunchtimes, with a long tail. Nobody searches uniformly
+       across twenty-four hours, and the grid exists to show that. */
+    const r = rnd();
+    const hour = r < 0.42 ? 18 + Math.floor(rnd() * 5)
+      : r < 0.68 ? 11 + Math.floor(rnd() * 3)
+      : r < 0.9 ? 8 + Math.floor(rnd() * 3)
+      : Math.floor(rnd() * 24);
+    t.setUTCHours(hour, Math.floor(rnd() * 60), Math.floor(rnd() * 60));
+    const what = phrases[Math.floor(rnd() * phrases.length)];
+    const when = t.getUTCDate() + " " + MONTH3[t.getUTCMonth()] + " " +
+      t.getUTCFullYear() + ", " + String(t.getUTCHours()).padStart(2, "0") + ":" +
+      String(t.getUTCMinutes()).padStart(2, "0") + ":" +
+      String(t.getUTCSeconds()).padStart(2, "0");
+    rows.push({ t: +t, what, when });
+  }
+  rows.sort((a, b) => b.t - a.t);
+  return "<html><body>" + rows.map((r) =>
+    '<div class="outer-cell mdl-cell mdl-cell--12-col mdl-shadow--2dp"><div class="mdl-grid">' +
+    '<div class="header-cell mdl-cell mdl-cell--12-col"><p class="mdl-typography--title">' +
+    product + "<br></p></div>" +
+    '<div class="content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1">' +
+    verb + ' <a href="' + hrefBase + encodeURIComponent(r.what).slice(0, 40) + '">' +
+    r.what + "</a><br>" + r.when + "</div></div></div>").join("") + "</body></html>";
+}
+
+const SEARCHES_LONG = [
+  "how to request my data from google", "ferry timetable bergen", "why is my export a tgz",
+  "sourdough hydration", "northern lights forecast tromso", "heic to jpg windows",
+  "train oslo to bergen tickets", "what is a nas", "best coffee grinder under 200",
+  "how long does apple take to send data", "immich vs photoprism", "gdpr right to data",
+  "cabin rental hardanger", "how to read an mbox file", "bike puncture repair",
+  "pasta carbonara without cream", "flights to lisbon september", "raid 1 vs raid 5",
+  "why are my photos undated", "exif editor mac", "snapchat memories expire",
+  "external ssd 4tb", "how to back up whatsapp", "rye bread recipe",
+];
+const VIDEOS_LONG = [
+  "Slow television: Bergensbanen", "How a zip file actually works",
+  "Baking bread in a cabin", "Everything about EXIF, in twelve minutes",
+  "Self-hosting your photo library", "Norway by train, the whole route",
+  "Why HEIC exists and why you hate it", "Building a NAS from spare parts",
+  "The story of the JPEG", "Northern lights explained by a physicist",
+  "Sourdough for people who have failed twice", "What GDPR actually gives you",
+];
+
 /* ---------- the invented content ---------- */
 
 const vcard = (fn, org, title, tel, mail, adr) =>
@@ -329,35 +409,51 @@ const GOOGLE_EXTRA = [
     "Channel ID,channel vanity URL 1 name\nUCdemo,fjordcast\n"],
 
   ["Takeout/My Activity/Search/My Activity.html",
-    "<html><body>" +
-    [["Searched for", "how to request my data from google", "https://www.google.com/search?q=a", "14 Jul 2026, 08:11:02"],
-     ["Searched for", "ferry timetable bergen", "https://www.google.com/search?q=b", "2 Jul 2026, 17:45:20"],
-     ["Searched for", "why is my export a tgz", "https://www.google.com/search?q=c", "28 Jun 2026, 12:02:41"],
-     ["Searched for", "sourdough hydration", "https://www.google.com/search?q=d", "3 Jun 2026, 20:15:00"]]
-      .map(([v, w, h, t]) =>
-        '<div class="outer-cell mdl-cell mdl-cell--12-col mdl-shadow--2dp"><div class="mdl-grid">' +
-        '<div class="header-cell mdl-cell mdl-cell--12-col"><p class="mdl-typography--title">Search<br></p></div>' +
-        '<div class="content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1">' +
-        v + ' <a href="' + h + '">' + w + "</a><br>" + t + "</div></div></div>").join("") +
-    "</body></html>"],
+    activityHtml("Search", "Searched for", SEARCHES_LONG,
+      "https://www.google.com/search?q=", 420, 1)],
   ["Takeout/My Activity/YouTube/My Activity.html",
-    "<html><body>" +
-    [["Watched", "Slow television: Bergensbanen", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "13 Jul 2026, 22:04:00"],
-     ["Watched", "How a zip file actually works", "https://www.youtube.com/watch?v=aaaaaaaaaaa", "9 Jul 2026, 09:30:12"],
-     ["Watched", "Baking bread in a cabin", "https://www.youtube.com/watch?v=bbbbbbbbbbb", "1 Jun 2026, 18:55:41"]]
-      .map(([v, w, h, t]) =>
-        '<div class="outer-cell mdl-cell mdl-cell--12-col mdl-shadow--2dp"><div class="mdl-grid">' +
-        '<div class="header-cell mdl-cell mdl-cell--12-col"><p class="mdl-typography--title">YouTube<br></p></div>' +
-        '<div class="content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1">' +
-        v + ' <a href="' + h + '">' + w + "</a><br>" + t + "</div></div></div>").join("") +
-    "</body></html>"],
+    activityHtml("YouTube", "Watched", VIDEOS_LONG,
+      "https://www.youtube.com/results?search_query=", 260, 2)],
+  ["Takeout/My Activity/Maps/My Activity.html",
+    activityHtml("Maps", "Viewed", ["Bergen", "Oslo S", "Tromso", "Hardanger",
+      "Lisbon", "Berlin Hbf", "Rome Termini", "Copenhagen"],
+      "https://www.google.com/maps/place/", 90, 3)],
 
+  /* Four sign-ins cannot show a pattern, and a pattern is the whole reason
+     to look at this page - a country you were in once, a week of activity
+     while you were away from your desk. Six years, mostly from home. */
   ["Takeout/Google Account/Access log activity.csv",
-    "Activity Timestamp,IP Address,User Agent,City,Country\n" +
-    "2026-07-14T08:10:55Z,81.166.4.10,Chrome on Windows,Oslo,Norway\n" +
-    "2026-07-02T17:44:10Z,81.166.4.10,Safari on iPhone,Oslo,Norway\n" +
-    "2026-06-11T07:20:00Z,77.16.9.4,Chrome on Android,Bergen,Norway\n" +
-    "2026-04-28T13:05:33Z,45.10.2.7,Firefox on Linux,Amsterdam,Netherlands\n"],
+    (() => {
+      const WHERE = [
+        ["81.166.4.10", "Oslo", "Norway", 0.62],
+        ["77.16.9.4", "Bergen", "Norway", 0.14],
+        ["45.10.2.7", "Amsterdam", "Netherlands", 0.06],
+        ["93.44.18.2", "Rome", "Italy", 0.06],
+        ["88.12.7.31", "Lisbon", "Portugal", 0.05],
+        ["185.3.9.44", "Berlin", "Germany", 0.05],
+        ["203.0.113.9", "Singapore", "Singapore", 0.02],
+      ];
+      const AGENTS = ["Chrome on Windows", "Safari on iPhone", "Chrome on Android",
+                      "Firefox on Linux", "Safari on Mac", "Edge on Windows"];
+      const rnd = activitySeed(11);
+      const start = Date.UTC(2020, 2, 1), end = Date.UTC(2026, 6, 20);
+      const rows = [];
+      for (let i = 0; i < 240; i++) {
+        const t = new Date(start + rnd() * (end - start));
+        const r = rnd();
+        t.setUTCHours(r < 0.5 ? 18 + Math.floor(rnd() * 5)
+          : r < 0.85 ? 8 + Math.floor(rnd() * 6) : Math.floor(rnd() * 24),
+          Math.floor(rnd() * 60), Math.floor(rnd() * 60));
+        let pick = rnd(), acc = 0, where = WHERE[0];
+        for (const w of WHERE) { acc += w[3]; if (pick <= acc) { where = w; break; } }
+        rows.push({ t: +t, line: t.toISOString().slice(0, 19) + "Z," +
+          where[0] + "," + AGENTS[Math.floor(rnd() * AGENTS.length)] + "," +
+          where[1] + "," + where[2] });
+      }
+      rows.sort((a, b) => b.t - a.t);
+      return "Activity Timestamp,IP Address,User Agent,City,Country\n" +
+        rows.map((r) => r.line).join("\n") + "\n";
+    })()],
 
   /* A real inbox is mostly machine-written HTML - receipts, dispatch notes,
      newsletters - with a few actual letters between them, and the five

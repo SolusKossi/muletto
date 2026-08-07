@@ -1,11 +1,13 @@
 "use strict";
 
-/* Muletto - drawing health data as the shape it actually is.
+/* Muletto - drawing data as the shape it actually is.
  *
- * The health page used to draw one sparkline, fourteen times. Every panel
- * looked identical, so the page read as a spreadsheet with the gridlines
- * turned off: nothing about a picture of your weight told you it was weight
- * rather than your step count.
+ * This began on the health page, which drew one sparkline fourteen times.
+ * Every panel looked identical, so the page read as a spreadsheet with the
+ * gridlines turned off: nothing about a picture of your weight told you it
+ * was weight rather than your step count. It is now used by the chat, search
+ * and sign-in views too, which had the same problem in a different costume -
+ * a list of ten thousand rows, and no way to see the shape of any of it.
  *
  * The fix is not more decoration, it is choosing the drawing from what the
  * number means:
@@ -27,7 +29,7 @@
  * light and dark without being told twice.
  */
 
-const MHealthViz = (function () {
+const MCharts = (function () {
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -279,6 +281,76 @@ const MHealthViz = (function () {
       'opacity="0.45" vector-effect="non-scaling-stroke"/>' + CURSOR + "</svg>";
   }
 
+  /* ---------- a habit ----------
+   *
+   * Hour of the day against day of the week. It is the only drawing here that
+   * shows a rhythm rather than a quantity, and it is the reason this exists:
+   * a list of ten thousand messages cannot tell you that you and one person
+   * only ever talk on Sunday evenings, and one glance at this can.
+   *
+   * Takes timestamps. Anything with a `t` will do - messages, searches,
+   * sign-ins - because a habit is a habit whatever it is a habit of.
+   */
+  const DAYNAME = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  function grid(pts, opt) {
+    const o = opt || {};
+    const cell = o.cell || 11, gap = 2;
+    const noun = o.noun || "item";
+    const counts = [];
+    for (let d = 0; d < 7; d++) counts.push(new Array(24).fill(0));
+    let top = 0;
+    for (const p of pts) {
+      const at = new Date(p.t);
+      if (isNaN(at)) continue;
+      const d = at.getDay(), h = at.getHours();
+      counts[d][h]++;
+      if (counts[d][h] > top) top = counts[d][h];
+    }
+    if (!top) return "";
+
+    let cells = "";
+    for (let d = 0; d < 7; d++) {
+      for (let h = 0; h < 24; h++) {
+        const n = counts[d][h];
+        const x = h * (cell + gap), y = d * (cell + gap);
+        /* An empty hour is drawn, faintly. The gaps are half the point - a
+           week with nothing before nine in the morning is a fact about the
+           person, and a chart that only drew what happened would hide it. */
+        cells += '<rect class="hv-cell" x="' + x + '" y="' + y + '" width="' + cell +
+          '" height="' + cell + '" rx="2.5" fill="currentColor" opacity="' +
+          (n ? (0.13 + 0.72 * (n / top)).toFixed(2) : "0.05") + '" data-hv-cell="' +
+          esc(DAYNAME[d] + " " + String(h).padStart(2, "0") + ":00 &#183; " +
+              n.toLocaleString() + " " + (n === 1 ? noun : noun + "s")) + '"/>';
+      }
+    }
+    const w = 24 * (cell + gap) - gap, h = 7 * (cell + gap) - gap;
+    return '<div class="hv-gridwrap"><div class="hv-gridy">' +
+      [1, 3, 5].map((d) => "<span>" + DAYNAME[d] + "</span>").join("") + "</div>" +
+      '<div class="hv-gridmain"><svg class="hv hv-grid" viewBox="0 0 ' + w + " " + h +
+      '">' + cells + "</svg>" +
+      '<div class="hv-gridx"><span>midnight</span><span>noon</span><span>23:00</span></div>' +
+      "</div></div>";
+  }
+
+  /* ---------- a league table ----------
+   *
+   * Who, or what, most - and by how much. HTML rather than SVG because it is
+   * a list with a bar behind it, and a list should be selectable, searchable
+   * and readable by a screen reader. */
+  function ranked(items, opt) {
+    const o = opt || {};
+    const rows = items.slice(0, o.limit || 8);
+    if (!rows.length) return "";
+    const top = Math.max.apply(null, rows.map((r) => r.n)) || 1;
+    return '<ol class="hv-rank">' + rows.map((r) =>
+      "<li><span class=\"hv-rank-k\">" + esc(r.name) + "</span>" +
+      '<span class="hv-rank-bar"><i style="width:' +
+        Math.max(2, Math.round((r.n / top) * 100)) + '%"></i></span>' +
+      '<span class="hv-rank-n">' + r.n.toLocaleString() +
+      (r.note ? '<em>' + esc(r.note) + "</em>" : "") + "</span></li>").join("") + "</ol>";
+  }
+
   /* ---------- a composition ---------- */
 
   /* What a night is made of. Only drawn when the export actually breaks sleep
@@ -339,6 +411,19 @@ const MHealthViz = (function () {
         "</b><em>" + esc(when) + ", middle " + esc(fmtValue(pt.v, meta)) + "</em>";
     }
     return "<b>" + esc(fmtValue(pt.v, meta)) + "</b><em>" + esc(when) + "</em>";
+  }
+
+  /* A tooltip that says exactly what it was given, positioned at the pointer
+     rather than above a chart. */
+  function showText(text, x, y) {
+    const el = tipEl();
+    const bits = String(text).split("&#183;");
+    el.innerHTML = "<b>" + (bits[1] ? bits[1].trim() : bits[0]) + "</b>" +
+      (bits[1] ? "<em>" + bits[0].trim() + "</em>" : "");
+    el.hidden = false;
+    el.style.left = Math.max(6, Math.min(window.innerWidth - el.offsetWidth - 6,
+      x - el.offsetWidth / 2)) + "px";
+    el.style.top = Math.max(6, y - el.offsetHeight - 14) + "px";
   }
 
   let tip = null;
@@ -410,6 +495,11 @@ const MHealthViz = (function () {
     if (!scope || scope.dataset.hvWired) return;
     scope.dataset.hvWired = "1";
     scope.addEventListener("pointermove", (e) => {
+      /* A grid cell already knows what it says - it is one hour of one day,
+         not a position along a line - so it carries its own text and needs no
+         lookup. */
+      const cell = e.target.closest && e.target.closest("[data-hv-cell]");
+      if (cell) { showText(cell.getAttribute("data-hv-cell"), e.clientX, e.clientY); return; }
       const chart = e.target.closest && e.target.closest(".hv[data-hv]");
       if (!chart) { hide(); return; }
       show(chart, e.clientX);
@@ -420,7 +510,8 @@ const MHealthViz = (function () {
     scope.addEventListener("scroll", hide, true);
   }
 
-  return { bars, line, band, dots, dial, ridge, stack, bucket, esc, hover, asHours };
+  return { bars, line, band, dots, dial, ridge, stack, grid, ranked,
+           bucket, esc, hover, asHours };
 })();
 
-if (typeof module !== "undefined" && module.exports) module.exports = MHealthViz;
+if (typeof module !== "undefined" && module.exports) module.exports = MCharts;

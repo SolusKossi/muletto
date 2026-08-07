@@ -526,7 +526,7 @@ const MTopics = (function () {
       });
     }
 
-    const viz = typeof MHealthViz !== "undefined" ? MHealthViz : null;
+    const viz = typeof MCharts !== "undefined" ? MCharts : null;
     const drawn = [...signal.values()].filter((s) => s.series && s.series.chart);
     const span = drawn.reduce((acc, s) => {
       const sp = s.series.span;
@@ -1534,6 +1534,65 @@ const MTopics = (function () {
     return out;
   }
 
+  /* ---------- what a search history looks like from above ----------
+   *
+   * Ten thousand rows of "Searched for x" is a record nobody reads. The same
+   * ten thousand rows say when you are awake, which services you actually
+   * use, and that there was a fortnight in 2022 when you looked up nothing at
+   * all - and none of that is visible one row at a time.
+   *
+   * The list is still underneath, in full. This goes above it. */
+  function activityStatsHtml(items, byProduct) {
+    const viz = typeof MCharts !== "undefined" ? MCharts : null;
+    if (!viz) return "";
+    const dated = items.filter((i) => i.at).map((i) => ({ t: +i.at, v: 1 }));
+    if (dated.length < 8) return "";
+    dated.sort((a, b) => a.t - b.t);
+
+    const perMonth = new Map();
+    for (const d of dated) {
+      const at = new Date(d.t);
+      const k = at.getFullYear() * 12 + at.getMonth();
+      perMonth.set(k, (perMonth.get(k) || 0) + 1);
+    }
+    const months = [...perMonth.entries()].sort((a, b) => a[0] - b[0])
+      .map(([k, c]) => ({ t: Date.UTC(Math.floor(k / 12), k % 12, 15), v: c }));
+
+    /* What you looked up most. Counted on the exact phrase, because grouping
+       near-matches would mean deciding that two different searches were the
+       same search, and they are not ours to merge. */
+    const byWhat = new Map();
+    for (const i of items) {
+      const w = String(i.what || "").trim().toLowerCase();
+      if (!w || w.length > 80) continue;
+      byWhat.set(w, (byWhat.get(w) || 0) + 1);
+    }
+    const repeated = [...byWhat.entries()].filter(([, c]) => c > 1)
+      .sort((a, b) => b[1] - a[1]).slice(0, 8)
+      .map(([name, c]) => ({ name, n: c }));
+
+    const services = [...byProduct.entries()].sort((a, b) => b[1] - a[1])
+      .map(([name, c]) => ({ name, n: c }));
+
+    return '<div class="cs cs-tight"><div class="cs-grid">' +
+      '<section class="cs-card cs-wide"><h3>How much, and when</h3>' +
+        '<div class="cs-chart">' + viz.bars(months, { w: 600, h: 84, n: 60,
+          meta: { unit: "" } }) + "</div></section>" +
+
+      '<section class="cs-card"><h3>Which services</h3>' +
+        viz.ranked(services, { limit: 8 }) + "</section>" +
+
+      '<section class="cs-card cs-wide"><h3>The hours you are awake</h3>' +
+        '<p class="muted small">Everything you did, by hour of the day and day of the week.</p>' +
+        viz.grid(dated, { noun: "thing" }) + "</section>" +
+
+      (repeated.length
+        ? '<section class="cs-card"><h3>Looked up more than once</h3>' +
+          viz.ranked(repeated, { limit: 8 }) + "</section>"
+        : "") +
+    "</div></div>";
+  }
+
   async function drawActivity(el, match, lib, ctx) {
     const files = match[0].files;
     const items = [];
@@ -1584,10 +1643,16 @@ const MTopics = (function () {
         ? '<p class="muted small">' + plural(skipped, "product's history was", "products' histories were") +
           " too large to read here - the YouTube one alone can be 48 MB. They are in All files.</p>"
         : "") +
+      activityStatsHtml(items, byProduct) +
+      '<h3 class="tp-h">Everything, newest first</h3>' +
       '<ol class="ac-list">' + items.slice(0, PAGE).map(row).join("") + "</ol>" +
       (items.length > PAGE
         ? '<p class="muted small">Showing the newest ' + num(PAGE) + " of " +
           num(items.length) + ".</p>" : "");
+
+    if (typeof MCharts !== "undefined" && MCharts.hover) {
+      MCharts.hover(el.closest("#ex-scroll") || el);
+    }
   }
 
   /* ---------- mail ---------- */
@@ -1822,6 +1887,82 @@ const MTopics = (function () {
     return out;
   }
 
+  /* ---------- sign-ins, from above ----------
+   *
+   * This is the page where an unfamiliar entry actually matters, and a list
+   * of two hundred rows is the worst possible way to spot one. A shape makes
+   * the odd one out visible: a country you have been to once, a burst of
+   * sign-ins in a week you were not using anything.
+   *
+   * Everything here is counted from the table, and the list underneath is
+   * unchanged. */
+  function loginStatsHtml(match) {
+    const viz = typeof MCharts !== "undefined" ? MCharts : null;
+    if (!viz) return "";
+    const when = [], byWhere = new Map(), byWhat = new Map();
+
+    for (const m of match) {
+      const t = m.table;
+      const cols = (t.columns || []).map(String);
+      const find = (re) => cols.findIndex((c) => re.test(c));
+      const ti = find(/time|date|when/i);
+      const li = find(/country|city|region|location/i);
+      const ai = find(/agent|device|browser|platform|model/i);
+      for (const r of t.rows) {
+        if (ti >= 0) {
+          /* This file's own reader. `parseDate` lives in parsers.js and is
+             not in scope here - the error boundary caught it and put "parseDate
+             is not defined" on the page, which is exactly what that boundary
+             is for and exactly why the view was blank. */
+          const d = asDate(r[ti]);
+          if (d) when.push({ t: +d, v: 1 });
+        }
+        if (li >= 0) {
+          const v = String(r[li] || "").trim();
+          if (v && !/^(n\/?a|null|none|unknown|-)$/i.test(v)) {
+            byWhere.set(v, (byWhere.get(v) || 0) + 1);
+          }
+        }
+        if (ai >= 0) {
+          const raw = String(r[ai] || "").trim();
+          /* The full agent string is a fingerprint and unreadable; the family
+             is the useful part and the list below still shows the original. */
+          const fam = (/iPhone/i.test(raw) ? "iPhone" : /iPad/i.test(raw) ? "iPad"
+            : /Mac/i.test(raw) ? "Mac" : /Android/i.test(raw) ? "Android"
+            : /Windows/i.test(raw) ? "Windows" : /Linux/i.test(raw) ? "Linux"
+            : /Watch/i.test(raw) ? "Apple Watch" : raw ? "Other" : "");
+          if (fam) byWhat.set(fam, (byWhat.get(fam) || 0) + 1);
+        }
+      }
+    }
+
+    const rank = (m) => [...m.entries()].sort((a, b) => b[1] - a[1])
+      .map(([name, n]) => ({ name, n }));
+    when.sort((a, b) => a.t - b.t);
+
+    const cards = [];
+    if (when.length >= 8) {
+      cards.push('<section class="cs-card cs-wide"><h3>When your account was used</h3>' +
+        '<div class="cs-chart">' + viz.dots(when, { w: 600, h: 74 }) + "</div>" +
+        '<p class="muted small">One mark per sign-in. A cluster is a busy week; a gap is a ' +
+        "stretch when nothing signed in at all.</p></section>");
+    }
+    if (byWhere.size) {
+      cards.push('<section class="cs-card"><h3>From where</h3>' +
+        viz.ranked(rank(byWhere), { limit: 8 }) + "</section>");
+    }
+    if (byWhat.size) {
+      cards.push('<section class="cs-card"><h3>On what</h3>' +
+        viz.ranked(rank(byWhat), { limit: 8 }) + "</section>");
+    }
+    if (when.length >= 20) {
+      cards.push('<section class="cs-card cs-wide"><h3>At what hour</h3>' +
+        viz.grid(when, { noun: "sign-in" }) + "</section>");
+    }
+    if (!cards.length) return "";
+    return '<div class="cs cs-tight"><div class="cs-grid">' + cards.join("") + "</div></div>";
+  }
+
   function drawLogins(el, match) {
     const rows = match.reduce((n, m) => n + m.table.rows.length, 0);
 
@@ -1950,7 +2091,13 @@ const MTopics = (function () {
       "</div>" +
       '<p class="muted small">Every service keeps this. It is usually the part of an ' +
         "export people have not thought about.</p>" +
+      loginStatsHtml(match) +
+      '<h3 class="tp-h">Every record</h3>' +
       '<div class="lg-grid">' + match.map(panel).join("") + "</div>";
+
+    if (typeof MCharts !== "undefined" && MCharts.hover) {
+      MCharts.hover(el.closest("#ex-scroll") || el);
+    }
   }
 
   /* ---------- the registry ---------- */
