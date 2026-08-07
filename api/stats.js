@@ -27,7 +27,7 @@
  */
 
 const crypto = require("crypto");
-const { configured, pipeline } = require("./_store");
+const { configured, pipeline, foundVars } = require("./_store");
 
 const HASH = process.env.ADMIN_HASH || "";
 const TOKEN_LIFE = 2 * 60 * 60 * 1000;
@@ -127,8 +127,9 @@ module.exports = async function handler(req, res) {
   }
 
   if (!configured()) {
-    return json(res, 200, { token, configured: false, days: [], note:
-      "Signed in, but no counter store is attached to this deployment yet." });
+    /* Which names were found, so "it is not counting" can be diagnosed from
+       the page rather than by guessing. Names only, never values. */
+    return json(res, 200, { token, configured: false, days: [], found: foundVars() });
   }
 
   const days = dayList(Math.min(400, Math.max(1, Number(body.days) || 60)));

@@ -129,8 +129,11 @@ function ask(prompt) {
   console.log("");
   console.log("Next, on Vercel:");
   console.log("  1. Settings, then Environment Variables. Add ADMIN_HASH with the value above.");
-  console.log("  2. Storage, then create a KV store and connect it to this project. That sets");
-  console.log("     KV_REST_API_URL and KV_REST_API_TOKEN by itself.");
+  console.log("  2. Storage, then Upstash, then Redis. Connect it to this project.");
+  console.log("     Upstash is the one that speaks over HTTP, which is what a function here can");
+  console.log("     reach without a client library - the plain Redis option cannot be used.");
+  console.log("     It sets its own credentials; the endpoint accepts either the KV_REST_API_*");
+  console.log("     names or the UPSTASH_REDIS_REST_* ones.");
   console.log("  3. Redeploy.");
   console.log("");
   console.log("Without step 1 the usage page says so and lets nobody in. Without step 2 the");

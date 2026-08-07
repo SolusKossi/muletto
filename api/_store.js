@@ -13,10 +13,29 @@
  * callers do nothing. A site with no counters is a working site.
  */
 
-const URL_ = process.env.KV_REST_API_URL || "";
-const TOKEN = process.env.KV_REST_API_TOKEN || "";
+/* Two spellings, because the same database arrives under two names.
+ *
+ * Vercel KV set KV_REST_API_URL and KV_REST_API_TOKEN. It has since become a
+ * Marketplace integration, and connecting Upstash through the Marketplace
+ * sets UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN instead - the same
+ * database, the same REST interface, a different pair of names depending on
+ * when and how it was added. Accepting both is three lines and removes a
+ * failure that would otherwise look exactly like "the counters do not work".
+ *
+ * KV_* is tried first so an existing deployment keeps behaving as it did. */
+const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
+const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
 
 const configured = () => !!(URL_ && TOKEN);
+
+/* Which names were found, for the usage page to report. Never the values -
+   the token is a credential, and a page that prints credentials is a page
+   that leaks them into a screenshot. */
+function foundVars() {
+  const names = ["KV_REST_API_URL", "KV_REST_API_TOKEN",
+                 "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"];
+  return names.filter((n) => !!process.env[n]);
+}
 
 /* One round trip for however many commands. Redis pipelines are ordered, so
    the results come back in the order they were sent. */
@@ -35,4 +54,4 @@ async function pipeline(commands) {
   return rows.map((r) => (r && Object.prototype.hasOwnProperty.call(r, "result") ? r.result : null));
 }
 
-module.exports = { configured, pipeline };
+module.exports = { configured, pipeline, foundVars };
