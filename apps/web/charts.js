@@ -281,6 +281,184 @@ const MCharts = (function () {
       'opacity="0.45" vector-effect="non-scaling-stroke"/>' + CURSOR + "</svg>";
   }
 
+  /* ---------- one life, one line ----------
+   *
+   * A strip per person, every message a mark on it. Eight of these stacked is
+   * the single most useful picture in the whole app: you can see a friendship
+   * start, a run of years where somebody was in your life every week, and the
+   * month it stopped - none of which is visible in a list sorted by name.
+   *
+   * Bucketed to a couple of hundred columns and shaded by how many fell in
+   * each, so a busy fortnight is darker rather than being eight marks in the
+   * same pixel. The eye reads that as density, which is what it is.
+   */
+  function ticks(pts, opt) {
+    const o = opt || {};
+    const w = o.w || 900, h = o.h || 26;
+    const from = o.from, to = o.to;
+    if (!pts.length || !(to > from)) return "";
+    const slots = o.slots || 210;
+    const counts = new Array(slots).fill(0);
+    for (const p of pts) {
+      let i = Math.floor(((p.t - from) / (to - from)) * slots);
+      if (i < 0) i = 0; if (i >= slots) i = slots - 1;
+      counts[i]++;
+    }
+    let top = 0;
+    for (const c of counts) if (c > top) top = c;
+    if (!top) return "";
+
+    const cw = w / slots;
+    let out = "";
+    for (let i = 0; i < slots; i++) {
+      const c = counts[i];
+      if (!c) continue;
+      /* Four steps rather than a smooth ramp. A continuous opacity looks like
+         noise at this size; four is enough to read as light, medium, dark. */
+      const step = c / top;
+      const op = step > 0.66 ? 0.95 : step > 0.33 ? 0.7 : step > 0.12 ? 0.45 : 0.28;
+      out += '<rect x="' + (i * cw).toFixed(2) + '" y="' + (h * 0.22).toFixed(1) +
+        '" width="' + Math.max(0.9, cw * 0.55).toFixed(2) + '" height="' + (h * 0.56).toFixed(1) +
+        '" rx="0.6" fill="currentColor" opacity="' + op + '"/>';
+    }
+    /* The rule underneath is the span, so an empty stretch reads as a gap in
+       a life rather than as a chart that stopped. */
+    return '<svg class="hv hv-ticks" viewBox="0 0 ' + w + " " + h +
+      '" preserveAspectRatio="none">' +
+      '<line x1="0" y1="' + (h / 2) + '" x2="' + w + '" y2="' + (h / 2) +
+      '" stroke="currentColor" stroke-width="0.6" opacity="0.13"/>' + out + "</svg>";
+  }
+
+  /* ---------- the day, as a circle ----------
+   *
+   * Twenty-four hours is the one quantity that genuinely is a loop: 23:00 is
+   * next to 00:00, and on a bar chart it is at the opposite end. Somebody
+   * whose messages run from ten at night to one in the morning looks like two
+   * unrelated habits on bars and like one arc here, which is what it is.
+   */
+  function clock(pts, opt) {
+    const o = opt || {};
+    const size = o.size || 210;
+    const c = size / 2;
+    const rIn = size * 0.17, rOut = size * 0.46;
+    const counts = new Array(24).fill(0);
+    for (const p of pts) {
+      const d = new Date(p.t);
+      if (!isNaN(d)) counts[d.getHours()]++;
+    }
+    let top = 0;
+    for (const n of counts) if (n > top) top = n;
+    if (!top) return "";
+
+    let out = "";
+    for (let hIdx = 0; hIdx < 24; hIdx++) {
+      const n = counts[hIdx];
+      /* Midnight at the top and clockwise, because that is where every clock
+         anybody has looked at puts it. */
+      const a0 = ((hIdx / 24) * 360 - 90 + 1.2) * (Math.PI / 180);
+      const a1 = (((hIdx + 1) / 24) * 360 - 90 - 1.2) * (Math.PI / 180);
+      const len = n ? rIn + (rOut - rIn) * (0.18 + 0.82 * (n / top)) : rIn + 2;
+      /* Concentric dashes rather than one solid wedge: it reads as a count
+         and a solid wedge reads as a proportion of the whole day. */
+      const rings = n ? Math.max(1, Math.round(((len - rIn) / (rOut - rIn)) * 7)) : 0;
+      for (let k = 0; k < Math.max(1, rings); k++) {
+        const r = rIn + ((rOut - rIn) * (k + 0.6)) / 7;
+        const x0 = c + r * Math.cos(a0), y0 = c + r * Math.sin(a0);
+        const x1 = c + r * Math.cos(a1), y1 = c + r * Math.sin(a1);
+        out += '<path d="M' + x0.toFixed(1) + " " + y0.toFixed(1) + " A" + r.toFixed(1) +
+          " " + r.toFixed(1) + " 0 0 1 " + x1.toFixed(1) + " " + y1.toFixed(1) +
+          '" fill="none" stroke="currentColor" stroke-width="' +
+          (size * 0.028).toFixed(1) + '" stroke-linecap="round" opacity="' +
+          (n ? (0.22 + 0.6 * (n / top)).toFixed(2) : "0.09") + '" data-hv-cell="' +
+          esc(String(hIdx).padStart(2, "0") + ":00 &#183; " + n.toLocaleString() + " " +
+              (n === 1 ? (o.noun || "message") : (o.noun || "message") + "s")) + '"/>';
+      }
+    }
+
+    /* Sun and moon, so the ring needs no key. Noon is at the bottom of a
+       clock face and midnight at the top, which is where they go. */
+    const moon = '<path d="M' + (c + 5) + " " + (size * 0.31) +
+      "a5.6 5.6 0 1 0 -6.4 8.6 6.6 6.6 0 0 1 6.4 -8.6z" +
+      '" fill="currentColor" opacity="0.55"/>';
+    const sunR = 4.2, sy = size * 0.685;
+    let sun = '<circle cx="' + c + '" cy="' + sy + '" r="' + sunR +
+      '" fill="currentColor" opacity="0.55"/>';
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      sun += '<line x1="' + (c + Math.cos(a) * (sunR + 2.2)).toFixed(1) +
+        '" y1="' + (sy + Math.sin(a) * (sunR + 2.2)).toFixed(1) +
+        '" x2="' + (c + Math.cos(a) * (sunR + 4.4)).toFixed(1) +
+        '" y2="' + (sy + Math.sin(a) * (sunR + 4.4)).toFixed(1) +
+        '" stroke="currentColor" stroke-width="1.2" opacity="0.55" stroke-linecap="round"/>';
+    }
+
+    return '<div class="hv-clockwrap"><svg class="hv hv-clock" viewBox="0 0 ' + size +
+      " " + size + '">' + out + moon + sun + "</svg>" +
+      '<span class="hv-cl hv-cl-0">00:00</span>' +
+      '<span class="hv-cl hv-cl-6">06:00</span>' +
+      '<span class="hv-cl hv-cl-12">12:00</span>' +
+      '<span class="hv-cl hv-cl-18">18:00</span></div>';
+  }
+
+  /* Where the busy hours actually are, in words.
+   *
+   * A chart says "evenings" to somebody who already knows what they are
+   * looking at; a sentence says it to everybody.
+   *
+   * The first version asked for the shortest run of hours holding at least
+   * half of everything, and returned nothing when no run reached it. On the
+   * sample the best eight-hour window held forty-nine percent, so the
+   * sentence and one of the insight cards silently disappeared - a cliff at
+   * an arbitrary line, which is the worst way for a number to behave.
+   *
+   * It now finds the window that is furthest above what an even day would
+   * give it, and reports whatever share that turns out to be. There is always
+   * an answer, and the answer states its own size rather than implying "most".
+   */
+  function busiestRun(pts) {
+    const counts = new Array(24).fill(0);
+    let total = 0;
+    for (const p of pts) {
+      const d = new Date(p.t);
+      if (isNaN(d)) continue;
+      counts[d.getHours()]++;
+      total++;
+    }
+    if (total < 24) return null;
+
+    let best = null;
+    for (let len = 3; len <= 8; len++) {
+      for (let start = 0; start < 24; start++) {
+        let sum = 0;
+        for (let k = 0; k < len; k++) sum += counts[(start + k) % 24];
+        const share = sum / total;
+        /* How much more than an even day would put in a window this wide. A
+           six-hour window holding a quarter of everything is unremarkable; a
+           six-hour window holding half of it is the thing worth saying. */
+        const excess = share - len / 24;
+        if (!best || excess > best.excess) best = { start, len, share, excess };
+      }
+    }
+    if (!best) return null;
+
+    /* The quietest hour is only worth naming if the record actually covers
+       it. An export with nothing at all before six in the morning has no
+       quietest hour, it has a gap, and calling a gap "quietest" is wrong. */
+    let quietest = -1;
+    for (let h = 0; h < 24; h++) {
+      if (!counts[h]) continue;
+      if (quietest < 0 || counts[h] < counts[quietest]) quietest = h;
+    }
+    const hh = (n) => String(((n % 24) + 24) % 24).padStart(2, "0") + ":00";
+    return {
+      from: hh(best.start),
+      to: hh(best.start + best.len),
+      hours: best.len,
+      share: Math.round(best.share * 100),
+      quiet: quietest >= 0 ? hh(quietest) : null,
+    };
+  }
+
   /* ---------- a habit ----------
    *
    * Hour of the day against day of the week. It is the only drawing here that
@@ -317,9 +495,14 @@ const MCharts = (function () {
         /* An empty hour is drawn, faintly. The gaps are half the point - a
            week with nothing before nine in the morning is a fact about the
            person, and a chart that only drew what happened would hide it. */
-        cells += '<rect class="hv-cell" x="' + x + '" y="' + y + '" width="' + cell +
-          '" height="' + cell + '" rx="2.5" fill="currentColor" opacity="' +
-          (n ? (0.13 + 0.72 * (n / top)).toFixed(2) : "0.05") + '" data-hv-cell="' +
+        /* A circle that grows as well as darkens. Two channels for one
+           number is redundant on purpose - it survives being printed, and it
+           survives whatever the reader's screen does to faint greys. */
+        const f = n / top;
+        const r = (cell / 2) * (n ? 0.42 + 0.58 * Math.sqrt(f) : 0.34);
+        cells += '<circle class="hv-cell" cx="' + (x + cell / 2) + '" cy="' +
+          (y + cell / 2) + '" r="' + r.toFixed(2) + '" fill="currentColor" opacity="' +
+          (n ? (0.16 + 0.74 * f).toFixed(2) : "0.07") + '" data-hv-cell="' +
           esc(DAYNAME[d] + " " + String(h).padStart(2, "0") + ":00 &#183; " +
               n.toLocaleString() + " " + (n === 1 ? noun : noun + "s")) + '"/>';
       }
@@ -511,7 +694,7 @@ const MCharts = (function () {
   }
 
   return { bars, line, band, dots, dial, ridge, stack, grid, ranked,
-           bucket, esc, hover, asHours };
+           ticks, clock, busiestRun, bucket, esc, hover, asHours };
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MCharts;

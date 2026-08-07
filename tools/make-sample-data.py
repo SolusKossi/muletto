@@ -306,8 +306,21 @@ def build_history():
             for _ in range(RNG.randint(2, 6)):
                 mine = RNG.random() < 0.5
                 pool = NORSK if handle in ("bjorn_a", "ingrid.k") and RNG.random() < 0.4 else CHAT_LINES
+                # Weighted to the evening. People message after work and at
+                # lunch, not uniformly across a fifteen-hour day - and the
+                # chat view now draws a twenty-four hour clock whose whole
+                # point is showing that, which a flat scatter would hide.
+                r = RNG.random()
+                if r < 0.46:
+                    hour = RNG.randint(19, 23)
+                elif r < 0.68:
+                    hour = RNG.randint(12, 14)
+                elif r < 0.88:
+                    hour = RNG.randint(8, 11)
+                else:
+                    hour = RNG.choice([0, 1, 2, 6, 7, 15, 16, 17, 18])
                 msgs.append({
-                    "at": dt.datetime.combine(day, dt.time(RNG.randint(8, 23), RNG.randint(0, 59))),
+                    "at": dt.datetime.combine(day, dt.time(hour, RNG.randint(0, 59))),
                     "mine": mine, "text": RNG.choice(pool),
                 })
         msgs.sort(key=lambda m: m["at"])
