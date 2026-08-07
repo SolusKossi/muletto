@@ -1,67 +1,67 @@
 {
- "slug": "discord",
- "provider": "Discord",
- "icon": "box",
- "confirmed": {
-  "flow": null,
-  "import": null
- },
- "difficulty": "easy",
- "wait_time": "up to thirty days",
- "delivery": "email-link",
- "format": ".zip containing JSON and NDJSON",
- "data_types": [
-  "messages",
-  "social"
- ],
- "request": {
-  "url": "https://discord.com/app",
-  "label": "Discord privacy settings"
- },
- "steps": [
-  {
-   "title": "Open User Settings, then Data and Privacy",
-   "detail": "Scroll to Request all of my data."
+  "slug": "discord",
+  "provider": "Discord",
+  "icon": "discord",
+  "confirmed": {
+    "flow": null,
+    "import": null
   },
-  {
-   "title": "Choose what to include",
-   "detail": "Messages, servers and activity are separate tick boxes. Include messages if you want your conversations."
+  "difficulty": "easy",
+  "wait_time": "up to thirty days",
+  "delivery": "email-link",
+  "format": ".zip containing JSON and NDJSON",
+  "data_types": [
+    "messages",
+    "social"
+  ],
+  "request": {
+    "url": "https://discord.com/app",
+    "label": "Discord privacy settings"
   },
-  {
-   "title": "Submit the request",
-   "detail": "Discord confirms by email."
+  "steps": [
+    {
+      "title": "Open User Settings, then Data and Privacy",
+      "detail": "Scroll to Request all of my data."
+    },
+    {
+      "title": "Choose what to include",
+      "detail": "Messages, servers and activity are separate tick boxes. Include messages if you want your conversations."
+    },
+    {
+      "title": "Submit the request",
+      "detail": "Discord confirms by email."
+    },
+    {
+      "title": "Wait up to thirty days",
+      "detail": "It is usually faster, but Discord makes no promise short of a month."
+    },
+    {
+      "title": "Download within thirty days",
+      "detail": "The link stays live for a month after it arrives."
+    }
+  ],
+  "notes": [
+    "Only your own messages are included. What other people wrote in the same conversation is not, so an exported chat reads as one half of it.",
+    "Attachments are links rather than files, and those links are signed and expire. By the time an old export is opened they are usually dead.",
+    "The activity folder is line-separated JSON rather than a JSON array, and for most accounts it is the bulk of the download."
+  ],
+  "muletto_support": {
+    "importable": false,
+    "adapter": null,
+    "status": "none"
   },
-  {
-   "title": "Wait up to thirty days",
-   "detail": "It is usually faster, but Discord makes no promise short of a month."
-  },
-  {
-   "title": "Download within thirty days",
-   "detail": "The link stays live for a month after it arrives."
-  }
- ],
- "notes": [
-  "Only your own messages are included. What other people wrote in the same conversation is not, so an exported chat reads as one half of it.",
-  "Attachments are links rather than files, and those links are signed and expire. By the time an old export is opened they are usually dead.",
-  "The activity folder is line-separated JSON rather than a JSON array, and for most accounts it is the bulk of the download."
- ],
- "muletto_support": {
-  "importable": false,
-  "adapter": null,
-  "status": "none"
- },
- "faq": [
-  {
-   "q": "Does a Discord data export include other people's messages?",
-   "a": "No. Only messages you sent. A conversation therefore reads as one side of itself, which surprises most people opening one for the first time."
-  },
-  {
-   "q": "Why are the images in my Discord export missing?",
-   "a": "Attachments are stored as links rather than files, and Discord signs those links with an expiry. In an export more than a few days old they generally no longer resolve."
-  },
-  {
-   "q": "How long does a Discord data request take?",
-   "a": "Up to thirty days by Discord's own wording. Most arrive well inside that, and the download link then stays live for another thirty."
-  }
- ]
+  "faq": [
+    {
+      "q": "Does a Discord data export include other people's messages?",
+      "a": "No. Only messages you sent. A conversation therefore reads as one side of itself, which surprises most people opening one for the first time."
+    },
+    {
+      "q": "Why are the images in my Discord export missing?",
+      "a": "Attachments are stored as links rather than files, and Discord signs those links with an expiry. In an export more than a few days old they generally no longer resolve."
+    },
+    {
+      "q": "How long does a Discord data request take?",
+      "a": "Up to thirty days by Discord's own wording. Most arrive well inside that, and the download link then stays live for another thirty."
+    }
+  ]
 }

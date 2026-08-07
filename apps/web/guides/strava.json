@@ -1,67 +1,67 @@
 {
- "slug": "strava",
- "provider": "Strava",
- "icon": "box",
- "confirmed": {
-  "flow": null,
-  "import": null
- },
- "difficulty": "easy",
- "wait_time": "a few hours, up to ten days for a large account",
- "delivery": "email-link",
- "format": ".zip containing CSV plus your original activity files",
- "data_types": [
-  "health",
-  "location"
- ],
- "request": {
-  "url": "https://www.strava.com/athlete/delete_your_account",
-  "label": "Strava account page"
- },
- "steps": [
-  {
-   "title": "Switch your account language to English first",
-   "detail": "The CSV column headers are written in your account language, and almost every tool that reads them expects English."
+  "slug": "strava",
+  "provider": "Strava",
+  "icon": "strava",
+  "confirmed": {
+    "flow": null,
+    "import": null
   },
-  {
-   "title": "Open Settings, then My Account",
-   "detail": "Download or Delete Your Account, then Request your archive. Do not continue past that into deletion."
+  "difficulty": "easy",
+  "wait_time": "a few hours, up to ten days for a large account",
+  "delivery": "email-link",
+  "format": ".zip containing CSV plus your original activity files",
+  "data_types": [
+    "health",
+    "location"
+  ],
+  "request": {
+    "url": "https://www.strava.com/athlete/delete_your_account",
+    "label": "Strava account page"
   },
-  {
-   "title": "Request the archive",
-   "detail": "You will get an email when it is ready."
+  "steps": [
+    {
+      "title": "Switch your account language to English first",
+      "detail": "The CSV column headers are written in your account language, and almost every tool that reads them expects English."
+    },
+    {
+      "title": "Open Settings, then My Account",
+      "detail": "Download or Delete Your Account, then Request your archive. Do not continue past that into deletion."
+    },
+    {
+      "title": "Request the archive",
+      "detail": "You will get an email when it is ready."
+    },
+    {
+      "title": "Wait",
+      "detail": "A few hours is typical. A decade of activities can take up to ten days."
+    },
+    {
+      "title": "Open activities.csv first",
+      "detail": "It is the index. Each row points at the original file you uploaded, in whatever format you uploaded it."
+    }
+  ],
+  "notes": [
+    "Your activity files come back exactly as they went in, so one folder can hold .fit, .gpx and .tcx files and gzipped versions of all three.",
+    "Activities entered by hand have no file at all and an empty filename column.",
+    "The archive contains your photos and private notes as well as the tracks."
+  ],
+  "muletto_support": {
+    "importable": false,
+    "adapter": null,
+    "status": "none"
   },
-  {
-   "title": "Wait",
-   "detail": "A few hours is typical. A decade of activities can take up to ten days."
-  },
-  {
-   "title": "Open activities.csv first",
-   "detail": "It is the index. Each row points at the original file you uploaded, in whatever format you uploaded it."
-  }
- ],
- "notes": [
-  "Your activity files come back exactly as they went in, so one folder can hold .fit, .gpx and .tcx files and gzipped versions of all three.",
-  "Activities entered by hand have no file at all and an empty filename column.",
-  "The archive contains your photos and private notes as well as the tracks."
- ],
- "muletto_support": {
-  "importable": false,
-  "adapter": null,
-  "status": "none"
- },
- "faq": [
-  {
-   "q": "How do I download all my Strava activities at once?",
-   "a": "Request the bulk archive from Settings, My Account, Download or Delete Your Account. It contains every activity file in its original format plus an index CSV."
-  },
-  {
-   "q": "Why are the columns in my Strava export in Norwegian?",
-   "a": "Strava writes the CSV headers in whatever language your account is set to. Switch to English before requesting if you plan to use any tool on it."
-  },
-  {
-   "q": "What format are Strava activity files in?",
-   "a": "Whatever you uploaded. A single archive commonly contains .fit, .gpx and .tcx files, some of them gzipped, side by side."
-  }
- ]
+  "faq": [
+    {
+      "q": "How do I download all my Strava activities at once?",
+      "a": "Request the bulk archive from Settings, My Account, Download or Delete Your Account. It contains every activity file in its original format plus an index CSV."
+    },
+    {
+      "q": "Why are the columns in my Strava export in Norwegian?",
+      "a": "Strava writes the CSV headers in whatever language your account is set to. Switch to English before requesting if you plan to use any tool on it."
+    },
+    {
+      "q": "What format are Strava activity files in?",
+      "a": "Whatever you uploaded. A single archive commonly contains .fit, .gpx and .tcx files, some of them gzipped, side by side."
+    }
+  ]
 }

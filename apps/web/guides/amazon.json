@@ -1,75 +1,75 @@
 {
- "slug": "amazon",
- "provider": "Amazon",
- "icon": "box",
- "confirmed": {
-  "flow": null,
-  "import": null
- },
- "difficulty": "medium",
- "wait_time": "six hours to a month, and genuinely unpredictable",
- "delivery": "email-link",
- "format": "several .zip files, mostly CSV with some PDF and audio",
- "data_types": [
-  "records",
-  "purchases"
- ],
- "request": {
-  "url": "https://www.amazon.com/hz/privacy-central/data-requests/preview.html",
-  "label": "Request My Data"
- },
- "steps": [
-  {
-   "title": "Open Request My Data",
-   "detail": "It sits under Account, then Data Privacy. Use the site for the country your account belongs to."
+  "slug": "amazon",
+  "provider": "Amazon",
+  "icon": "amazon",
+  "confirmed": {
+    "flow": null,
+    "import": null
   },
-  {
-   "title": "Pick one category from the dropdown",
-   "detail": "This is the awkward part: the list is single-select. Request All Your Data is the last entry and is the one to choose unless you want something specific."
+  "difficulty": "medium",
+  "wait_time": "six hours to a month, and genuinely unpredictable",
+  "delivery": "email-link",
+  "format": "several .zip files, mostly CSV with some PDF and audio",
+  "data_types": [
+    "records",
+    "purchases"
+  ],
+  "request": {
+    "url": "https://www.amazon.com/hz/privacy-central/data-requests/preview.html",
+    "label": "Request My Data"
   },
-  {
-   "title": "Submit and confirm by email",
-   "detail": "Nothing is prepared until you click the link in the confirmation email."
+  "steps": [
+    {
+      "title": "Open Request My Data",
+      "detail": "It sits under Account, then Data Privacy. Use the site for the country your account belongs to."
+    },
+    {
+      "title": "Pick one category from the dropdown",
+      "detail": "This is the awkward part: the list is single-select. Request All Your Data is the last entry and is the one to choose unless you want something specific."
+    },
+    {
+      "title": "Submit and confirm by email",
+      "detail": "Nothing is prepared until you click the link in the confirmation email."
+    },
+    {
+      "title": "Wait, without assuming a pattern",
+      "detail": "One request has come back in six hours and another from the same account took nineteen days."
+    },
+    {
+      "title": "Download everything before it expires",
+      "detail": "The files stay available for ninety days, and each one has its own expiry."
+    },
+    {
+      "title": "Keep the archives separate",
+      "detail": "The same filename appears in more than one archive with different contents. Extract them into separate folders or one will overwrite the other."
+    }
+  ],
+  "notes": [
+    "Because the dropdown only takes one category at a time, most people end up filing several requests weeks apart. The format changed in February 2026, so one folder can hold two incompatible versions of the same file.",
+    "Alexa voice recordings are the bulk of a large export. Order history, even over twenty years, stays in single-digit megabytes.",
+    "Photos in Amazon Photos are not included. The export describes the library without containing it."
+  ],
+  "muletto_support": {
+    "importable": false,
+    "adapter": null,
+    "status": "none"
   },
-  {
-   "title": "Wait, without assuming a pattern",
-   "detail": "One request has come back in six hours and another from the same account took nineteen days."
-  },
-  {
-   "title": "Download everything before it expires",
-   "detail": "The files stay available for ninety days, and each one has its own expiry."
-  },
-  {
-   "title": "Keep the archives separate",
-   "detail": "The same filename appears in more than one archive with different contents. Extract them into separate folders or one will overwrite the other."
-  }
- ],
- "notes": [
-  "Because the dropdown only takes one category at a time, most people end up filing several requests weeks apart. The format changed in February 2026, so one folder can hold two incompatible versions of the same file.",
-  "Alexa voice recordings are the bulk of a large export. Order history, even over twenty years, stays in single-digit megabytes.",
-  "Photos in Amazon Photos are not included. The export describes the library without containing it."
- ],
- "muletto_support": {
-  "importable": false,
-  "adapter": null,
-  "status": "none"
- },
- "faq": [
-  {
-   "q": "How long does an Amazon data request take?",
-   "a": "Amazon says up to a month. In practice it has ranged from six hours to nineteen days for the same account, so there is no reliable figure to plan around."
-  },
-  {
-   "q": "Why can I only pick one category at a time from Amazon?",
-   "a": "The request form is a single-select dropdown. Request All Your Data is the last entry and is usually what you want; otherwise you have to file one request per category and they arrive at different times."
-  },
-  {
-   "q": "Why did my Amazon order history arrive as JSON instead of CSV?",
-   "a": "Amazon sends either, apparently at random - the same person has requested twice days apart and received one of each. The JSON version also carries fewer fields than the CSV."
-  },
-  {
-   "q": "Are Alexa recordings in the Amazon data export?",
-   "a": "Yes, as .wav files, if you have an Echo. For a household that has used one for a few years this is the overwhelming majority of the download by size."
-  }
- ]
+  "faq": [
+    {
+      "q": "How long does an Amazon data request take?",
+      "a": "Amazon says up to a month. In practice it has ranged from six hours to nineteen days for the same account, so there is no reliable figure to plan around."
+    },
+    {
+      "q": "Why can I only pick one category at a time from Amazon?",
+      "a": "The request form is a single-select dropdown. Request All Your Data is the last entry and is usually what you want; otherwise you have to file one request per category and they arrive at different times."
+    },
+    {
+      "q": "Why did my Amazon order history arrive as JSON instead of CSV?",
+      "a": "Amazon sends either, apparently at random - the same person has requested twice days apart and received one of each. The JSON version also carries fewer fields than the CSV."
+    },
+    {
+      "q": "Are Alexa recordings in the Amazon data export?",
+      "a": "Yes, as .wav files, if you have an Echo. For a household that has used one for a few years this is the overwhelming majority of the download by size."
+    }
+  ]
 }

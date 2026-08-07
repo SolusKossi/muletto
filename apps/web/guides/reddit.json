@@ -1,67 +1,67 @@
 {
- "slug": "reddit",
- "provider": "Reddit",
- "icon": "box",
- "confirmed": {
-  "flow": null,
-  "import": null
- },
- "difficulty": "easy",
- "wait_time": "up to thirty days, usually a few days",
- "delivery": "email-link",
- "format": ".zip containing CSV files",
- "data_types": [
-  "social",
-  "messages"
- ],
- "request": {
-  "url": "https://www.reddit.com/settings/data-request",
-  "label": "Request your Reddit data"
- },
- "steps": [
-  {
-   "title": "Open the data request page",
-   "detail": "Settings, Privacy, then Request a copy of your data."
+  "slug": "reddit",
+  "provider": "Reddit",
+  "icon": "reddit",
+  "confirmed": {
+    "flow": null,
+    "import": null
   },
-  {
-   "title": "Choose your request type",
-   "detail": "GDPR if you are in Europe, CCPA if in California. Pick the one that applies to you."
+  "difficulty": "easy",
+  "wait_time": "up to thirty days, usually a few days",
+  "delivery": "email-link",
+  "format": ".zip containing CSV files",
+  "data_types": [
+    "social",
+    "messages"
+  ],
+  "request": {
+    "url": "https://www.reddit.com/settings/data-request",
+    "label": "Request your Reddit data"
   },
-  {
-   "title": "Choose a date range or everything",
-   "detail": "Leave it at everything unless you have a reason not to."
+  "steps": [
+    {
+      "title": "Open the data request page",
+      "detail": "Settings, Privacy, then Request a copy of your data."
+    },
+    {
+      "title": "Choose your request type",
+      "detail": "GDPR if you are in Europe, CCPA if in California. Pick the one that applies to you."
+    },
+    {
+      "title": "Choose a date range or everything",
+      "detail": "Leave it at everything unless you have a reason not to."
+    },
+    {
+      "title": "Submit and wait",
+      "detail": "Reddit says up to thirty days and usually takes a few."
+    },
+    {
+      "title": "Download the zip",
+      "detail": "Everything inside is CSV, one file per category."
+    }
+  ],
+  "notes": [
+    "Everything is CSV. There is no JSON option and no media of any kind.",
+    "Comment bodies are raw markdown with embedded newlines and commas, so a naive spreadsheet import mangles them.",
+    "Your private messages are in messages_archive.csv rather than messages.csv, which is easy to miss."
+  ],
+  "muletto_support": {
+    "importable": false,
+    "adapter": null,
+    "status": "none"
   },
-  {
-   "title": "Submit and wait",
-   "detail": "Reddit says up to thirty days and usually takes a few."
-  },
-  {
-   "title": "Download the zip",
-   "detail": "Everything inside is CSV, one file per category."
-  }
- ],
- "notes": [
-  "Everything is CSV. There is no JSON option and no media of any kind.",
-  "Comment bodies are raw markdown with embedded newlines and commas, so a naive spreadsheet import mangles them.",
-  "Your private messages are in messages_archive.csv rather than messages.csv, which is easy to miss."
- ],
- "muletto_support": {
-  "importable": false,
-  "adapter": null,
-  "status": "none"
- },
- "faq": [
-  {
-   "q": "What format is a Reddit data export?",
-   "a": "CSV, one file per category, and nothing else. There is no JSON option and no images or video."
-  },
-  {
-   "q": "Does a Reddit export include deleted posts and comments?",
-   "a": "Posts and comments you deleted yourself are generally not included. What you still have on the account is."
-  },
-  {
-   "q": "How long does a Reddit data request take?",
-   "a": "Reddit says up to thirty days. Most people report a few days."
-  }
- ]
+  "faq": [
+    {
+      "q": "What format is a Reddit data export?",
+      "a": "CSV, one file per category, and nothing else. There is no JSON option and no images or video."
+    },
+    {
+      "q": "Does a Reddit export include deleted posts and comments?",
+      "a": "Posts and comments you deleted yourself are generally not included. What you still have on the account is."
+    },
+    {
+      "q": "How long does a Reddit data request take?",
+      "a": "Reddit says up to thirty days. Most people report a few days."
+    }
+  ]
 }

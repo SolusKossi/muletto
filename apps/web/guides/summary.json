@@ -218,7 +218,7 @@
     {
       "slug": "x-twitter",
       "provider": "X (Twitter)",
-      "icon": "box",
+      "icon": "x-twitter",
       "difficulty": "easy",
       "wait_time": "usually within a day, sometimes several",
       "typical_size": "50 MB to 10 GB",
@@ -227,7 +227,7 @@
     {
       "slug": "tiktok",
       "provider": "TikTok",
-      "icon": "box",
+      "icon": "tiktok",
       "difficulty": "easy",
       "wait_time": "a few hours to four days",
       "typical_size": "5 MB to 50 MB",
@@ -236,7 +236,7 @@
     {
       "slug": "amazon",
       "provider": "Amazon",
-      "icon": "box",
+      "icon": "amazon",
       "difficulty": "medium",
       "wait_time": "six hours to a month, and genuinely unpredictable",
       "typical_size": "5 MB to 20 GB",
@@ -245,7 +245,7 @@
     {
       "slug": "spotify",
       "provider": "Spotify",
-      "icon": "box",
+      "icon": "spotify",
       "difficulty": "easy",
       "wait_time": "a few days for account data, up to thirty days for the full history",
       "typical_size": "5 MB to 200 MB",
@@ -254,7 +254,7 @@
     {
       "slug": "discord",
       "provider": "Discord",
-      "icon": "box",
+      "icon": "discord",
       "difficulty": "easy",
       "wait_time": "up to thirty days",
       "typical_size": "10 MB to 5 GB",
@@ -263,7 +263,7 @@
     {
       "slug": "reddit",
       "provider": "Reddit",
-      "icon": "box",
+      "icon": "reddit",
       "difficulty": "easy",
       "wait_time": "up to thirty days, usually a few days",
       "typical_size": "1 MB to 100 MB",
@@ -272,7 +272,7 @@
     {
       "slug": "linkedin",
       "provider": "LinkedIn",
-      "icon": "box",
+      "icon": "linkedin",
       "difficulty": "easy",
       "wait_time": "minutes for the small files, up to twenty-four hours for the rest",
       "typical_size": "1 MB to 50 MB",
@@ -281,7 +281,7 @@
     {
       "slug": "whatsapp",
       "provider": "WhatsApp",
-      "icon": "box",
+      "icon": "whatsapp",
       "difficulty": "medium",
       "wait_time": "about three days for the account report; chat exports are instant",
       "typical_size": "1 MB to many GB",
@@ -290,7 +290,7 @@
     {
       "slug": "google-fit-fitbit",
       "provider": "Fitbit and Google Health",
-      "icon": "box",
+      "icon": "heart",
       "difficulty": "medium",
       "wait_time": "hours to days, depending on which route",
       "typical_size": "50 MB to 5 GB",
@@ -299,7 +299,7 @@
     {
       "slug": "strava",
       "provider": "Strava",
-      "icon": "box",
+      "icon": "strava",
       "difficulty": "easy",
       "wait_time": "a few hours, up to ten days for a large account",
       "typical_size": "100 MB to 20 GB",

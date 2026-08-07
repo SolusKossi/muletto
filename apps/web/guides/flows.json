@@ -1,122 +1,126 @@
 {
- "updated": "2026-07-29",
- "note": "Whole jobs rather than single steps: request the export, open it, clean it up, put it where it is going. Each one references an export guide and a destination guide rather than repeating them, so there is one place to fix a provider when it changes its mind.",
- "flows": [
-  {
-   "slug": "flow-icloud-to-nas",
-   "title": "Move your iCloud photos to a NAS",
-   "from": "apple",
-   "to": "dest-nas-generic",
-   "outcome": "Every photo and video Apple holds, on a drive in your own home, in dated folders, with the real capture dates written back in and the duplicates gone.",
-   "why": "iCloud storage is rented, and the bill only goes one way. A NAS you buy once, and the photos stay yours whether or not you keep paying anybody.",
-   "effort": "an hour of your attention, spread over the days Apple takes",
-   "watch_out": "Apple splits large exports into several archives. You need all of them before the library is complete, and each download link expires.",
-   "confirmed": {
-    "flow": null,
-    "import": null
-   },
-   "stumbles": [
+  "updated": "2026-07-29",
+  "note": "Whole jobs rather than single steps: request the export, open it, clean it up, put it where it is going. Each one references an export guide and a destination guide rather than repeating them, so there is one place to fix a provider when it changes its mind.",
+  "flows": [
     {
-     "title": "Apple sends HEIC, and the NAS may not show it",
-     "detail": "iPhone photographs come back in their original format. Some NAS photo apps render HEIC happily and some show grey squares forever. Check with a handful before copying the whole library, and if yours cannot cope, export as JPEG from Muletto instead of converting afterwards."
+      "slug": "flow-icloud-to-nas",
+      "title": "Move your iCloud photos to a NAS",
+      "from": "apple",
+      "to": "dest-nas-generic",
+      "outcome": "Every photo and video Apple holds, on a drive in your own home, in dated folders, with the real capture dates written back in and the duplicates gone.",
+      "why": "iCloud storage is rented, and the bill only goes one way. A NAS you buy once, and the photos stay yours whether or not you keep paying anybody.",
+      "effort": "an hour of your attention, spread over the days Apple takes",
+      "watch_out": "Apple splits large exports into several archives. You need all of them before the library is complete, and each download link expires.",
+      "confirmed": {
+        "flow": null,
+        "import": null
+      },
+      "stumbles": [
+        {
+          "title": "Apple sends HEIC, and the NAS may not show it",
+          "detail": "iPhone photographs come back in their original format. Some NAS photo apps render HEIC happily and some show grey squares forever. Check with a handful before copying the whole library, and if yours cannot cope, export as JPEG from Muletto instead of converting afterwards."
+        },
+        {
+          "title": "The seven-day wait is the long pole",
+          "detail": "Apple takes up to a week and gives no progress. Request the export first, then set up the NAS share while you wait, rather than doing them in order."
+        },
+        {
+          "title": "Copying over wifi will take all night",
+          "detail": "A large library across wifi is measured in hours. Plug the machine in with a cable for the first copy; everything after that is small by comparison."
+        }
+      ],
+      "done": "Open a few photographs from different years on the NAS and check the dates are the dates they were taken, not the day you copied them. Then set up whatever backup the NAS offers, because one NAS is still one copy in one building.",
+      "icon": "cloudup"
     },
     {
-     "title": "The seven-day wait is the long pole",
-     "detail": "Apple takes up to a week and gives no progress. Request the export first, then set up the NAS share while you wait, rather than doing them in order."
+      "slug": "flow-google-to-immich",
+      "title": "Move Google Photos into Immich",
+      "from": "google",
+      "to": "dest-immich",
+      "outcome": "Your whole Google Photos library running on your own server, with the dates Google kept in sidecar files written into the photos themselves so Immich sorts them correctly.",
+      "why": "Immich gives you the parts of Google Photos worth having - search, albums, phone backup - without the account, the scanning or the subscription.",
+      "effort": "an evening, most of it waiting",
+      "watch_out": "Takeout puts the real capture date in a JSON file beside each photo rather than inside it. Import the photos without dealing with that and your entire library dates from the day you downloaded it.",
+      "confirmed": {
+        "flow": null,
+        "import": null
+      },
+      "stumbles": [
+        {
+          "title": "Open every Takeout part together, not one at a time",
+          "detail": "Google splits the export and does not keep a photograph and its metadata file in the same zip. Open part three alone and those photographs lose their date and place, because the JSON describing them is in part seven."
+        },
+        {
+          "title": "Immich's import path is the container's path",
+          "detail": "The path you give an External Library has to be the one Immich sees inside its container, not the one you use on the host. A scan that runs happily and finds nothing is almost always this."
+        },
+        {
+          "title": "Takeout is bigger than your library, and that is expected",
+          "detail": "A photograph in an album and in its year folder is exported once for each. They are byte-identical, so the duplicate pass folds them together - but do not panic at the download size."
+        }
+      ],
+      "done": "Scroll back several years in the Immich timeline. If everything sits on the day you imported, the dates did not make it and it is worth repairing them again before you delete anything from Google.",
+      "icon": "photos"
     },
     {
-     "title": "Copying over wifi will take all night",
-     "detail": "A large library across wifi is measured in hours. Plug the machine in with a cable for the first copy; everything after that is small by comparison."
+      "slug": "flow-everything-to-drive",
+      "title": "Put everything on one external drive",
+      "from": null,
+      "to": "dest-drive",
+      "outcome": "Every service you use, merged into a single dated library on a disk you can hold, with duplicates across services removed and an index of what is in it.",
+      "why": "The simplest arrangement that survives you losing interest. No server to maintain, no subscription to forget, no account to be locked out of.",
+      "effort": "a weekend if you request everything at once",
+      "watch_out": "One drive is one drive. It is a copy of your data, not a backup of it, until there are two in different places.",
+      "confirmed": {
+        "flow": null,
+        "import": null
+      },
+      "stumbles": [
+        {
+          "title": "Request everything on the same day",
+          "detail": "The waits run in parallel and they are wildly different - Meta is often minutes, Google hours, Apple up to a week, Snapchat up to a month. Ask them all now and the slowest one sets your timetable instead of the sum of them."
+        },
+        {
+          "title": "Links expire while you wait for the others",
+          "detail": "Meta gives you a few days, Google about a week. Download each archive as it arrives rather than waiting to collect the set, or you will be requesting some of them twice."
+        },
+        {
+          "title": "Format the drive before you start copying",
+          "detail": "Reformatting means erasing, so decide up front: NTFS for Windows only, APFS for Macs only, exFAT if the drive has to work with both."
+        }
+      ],
+      "done": "Compare the file count and total size on the drive against what Muletto exported. Then make the second copy and put it somewhere else - one drive in one drawer is a single flood away from nothing.",
+      "icon": "disk"
+    },
+    {
+      "slug": "flow-snapchat-memories",
+      "title": "Rescue your Snapchat Memories before they expire",
+      "from": "snapchat",
+      "to": "dest-drive",
+      "outcome": "The photos and videos behind years of Memories, saved as ordinary files you can open anywhere, rather than links that stop working.",
+      "why": "Memories are the part of Snapchat people care about years later, and the part most likely to be lost. They are delivered as time-limited links rather than files.",
+      "effort": "under an hour, but it has a deadline",
+      "watch_out": "The download links expire. Leaving the email for the weekend is the single most common way people lose their Snapchat media permanently.",
+      "confirmed": {
+        "flow": null,
+        "import": null
+      },
+      "stumbles": [
+        {
+          "title": "Snapchat is the slowest of them",
+          "detail": "The export can take up to 30 days, and there is no queue position to watch. Request it the day you decide to do this, not the day you have time."
+        },
+        {
+          "title": "Memories are the part worth having",
+          "detail": "Snaps you saved to Memories come back as real files with real dates. The rest of the export is mostly JSON - chat history, location history, friends - which is interesting but is not what you came for."
+        },
+        {
+          "title": "The same pictures are probably in your camera roll too",
+          "detail": "Anything you saved to your phone as well as to Memories will already be in a Google or Apple export. Open them together and the duplicate pass will spot it rather than leaving you two copies."
+        }
+      ],
+      "done": "Check the memories are dated when they were taken rather than when Snapchat handed them over, then put the drive somewhere that is not your desk drawer.",
+      "icon": "snapchat"
     }
-   ],
-   "done": "Open a few photographs from different years on the NAS and check the dates are the dates they were taken, not the day you copied them. Then set up whatever backup the NAS offers, because one NAS is still one copy in one building."
-  },
-  {
-   "slug": "flow-google-to-immich",
-   "title": "Move Google Photos into Immich",
-   "from": "google",
-   "to": "dest-immich",
-   "outcome": "Your whole Google Photos library running on your own server, with the dates Google kept in sidecar files written into the photos themselves so Immich sorts them correctly.",
-   "why": "Immich gives you the parts of Google Photos worth having - search, albums, phone backup - without the account, the scanning or the subscription.",
-   "effort": "an evening, most of it waiting",
-   "watch_out": "Takeout puts the real capture date in a JSON file beside each photo rather than inside it. Import the photos without dealing with that and your entire library dates from the day you downloaded it.",
-   "confirmed": {
-    "flow": null,
-    "import": null
-   },
-   "stumbles": [
-    {
-     "title": "Open every Takeout part together, not one at a time",
-     "detail": "Google splits the export and does not keep a photograph and its metadata file in the same zip. Open part three alone and those photographs lose their date and place, because the JSON describing them is in part seven."
-    },
-    {
-     "title": "Immich's import path is the container's path",
-     "detail": "The path you give an External Library has to be the one Immich sees inside its container, not the one you use on the host. A scan that runs happily and finds nothing is almost always this."
-    },
-    {
-     "title": "Takeout is bigger than your library, and that is expected",
-     "detail": "A photograph in an album and in its year folder is exported once for each. They are byte-identical, so the duplicate pass folds them together - but do not panic at the download size."
-    }
-   ],
-   "done": "Scroll back several years in the Immich timeline. If everything sits on the day you imported, the dates did not make it and it is worth repairing them again before you delete anything from Google."
-  },
-  {
-   "slug": "flow-everything-to-drive",
-   "title": "Put everything on one external drive",
-   "from": null,
-   "to": "dest-drive",
-   "outcome": "Every service you use, merged into a single dated library on a disk you can hold, with duplicates across services removed and an index of what is in it.",
-   "why": "The simplest arrangement that survives you losing interest. No server to maintain, no subscription to forget, no account to be locked out of.",
-   "effort": "a weekend if you request everything at once",
-   "watch_out": "One drive is one drive. It is a copy of your data, not a backup of it, until there are two in different places.",
-   "confirmed": {
-    "flow": null,
-    "import": null
-   },
-   "stumbles": [
-    {
-     "title": "Request everything on the same day",
-     "detail": "The waits run in parallel and they are wildly different - Meta is often minutes, Google hours, Apple up to a week, Snapchat up to a month. Ask them all now and the slowest one sets your timetable instead of the sum of them."
-    },
-    {
-     "title": "Links expire while you wait for the others",
-     "detail": "Meta gives you a few days, Google about a week. Download each archive as it arrives rather than waiting to collect the set, or you will be requesting some of them twice."
-    },
-    {
-     "title": "Format the drive before you start copying",
-     "detail": "Reformatting means erasing, so decide up front: NTFS for Windows only, APFS for Macs only, exFAT if the drive has to work with both."
-    }
-   ],
-   "done": "Compare the file count and total size on the drive against what Muletto exported. Then make the second copy and put it somewhere else - one drive in one drawer is a single flood away from nothing."
-  },
-  {
-   "slug": "flow-snapchat-memories",
-   "title": "Rescue your Snapchat Memories before they expire",
-   "from": "snapchat",
-   "to": "dest-drive",
-   "outcome": "The photos and videos behind years of Memories, saved as ordinary files you can open anywhere, rather than links that stop working.",
-   "why": "Memories are the part of Snapchat people care about years later, and the part most likely to be lost. They are delivered as time-limited links rather than files.",
-   "effort": "under an hour, but it has a deadline",
-   "watch_out": "The download links expire. Leaving the email for the weekend is the single most common way people lose their Snapchat media permanently.",
-   "confirmed": {
-    "flow": null,
-    "import": null
-   },
-   "stumbles": [
-    {
-     "title": "Snapchat is the slowest of them",
-     "detail": "The export can take up to 30 days, and there is no queue position to watch. Request it the day you decide to do this, not the day you have time."
-    },
-    {
-     "title": "Memories are the part worth having",
-     "detail": "Snaps you saved to Memories come back as real files with real dates. The rest of the export is mostly JSON - chat history, location history, friends - which is interesting but is not what you came for."
-    },
-    {
-     "title": "The same pictures are probably in your camera roll too",
-     "detail": "Anything you saved to your phone as well as to Memories will already be in a Google or Apple export. Open them together and the duplicate pass will spot it rather than leaving you two copies."
-    }
-   ],
-   "done": "Check the memories are dated when they were taken rather than when Snapchat handed them over, then put the drive somewhere that is not your desk drawer."
-  }
- ]
+  ]
 }
