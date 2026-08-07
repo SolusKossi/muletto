@@ -187,6 +187,37 @@ expect.
 
 ---
 
+## Reddit
+
+**Not measured against a real export.** Written from the format and tested
+against a sample built to match it. A Reddit export is a flat bag of CSVs with
+no folder, no manifest and no index page - the plainest thing any of these
+services ships.
+
+| Area | What Muletto does |
+|---|---|
+| Posts and comments | **Read** - timeline entries, labelled with the subreddit |
+| Private messages | **Read** - conversations, grouped by the other person |
+| Votes, saved, hidden | **Read** - as tables |
+| Subscribed subreddits | **Read** |
+| Everything else | Listed and shown as written |
+
+**Columns are matched by pattern, never by position.** Reddit has changed these
+before and will again, and a reader that assumes column four is the subreddit
+becomes silent nonsense the day a column is inserted.
+
+**Worth knowing:** Reddit puts the internet address you were connected from on
+every post and every comment. Muletto says so on opening rather than filing it
+as a column in a table nobody scrolls to.
+
+**On borrowing.** There is a good open-source viewer for these exports -
+`guilamu/reddit-gdpr-export-viewer` - and it is AGPL-3.0, which this
+licence cannot take. None of its code is here. The shape of a CSV is a fact and
+not its author's to license, so the format is all that is shared, and saying so
+seems the least we owe them.
+
+---
+
 ## Anything else
 
 An export from a service with no reader still opens. Files are listed, tables

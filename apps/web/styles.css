@@ -3496,44 +3496,27 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .hv-gridx { display: flex; justify-content: space-between; margin-top: 6px;
   font-size: 10.5px; color: var(--muted); }
 
-/* ---- chat: the summary it opens on ---- */
-.cs-head { margin: 0 0 20px; }
-.cs-head h2 { margin: 0 0 5px; font-size: 26px; font-weight: 620; letter-spacing: -.02em; }
-.cs-head > p.muted { margin: 0; font-size: 14.5px; }
-.cs-sum { margin: 14px 0 0; font-size: 14px; color: var(--muted);
-  font-variant-numeric: tabular-nums; }
-.cs-sum b { color: var(--ink); font-weight: 600; }
-.cs-sum i { font-style: normal; opacity: .5; margin: 0 5px; }
-
-.cs-main { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 14px;
+/* ---- chat: the summary it opens on ----
+   Every box here is a div, not a section. `#explorer section { padding: 0 }`
+   strips padding inside the explorer at a specificity no class can beat, and
+   it has now eaten the padding on two separate redesigns - the health page and
+   this one - because a <section> is the obvious element and the wrong one. */
+.cs-main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px;
   align-items: start; margin-bottom: 14px; }
+.cs-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px; margin-bottom: 14px; }
 
-/* One strip per person. The year labels sit above every strip at once, so a
-   mark in 2023 on one line is under the same label as a mark in 2023 on the
-   next - which is the whole reason to stack them. */
-.cs-years { position: relative; height: 17px; margin: 6px 0 8px 218px;
+/* Messages over time: one line, not one per person. Eight strips stacked was
+   a wall of marks that answered no question anybody had. */
+.cs-years { position: relative; height: 17px; margin: 14px 0 2px;
   font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .cs-years span { position: absolute; transform: translateX(-50%); }
-.cs-people { display: grid; gap: 2px; }
-.cs-person { display: grid; grid-template-columns: 36px 172px minmax(0, 1fr);
-  align-items: center; gap: 10px; padding: 5px 8px 5px 4px; border-radius: 10px;
-  transition: background var(--t) var(--ease); }
-.cs-person:hover { background: var(--surface-2); }
-.cs-av { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--ink); color: var(--bg); font-size: 11.5px; font-weight: 620;
-  letter-spacing: .02em; }
-.cs-who { min-width: 0; display: flex; flex-direction: column; }
-.cs-who b { font-size: 13.5px; font-weight: 600; overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap; }
-.cs-who em { font-style: normal; font-size: 11.5px; color: var(--muted); }
-.cs-strip { min-width: 0; color: var(--ink); }
-.cs-strip .hv-ticks { height: 26px; }
+.cs-vol { color: var(--ink); }
+.cs-vol .hv { height: 96px; }
 
-.cs-legend { display: flex; gap: 24px; flex-wrap: wrap; margin: 14px 0 0 218px;
+.cs-legend { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0 0;
   font-size: 11.5px; color: var(--muted); }
 .cs-key { display: inline-flex; align-items: center; gap: 7px; }
-.cs-keyline { width: 16px; height: 2px; background: currentColor; opacity: .55;
-  border-radius: 1px; }
 .cs-keysw { width: 13px; height: 9px; border-radius: 2px; background: var(--ink);
   display: inline-block; }
 
@@ -3552,8 +3535,13 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .cs-ins p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
 
 /* ---- a week in messages ---- */
-.cs-week { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-  gap: 26px; align-items: start; margin-top: 6px; }
+.cs-week { display: grid; grid-template-columns: minmax(240px, 330px) minmax(0, 1fr);
+  gap: 26px; align-items: start; margin-top: 14px; }
+/* Twenty-four columns of dots has a floor width, and below it the grid used to
+   run straight out of the card rather than admitting it did not fit. */
+.cs-heatscroll { overflow-x: auto; padding-bottom: 4px; }
+.cs-heatscroll .hv-gridwrap { min-width: 430px; }
+.cs-platnote { margin: 12px 0 0; }
 .cs-week h4 { margin: 0 0 12px; font-size: 12.5px; font-weight: 620; color: var(--muted); }
 .cs-clockrow { display: flex; align-items: center; gap: 18px; }
 .cs-clocktext { font-size: 13px; line-height: 1.55; }
@@ -3590,8 +3578,5 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   .cs-week { grid-template-columns: 1fr; gap: 22px; }
 }
 @media (max-width: 720px) {
-  .cs-person { grid-template-columns: 30px minmax(0, 1fr); }
-  .cs-strip { grid-column: 1 / -1; }
-  .cs-years, .cs-legend { margin-left: 0; }
   .cs-clockrow { flex-direction: column; align-items: flex-start; }
 }

@@ -17,6 +17,7 @@ Writes to apps/web/samples/.
 """
 
 import datetime as dt
+import math
 import io
 import json
 import os
@@ -301,24 +302,50 @@ def build_history():
     for handle, display in FRIENDS:
         msgs = []
         for day in daterange_days(start, end):
-            if RNG.random() > 0.055:
+            # Some weeks you talk constantly and some months barely at all.
+            # A flat 5.5% chance every day produced an even drizzle across six
+            # years, and the volume chart existed to show exactly the bursts
+            # and gaps that a drizzle does not have.
+            season = 0.55 + 0.9 * (0.5 + 0.5 * math.sin(
+                (day.toordinal() + hash(handle) % 400) / 96.0))
+            weekend_lift = 1.35 if day.weekday() >= 5 else 1.0
+            if RNG.random() > 0.05 * season * weekend_lift:
                 continue
-            for _ in range(RNG.randint(2, 6)):
+            for _ in range(RNG.randint(1, 7)):
                 mine = RNG.random() < 0.5
                 pool = NORSK if handle in ("bjorn_a", "ingrid.k") and RNG.random() < 0.4 else CHAT_LINES
-                # Weighted to the evening. People message after work and at
-                # lunch, not uniformly across a fifteen-hour day - and the
-                # chat view now draws a twenty-four hour clock whose whole
-                # point is showing that, which a flat scatter would hide.
+                # A week does not look the same on every day, and the
+                # day-and-hour grid is the one chart that shows it. A flat
+                # evening weighting made all seven rows identical, which is
+                # the one thing a real export never looks like.
+                #
+                # Weekdays: a work rhythm - a burst before nine, lunch, then
+                # the evening. Weekends: later start, spread through the
+                # afternoon, and the late night that a weekday does not have.
+                weekend = day.weekday() >= 5
                 r = RNG.random()
-                if r < 0.46:
-                    hour = RNG.randint(19, 23)
-                elif r < 0.68:
-                    hour = RNG.randint(12, 14)
-                elif r < 0.88:
-                    hour = RNG.randint(8, 11)
+                if weekend:
+                    if r < 0.30:
+                        hour = RNG.randint(20, 23)
+                    elif r < 0.50:
+                        hour = RNG.randint(13, 18)
+                    elif r < 0.68:
+                        hour = RNG.randint(10, 12)
+                    elif r < 0.86:
+                        hour = RNG.choice([0, 1, 2])
+                    else:
+                        hour = RNG.randint(3, 9)
                 else:
-                    hour = RNG.choice([0, 1, 2, 6, 7, 15, 16, 17, 18])
+                    if r < 0.38:
+                        hour = RNG.randint(19, 22)
+                    elif r < 0.58:
+                        hour = RNG.randint(11, 13)
+                    elif r < 0.74:
+                        hour = RNG.randint(7, 9)
+                    elif r < 0.90:
+                        hour = RNG.randint(14, 18)
+                    else:
+                        hour = RNG.choice([6, 10, 23, 0, 1])
                 msgs.append({
                     "at": dt.datetime.combine(day, dt.time(hour, RNG.randint(0, 59))),
                     "mine": mine, "text": RNG.choice(pool),
