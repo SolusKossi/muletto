@@ -995,9 +995,6 @@
 
      Beyond this many rows the browser starts to struggle, and a cap with a
      visible note is better than a page that will not scroll. */
-  /* How many day sections are built at a time. Sixty is roughly two
-     screenfuls on a laptop, so the next batch is always already there. */
-  const DAY_CHUNK = 60;
 
   function filteredDays() {
     const q = state.query;
@@ -1061,128 +1058,139 @@
       return;
     }
 
-    /* Every day is kept; only the ones near the viewport are built.
+    /* Every day gets its space; only the ones near the viewport get their
+     * contents.
      *
-     * This used to put the lot into the DOM and stop at eight thousand rows,
-     * which failed at both ends. Three thousand items came to forty-three
-     * thousand elements and fourteen hundred sticky headers, and a single
-     * relayout measured thirty-six milliseconds - two frames gone, on every
-     * frame of a scroll. And somebody with a real Takeout would have hit the
-     * cap and been told the rest of their own life was "not shown".
+     * The first attempt at this appended sixty days at a time, which fixed
+     * the cost - 43,078 elements became 2,119, and a relayout went 36.5 ms to
+     * 2.2 ms - and broke the scrollbar. Nothing that had not been built yet
+     * had any height, so the page thought it was two screens tall, the thumb
+     * filled the track and never moved, and it grew downwards as you scrolled
+     * rather than moving through anything. A scrollbar is a map of the whole
+     * document, so the whole document has to have a size.
      *
-     * Reducing the data would have been the wrong fix for exactly that
-     * reason: a real timeline is much larger than this, and the answer has to
-     * scale with it. Days are appended a chunk at a time as the end comes
-     * into view, so what it costs to scroll depends on how far you have
-     * scrolled rather than on how much you have. */
+     * So every day is a section from the first paint, with the height it will
+     * need reserved through contain-intrinsic-size, and its rows written only
+     * when it comes near. An empty section costs one element; the browser
+     * skips layout and paint for it entirely, and replaces the reserved
+     * height with the real one the first time it draws it.
+     *
+     * It also means the rail can jump anywhere immediately, because the day
+     * it is jumping to has existed all along. */
     state.days = days;
     const total = days.reduce((n, d) => n + d.items.length, 0);
 
     body.innerHTML = coverageBanner() + `
       <p class="muted small ex-count">${plural(total, "item", "items")} across
         ${plural(days.length, "day", "days")}.</p>
-      <div class="ex-tl" id="ex-tl"></div>
-      <div class="ex-tlend" id="ex-tlend" aria-hidden="true"></div>`;
+      <div class="ex-tl" id="ex-tl">${days.map(dayShellHtml).join("")}</div>`;
 
     const cover = body.querySelector("#ex-cover");
     if (cover) cover.addEventListener("click", () => showView("report"));
 
     const tl = body.querySelector("#ex-tl");
-    state.tl = { el: tl, drawn: 0 };
-    growTimeline(DAY_CHUNK);
+    state.tl = { el: tl };
 
     tl.addEventListener("click", (e) => {
       const row = e.target.closest(".ex-row");
       if (row) selectItem(row.dataset.day, Number(row.dataset.i));
     });
 
-    /* The end of the list, watched. Generous margin so the next chunk is
-       already there by the time it would have been needed. */
+    const scroller = document.getElementById("explorer").querySelector("#ex-scroll");
     if (state.tlIo) { state.tlIo.disconnect(); state.tlIo = null; }
     if (state.tlScroll) { state.tlScroll(); state.tlScroll = null; }
-    const end = body.querySelector("#ex-tlend");
-    const scroller = document.getElementById("explorer").querySelector("#ex-scroll");
-    if (end && "IntersectionObserver" in window) {
+
+    /* Whatever is on screen, filled. The first screenful is done outright
+       rather than waited for: an observer that never fires would otherwise
+       leave the view blank, and blank is the one failure worth ruling out. */
+    fillDays(0, 25);
+
+    if ("IntersectionObserver" in window) {
       state.tlIo = new IntersectionObserver((es) => {
-        if (es.some((e) => e.isIntersecting)) growTimeline(state.tl.drawn + DAY_CHUNK);
-      }, { root: scroller, rootMargin: "1200px" });
-      state.tlIo.observe(end);
+        for (const e of es) {
+          if (!e.isIntersecting) continue;
+          state.tlIo.unobserve(e.target);
+          fillDay(e.target);
+        }
+      }, { root: scroller, rootMargin: "1000px" });
+      for (const sec of tl.children) state.tlIo.observe(sec);
     }
 
-    /* And a plain scroll handler behind it.
-     *
-     * An observer that does not fire leaves somebody looking at sixty days of
-     * their own life with no way to reach the rest, which is a far worse
-     * failure than the one this replaced. A scroll position is a number that
-     * is always true, so it is the thing to fall back on. Both are kept: the
-     * observer is better when it works, and this costs a comparison. */
+    /* And a plain scroll handler behind it, because an observer that does not
+       fire would leave somebody scrolling through empty space. A scroll
+       position is a number that is always true. */
     if (scroller) {
       let queued = false;
       const onScroll = () => {
         if (queued) return;
         queued = true;
-        setTimeout(() => {
-          queued = false;
-          if (!state.tl || !state.tl.el.isConnected) return;
-          const left = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
-          if (left < 1200) growTimeline(state.tl.drawn + DAY_CHUNK);
-        }, 120);
+        setTimeout(() => { queued = false; fillVisible(scroller); }, 100);
       };
       scroller.addEventListener("scroll", onScroll, { passive: true });
       state.tlScroll = () => scroller.removeEventListener("scroll", onScroll);
-      /* Sixty days may not reach the bottom of the window on a tall screen,
-         and nothing scrolls a page that does not overflow - so it would sit
-         there having never asked for more. */
-      const fill = () => {
-        if (!state.tl || !state.tl.el.isConnected) return;
-        if (state.tl.drawn >= state.days.length) return;
-        if (scroller.scrollHeight <= scroller.clientHeight + 400) {
-          growTimeline(state.tl.drawn + DAY_CHUNK);
-          setTimeout(fill, 60);
-        }
-      };
-      setTimeout(fill, 60);
+      setTimeout(() => fillVisible(scroller), 80);
     }
 
     attachRail(days.map((d, i) => ({ date: d.date, index: i })),
-      (i) => document.querySelector(`#ex-tl .ex-day[data-di="${i}"]`),
-      /* locate() is allowed to build what it needs first - the rail was
-         written for this, and it is what lets a drag to 2020 land on a day
-         that has never been rendered. */
-      (i) => {
-        growTimeline(i + 1);
-        return document.querySelector(`#ex-tl .ex-day[data-di="${i}"]`);
-      });
+      (i) => tl.children[i] || null,
+      (i) => { const sec = tl.children[i]; if (sec) fillDay(sec); return sec || null; });
   }
 
-  /* Build day sections until at least `upTo` of them exist. */
-  function growTimeline(upTo) {
+  /* An empty section, holding the space its contents will need.
+   *
+   * The estimate is a header and its margins plus a row each. It does not
+   * have to be exact - contain-intrinsic-size is declared `auto`, so the
+   * browser keeps the real measurement once it has drawn the section - it
+   * only has to be close enough that the scrollbar does not lurch while you
+   * are dragging it. */
+  const DAY_HEAD_H = 72;
+  const DAY_ROW_H = 80;
+
+  function dayShellHtml(d) {
+    const h = DAY_HEAD_H + d.items.length * DAY_ROW_H;
+    return `<section class="ex-day" data-day="${esc(d.key)}" data-di="${d.di}"
+      style="contain-intrinsic-size: auto ${h}px"></section>`;
+  }
+
+  function dayInnerHtml(d) {
+    return `<h3 class="ex-dayh">${esc(fmtDay(d.date))}<span>${
+      plural(d.items.length, "item", "items")}</span></h3>
+      <div class="ex-rows">${d.items.map((it, i) => rowHtml(it, d.key, i)).join("")}</div>`;
+  }
+
+  /* Write one day's rows in, if they are not there already. */
+  function fillDay(sec) {
+    if (!sec || sec.firstElementChild) return;
+    const d = state.days[Number(sec.dataset.di)];
+    if (!d) return;
+    sec.innerHTML = dayInnerHtml(d);
+    state.ctx.hydrate(sec);
+    if (!state.thumbIo) watchThumbs(state.tl.el);
+    else sec.querySelectorAll("[data-thumb]").forEach((el) => state.thumbIo.observe(el));
+  }
+
+  function fillDays(from, count) {
+    const tl = state.tl && state.tl.el;
+    if (!tl) return;
+    for (let i = from; i < Math.min(tl.children.length, from + count); i++) {
+      fillDay(tl.children[i]);
+    }
+  }
+
+  /* Everything within a screenful of the viewport, by position rather than by
+     observation. Sections are in date order and all of them exist, so this is
+     a walk over children comparing offsets - no geometry per row. */
+  function fillVisible(scroller) {
     const t = state.tl;
     if (!t || !t.el.isConnected) return;
-    const end = Math.min(state.days.length, upTo);
-    if (end <= t.drawn) return;
-
-    const from = t.drawn;
-    t.el.insertAdjacentHTML("beforeend",
-      state.days.slice(from, end).map(dayHtml).join(""));
-    t.drawn = end;
-
-    const fresh = [...t.el.children].slice(from);
-    for (const sec of fresh) state.ctx.hydrate(sec);
-
-    /* The first batch sets the observer up; later ones join the one that is
-       already running, because rebuilding it would drop everything it was
-       already watching. */
-    if (!state.thumbIo) {
-      watchThumbs(t.el);
-    } else {
-      for (const sec of fresh) {
-        sec.querySelectorAll("[data-thumb]").forEach((el) => state.thumbIo.observe(el));
-      }
-    }
-    if (t.drawn >= state.days.length && state.tlIo) {
-      state.tlIo.disconnect();
-      state.tlIo = null;
+    const pad = 1000;
+    const top = scroller.scrollTop - pad;
+    const bottom = scroller.scrollTop + scroller.clientHeight + pad;
+    const base = t.el.offsetTop;
+    for (const sec of t.el.children) {
+      const y = sec.offsetTop - base + t.el.offsetTop;
+      if (y > bottom) break;
+      if (y + sec.offsetHeight >= top) fillDay(sec);
     }
   }
 
@@ -1327,16 +1335,6 @@
       state.decoded.push({ el, box, m, cell: gi + ":" + i });
       recycle();
     }
-  }
-
-  function dayHtml(d) {
-    return `
-      <section class="ex-day" data-day="${esc(d.key)}" data-di="${d.di}">
-        <h3 class="ex-dayh">${esc(fmtDay(d.date))}<span>${plural(d.items.length, "item", "items")}</span></h3>
-        <div class="ex-rows">
-          ${d.items.map((it, i) => rowHtml(it, d.key, i)).join("")}
-        </div>
-      </section>`;
   }
 
   function rowHtml(it, dk, i) {

@@ -1525,7 +1525,19 @@ function renderLibrary(root, lib, sources, entries, demo) {
    * the demo: nothing was moved, there is nothing to reopen, and it is an
    * invitation back into invented photographs on a page that has just been
    * changed to stop offering exactly that. */
-  if (!current.demo) markExportOpen(sources, entries);
+  if (current.demo) {
+    /* And any marker already there is cleared, not merely not written.
+     *
+     * sessionStorage survives a refresh - it dies with the tab, not the page
+     * - so a marker left by an earlier library went on producing "you had 9
+     * exports open, and they could not be reopened" across every reload of
+     * the demo. Opening the samples is the clearest possible statement that
+     * whatever was open before is not what you are looking at now. */
+    try { sessionStorage.removeItem("muletto:open"); } catch { /* private mode */ }
+    document.querySelectorAll(".nav-explore, .reopen-note").forEach((n) => n.remove());
+  } else {
+    markExportOpen(sources, entries);
+  }
   if (!current.restoring) persist();
 
   // What the explorer needs from the app: live search text, a decoder for one
@@ -2968,11 +2980,18 @@ function noteReopenNeeded() {
   if (!info || current.lib) return;
   const drop = $("#drop");
   if (!drop) return;
+  /* One archive is "it", several are "they". The sentence was written for a
+     single export and then used for the plural label the same function
+     builds, so it read "You had 9 exports open, and it could not be
+     reopened". */
+  const many = (info.sources || 1) > 1;
   const note = document.createElement("div");
   note.className = "note reopen-note";
-  note.innerHTML = "You had <strong>" + esc(info.label) + "</strong> open, and it could not be " +
-    "reopened - the archives were most likely moved, renamed or deleted, or this browser cleared " +
-    "its storage. Choose them again and everything Muletto already worked out still applies.";
+  note.innerHTML = "You had <strong>" + esc(info.label) + "</strong> open, and " +
+    (many ? "they" : "it") + " could not be reopened - the " +
+    (many ? "archives were" : "archive was") + " most likely moved, renamed or deleted, or this " +
+    "browser cleared its storage. Choose " + (many ? "them" : "it") + " again and everything " +
+    "Muletto already worked out still applies.";
   drop.parentNode.insertBefore(note, drop);
 }
 
