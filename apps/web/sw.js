@@ -28,11 +28,11 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "da8778baaf16";
+const VERSION = "f6c2f88742c6";
 const PRECACHE = [
   "/app.html",
-  "/styles.css?v=99518cdf",
-  "/notify.js?v=f2cf1cf3",
+  "/styles.css?v=911adec0",
+  "/notify.js?v=7515182b",
   "/tips.js?v=0bdfdea4",
   "/jobs.js?v=3f996b9f",
   "/store.js?v=0ad5ecd8",
@@ -63,9 +63,9 @@ const PRECACHE = [
   "/topics.js?v=2e2c832a",
   "/views.js?v=8afcc6f8",
   "/export.js?v=c82b191b",
-  "/explorer.js?v=1cfa2da3",
+  "/explorer.js?v=6c6390d6",
   "/disclose.js?v=b24e640b",
-  "/app.js?v=2fc52c4b",
+  "/app.js?v=7dc389fd",
   "/swreg.js?v=266bec3b",
   "/fonts/host-grotesk-var-italic.woff2",
   "/fonts/host-grotesk-var.woff2"

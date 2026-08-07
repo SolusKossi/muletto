@@ -1516,7 +1516,16 @@ async function buildReport(background) {
 
 function renderLibrary(root, lib, sources, entries, demo) {
   current = { sources, lib, entries, query: "", demo: !!demo };
-  markExportOpen(sources, entries);
+  /* The demo leaves no trace, including this one.
+   *
+   * This note to the rest of the tab was written for every library, so
+   * navigating away from the samples and coming back produced "You had 5
+   * exports open, and it could not be reopened - the archives were most
+   * likely moved, renamed or deleted". Every clause of that is wrong about
+   * the demo: nothing was moved, there is nothing to reopen, and it is an
+   * invitation back into invented photographs on a page that has just been
+   * changed to stop offering exactly that. */
+  if (!current.demo) markExportOpen(sources, entries);
   if (!current.restoring) persist();
 
   // What the explorer needs from the app: live search text, a decoder for one

@@ -14,7 +14,7 @@
   <meta property="og:url" content="https://muletto.app/app.html" />
   <meta property="og:image" content="https://muletto.app/og.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="stylesheet" href="styles.css?v=99518cdf" />
+  <link rel="stylesheet" href="styles.css?v=911adec0" />
 </head>
 <body>
   <nav class="nav">
@@ -34,67 +34,70 @@
   </nav>
 
   <main>
-    <section class="page-head wrap">
+    <!-- One thing to do, made the biggest thing on the page.
+
+         This page used to make its privacy argument three times - a red alarm
+         box, the last line of the intro, and a numbered list of three long
+         paragraphs - while the drop zone, which is the entire point, was the
+         fourth element down and the weakest thing on screen. Five bordered
+         cards of equal weight is hierarchy for nothing. The order now follows
+         the decision somebody is actually making: what this is, do it, not
+         ready yet, and only then why you can believe any of it. -->
+    <section class="open-head wrap">
       <h1>Open your export</h1>
-      <p>Drop the files your services gave you. Muletto reads them in your browser and shows you what is inside. Open several exports together and they are merged into one library, with duplicates found across all of them. Your export stays on your device and is never uploaded.</p>
+      <p>Drop the files your services gave you. They are read here, in this browser, on this
+        machine. Open several together and they become one library, with the duplicates
+        between them found automatically.</p>
     </section>
 
-    <section class="wrap" style="padding-top:24px; max-width:820px">
+    <section class="wrap open-wrap">
       <div id="resume" hidden></div>
       <!-- Offers to reopen what was kept. Nothing is read until it is clicked. -->
       <div id="restore" hidden></div>
-
-      <!-- The strongest thing this product can say about itself is that you can
-           check the claim yourself, in about four seconds, without trusting a
-           word of it. -->
-      <aside class="offline-check">
-        <strong>TURN OFF YOUR INTERNET</strong>
-        <p>Then open your export. Everything below still works, because none of it
-          needs a connection. That is the proof, and it costs you one click to see
-          it for yourself.</p>
-      </aside>
-
-      <div id="drop" class="drop">
-        <p><strong>Drop your export files here</strong><br />or click to choose them. Open several at once to merge them
-          into one library. A Muletto work file goes here too, to bring back what was worked out last time.</p>
-        <input id="file" type="file" accept=".zip,.tgz,.tar.gz,.muletto,.json,.gz" multiple hidden />
-      </div>
+      <!-- What is open now. Above the drop zone, because a result shown below
+           the thing that produced it reads as a second, competing offer. -->
       <div id="import-result" class="import-result" hidden></div>
 
-      <div class="trust">
-        <div class="trust-try">
-          <h2>Not sure? Do not use your own data yet.</h2>
-          <p>Open five sample exports instead - real archives, invented people. See what the app
-          is actually like to use - the merged library, the duplicates caught across services,
-          the dates repaired - before you go to the trouble of requesting your own.</p>
-          <button class="btn secondary" id="try-samples">Open the sample exports</button>
-        </div>
-
-        <div class="trust-check">
-          <h3>Then check the claim yourself</h3>
-          <p>Do not take our word for any of it. Here are three ways to check, in rising order
-          of effort.</p>
-          <ol>
-            <li><strong>Turn off your wifi.</strong> Then open an export and use everything -
-            search it, compare photos, write the tidied copy to your disk. It all still works,
-            because none of it ever needed the network. A page that was uploading your files
-            could not do that.</li>
-            <li><strong>Watch the network.</strong> Press F12, open the Network tab, then open
-            your export. You will see this page load and then nothing further. No request
-            carries your archive because no request is made.</li>
-            <li><strong>Read the rule the browser enforces.</strong> This page is served with a
-            Content-Security-Policy that permits connections to nothing but itself and, if you
-            switch it on, an AI service you choose. It is not a promise in our words - your
-            browser blocks anything else, and it applies to the code actually running rather
-            than to a description of it.</li>
-          </ol>
-          <p class="fine">There is also nothing here to breach: no account, no email address,
-          no password, no cookies, no analytics, and no server that receives files. The one
-          thing that is stored is your own progress, in your own browser, so a large export
-          does not have to be read again from scratch - and one button clears it.
-          <a href="privacy.html">The privacy page spells that out</a>.</p>
-        </div>
+      <div id="drop" class="drop">
+        <svg class="drop-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/>
+          <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>
+        </svg>
+        <p><strong>Drop your export files here</strong><span>or click to choose them</span></p>
+        <input id="file" type="file" accept=".zip,.tgz,.tar.gz,.muletto,.json,.gz" multiple hidden />
       </div>
+      <p class="drop-fine">Zip archives from Apple, Google, Samsung, Snapchat, Facebook and
+        Instagram. A Muletto work file goes here too, to bring back what was worked out last
+        time. Nothing is uploaded, and you can
+        <a href="#check">check that yourself</a> in about four seconds.</p>
+
+      <p class="open-alt">Not ready to use your own?
+        <button class="linkish" id="try-samples">Open five sample exports</button> -
+        real archives, invented people.</p>
+
+      <details class="open-check" id="check">
+        <summary>How to check that nothing is uploaded</summary>
+        <ol>
+          <li><strong>Turn off your wifi.</strong> Then open an export and use everything -
+          search it, compare photos, write the tidied copy to your disk. It all still works,
+          because none of it ever needed the network. A page that was uploading your files
+          could not do that.</li>
+          <li><strong>Watch the network.</strong> Press F12, open the Network tab, then open
+          your export. You will see this page load and then nothing further. No request
+          carries your archive because no request is made.</li>
+          <li><strong>Read the rule the browser enforces.</strong> This page is served with a
+          Content-Security-Policy that permits connections to nothing but itself and, if you
+          switch it on, an AI service you choose. It is not a promise in our words - your
+          browser blocks anything else, and it applies to the code actually running rather
+          than to a description of it.</li>
+        </ol>
+        <p class="fine">There is also nothing here to breach: no account, no email address,
+        no password, no cookies, no analytics, and no server that receives files. The one
+        thing that is stored is your own progress, in your own browser, so a large export
+        does not have to be read again from scratch - and one button clears it.
+        <a href="privacy.html">The privacy page spells that out</a>.</p>
+      </details>
     </section>
   </main>
 
@@ -116,7 +119,7 @@
     </div>
   </footer>
 
-  <script src="notify.js?v=f2cf1cf3"></script>
+  <script src="notify.js?v=7515182b"></script>
   <script src="tips.js?v=0bdfdea4"></script>
   <script src="jobs.js?v=3f996b9f"></script>
   <script src="store.js?v=0ad5ecd8"></script>
@@ -151,10 +154,10 @@
   <script src="topics.js?v=2e2c832a"></script>
   <script src="views.js?v=8afcc6f8"></script>
   <script src="export.js?v=c82b191b"></script>
-  <script src="explorer.js?v=1cfa2da3"></script>
+  <script src="explorer.js?v=6c6390d6"></script>
   <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="disclose.js?v=b24e640b"></script>
-  <script src="app.js?v=2fc52c4b"></script>
+  <script src="app.js?v=7dc389fd"></script>
   <script src="swreg.js?v=266bec3b"></script>
 </body>
 </html>
