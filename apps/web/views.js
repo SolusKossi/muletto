@@ -14,6 +14,7 @@
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
   const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
+  const num = (n) => (n || 0).toLocaleString();
 
   const DAY_FMT = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
   const TIME_FMT = { hour: "2-digit", minute: "2-digit" };
@@ -406,6 +407,108 @@
 
   let linksLoaded = false;
 
+  /* ---------- what the messages look like from above ----------
+   *
+   * A chat export is the most personal thing in the archive and it arrived as
+   * a list of names. You could read any conversation and see none of it: not
+   * that a friendship ran for eight years and stopped, not that you and one
+   * person only ever speak on Sunday evenings, not who you actually talk to
+   * as against who you think you do.
+   *
+   * So the view opens on the shape and the conversations are one click away,
+   * rather than the other way round. Nothing here is computed that is not
+   * already in the messages - there is no scoring, no sentiment, and nothing
+   * inferred about anybody.
+   */
+  let chatMode = "stats";
+
+  const MONTHS = ["January", "February", "March", "April", "May", "June", "July",
+                  "August", "September", "October", "November", "December"];
+
+  function chatStatsHtml(people, lib) {
+    const viz = typeof MCharts !== "undefined" ? MCharts : null;
+    const all = [];
+    for (const p of people) for (const m of p.messages) if (m.at) all.push({ t: +m.at, v: 1 });
+    all.sort((a, b) => a.t - b.t);
+    const total = people.reduce((n, p) => n + p.messages.length, 0);
+    if (!total) return "";
+
+    /* Per month, from the messages themselves. A count of messages is a count
+       of days that had any, and bars are what a count of days looks like. */
+    const perMonth = new Map();
+    for (const m of all) {
+      const d = new Date(m.t);
+      const k = d.getFullYear() * 12 + d.getMonth();
+      perMonth.set(k, (perMonth.get(k) || 0) + 1);
+    }
+    const months = [...perMonth.entries()].sort((a, b) => a[0] - b[0]).map(([k, n]) => ({
+      t: Date.UTC(Math.floor(k / 12), k % 12, 15), v: n,
+    }));
+    const busiest = months.slice().sort((a, b) => b.v - a.v)[0];
+
+    const first = all.length ? new Date(all[0].t) : null;
+    const last = all.length ? new Date(all[all.length - 1].t) : null;
+    const years = first && last
+      ? Math.max(1, Math.round((last - first) / (365.25 * 24 * 3600 * 1000))) : 0;
+
+    /* Sent against received, when the export says which. Some do not, and a
+       guess would be worse than the gap. */
+    let mine = 0, theirs = 0;
+    for (const p of people) for (const m of p.messages) {
+      if (m.direction === "sent") mine++;
+      else if (m.direction === "received") theirs++;
+    }
+    const known = mine + theirs;
+
+    const tiles =
+      '<div class="tp-stats">' +
+        "<div><b>" + num(total) + "</b><span>messages</span></div>" +
+        "<div><b>" + num(people.length) + "</b><span>" +
+          (people.length === 1 ? "person" : "people") + "</span></div>" +
+        (years ? "<div><b>" + num(years) + "</b><span>" +
+          (years === 1 ? "year" : "years") + " of it</span></div>" : "") +
+        (known ? "<div><b>" + Math.round((mine / known) * 100) + "%</b><span>sent by you</span></div>" : "") +
+      "</div>";
+
+    const top = people.slice(0, 8).map((p) => ({
+      name: p.name,
+      n: p.messages.length,
+      note: [...p.platforms.values()].join(", "),
+    }));
+
+    const busiestLine = busiest
+      ? '<p class="cs-note">Busiest month: <b>' +
+        esc(MONTHS[new Date(busiest.t).getUTCMonth()]) + " " +
+        new Date(busiest.t).getUTCFullYear() + "</b>, " +
+        esc(plural(busiest.v, "message", "messages")) + ".</p>"
+      : "";
+
+    return '<div class="cs">' + tiles +
+      '<div class="cs-grid">' +
+        '<section class="cs-card cs-wide"><h3>Messages over the years</h3>' +
+          (viz && months.length > 2
+            ? '<div class="cs-chart">' + viz.bars(months, { w: 600, h: 92, n: 60,
+                meta: { unit: "messages" } }) + "</div>"
+            : '<p class="muted small">Not enough dated messages to draw a shape.</p>') +
+          busiestLine +
+        "</section>" +
+
+        '<section class="cs-card"><h3>Who you talk to</h3>' +
+          (viz ? viz.ranked(top, { limit: 8 }) : "") +
+        "</section>" +
+
+        '<section class="cs-card cs-wide"><h3>When you talk</h3>' +
+          '<p class="muted small">Every message, by the hour of the day and the day of the ' +
+          "week it was sent.</p>" +
+          (viz ? viz.grid(all, { noun: "message" }) : "") +
+        "</section>" +
+      "</div>" +
+      '<div class="cs-go"><button class="btn primary" id="cs-open">Explore the full chat ' +
+        "history</button>" +
+        '<span class="muted small">Every conversation, in full, with search.</span></div>' +
+      "</div>";
+  }
+
   function renderPeople(panel, lib, ctx) {
     // Links are restored once, then the view is drawn again with them applied.
     if (!linksLoaded) {
@@ -442,8 +545,30 @@
       return;
     }
 
+    /* A search is a request to look inside the messages, so it goes straight
+       to them rather than making somebody click past a summary first. */
+    if (chatMode === "stats" && !q) {
+      panel.innerHTML = chatStatsHtml(people, lib);
+      const go = panel.querySelector("#cs-open");
+      if (go) {
+        go.addEventListener("click", () => {
+          chatMode = "chat";
+          renderPeople(panel, lib, ctx);
+        });
+      }
+      if (ctx && ctx.hydrate) ctx.hydrate(panel);
+      if (typeof MCharts !== "undefined" && MCharts.hover) {
+        MCharts.hover(document.querySelector("#ex-scroll") || panel);
+      }
+      return;
+    }
+
     const multi = people.filter((p) => p.platforms.size > 1).length;
     panel.innerHTML = `
+      <button class="cs-back" id="cs-back" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7"/></svg>Back to the summary</button>
       <p class="muted small">
         ${plural(people.length, "person", "people")}${q ? ` matching "${esc(q)}"` : ""}.
         ${multi ? `${plural(multi, "person appears", "people appear")} on more than one platform.` : ""}
@@ -467,6 +592,14 @@
         </div>
         <div class="ca-thread" id="ca-thread"></div>
       </div>`;
+
+    const back = panel.querySelector("#cs-back");
+    if (back) {
+      back.addEventListener("click", () => {
+        chatMode = "stats";
+        renderPeople(panel, lib, ctx);
+      });
+    }
 
     const thread = panel.querySelector("#ca-thread");
     const draw = (i) => {

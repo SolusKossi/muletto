@@ -3444,3 +3444,54 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .hv-tip em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); }
 /* A chart that answers the pointer should say so before it is touched. */
 .hv[data-hv] { cursor: crosshair; }
+
+/* ===== the summary that opens chat, search and sign-ins =====
+   The same shapes as the health page, because the problem was the same: a
+   list of ten thousand rows with no way to see any of it. */
+.cs { margin: 0 0 8px; }
+.cs-tight { margin-top: 18px; }
+.cs-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.cs-card { border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--surface); padding: 18px 20px; color: var(--ink); }
+.cs-card.cs-wide { grid-column: 1 / -1; }
+.cs-card h3 { margin: 0 0 4px; font-size: 14px; font-weight: 620; }
+.cs-card > p.muted { margin: 0 0 12px; }
+.cs-chart { margin: 12px 0 2px; }
+.cs-chart .hv { height: 92px; }
+.cs-note { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+.cs-note b { color: var(--ink); font-weight: 600; }
+
+.cs-go { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin: 18px 0 0; padding: 18px 20px; border: 1px solid var(--line);
+  border-radius: var(--radius-lg); background: var(--surface-2); }
+
+.cs-back { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px;
+  padding: 6px 12px 6px 8px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--body); font: inherit; font-size: 13px;
+  cursor: pointer; transition: background var(--t) var(--ease); }
+.cs-back:hover { background: var(--surface-2); color: var(--ink); }
+.cs-back svg { width: 15px; height: 15px; }
+
+/* ---- the league table ---- */
+.hv-rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.hv-rank li { display: grid; grid-template-columns: minmax(0, 1fr) 84px auto;
+  align-items: center; gap: 11px; font-size: 13px; }
+.hv-rank-k { overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--body); }
+.hv-rank-bar { height: 6px; border-radius: 3px; background: var(--line-2); overflow: hidden; }
+.hv-rank-bar i { display: block; height: 100%; background: currentColor; opacity: .6; }
+.hv-rank-n { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums;
+  display: flex; flex-direction: column; align-items: flex-end; }
+.hv-rank-n em { font-style: normal; font-size: 10.5px; opacity: .8;
+  max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- the habit grid ---- */
+.hv-gridwrap { display: flex; gap: 8px; align-items: stretch; margin-top: 4px; }
+.hv-gridy { display: flex; flex-direction: column; justify-content: space-around;
+  font-size: 10.5px; color: var(--muted); padding: 1px 0; }
+.hv-gridmain { flex: 1 1 auto; min-width: 0; }
+.hv-grid { width: 100%; height: auto; display: block; }
+.hv-grid .hv-cell { transition: opacity .1s linear; }
+.hv-grid .hv-cell:hover { opacity: 1 !important; }
+.hv-gridx { display: flex; justify-content: space-between; margin-top: 6px;
+  font-size: 10.5px; color: var(--muted); }
