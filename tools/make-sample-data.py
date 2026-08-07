@@ -258,7 +258,16 @@ def build_history():
             photos.append((when, lat + RNG.uniform(-.03, .03), lon + RNG.uniform(-.03, .03),
                            where, PHOTO_IDS[pid_i % len(PHOTO_IDS)]))
             pid_i += 1
-    # Ordinary days at home, so the record is not all holidays. Raised from
+    # Ordinary days at home, so the record is not all holidays.
+    #
+    # The everyday traffic - messages and location points - matters more to the
+    # timeline than the photographs do. Most days had a single item in them, so
+    # scrolling was one dated heading after another with one line under each,
+    # which reads as an empty record rather than a busy life. Messages on 5.5%
+    # of days and location points on 16% puts two to four things on a typical
+    # day, and they cost nothing: both are a few bytes of JSON.
+    #
+    # Raised from
     # 1.2% to 4%, which is about a photograph a month between trips:
     # enough that no month is empty, and the timeline scrolls at an even pace
     # instead of jumping from nothing to a holiday and back.
@@ -276,9 +285,9 @@ def build_history():
         if day in trip_days:
             lat, lon = place_by_name[trip_days[day][0]]
             n = RNG.randint(3, 7)
-        elif RNG.random() < 0.05:
+        elif RNG.random() < 0.16:
             lat, lon = HOME
-            n = RNG.randint(1, 3)
+            n = RNG.randint(1, 4)
         else:
             continue
         for _ in range(n):
@@ -292,7 +301,7 @@ def build_history():
     for handle, display in FRIENDS:
         msgs = []
         for day in daterange_days(start, end):
-            if RNG.random() > 0.02:
+            if RNG.random() > 0.055:
                 continue
             for _ in range(RNG.randint(2, 6)):
                 mine = RNG.random() < 0.5

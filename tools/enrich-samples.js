@@ -359,32 +359,133 @@ const GOOGLE_EXTRA = [
     "2026-06-11T07:20:00Z,77.16.9.4,Chrome on Android,Bergen,Norway\n" +
     "2026-04-28T13:05:33Z,45.10.2.7,Firefox on Linux,Amsterdam,Netherlands\n"],
 
+  /* A real inbox is mostly machine-written HTML - receipts, dispatch notes,
+     newsletters - with a few actual letters between them, and the five
+     one-line plain-text messages here showed none of that. The reading view
+     renders a message the way a mail client does, and there was nothing in
+     the sample that would prove it. */
   ["Takeout/Mail/All mail Including Spam and Trash.mbox",
     ["From 1 Mon Jan  6 00:00:00 2025",
      "From: Fjord Logistikk <post@example.com>",
      "To: you@example.com",
      "Subject: Your delivery is on the way",
-     "Date: Mon, 06 Jan 2025 09:14:00 +0100", "", "Tracking inside.", "",
+     "Date: Mon, 06 Jan 2025 09:14:00 +0100",
+     "Content-Type: text/html; charset=utf-8", "",
+     '<div style="font-family:Helvetica,Arial,sans-serif;max-width:600px">',
+     '  <div style="background:#0b3d2e;color:#fff;padding:22px 26px">',
+     '    <div style="font-size:19px;letter-spacing:.08em">FJORD LOGISTIKK</div></div>',
+     '  <div style="padding:26px">',
+     '    <h1 style="font-size:20px;margin:0 0 10px;color:#0b3d2e">On its way</h1>',
+     "    <p style=\"color:#444;line-height:1.6;margin:0 0 18px\">Parcel " +
+       "<b>FL-4471-2290</b> left our Oslo depot this morning and is due with you " +
+       "on Wednesday between 09:00 and 13:00.</p>",
+     '    <table style="width:100%;border-collapse:collapse;font-size:14px;color:#333">',
+     '      <tr style="background:#f4f6f5">',
+     '        <th align="left" style="padding:9px 12px">Stage</th>',
+     '        <th align="left" style="padding:9px 12px">When</th></tr>',
+     '      <tr><td style="padding:9px 12px;border-top:1px solid #e4e8e6">Collected</td>',
+     '          <td style="padding:9px 12px;border-top:1px solid #e4e8e6">Mon 06 Jan, 07:40</td></tr>',
+     '      <tr><td style="padding:9px 12px;border-top:1px solid #e4e8e6">Oslo depot</td>',
+     '          <td style="padding:9px 12px;border-top:1px solid #e4e8e6">Mon 06 Jan, 09:05</td></tr>',
+     '      <tr><td style="padding:9px 12px;border-top:1px solid #e4e8e6">Out for delivery</td>',
+     '          <td style="padding:9px 12px;border-top:1px solid #e4e8e6">Wed 08 Jan</td></tr>',
+     "    </table>",
+     '    <p style="margin:22px 0 0"><a href="https://example.com/track/FL44712290" ' +
+       'style="background:#0b3d2e;color:#fff;padding:11px 20px;border-radius:5px;' +
+       'text-decoration:none;display:inline-block;font-size:14px">Track this parcel</a></p>',
+     '    <p style="color:#8a8a8a;font-size:12px;margin:26px 0 0">You are receiving this ' +
+       "because you placed an order. This is an automated message.</p>",
+     "  </div></div>", "",
+
      "From 2 Tue Feb 11 00:00:00 2025",
      "From: Ada Byron <ada@example.com>",
      "To: you@example.com",
      "Subject: Re: the engine notes",
-     "Date: Tue, 11 Feb 2025 18:02:00 +0100", "", "Attached, finally.", "",
+     "Date: Tue, 11 Feb 2025 18:02:00 +0100", "",
+     "Finally got these scanned. The second set is the one worth reading - the",
+     "first is mostly arithmetic I had already done twice and got wrong both",
+     "times.",
+     "",
+     "Page 4 is where it gets interesting. If the machine can be made to act on",
+     "things that are not numbers, then it is not a calculating engine at all,",
+     "and calling it one has held the whole idea back by a decade.",
+     "",
+     "Let me know if the handwriting defeats you. It defeats me in places.",
+     "",
+     "Ada",
+     "",
+     "> On 9 Feb, you wrote:",
+     "> No rush at all on the notes - whenever they surface. I am still working",
+     "> through the earlier set and there is plenty there.", "",
+
      "From 3 Sat Mar 15 00:00:00 2025",
      "From: Ada Byron <ada@example.com>",
      "To: you@example.com",
      "Subject: Coffee Thursday?",
-     "Date: Sat, 15 Mar 2025 11:30:00 +0100", "", "Usual place.", "",
+     "Date: Sat, 15 Mar 2025 11:30:00 +0100", "",
+     "Usual place, usual time? I have an hour between things.", "",
+
      "From 4 Sun Jun 21 00:00:00 2025",
      "From: Bergen Kommune <ikkesvar@example.com>",
      "To: you@example.com",
-     "Subject: Kvittering",
-     "Date: Sun, 21 Jun 2025 08:00:00 +0200", "", "Takk.", "",
+     "Subject: Kvittering for innsendt skjema",
+     "Date: Sun, 21 Jun 2025 08:00:00 +0200",
+     "Content-Type: text/html; charset=utf-8", "",
+     '<div style="font-family:Georgia,serif;max-width:560px;color:#222">',
+     '  <p style="font-size:13px;color:#666;margin:0 0 18px">Bergen kommune</p>',
+     '  <h2 style="font-size:18px;margin:0 0 12px">Kvittering</h2>',
+     '  <p style="line-height:1.7;margin:0 0 14px">Vi har mottatt skjemaet ditt. ' +
+       "Saken er registrert og du hoerer fra oss innen tre uker.</p>",
+     '  <table style="border-collapse:collapse;font-size:14px">',
+     '    <tr><td style="padding:5px 18px 5px 0;color:#666">Saksnummer</td>' +
+       '<td style="padding:5px 0"><b>2025/04417</b></td></tr>',
+     '    <tr><td style="padding:5px 18px 5px 0;color:#666">Mottatt</td>' +
+       '<td style="padding:5px 0">21. juni 2025</td></tr>',
+     "  </table>",
+     '  <p style="line-height:1.7;margin:18px 0 0">Du trenger ikke gjoere noe mer naa. ' +
+       "Ta vare paa dette nummeret hvis du skal kontakte oss om saken.</p>",
+     '  <p style="color:#888;font-size:12px;margin:24px 0 0">Dette er en automatisk ' +
+       "melding. Ikke svar paa denne e-posten.</p></div>", "",
+
      "From 5 Wed Sep 10 00:00:00 2025",
      "From: Grace Hopper <grace@example.com>",
      "To: you@example.com",
      "Subject: Nanoseconds",
-     "Date: Wed, 10 Sep 2025 16:45:00 +0200", "", "A foot of wire.", ""].join("\r\n")],
+     "Date: Wed, 10 Sep 2025 16:45:00 +0200", "",
+     "A foot of wire. That is how far light travels in a nanosecond, and it is",
+     "the only way I have found to make anyone care about the number.",
+     "",
+     "I hand them out at talks. People who have sat through an hour of diagrams",
+     "with a polite expression will hold a piece of wire and suddenly ask a real",
+     "question.", "",
+
+     "From 6 Thu Nov 13 00:00:00 2025",
+     "From: The Long Read <weekly@example.com>",
+     "To: you@example.com",
+     "Subject: Issue 214 - what we lost when everything moved to the cloud",
+     "Date: Thu, 13 Nov 2025 07:00:00 +0100",
+     "Content-Type: text/html; charset=utf-8", "",
+     '<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:580px;color:#1a1a1a">',
+     '  <p style="font-size:11px;letter-spacing:.16em;color:#999;margin:0 0 6px">' +
+       "THE LONG READ &middot; ISSUE 214</p>",
+     '  <h1 style="font-size:26px;line-height:1.25;margin:0 0 16px">What we lost when ' +
+       "everything moved to the cloud</h1>",
+     '  <p style="line-height:1.75;font-size:15px;color:#333;margin:0 0 16px">There is a ' +
+       "particular kind of file that no longer exists: the one you could hold. Not a " +
+       "reference to a file, not a synced copy that a service maintains on your behalf, " +
+       "but the thing itself, on a disk you own.</p>",
+     '  <blockquote style="border-left:3px solid #1a1a1a;margin:0 0 16px;padding:2px 0 2px 16px;' +
+       'font-size:16px;line-height:1.6;color:#444">"Nobody set out to take your files away. ' +
+       'It happened one convenient default at a time."</blockquote>',
+     '  <p style="line-height:1.75;font-size:15px;color:#333;margin:0 0 20px">The strange ' +
+       "part is that the law caught up before the software did. You have had the right to " +
+       "a copy of all of it for years. Almost nobody asks.</p>",
+     '  <p style="margin:0 0 26px"><a href="https://example.com/issues/214" ' +
+       'style="color:#1a1a1a;font-weight:600">Read the rest</a></p>',
+     '  <hr style="border:0;border-top:1px solid #e5e5e5;margin:0 0 14px">',
+     '  <p style="font-size:12px;color:#999;margin:0">You are subscribed as ' +
+       'you@example.com. <a href="https://example.com/unsubscribe" style="color:#999">' +
+       "Unsubscribe</a>.</p></div>", ""].join("\r\n")],
 
   ["Takeout/Fit/Daily activity metrics.csv",
     (() => {

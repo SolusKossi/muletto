@@ -490,9 +490,10 @@
 
           ${state.ctx.demo ? `<div class="ex-demo">
             <strong>This is sample data</strong>
-            <p>Four invented exports, so you can see what the app does before using anything of
-            your own. Change what you like - none of it is saved, and it will be gone when you
-            close the tab.</p>
+            <p>Five invented exports, so you can see what is in one before using anything of
+            your own. Look at all of it - open any file, read the messages, scroll the years.
+            Saving, comparing and describing are held back until it is your own data, and
+            nothing here is written to your browser.</p>
             <button class="btn secondary sm" id="ex-realfile">Open my own export</button>
           </div>` : ""}
           <div class="ex-privacy">
@@ -666,6 +667,20 @@
     const forget = root.querySelector("#ex-forget");
     if (forget && state.actions.forget) forget.addEventListener("click", askForget);
     act("#ex-similar", state.lib.media.length ? state.actions.findSimilar : null);
+
+    /* On the samples, everything past looking and opening is marked as held
+       back rather than left looking available and then refusing.
+       They stay visible and stay clickable - clicking one is how you find out
+       why, and hiding them would misrepresent what the product does, which is
+       the opposite of the point of a demonstration. */
+    if (state.ctx.demo) {
+      root.querySelectorAll("#ex-save, #ex-savework, #ex-loadwork, #ex-similar, #ex-forget")
+        .forEach((b) => {
+          b.classList.add("held-back");
+          b.setAttribute("data-tip", "Held back on the sample data. Open your own export " +
+            "and this works.");
+        });
+    }
 
     document.addEventListener("keydown", onKey);
     window.addEventListener("resize", sizeGrid);
@@ -1472,7 +1487,7 @@
     const body = scope.parentElement;
     const redraw = () => { drawCleanup(body); saveDecisions(); };
 
-    const planBtn = scope.querySelector("#cl-plan");
+    const planBtn = holdBack(scope.querySelector("#cl-plan"));
     if (planBtn) planBtn.addEventListener("click", () => state.actions.plan());
 
     const e = scope.querySelector("#cl-rule-e");
@@ -1687,11 +1702,11 @@
       if (cell) openPhoto(Number(cell.dataset.gi), Number(cell.dataset.i));
     });
 
-    const scan = body.querySelector("#lib-scan");
+    const scan = holdBack(body.querySelector("#lib-scan"));
     if (scan && state.actions.findSimilar) scan.addEventListener("click", () => state.actions.findSimilar());
     const toClean = body.querySelector("#lib-cleanup");
     if (toClean) toClean.addEventListener("click", () => showView("cleanup"));
-    const ai = body.querySelector("#lib-describe");
+    const ai = holdBack(body.querySelector("#lib-describe"));
     if (ai) ai.addEventListener("click", () => state.actions.describe());
 
     attachRail(
@@ -2426,6 +2441,20 @@
     state.scopedStream = null;
     refreshCounts(root);
     showView(state.view);
+  }
+
+  /* A control that only works on your own data, marked as such.
+
+     The sidebar's are marked once when the shell is built, but the ones that
+     belong to a view - compare photographs, sort by instruction, describe
+     with AI - are drawn each time that view opens, long after that pass has
+     run, so they were the three that looked available on the samples. */
+  function holdBack(btn) {
+    if (!btn || !state || !state.ctx || !state.ctx.demo) return btn;
+    btn.classList.add("held-back");
+    btn.setAttribute("data-tip",
+      "Held back on the sample data. Open your own export and this works.");
+    return btn;
   }
 
   function currentView() { return state ? state.view : null; }
