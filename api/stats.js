@@ -87,23 +87,30 @@ const dayList = (n) => {
   return out;
 };
 
-/* A sorted set comes back as a flat [member, score, member, score] list. */
-function pairs(flat, limit) {
-  const out = [];
-  for (let i = 0; i + 1 < (flat || []).length; i += 2) {
-    out.push({ name: String(flat[i]), n: Number(flat[i + 1]) || 0 });
+/* A day is one hash: pv, and then prefixed fields saying what they count.
+ *
+ *   p:  the page       r:  the site it was reached from
+ *   g:  the country    u:  the browser family        d:  the screen
+ *
+ * Anything with a prefix this does not know is skipped, so a field added
+ * later cannot break a reader deployed before it.
+ *
+ * Upstash returns a hash as an object; some versions return the flat
+ * [field, value, field, value] list Redis itself uses. Both are accepted,
+ * because being wrong about which costs a silently empty page. */
+function fieldsOf(raw) {
+  const out = new Map();
+  if (!raw) return out;
+  if (Array.isArray(raw)) {
+    for (let i = 0; i + 1 < raw.length; i += 2) out.set(String(raw[i]), Number(raw[i + 1]) || 0);
+  } else if (typeof raw === "object") {
+    for (const k of Object.keys(raw)) out.set(k, Number(raw[k]) || 0);
   }
-  out.sort((a, b) => b.n - a.n);
-  return limit ? out.slice(0, limit) : out;
+  return out;
 }
 
-function merge(rows) {
-  const total = new Map();
-  for (const flat of rows) {
-    for (const { name, n } of pairs(flat)) total.set(name, (total.get(name) || 0) + n);
-  }
-  return [...total.entries()].map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n);
-}
+const sorted = (m) => [...m.entries()]
+  .map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n);
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return json(res, 405, { error: "POST only" });
@@ -132,33 +139,40 @@ module.exports = async function handler(req, res) {
     return json(res, 200, { token, configured: false, days: [], found: foundVars() });
   }
 
+  /* One command per day, rather than six. Reading sixty days used to be three
+     hundred and sixty commands every time this page was opened, which on a
+     store billed per command is the expensive half of the whole feature. */
   const days = dayList(Math.min(400, Math.max(1, Number(body.days) || 60)));
-  const cmds = [];
-  for (const d of days) cmds.push(["GET", "mu:pv:" + d]);
-  for (const d of days) cmds.push(["ZRANGE", "mu:path:" + d, 0, -1, "WITHSCORES"]);
-  for (const d of days) cmds.push(["ZRANGE", "mu:ref:" + d, 0, -1, "WITHSCORES"]);
-  for (const d of days) cmds.push(["ZRANGE", "mu:geo:" + d, 0, -1, "WITHSCORES"]);
-  for (const d of days) cmds.push(["ZRANGE", "mu:ua:" + d, 0, -1, "WITHSCORES"]);
-  for (const d of days) cmds.push(["ZRANGE", "mu:dev:" + d, 0, -1, "WITHSCORES"]);
-
   let out;
-  try { out = await pipeline(cmds); } catch (e) {
+  try {
+    out = await pipeline(days.map((d) => ["HGETALL", "mu:d:" + d]));
+  } catch (e) {
     return json(res, 502, { token, error: "The counter store did not answer." });
   }
 
-  const n = days.length;
-  const slice = (i) => out.slice(i * n, (i + 1) * n);
-  const views = slice(0).map((v) => Number(v) || 0);
+  const PREFIX = { "p:": new Map(), "r:": new Map(), "g:": new Map(), "u:": new Map(), "d:": new Map() };
+  const perDay = [];
+
+  (out || []).forEach((raw, i) => {
+    const fields = fieldsOf(raw);
+    perDay.push({ day: days[i], views: fields.get("pv") || 0 });
+    for (const [field, n] of fields) {
+      const bucket = PREFIX[field.slice(0, 2)];
+      if (!bucket) continue;                        // "pv", or something newer
+      const name = field.slice(2);
+      bucket.set(name, (bucket.get(name) || 0) + n);
+    }
+  });
 
   return json(res, 200, {
     token,
     configured: true,
-    days: days.map((d, i) => ({ day: d, views: views[i] })),
-    total: views.reduce((a, b) => a + b, 0),
-    pages: merge(slice(1)).slice(0, 60),
-    referrers: merge(slice(2)).slice(0, 40),
-    countries: merge(slice(3)).slice(0, 40),
-    browsers: merge(slice(4)),
-    devices: merge(slice(5)),
+    days: perDay,
+    total: perDay.reduce((a, b) => a + b.views, 0),
+    pages: sorted(PREFIX["p:"]).slice(0, 60),
+    referrers: sorted(PREFIX["r:"]).slice(0, 40),
+    countries: sorted(PREFIX["g:"]).slice(0, 40),
+    browsers: sorted(PREFIX["u:"]),
+    devices: sorted(PREFIX["d:"]),
   });
 };
