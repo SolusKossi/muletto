@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>How to export your data from Reddit | Muletto</title>
-  <meta name="description" content="Request a complete copy of your posts and social activity, messages from Reddit. 5 steps, what you get back, and how long it takes (up to thirty days, usually a few days)." />
+  <title>Reddit GDPR data export: how to request it and open it | Muletto</title>
+  <meta name="description" content="Request your Reddit GDPR data export - posts and social activity, messages - then open it and read what is inside. 5 steps, what actually arrives, and how long it takes (up to thirty days, usually a few days)." />
   <link rel="canonical" href="https://muletto.app/guides/reddit.html" />
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="How to export your data from Reddit | Muletto" />
-  <meta property="og:description" content="Request a complete copy of your posts and social activity, messages from Reddit. 5 steps, what you get back, and how long it takes (up to thirty days, usually a few days)." />
+  <meta property="og:title" content="Reddit GDPR data export: how to request it and open it | Muletto" />
+  <meta property="og:description" content="Request your Reddit GDPR data export - posts and social activity, messages - then open it and read what is inside. 5 steps, what actually arrives, and how long it takes (up to thirty days, usually a few days)." />
   <meta property="og:url" content="https://muletto.app/guides/reddit.html" />
   <meta property="og:site_name" content="Muletto" />
   <meta property="og:image" content="https://muletto.app/og.png" />
@@ -16,7 +16,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="../og.png" />
   <link rel="stylesheet" href="../styles.css?v=629548cc" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to export your data from Reddit","description":"Request a complete copy of your posts and social activity, messages from Reddit. 5 steps, what you get back, and how long it takes (up to thirty days, usually a few days).","step":[{"@type":"HowToStep","position":1,"name":"Open the data request page","text":"Settings, Privacy, then Request a copy of your data."},{"@type":"HowToStep","position":2,"name":"Choose your request type","text":"GDPR if you are in Europe, CCPA if in California. Pick the one that applies to you."},{"@type":"HowToStep","position":3,"name":"Choose a date range or everything","text":"Leave it at everything unless you have a reason not to."},{"@type":"HowToStep","position":4,"name":"Submit and wait","text":"Reddit says up to thirty days and usually takes a few."},{"@type":"HowToStep","position":5,"name":"Download the zip","text":"Everything inside is CSV, one file per category."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to request and open your Reddit GDPR data export","description":"Request your Reddit GDPR data export - posts and social activity, messages - then open it and read what is inside. 5 steps, what actually arrives, and how long it takes (up to thirty days, usually a few days).","step":[{"@type":"HowToStep","position":1,"name":"Open the data request page","text":"Settings, Privacy, then Request a copy of your data."},{"@type":"HowToStep","position":2,"name":"Choose your request type","text":"GDPR if you are in Europe, CCPA if in California. Pick the one that applies to you."},{"@type":"HowToStep","position":3,"name":"Choose a date range or everything","text":"Leave it at everything unless you have a reason not to."},{"@type":"HowToStep","position":4,"name":"Submit and wait","text":"Reddit says up to thirty days and usually takes a few."},{"@type":"HowToStep","position":5,"name":"Download the zip","text":"Everything inside is CSV, one file per category."}]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Reddit","item":"https://muletto.app/guides/reddit.html"}]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What format is a Reddit data export?","acceptedAnswer":{"@type":"Answer","text":"CSV, one file per category, and nothing else. There is no JSON option and no images or video."}},{"@type":"Question","name":"Does a Reddit export include deleted posts and comments?","acceptedAnswer":{"@type":"Answer","text":"Posts and comments you deleted yourself are generally not included. What you still have on the account is."}},{"@type":"Question","name":"How long does a Reddit data request take?","acceptedAnswer":{"@type":"Answer","text":"Reddit says up to thirty days. Most people report a few days."}}]}</script>
 </head>
@@ -49,6 +49,7 @@
 
       <header class="art-head">
         <h1>How to export your data from Reddit</h1>
+        <p class="art-kicker">Requesting the GDPR export, what arrives, and how to open it.</p>
         <div class="art-meta">
           <span class="badge easy">easy</span>
           <span class="muted">Wait: up to thirty days, usually a few days</span>
@@ -91,6 +92,14 @@
             </li>
           </ol>
 
+          
+          <h2 id="open">Opening your Reddit export</h2>
+          <p>Muletto reads a Reddit export directly - the zip, without unpacking it first - and finds the posts and social activity and messages inside.</p>
+          <p>It runs in the browser: the archive is never uploaded, there is no account, and nothing is installed. Open several exports at once and they become one library, with the photographs that appear in more than one of them found automatically.</p>
+          <div class="note">Everything is CSV. There is no JSON option and no media of any kind.</div>
+          <p><a class="btn primary" href="../app.html">Open your Reddit export
+            <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+
           <h2>Worth knowing</h2>
           <div class="note">Everything is CSV. There is no JSON option and no media of any kind.</div>
           <div class="note">Comment bodies are raw markdown with embedded newlines and commas, so a naive spreadsheet import mangles them.</div>
@@ -113,9 +122,7 @@
             </details>
           </div>
 
-          <h2>What Muletto does with this export</h2>
-          <p>Once your download arrives, open it in Muletto. The file is read in your browser, on your own machine - nothing is uploaded. You get a breakdown of what is inside, duplicate detection, and a browsable view of your photos, messages, timeline and records.</p>
-          <p><a class="btn secondary" href="../app.html">Open your export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          
         </div>
 
         <aside class="art-side">

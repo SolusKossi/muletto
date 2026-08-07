@@ -297,7 +297,51 @@ function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
 function guideTitle(g) {
   return isDest(g)
     ? `${g.provider}: where to keep your data | Muletto`
-    : `How to export your data from ${g.provider} | Muletto`;
+    : `${g.provider} GDPR data export: how to request it and open it | Muletto`;
+}
+
+/* What happens after the download finishes.
+ *
+ * Written from the guide's own data rather than from a template with the name
+ * swapped in: what Muletto reads from this service, what it does about the
+ * thing that service gets wrong, and the one sentence of warning that applies
+ * to this export and not to the others. A page of interchangeable filler
+ * helps nobody and reads as filler, which is the failure mode this is trying
+ * to avoid. */
+function openerSection(g) {
+  if (isDest(g)) return "";
+  const sup = g.muletto_support || {};
+  const name = esc(g.provider);
+
+  const lines = [];
+  const kinds = (g.data_types || []).map((k) => DATA_LABEL[k] || k);
+  const list = kinds.length
+    ? kinds.slice(0, 3).join(", ").replace(/, ([^,]*)$/, " and $1")
+    : "what is in it";
+
+  if (sup.importable) {
+    lines.push(`Muletto reads a ${name} export directly - the zip, without unpacking it ` +
+      `first - and finds the ${esc(list)} inside.`);
+  } else {
+    lines.push(`Muletto opens a ${name} export and lists everything in it. There is no ` +
+      `reader written specifically for this service yet, so its tables are shown as ` +
+      `${name} wrote them - which is still a great deal more than a folder of files.`);
+  }
+  lines.push(`It runs in the browser: the archive is never uploaded, there is no account, ` +
+    `and nothing is installed. Open several exports at once and they become one ` +
+    `library, with the photographs that appear in more than one of them found ` +
+    `automatically.`);
+
+  /* The gotcha, from the guide's own notes rather than invented. The first
+     note on every guide is the thing that goes wrong, by house rule. */
+  const gotcha = (g.notes && g.notes.length) ? g.notes[0] : "";
+
+  return `
+          <h2 id="open">Opening your ${name} export</h2>
+          ${lines.map((l) => `<p>${l}</p>`).join("\n          ")}
+          ${gotcha ? `<div class="note">${esc(gotcha)}</div>` : ""}
+          <p><a class="btn primary" href="../app.html">Open your ${name} export
+            <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>`;
 }
 
 function guideDescription(g) {
@@ -306,7 +350,7 @@ function guideDescription(g) {
   }
   const kinds = (g.data_types || []).map((k) => DATA_LABEL[k] || k);
   const list = kinds.length ? kinds.slice(0, 3).join(", ") : "your data";
-  return `Request a complete copy of your ${list} from ${g.provider}. ${g.steps.length} steps, what you get back, and how long it takes (${g.wait_time}).`;
+  return `Request your ${g.provider} GDPR data export - ${list} - then open it and read what is inside. ${g.steps.length} steps, what actually arrives, and how long it takes (${g.wait_time}).`;
 }
 
 function guideIntro(g) {
@@ -358,7 +402,7 @@ function guidePage(g, all, dests) {
   const howto = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    name: dest ? `How to move your data to ${g.provider}` : `How to export your data from ${g.provider}`,
+    name: dest ? `How to move your data to ${g.provider}` : `How to request and open your ${g.provider} GDPR data export`,
     description: guideDescription(g),
     totalTime: undefined,
     dateModified: g.verified && g.verified_on ? g.verified_on : undefined,
@@ -407,6 +451,7 @@ function guidePage(g, all, dests) {
 
       <header class="art-head">
         <h1>${dest ? `Move your data to ${esc(g.provider)}` : `How to export your data from ${esc(g.provider)}`}</h1>
+        ${dest ? "" : `<p class="art-kicker">Requesting the GDPR export, what arrives, and how to open it.</p>`}
         <div class="art-meta">
           <span class="badge ${esc(g.difficulty)}">${esc(g.difficulty)}</span>
           <span class="muted">${dest ? "Takes" : "Wait:"} ${esc(g.wait_time)}</span>
@@ -429,6 +474,8 @@ function guidePage(g, all, dests) {
             </li>`).join("\n            ")}
           </ol>
 
+          ${openerSection(g)}
+
           ${(g.notes && g.notes.length) ? `<h2>Worth knowing</h2>
           ${g.notes.map((n) => `<div class="note">${esc(n)}</div>`).join("\n          ")}` : ""}
 
@@ -440,9 +487,11 @@ function guidePage(g, all, dests) {
             </details>`).join("\n            ")}
           </div>` : ""}
 
-          ${!dest ? `<h2>What Muletto does with this export</h2>
-          <p>Once your download arrives, open it in Muletto. The file is read in your browser, on your own machine - nothing is uploaded. You get a breakdown of what is inside, duplicate detection, and a browsable view of your photos, messages, timeline and records.</p>
-          <p><a class="btn secondary" href="../app.html">Open your export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>` : ""}
+          ${/* The generic version of this used to sit here, at the bottom, saying
+                the same four sentences on all thirty pages. openerSection()
+                replaced it further up with something specific to the service -
+                what is actually read out of this export, and the one thing this
+                service gets wrong - and two of them was one too many. */ ""}
         </div>
 
         <aside class="art-side">
@@ -615,7 +664,7 @@ ${FAQ.map(([q, a]) => `        <details class="faq-item"><summary>${esc(q)}</sum
 
   return page({
     depth: 0, active: "guides",
-    title: "Export guides: get your data out of Apple, Google, Snapchat and more | Muletto",
+    title: "GDPR export guides: request and open your data | Muletto",
     description: "Free step-by-step guides for requesting a complete copy of your data from Apple, Google, Samsung, Snapchat, Facebook and Instagram, plus how to store it on a NAS or external drive.",
     canonical: `${SITE}/guides.html`,
     jsonld: [{
