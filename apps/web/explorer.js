@@ -279,8 +279,15 @@
    * A view that draws its own summary gets no tiles at all, because two
    * summaries of the same thing is how they came to disagree in the first
    * place. */
+  /* Views that count their own things. The shell draws a row of tiles above
+     every other view; these say the same numbers better, further down, in the
+     context that makes them mean something - so the shell says nothing.
+
+     Chat joined the list once its summary opened on "3,449 messages, 8 people,
+     14 Feb 2020 to 21 Jul 2026" with the shell's Messages / Conversations /
+     Date range tiles sitting directly above saying the same three facts. */
   const OWN_STATS = new Set(["comments", "health", "contacts", "calendar", "notes",
-                             "audio", "mail", "logins", "activity"]);
+                             "audio", "mail", "logins", "activity", "chats"]);
 
   function stats() {
     const lib = scopedLib();

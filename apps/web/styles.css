@@ -3462,7 +3462,7 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .cs-note b { color: var(--ink); font-weight: 600; }
 
 .cs-go { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  margin: 18px 0 0; padding: 18px 20px; border: 1px solid var(--line);
+  margin: 0 0 18px; padding: 16px 20px; border: 1px solid var(--line);
   border-radius: var(--radius-lg); background: var(--surface-2); }
 
 .cs-back { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 14px;
@@ -3502,9 +3502,9 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    it has now eaten the padding on two separate redesigns - the health page and
    this one - because a <section> is the obvious element and the wrong one. */
 .cs-main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px;
-  align-items: start; margin-bottom: 14px; }
+  align-items: stretch; margin-bottom: 18px; }
 .cs-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 14px; margin-bottom: 14px; }
+  gap: 14px; margin-top: 18px; }
 
 /* Messages over time: one line, not one per person. Eight strips stacked was
    a wall of marks that answered no question anybody had. */
@@ -3522,10 +3522,14 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 
 /* ---- what changed ---- */
 .cs-rail { border: 1px solid var(--line); border-radius: var(--radius-lg);
-  background: var(--surface); padding: 18px 20px; }
-.cs-rail h3 { margin: 0 0 4px; font-size: 14px; font-weight: 620; }
-.cs-ins { padding: 16px 0; border-bottom: 1px solid var(--line-2); }
-.cs-ins:last-child { border-bottom: 0; padding-bottom: 2px; }
+  background: var(--surface); padding: 18px 20px;
+  display: flex; flex-direction: column; }
+.cs-rail h3 { margin: 0 0 4px; font-size: 14px; font-weight: 620; flex: none; }
+/* The two share the height the rail was given, so the pair ends level with the
+   chart beside them instead of leaving a gap under the second. */
+.cs-ins { flex: 1 1 0; display: flex; flex-direction: column; justify-content: center;
+  padding: 18px 0; border-bottom: 1px solid var(--line-2); }
+.cs-ins:last-child { border-bottom: 0; }
 .cs-ins i { display: inline-flex; width: 32px; height: 32px; align-items: center;
   justify-content: center; border-radius: 50%; background: var(--surface-2);
   border: 1px solid var(--line); color: var(--muted); margin-bottom: 10px; }
@@ -3580,3 +3584,8 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 @media (max-width: 720px) {
   .cs-clockrow { flex-direction: column; align-items: flex-start; }
 }
+
+/* A stats row with no stats in it is 30px of margin around nothing. Views
+   that count their own things leave it empty rather than absent, so it has to
+   collapse itself - and :empty is exactly the selector for that. */
+.ex-stats:empty { display: none; }
