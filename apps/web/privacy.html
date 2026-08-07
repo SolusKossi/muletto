@@ -16,7 +16,7 @@
   <meta name="twitter:card" content="summary" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="og.png" />
-  <link rel="stylesheet" href="styles.css?v=911adec0" />
+  <link rel="stylesheet" href="styles.css?v=d7f64ddc" />
 </head>
 <body>
   <nav class="nav">
@@ -135,10 +135,40 @@
     <section class="wrap tight">
       <div class="section-head">
         <h2>Nothing happens in the background</h2>
-        <p>There is no telemetry, no analytics and no crash reporting. Nothing is sent while you are not
-        looking, and nothing is sent because you opened a page. The only request Muletto ever makes with
-        your data in it is one you started, for photos you picked, on a screen that told you the cost
-        first.</p>
+        <p>There is no telemetry and no crash reporting. Nothing is sent while you are not looking. The
+        only request Muletto ever makes with your data in it is one you started, for photos you picked,
+        on a screen that told you the cost first.</p>
+      </div>
+
+      <div class="section-head">
+        <h2>The one thing we do count</h2>
+        <p>The pages of this site - not the app - send a note that a page was read. It is worth being
+        exact about what that is, because most sites are not.</p>
+      </div>
+      <div class="grid cards">
+        <div class="card">
+          <h3>What is recorded</h3>
+          <p class="muted">Which page, which site you arrived from, which country the connection came from, a browser
+          family, and whether the screen is a phone. Added to a tally for that day and nothing else.</p>
+        </div>
+        <div class="card">
+          <h3>What is not</h3>
+          <p class="muted">No cookie and nothing else stored on your device - which is the entire reason this site
+          has no consent banner, because a banner exists to ask permission for exactly that. No address
+          is kept, hashed, or turned into an identifier, so there is no such thing here as a visitor, a
+          session or a return visit. Only counts.</p>
+        </div>
+        <div class="card">
+          <h3>Never from the app</h3>
+          <p class="muted">The page where your export is open sends nothing at all. That is why you can open the
+          Network tab, use the whole app, and see no requests - a claim with an exception in it is not
+          worth making, so there is no exception.</p>
+        </div>
+        <div class="card">
+          <h3>And it is refusable</h3>
+          <p class="muted">Do Not Track and Global Privacy Control are both honoured, though neither is required of a
+          site that stores nothing on your machine. Turn either on and even the tally stops.</p>
+        </div>
       </div>
       <p><a class="btn secondary" href="app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
     </section>
@@ -165,6 +195,9 @@
 
   <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="disclose.js?v=b24e640b"></script>
+  <!-- Counts that a page was read. Nothing stored on the device, nothing
+       about anybody, and never loaded on app.html. See privacy.html. -->
+  <script src="analytics.js?v=e2665599"></script>
   <script src="app.js?v=26ca82cf"></script>
 </body>
 </html>
