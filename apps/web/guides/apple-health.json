@@ -1,0 +1,78 @@
+{
+  "slug": "apple-health",
+  "provider": "Apple Health",
+  "icon": "heart",
+  "confirmed": {
+    "flow": null,
+    "import": null
+  },
+  "difficulty": "easy",
+  "wait_time": "a few minutes on the phone, no waiting for anybody",
+  "delivery": "on-device",
+  "format": ".zip containing export.xml",
+  "data_types": [
+    "health"
+  ],
+  "request": {
+    "url": "https://support.apple.com/en-us/HT203037",
+    "label": "Apple's Health support page"
+  },
+  "notes": [
+    "This is not part of Apple's Data and Privacy export and never will be. Health is end-to-end encrypted in iCloud, so Apple holds it as a blob it has no key for and cannot hand it over.",
+    "Everything is in one XML file. Years of watch data commonly runs to several hundred megabytes of it, which is why so many tools fail on the file rather than on the data.",
+    "There is a second file, export_cda.xml, in a clinical format. It holds a subset and most tools ignore it."
+  ],
+  "muletto_support": {
+    "importable": false,
+    "adapter": null,
+    "status": "none"
+  },
+  "steps": [
+    {
+      "title": "Do it on the iPhone, not the watch or a Mac",
+      "detail": "The export lives in the Health app on the phone. There is no route from a Mac, from iCloud.com or from the watch, and no way to request it from Apple. If you have no iPhone, you have no export."
+    },
+    {
+      "title": "Open Health and tap your own picture",
+      "detail": "The button is your profile picture or initials in the top right corner of the Summary tab. It is easy to miss because it looks like an account button rather than a menu, and everything below is in a plain list with no search."
+    },
+    {
+      "title": "Scroll to the very bottom for Export All Health Data",
+      "detail": "It is the last item on that screen, below Privacy, Units and the rest. Nothing above it hints that an export exists. Tap it, then confirm on the sheet that appears."
+    },
+    {
+      "title": "Wait while it builds, and do not leave the app",
+      "detail": "A spinner appears and the phone assembles the file. On a few years of watch data this can take several minutes, and backgrounding the Health app can abandon it with no message. Leave the screen on and wait."
+    },
+    {
+      "title": "Send it somewhere you can actually reach",
+      "detail": "The share sheet opens when it is done. Save to Files, or to iCloud Drive, rather than mailing it to yourself - it is routinely too large for an email attachment and the failure is silent. If you are moving it to a computer, Save to Files then copy it over by cable is the most reliable."
+    },
+    {
+      "title": "Check the size before you trust it",
+      "detail": "You should get export.zip. Open it and you should see export.xml, usually much larger than the zip. A file of a few kilobytes means the export produced almost nothing, which happens if Health has never had data written to it on this phone - start it again rather than assuming that is all there is."
+    }
+  ],
+  "faq": [
+    {
+      "q": "Why is Health not in my Apple data and privacy export?",
+      "a": "Because Apple cannot read it. Health is end-to-end encrypted in iCloud for every account, with no setting to change, so what Apple stores is a blob it has no key for. A data request can only return what the company can decrypt. This is the encryption doing its job rather than Apple withholding anything, and it is why the only route is the phone."
+    },
+    {
+      "q": "Can I get it from iCloud.com or from a Mac?",
+      "a": "No. Health data is not offered on iCloud.com and the Mac has no Health app. The iPhone is the only place the export exists."
+    },
+    {
+      "q": "Why is the file so enormous?",
+      "a": "Everything is written as one XML document with an element per reading. A watch records heart rate, steps, and often blood oxygen and temperature, all day every day, so a few years produces tens of millions of elements. The zip compresses it well, which is why the file inside is so much bigger than the file you downloaded."
+    },
+    {
+      "q": "What is export_cda.xml?",
+      "a": "A second file in the Clinical Document Architecture format, meant for sharing with health providers. It carries a subset of the same information and most tools ignore it in favour of export.xml."
+    },
+    {
+      "q": "Can Muletto open it?",
+      "a": "Not yet. The health page already exists and reads Samsung Health, and Apple Health is the next provider planned for it, but the parser is not written. The guide is here because getting the export off the phone is worth doing now - the file only covers what your phone still holds, so exporting later means exporting less."
+    }
+  ]
+}

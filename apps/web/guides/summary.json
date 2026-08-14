@@ -36,6 +36,15 @@
       ]
     },
     {
+      "slug": "apple-health",
+      "provider": "Apple Health",
+      "icon": "heart",
+      "difficulty": "easy",
+      "wait_time": "a few minutes on the phone, no waiting for anybody",
+      "typical_size": "20 MB to 2 GB",
+      "contents": []
+    },
+    {
       "slug": "google",
       "provider": "Google",
       "icon": "google",

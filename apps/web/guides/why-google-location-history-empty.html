@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Why is my Google location history empty? | Muletto</title>
+  <meta name="description" content="You asked Takeout for Location History, expecting years of it, and got an archive with essentially nothing in it - often just a short notice saying you have encrypted Timeline backups stored on Google servers." />
+  <link rel="canonical" href="https://muletto.app/guides/why-google-location-history-empty.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Why is my Google location history empty? | Muletto" />
+  <meta property="og:description" content="You asked Takeout for Location History, expecting years of it, and got an archive with essentially nothing in it - often just a short notice saying you have encrypted Timeline backups stored on Google servers." />
+  <meta property="og:url" content="https://muletto.app/guides/why-google-location-history-empty.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=dca5de16" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Why is my Google location history empty?","description":"You asked Takeout for Location History, expecting years of it, and got an archive with essentially nothing in it - often just a short notice saying you have encrypted Timeline backups stored on Google servers.","mainEntityOfPage":"https://muletto.app/guides/why-google-location-history-empty.html","author":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"},"publisher":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Why is my Google location history empty?","item":"https://muletto.app/guides/why-google-location-history-empty.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a><span>/</span>
+        <a href="../guides.html">Guides</a><span>/</span>
+        <span aria-current="page">Why is my Google location history empty?</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Why is my Google location history empty?</h1>
+        <p class="art-intro">You asked Takeout for Location History, expecting years of it, and got an archive with essentially nothing in it - often just a short notice saying you have encrypted Timeline backups stored on Google servers.</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Can you get it back?</h2>
+        <p>Partly, and only from your phone. The notice is accurate rather than a fault: your Timeline genuinely is not on Google&#39;s servers in a form anyone can export. Encrypted backups exist so a new phone can restore, and there is no route from them to a file you can read. What your phone still holds, you can still get.</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>What actually happened</h2>
+        <p>Google moved Timeline off its servers and onto the device. The migration began around December 2024 and the cloud Timeline was shut down on 9 June 2025. Takeout exports account-level data, and after that change your location history is no longer account-level data.</p>
+        <p>Older exports are different. If you have a Takeout from before the change it will contain Records.json, holding raw points, and a Semantic Location History folder with a file per month. Those are still readable and still worth keeping.</p>
+      </section>
+
+      <div class="note prob-gotcha">
+        <strong>What comes off the phone is not the old format</strong>
+        <p>The on-device export is a different schema rather than a new version of the old one. Coordinates arrive as text carrying a degree sign instead of the integer form the old exports used, and timestamps carry a local UTC offset, so a tool that discards the offset moves every event by hours. It is also worth knowing what else is in there: alongside the places you visited, the file carries raw signal records including the MAC addresses of wifi networks your phone saw. That is the most revealing thing in the export and almost nobody who requests it realises it is included.</p>
+      </div>
+
+      <section class="prob-fix">
+        <h2>How to fix it</h2>
+        <p>The export lives in your phone now, so it has to come off the phone. Reports differ on where the button is, and it appears to depend on your Maps version, so try both.</p>
+        <dl><dt>From the Maps app, either platform</dt><dd>Open Google Maps, tap your profile picture, then Settings, then Personal Content, and look for Export Timeline data. On iPhone the file goes through the share sheet, so choose Save to Files and pick somewhere you will find it again. It saves as location-history.json.</dd><dt>From Android system settings, if Maps does not offer it</dt><dd>Settings, then Location, then Location Services, then Timeline, then Export Timeline. The file lands in your Downloads folder.</dd><dt>If you are in the EU you may get a CSV</dt><dd>Reported rather than confirmed: some European accounts receive CSV instead of JSON. If yours does, it holds the same visits in a simpler shape.</dd></dl>
+      </section>
+
+      <section class="prob-ours">
+        <h2>How Muletto does it</h2>
+        <p>Muletto reads the older Records.json format and puts the points on a map alongside the rest of your export. The on-device format is not read yet - it is a different schema and it is being worked on rather than quietly half-supported.</p>
+        <p><a class="btn secondary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>
+
+      <section class="prob-prevent">
+        <h2>Stopping it happening again</h2>
+        <p>Export from the phone now rather than when you need it. Timeline on the device keeps a limited window, so waiting costs you the oldest part of it, and there is no copy on a server to fall back to any more.</p>
+      </section>
+
+      <p class="confirmed-line">The dates and the current Takeout behaviour are from Google&#39;s own documentation and community reports, checked on 10 August 2026. The old Records.json format is read here and was verified against a real export.</p>
+
+      <section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list"><li><a href="google.html">The Google guide</a></li><li><a href="why-google-photos-wrong-date.html">why google photos wrong date</a></li></ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Read the source
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../analytics.js?v=e2665599"></script>
+  <script src="../app.js?v=4082bbc7"></script>
+
+</body>
+</html>

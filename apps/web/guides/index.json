@@ -1,247 +1,252 @@
 {
- "updated": "2026-07-27",
- "note": "Directory of providers. `verified: false` means the steps have NOT yet been personally walked and confirmed. `contents` powers the 'what you will get' section on the home page; weights are rough relative volumes for the bars, not precise figures.",
- "providers": [
-  {
-   "slug": "apple",
-   "typical_size": "1 GB to 500 GB+",
-   "contents": [
+  "updated": "2026-07-27",
+  "note": "Directory of providers. `verified: false` means the steps have NOT yet been personally walked and confirmed. `contents` powers the 'what you will get' section on the home page; weights are rough relative volumes for the bars, not precise figures.",
+  "providers": [
     {
-     "label": "iCloud Photos and videos",
-     "weight": 100,
-     "note": "Full-resolution originals"
+      "slug": "apple",
+      "typical_size": "1 GB to 500 GB+",
+      "contents": [
+        {
+          "label": "iCloud Photos and videos",
+          "weight": 100,
+          "note": "Full-resolution originals"
+        },
+        {
+          "label": "iCloud Drive files",
+          "weight": 35,
+          "note": "Documents and folders"
+        },
+        {
+          "label": "Purchase and App Store history",
+          "weight": 12,
+          "note": "CSV records"
+        },
+        {
+          "label": "Account and device details",
+          "weight": 6,
+          "note": "Sign-ins, devices, subscriptions"
+        },
+        {
+          "label": "Mail, Calendar and Contacts",
+          "weight": 10,
+          "note": "If you use iCloud for them"
+        }
+      ]
     },
     {
-     "label": "iCloud Drive files",
-     "weight": 35,
-     "note": "Documents and folders"
+      "slug": "apple-health",
+      "typical_size": "20 MB to 2 GB",
+      "contents": []
     },
     {
-     "label": "Purchase and App Store history",
-     "weight": 12,
-     "note": "CSV records"
+      "slug": "google",
+      "typical_size": "2 GB to 1 TB+",
+      "contents": [
+        {
+          "label": "Google Photos",
+          "weight": 100,
+          "note": "With dates and places in sidecar files"
+        },
+        {
+          "label": "Gmail",
+          "weight": 45,
+          "note": "Full mailbox as MBOX"
+        },
+        {
+          "label": "Drive files",
+          "weight": 40,
+          "note": "Docs converted to Office formats"
+        },
+        {
+          "label": "YouTube history and uploads",
+          "weight": 25,
+          "note": "Watch history, comments, videos"
+        },
+        {
+          "label": "Search and browsing activity",
+          "weight": 15,
+          "note": "Years of activity records"
+        },
+        {
+          "label": "Location history",
+          "weight": 8,
+          "note": "Now exported from the phone instead"
+        }
+      ]
     },
     {
-     "label": "Account and device details",
-     "weight": 6,
-     "note": "Sign-ins, devices, subscriptions"
+      "slug": "snapchat",
+      "typical_size": "under 100 MB without Memories, tens of GB with",
+      "contents": [
+        {
+          "label": "Chat history",
+          "weight": 100,
+          "note": "Saved messages by conversation"
+        },
+        {
+          "label": "Snap history",
+          "weight": 70,
+          "note": "Sent and received, with timestamps"
+        },
+        {
+          "label": "Memories",
+          "weight": 55,
+          "note": "Listed as time-limited download links"
+        },
+        {
+          "label": "Friends and contacts",
+          "weight": 20,
+          "note": "Who you added and when"
+        },
+        {
+          "label": "Location history",
+          "weight": 25,
+          "note": "Recorded coordinates over time"
+        },
+        {
+          "label": "Account and login records",
+          "weight": 10,
+          "note": "Devices and sign-in history"
+        }
+      ]
     },
     {
-     "label": "Mail, Calendar and Contacts",
-     "weight": 10,
-     "note": "If you use iCloud for them"
+      "slug": "samsung",
+      "typical_size": "100 MB to 100 GB",
+      "contents": [
+        {
+          "label": "Samsung Cloud photos",
+          "weight": 100,
+          "note": "If you back up Gallery"
+        },
+        {
+          "label": "Samsung Health",
+          "weight": 30,
+          "note": "Steps, workouts, sleep"
+        },
+        {
+          "label": "Notes and reminders",
+          "weight": 12,
+          "note": "Samsung Notes content"
+        },
+        {
+          "label": "Account and device records",
+          "weight": 8,
+          "note": "Registered devices, services"
+        }
+      ]
+    },
+    {
+      "slug": "facebook",
+      "typical_size": "100 MB to 20 GB",
+      "contents": [
+        {
+          "label": "Posts, photos and videos",
+          "weight": 100,
+          "note": "Everything you shared"
+        },
+        {
+          "label": "Messenger conversations",
+          "weight": 80,
+          "note": "Full message history"
+        },
+        {
+          "label": "Friends and connections",
+          "weight": 20,
+          "note": "Added, removed, requests"
+        },
+        {
+          "label": "Ads and interests profile",
+          "weight": 30,
+          "note": "What advertisers know about you"
+        },
+        {
+          "label": "Login and security history",
+          "weight": 12,
+          "note": "Devices and sessions"
+        }
+      ]
+    },
+    {
+      "slug": "instagram",
+      "typical_size": "50 MB to 10 GB",
+      "contents": [
+        {
+          "label": "Posts, reels and stories",
+          "weight": 100,
+          "note": "Originals if you pick high quality"
+        },
+        {
+          "label": "Direct messages",
+          "weight": 60,
+          "note": "Full conversation history"
+        },
+        {
+          "label": "Followers and following",
+          "weight": 20,
+          "note": "Including past changes"
+        },
+        {
+          "label": "Likes, comments and saves",
+          "weight": 35,
+          "note": "Your activity record"
+        },
+        {
+          "label": "Ads and interests profile",
+          "weight": 25,
+          "note": "Inferred interests"
+        }
+      ]
+    },
+    {
+      "slug": "x-twitter",
+      "typical_size": "50 MB to 10 GB",
+      "contents": []
+    },
+    {
+      "slug": "tiktok",
+      "typical_size": "5 MB to 50 MB",
+      "contents": []
+    },
+    {
+      "slug": "amazon",
+      "typical_size": "5 MB to 20 GB",
+      "contents": []
+    },
+    {
+      "slug": "spotify",
+      "typical_size": "5 MB to 200 MB",
+      "contents": []
+    },
+    {
+      "slug": "discord",
+      "typical_size": "10 MB to 5 GB",
+      "contents": []
+    },
+    {
+      "slug": "reddit",
+      "typical_size": "1 MB to 100 MB",
+      "contents": []
+    },
+    {
+      "slug": "linkedin",
+      "typical_size": "1 MB to 50 MB",
+      "contents": []
+    },
+    {
+      "slug": "whatsapp",
+      "typical_size": "1 MB to many GB",
+      "contents": []
+    },
+    {
+      "slug": "google-fit-fitbit",
+      "typical_size": "50 MB to 5 GB",
+      "contents": []
+    },
+    {
+      "slug": "strava",
+      "typical_size": "100 MB to 20 GB",
+      "contents": []
     }
-   ]
-  },
-  {
-   "slug": "google",
-   "typical_size": "2 GB to 1 TB+",
-   "contents": [
-    {
-     "label": "Google Photos",
-     "weight": 100,
-     "note": "With dates and places in sidecar files"
-    },
-    {
-     "label": "Gmail",
-     "weight": 45,
-     "note": "Full mailbox as MBOX"
-    },
-    {
-     "label": "Drive files",
-     "weight": 40,
-     "note": "Docs converted to Office formats"
-    },
-    {
-     "label": "YouTube history and uploads",
-     "weight": 25,
-     "note": "Watch history, comments, videos"
-    },
-    {
-     "label": "Search and browsing activity",
-     "weight": 15,
-     "note": "Years of activity records"
-    },
-    {
-     "label": "Location history",
-     "weight": 8,
-     "note": "Now exported from the phone instead"
-    }
-   ]
-  },
-  {
-   "slug": "snapchat",
-   "typical_size": "under 100 MB without Memories, tens of GB with",
-   "contents": [
-    {
-     "label": "Chat history",
-     "weight": 100,
-     "note": "Saved messages by conversation"
-    },
-    {
-     "label": "Snap history",
-     "weight": 70,
-     "note": "Sent and received, with timestamps"
-    },
-    {
-     "label": "Memories",
-     "weight": 55,
-     "note": "Listed as time-limited download links"
-    },
-    {
-     "label": "Friends and contacts",
-     "weight": 20,
-     "note": "Who you added and when"
-    },
-    {
-     "label": "Location history",
-     "weight": 25,
-     "note": "Recorded coordinates over time"
-    },
-    {
-     "label": "Account and login records",
-     "weight": 10,
-     "note": "Devices and sign-in history"
-    }
-   ]
-  },
-  {
-   "slug": "samsung",
-   "typical_size": "100 MB to 100 GB",
-   "contents": [
-    {
-     "label": "Samsung Cloud photos",
-     "weight": 100,
-     "note": "If you back up Gallery"
-    },
-    {
-     "label": "Samsung Health",
-     "weight": 30,
-     "note": "Steps, workouts, sleep"
-    },
-    {
-     "label": "Notes and reminders",
-     "weight": 12,
-     "note": "Samsung Notes content"
-    },
-    {
-     "label": "Account and device records",
-     "weight": 8,
-     "note": "Registered devices, services"
-    }
-   ]
-  },
-  {
-   "slug": "facebook",
-   "typical_size": "100 MB to 20 GB",
-   "contents": [
-    {
-     "label": "Posts, photos and videos",
-     "weight": 100,
-     "note": "Everything you shared"
-    },
-    {
-     "label": "Messenger conversations",
-     "weight": 80,
-     "note": "Full message history"
-    },
-    {
-     "label": "Friends and connections",
-     "weight": 20,
-     "note": "Added, removed, requests"
-    },
-    {
-     "label": "Ads and interests profile",
-     "weight": 30,
-     "note": "What advertisers know about you"
-    },
-    {
-     "label": "Login and security history",
-     "weight": 12,
-     "note": "Devices and sessions"
-    }
-   ]
-  },
-  {
-   "slug": "instagram",
-   "typical_size": "50 MB to 10 GB",
-   "contents": [
-    {
-     "label": "Posts, reels and stories",
-     "weight": 100,
-     "note": "Originals if you pick high quality"
-    },
-    {
-     "label": "Direct messages",
-     "weight": 60,
-     "note": "Full conversation history"
-    },
-    {
-     "label": "Followers and following",
-     "weight": 20,
-     "note": "Including past changes"
-    },
-    {
-     "label": "Likes, comments and saves",
-     "weight": 35,
-     "note": "Your activity record"
-    },
-    {
-     "label": "Ads and interests profile",
-     "weight": 25,
-     "note": "Inferred interests"
-    }
-   ]
-  },
-  {
-   "slug": "x-twitter",
-   "typical_size": "50 MB to 10 GB",
-   "contents": []
-  },
-  {
-   "slug": "tiktok",
-   "typical_size": "5 MB to 50 MB",
-   "contents": []
-  },
-  {
-   "slug": "amazon",
-   "typical_size": "5 MB to 20 GB",
-   "contents": []
-  },
-  {
-   "slug": "spotify",
-   "typical_size": "5 MB to 200 MB",
-   "contents": []
-  },
-  {
-   "slug": "discord",
-   "typical_size": "10 MB to 5 GB",
-   "contents": []
-  },
-  {
-   "slug": "reddit",
-   "typical_size": "1 MB to 100 MB",
-   "contents": []
-  },
-  {
-   "slug": "linkedin",
-   "typical_size": "1 MB to 50 MB",
-   "contents": []
-  },
-  {
-   "slug": "whatsapp",
-   "typical_size": "1 MB to many GB",
-   "contents": []
-  },
-  {
-   "slug": "google-fit-fitbit",
-   "typical_size": "50 MB to 5 GB",
-   "contents": []
-  },
-  {
-   "slug": "strava",
-   "typical_size": "100 MB to 20 GB",
-   "contents": []
-  }
- ]
+  ]
 }

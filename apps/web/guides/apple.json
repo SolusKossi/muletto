@@ -51,6 +51,7 @@
     }
   ],
   "notes": [
+    "What this export does not contain, which catches nearly everybody: no Health data and no passwords, ever. Both are end-to-end encrypted in iCloud, so Apple holds them as blobs it has no key for and cannot include them whatever you tick. Health comes off the iPhone instead, in about a minute - there is a separate Apple Health guide here for it. Photographs are a different case: not secret, just large, so they are their own item to select rather than part of the account archives. And if you have Advanced Data Protection switched on, the encrypted set grows to around twenty-three categories, so your export gets smaller rather than larger.",
     "This export gives you full-resolution originals, not the compressed previews some sync tools leave behind.",
     "Download links expire after a few days, so save every part promptly.",
     "A large library arrives as several multi-gigabyte files. Keep them together in one folder and open them together.",

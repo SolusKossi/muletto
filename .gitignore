@@ -30,3 +30,8 @@ brand/_hostgrotesk.ttf
 # Belt and braces for the raw captures: the line above ignores their contents,
 # this ignores the directory itself if it is ever recreated somewhere else.
 **/screenshots-raw/
+
+# Local-only harness scratch: real export data is copied here so a served
+# page can fetch it. Never commit. tools/check-views.js and the browser
+# harness both use it, and both delete it again.
+apps/web/_local/

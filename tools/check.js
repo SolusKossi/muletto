@@ -36,7 +36,12 @@ const ok = (msg) => console.log("  ok   " + msg);
 
 function walk(dir, test, out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (e.name === "node_modules" || e.name === ".git" || e.name === "vendor") continue;
+    /* `_local` is the gitignored scratch the harnesses copy real export files
+       into so a served page can fetch them. Linting somebody's own data for
+       ASCII is meaningless and it fails the build on the first accented
+       character, which looks like a real error and is not. */
+    if (e.name === "node_modules" || e.name === ".git" || e.name === "vendor"
+        || e.name === "_local") continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walk(p, test, out);
     else if (test(p)) out.push(p);

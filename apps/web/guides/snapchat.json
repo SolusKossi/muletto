@@ -48,7 +48,7 @@
   },
   {
    "title": "Leave the date range off, and check the email address",
-   "detail": "Stage 2 asks whether you want a specific date range. It is off by default, which is what you want for a full backup - turning it on gives you a slice instead. Then check the address shown is one you can still get into, because that is where the download link goes. Press Submit.",
+   "detail": "Stage 2 asks whether you want a specific date range. It is off by default, which is what you want for a full backup - turning it on gives you a slice instead. Then look hard at the address shown, because that is where the download link goes and it is the address on the account rather than one you pick here. If it is an old mailbox you no longer read, change it in your account settings before you submit rather than after - the request uses whatever address is on the account when you make it. If you cannot change it, you can still collect the export from the My Data page without the email, which is covered below. Press Submit.",
    "image": "snapchat-2-date-range.png",
    "alt": "Stage 2 of the Snapchat export, with the date range toggle switched off and an email address field below it.",
    "caption": "Stage 2. The date range toggle is already off - leave it that way for a full backup."
@@ -69,7 +69,7 @@
   },
   {
    "title": "Download every part promptly",
-   "detail": "The download links expire, so save the files when the email lands rather than leaving it for the weekend. Large exports are split into several parts, and you need all of them."
+   "detail": "Do not wait for the email. Go back to accounts.snapchat.com, open My Data and choose See exports: every request you have made is listed there with its status and a Download button, so you can collect the files without the email ever being involved. This matters more than it sounds. The link is reported to last about seven days, and the address on the account is often one set up years ago that you no longer read - which is how people request an export three times running and miss it three times, each attempt expiring quietly in an inbox they never open. Check the page a few hours after requesting, then daily. Large exports are split into several parts and you need all of them."
   }
  ],
  "notes": [

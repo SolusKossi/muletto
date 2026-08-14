@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Takeout gave me a .tgz file and nothing will open it | Muletto</title>
+  <meta name="description" content="You chose .tgz on the Takeout screen, or it was already selected, and now Windows does nothing at all when you double-click the file. It is not broken and it is not a failed download." />
+  <link rel="canonical" href="https://muletto.app/guides/why-tgz-will-not-open.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Takeout gave me a .tgz file and nothing will open it | Muletto" />
+  <meta property="og:description" content="You chose .tgz on the Takeout screen, or it was already selected, and now Windows does nothing at all when you double-click the file. It is not broken and it is not a failed download." />
+  <meta property="og:url" content="https://muletto.app/guides/why-tgz-will-not-open.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=dca5de16" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Takeout gave me a .tgz file and nothing will open it","description":"You chose .tgz on the Takeout screen, or it was already selected, and now Windows does nothing at all when you double-click the file. It is not broken and it is not a failed download.","mainEntityOfPage":"https://muletto.app/guides/why-tgz-will-not-open.html","author":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"},"publisher":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Takeout gave me a .tgz file and nothing will open it","item":"https://muletto.app/guides/why-tgz-will-not-open.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a><span>/</span>
+        <a href="../guides.html">Guides</a><span>/</span>
+        <span aria-current="page">Takeout gave me a .tgz file and nothing will open it</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Takeout gave me a .tgz file and nothing will open it</h1>
+        <p class="art-intro">You chose .tgz on the Takeout screen, or it was already selected, and now Windows does nothing at all when you double-click the file. It is not broken and it is not a failed download.</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Can you get it back?</h2>
+        <p>Yes. It is an ordinary archive in a format Windows has no handler for. One free tool opens it.</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>What actually happened</h2>
+        <p>Google offers .tgz next to .zip on the same screen and the difference is not explained. A .tgz is two formats nested: a tar archive holding your files, compressed with gzip. Windows understands neither on its own, so a double-click does nothing.</p>
+        <p>This is also why extracting it feels like it takes two goes. Unpacking the gzip layer leaves you with a .tar, which then has to be unpacked in turn. Some tools do both in one step and some do not, which is where most of the confusion comes from.</p>
+      </section>
+
+      <div class="note prob-gotcha">
+        <strong>For a very large Takeout, ask for .zip instead</strong>
+        <p>This is not a preference. A zip carries an index at the end, so a tool can jump straight to any file inside without touching the rest. A gzip stream cannot be read out of order at all, so anything reading a .tgz has to work through it from the beginning. For a small export the difference does not matter. For a Takeout measured in tens of gigabytes it is the difference between opening it and unpacking all of it first, and you have to double your free disk space to unpack it.</p>
+      </div>
+
+      <section class="prob-fix">
+        <h2>How to fix it</h2>
+        <p>One tool, and on Windows it may take two passes.</p>
+        <dl><dt>7-Zip on Windows</dt><dd>Right-click the file, 7-Zip, Extract here. That gives you a .tar. Right-click that and extract it too, and your files are there. Free, and it is the reason most people install 7-Zip in the first place.</dd><dt>macOS and Linux</dt><dd>Double-click works on macOS. In a terminal on either, tar -xzf takeout.tgz does both layers in one pass.</dd></dl>
+      </section>
+
+      <section class="prob-ours">
+        <h2>How Muletto does it</h2>
+        <p>Muletto reads .tgz directly, without an unpacking step and without needing the free space a full extraction would want. Because a gzip stream cannot be read out of order, it is unpacked in one pass as it goes rather than being read lazily the way a zip is.</p>
+        <p><a class="btn secondary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>
+
+      <section class="prob-prevent">
+        <h2>Stopping it happening again</h2>
+        <p>On the Takeout screen, set the file type to .zip before you request. It is a dropdown next to the delivery method and it is easy to scroll past.</p>
+      </section>
+
+      <p class="confirmed-line">The .tgz reader was verified in the browser against a gzipped tar built to specification, checking every member size and reading a 3 MB member back byte for byte.</p>
+
+      <section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list"><li><a href="google.html">The Google guide</a></li><li><a href="why-google-photos-wrong-date.html">why google photos wrong date</a></li></ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Read the source
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../analytics.js?v=e2665599"></script>
+  <script src="../app.js?v=4082bbc7"></script>
+
+</body>
+</html>

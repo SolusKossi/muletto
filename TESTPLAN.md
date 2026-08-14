@@ -77,30 +77,34 @@ The layer everything else sits on. A failure here loses a whole export.
 | Reading only the head of a tar member | `V` | A tar member is stored, so its head is a slice. Without that the blob stream returns the whole file in one chunk and "read 96 KB for the EXIF date" silently becomes "read the entire photograph", once per photograph. Confirmed: `readHead(entry, 16)` returns exactly 16 bytes |
 | A `.tgz` larger than blob storage | `S` | Each member becomes its own blob rather than one blob of the whole archive, so the ceiling is total quota (5.5 GB measured here) not per-file. Above it the reader stops and says to ask for the `.zip` instead. That path has not been walked |
 | GNU long names in tar | `S` | Paths over 100 characters arrive as a type `L` member carrying the name for the next one. Implemented, never seen in a real export |
-| Contacts view (`.vcf`) | `S` | vCard 3.0 read in the browser: FN, the `N` fallback with a prefix ("Dr. Ola Nordmann"), folded continuation lines, and an escaped comma coming back as "Storgata 1, 3B". Not yet run over the 112 real Apple cards |
-| Calendar view (`.ics`) | `S` | Confirmed in the browser: a timed event, an all-day event with `VALUE=DATE`, an `RRULE` marked as repeating, and a `VTODO` shown as a reminder. UTC converted to local correctly (09:00Z drawn as 10:00 CET). Not yet run over the real Apple `.ics` |
-| Notes view | `S` | Five notes read, first line used as the title, 50 words counted - and a `README.txt` outside a notes folder correctly **not** picked up. Not yet run over the 809 real Apple notes |
-| Audio view | `S` | Two recordings listed with sizes; pressing Play builds a `blob:` URL from the archive and swaps in an `<audio>` element. Confirmed the src is a blob and never `http`, so nothing is fetched. Not yet run over the 319 real Siri recordings |
+| Contacts view (`.vcf`) | `V` | vCard 3.0 read in the browser: FN, the `N` fallback with a prefix ("Dr. Ola Nordmann"), folded continuation lines, and an escaped comma coming back as "Storgata 1, 3B". **Now also run over the real Apple cards** by `tools/check-views.js`, reaching them inside the nested archives: 111 files, 111 cards parsed, **every one with a name**, 46% with an organisation, 9 with a note. No card came back blank, which is the failure that would show as an empty row. The real Google export passes too, and is the harder case - 4 files holding **260 cards between them**, so the multi-card-per-file path is exercised rather than assumed, and all 260 have a name |
+| Calendar view (`.ics`) | `V` | Confirmed in the browser: a timed event, an all-day event with `VALUE=DATE`, an `RRULE` marked as repeating, and a `VTODO` shown as a reminder. UTC converted to local correctly (09:00Z drawn as 10:00 CET). **Now also run over the real Apple `.ics`**: 63 entries, all 63 with a summary, 56 with a usable date, 12 all-day, 3 repeating. **7 parsed with no date at all** and cannot be placed on a timeline - almost certainly `VTODO` reminders with no `DUE`, which is legitimate, but it has not been confirmed and the number is here so nobody assumes it is nothing |
+| Notes view | `V` | Five notes read in the browser, first line used as the title, 50 words counted. **Now run over the real Apple notes**: 809 `.txt` files, all 809 matched by `NOTE_FILE`, 807 with content, 2 empty and correctly dropped, none needing the filename fallback, 35,197 words in total. The negative case is proved on the real Google export in the same pass - 238 `.txt` files there and **none** matched, which is right: 232 are `Takeout/Drive` documents and a text file in Drive is a document, not a note. The pattern is the whole of this view and it behaves on both sides |
+| Audio view | `S` | Two recordings listed with sizes; pressing Play builds a `blob:` URL from the archive and swaps in an `<audio>` element. Confirmed the src is a blob and never `http`, so nothing is fetched. **Proved on the real export from both ends.** All 319 Siri recordings were reached inside the 1.34 GB nested archive and every one carries a valid MPEG-4 `ftyp` header, none malformed. Playback confirmed by the maintainer against the real recordings around late July 2026 - heard playing, from the archive, in the browser. That is a person listening rather than a count, so it proves the path works and not that all 319 individually do; the header check is what covers the rest |
 | A topic that has to read the archive | `S` | Contacts, Calendar, Notes and Audio decompress before they can draw, so the panel says it is reading first. Blobs are made only when Play is pressed - rendering 319 audio players would decode the lot |
+| **`ACTIVITY_FILE` matches the real pages** | `V` | The real Takeout holds **11** My Activity pages and the pattern matches every one. The file is called `My Activity.html` **with a space**, which the optional space in the pattern covers. Worth recording because a harness written against `MyActivity.html` matched none of them and read as a parser failure |
+| **My Activity, the real pages through the real parser** | `V` | All 11 pages of the real Takeout parsed in the browser by `tools/pull-activity.js` plus its harness: **49,782 rows**, 99.6% with a usable date, 97.5% keeping their verb, 99.3% with a link, and not one file threw. The English-only date patterns were a worry on a Norwegian account and turned out to be unfounded - Google writes the dates in English regardless |
+| **What the 20 MB cap was costing** | `V` | 46.1 MB of YouTube history parses in **953 ms** for **16 MB of heap**, against a 4,096 MB limit, giving 48,400 rows. The cap was buying under a second and sixteen megabytes at the price of 97% of the reader's activity history. Raised to 128 MB |
 | Search and watch history (My Activity HTML) | `S` | Google keeps it as Material Design Lite markup, one file per product - eleven in a real Takeout. Parsed with `DOMParser`, not regular expressions, because the values are somebody search terms and the document must stay inert. Confirmed: verbs kept, links kept, product tagged, `5 Jul 2026, 14:03:11` parsed |
 | The 48 MB YouTube history file | `S` | Skipped above 20 MB and the view says how many products it skipped. Not walked on the real file |
-| Mail view (`.mbox`) | `S` | Streamed through `MMbox.index`, headers only. Confirmed: 3 messages, 2 senders ranked by count, newest first. Not yet run on the real 776 MB mbox |
+| Mail view (`.mbox`) | `V` | **Run on the real 777 MB mailbox** by `tools/check-views.js`, streamed out of the zip exactly as the app does it. 11,081 messages indexed in 6.7 s, every body dropped as asked. A date parsed on 100%, a sender on 100%, a subject on 99.9%, and `summarise` gave 434 senders and 11,081 timeline events. Peak heap 250 MB on one run and 474 MB on another against a 777 MB file - it varies with when the collector runs, so treat it as an order of magnitude rather than a figure, but the file is plainly never held. That is the claim the streaming design exists to make |
 | Logins and devices | `S` | Recognised by column shape, because five providers describe the same thing five ways. Confirmed: 3 records collapsing to 2 distinct sign-ins, device, city, IP and time |
 | `.xlsx` spreadsheets | `S` | A zip of XML. Shared strings resolved (a sheet read without the pool is a page of integers), `&amp;` decoded, and an **absent cell placed by its `r=` reference** rather than shifting the row |
 | `.spd` S Note containers | `V` | **Confirmed against the real Samsung export.** `.spd` is a zip - magic bytes 50 4b 03 04 - so the 21 notes open and **21 pictures inside them** are recovered. 36 entries become 184. The page format is proprietary and stays unread, which the file list shows |
 | Nested archives (a zip inside a zip) | `V` | Seven of the eighteen Apple archives hold zips. Run over that export, expansion opens **all ten** and takes the listing from **1020 entries to 1414** - the full 394 that were unreachable, including the 319 `.m4a` Siri recordings. Nothing is skipped. A nested CSV was read end to end through its blob |
-| A nested archive over a gigabyte | `V` | `Apple Features Using iCloud.zip` is **1.34 GB** and now opens. It is streamed into a Blob rather than inflated into an array, so the browser pages it to disk: measured in Chrome, **1.5 GB costs 12 MB of JS heap**, and slices out of it still read. The old 512 MB refusal was guarding the wrong thing |
+| A nested archive over a gigabyte | `V` | `Apple Features Using iCloud.zip` is **1.34 GB** and now opens. It is streamed into a Blob rather than inflated into an array, so the browser pages it to disk: measured in Brave, **1.5 GB costs 12 MB of JS heap**, and slices out of it still read. The old 512 MB refusal was guarding the wrong thing |
 | A nested archive over 1500 MB | `X` | Unlike an exported file, a nested archive cannot stay a stream - reading its directory means slicing at arbitrary offsets, so it has to be a Blob, and a single Blob fails at 2048 MB. Capped at the 1500 MB that was measured to work. Apple's 1.34 GB clears it; a larger one would not, and is reported as too big rather than as damaged |
 | Nested archive that is deflated, not stored | `V` | The real Apple shape is method 8. Confirmed in the browser with a hand-built deflated nested zip holding a 40 MB payload: expands, progress fires, heap does not grow (115 MB -> 110 MB), and both a nested CSV and the head of the nested 40 MB file read back |
 | A nested archive still refused | `V` | Three reasons remain and each is confirmed in the browser: an **encrypted** nested archive over 256 MB (decryption needs a contiguous buffer and cannot stream), the **archive-count budget**, and **unreadable or damaged**. Each becomes a note on the library naming the file, its size and what to do |
 | A nested archive left unopened, unpacked by hand | `X` | The note tells the user to unzip that one file and drop it in on its own. That instruction has not been walked. Now a rare path rather than the common one |
 | Unpacking progress on a slow archive | `S` | The curtain names the archive being unpacked and its size. Confirmed only that the callback fires with the right name; the wording has not been seen on screen during a real import |
 | `.pages`, `.numbers`, `.spd` containers | `X` | Zip containers too, but of XML rather than user files, so expansion would list parts rather than documents. Deliberately not expanded |
-| Folder picked with `showDirectoryPicker` | `V` | Chrome only |
+| Folder picked with `showDirectoryPicker` | `V` | Chromium only, and run in Brave. Firefox and Safari do not have it at all, which is what forces the untested fallback |
 | Works with the server stopped | `V` | Registered, 38 files cached, then the dev server was killed and the page reloaded: HTML, all eight modules, styles, fonts and the full sample library all came back |
 | Offline on Safari and Firefox | `-` | Service workers behave differently on both, and neither has ever run this |
 | Folder as a streamed-archive fallback | `S` | **The path every Safari and Firefox visitor takes.** Never run on either browser |
 | Multi-part archives that split a pair across parts | `-` | Google can put a photo in part 1 and its sidecar in part 4 |
+| **Are the parts separate archives or one spanned set?** | `V` | Settled against the real Apple export, because the answer changes the advice completely: **18 archives, every one with its own working central directory, opening independently, 1,020 entries between them, and no `.z01`-style spanned parts at all.** So they are separate complete zips and the usual advice to merge them first is wrong for this case - it is right only for a genuine spanned archive, and it costs tens of gigabytes of scratch space to follow needlessly |
 
 ## 2. Cross-cutting behaviour
 
@@ -112,7 +116,7 @@ The layer everything else sits on. A failure here loses a whole export.
 | Older download superseded by a newer one | `V` | |
 | Content dedup across parts | `V` | Meta repeats JSON across parts |
 | Near-duplicate photo detection (dHash) | `V` | Gated on luminance after solid black and solid white collided |
-| Writing the library back out to folders | `V` | Chrome. A large entry is piped straight to the file handle, which is itself a `WritableStream` |
+| Writing the library back out to folders | `V` | Brave. A large entry is piped straight to the file handle, which is itself a `WritableStream` |
 | Writing out as a single archive | `S` | |
 | Dates written back into JPEG EXIF | `V` | |
 | Dates written back into HEIC | `X` | Not supported; stated in the app |
@@ -375,14 +379,18 @@ Not supported at all yet, and the format is unusual enough to deserve its own ro
 | Sidecar `.supplemental-metadata.json` | `V` | Appeared around October 2024 |
 | Sidecar suffix truncated (`.supplemental-me.json`, `.suppl.json`) | `V` | Truncated at an arbitrary point when the whole name runs long. Match by prefix, never a fixed suffix |
 | Sidecar with the duplicate counter moved (`IMG_1.JPG(1).json`) | `V` | |
+| **How often the date is actually in the file** | `V` | Counted with `tools/count-exif.js` over the real Takeout, 2,344 photographs: **49.1% carry `DateTimeOriginal`, 50.9% do not.** The widespread claim that Takeout strips it from everything is wrong. Recoverability: 48.9% have it in both places, 0.1% in the file only, **50.2% in the sidecar only**, and 0.8% nowhere at all |
+| Sidecar and embedded date agreeing | `V` | 1,146 photographs carried both. They agreed within a day in every one, no exceptions |
+| Which sidecar names occur in practice | `V` | All 2,510 sidecars in this export are `.supplemental-metadata.json`. No plain `.json`, no basename form, no moved counter, **no truncation** - so the truncated forms remain sourced rather than seen, and the prefix matcher is still right to expect them |
 | Basename sidecar (`IMG_1234.json`) | `V` | |
 | Photo with no sidecar at all | `V` | `-edited` files and some videos |
 | `photoTakenTime.timestamp` as epoch seconds in a string | `V` | |
-| `geoData` all zeros meaning absent, not the Atlantic | `V` | |
+| `geoData` all zeros meaning absent, not the Atlantic | `V` | And it is not a rare edge case: **1,755 of 2,510 sidecars in the real export carry it**, 70%. A reader that trusts those coordinates draws seven hundred photographs in the Gulf of Guinea |
+| **How often the location is anywhere at all** | `V` | Counted over the same 2,344 photographs: 24.2% have GPS in both the file and the sidecar, 0.1% in the file only, **0% in the sidecar only**, and 75.6% have none anywhere. The sidecar never once supplied a location the file did not already carry - the opposite of the date, where it was the only copy for half the library |
 | Live Photo pairs (HEIC + MP4) | `-` | |
 | Album `metadata.json` | `-` | |
 | Shared album comments, memory titles | `-` | |
-| **Location History from Takeout** | `X` | **Now returns a near-empty archive with a notice.** Google moved Timeline on-device during 2024-2025. Our guide is wrong and the app should explain this rather than showing an empty map |
+| **Location History from Takeout** | `V` | Google moved Timeline on-device during 2024-2025 and shut the server-side one down in June 2025, so a Takeout has nothing to include. **Measured in the real export: `Takeout/Timeline/Settings.json`, 1,099 bytes, and no records at all.** The parser now notices a Timeline folder that produced no places and says why, instead of leaving an empty map with no explanation. Folder detection checked against seven paths including two decoys - `Takeout/News/followed_locations.txt` and Maps saved places - and the old `Records.json` route still matches. The guide FAQ was already right and now covers the iPhone route too |
 | Legacy `Records.json` (`latitudeE7`, `timestampMs`) | `V` | Only old exports have it |
 | Legacy `Semantic Location History/<year>/<year>_<MONTH>.json` | `-` | Month names are uppercase English regardless of locale |
 | On-device `Timeline.json` | `X` | **Completely different schema.** `semanticSegments`, `rawSignals`, coordinates as strings with a degree sign, timestamps carrying a local offset. This is where all new location data lives |
@@ -396,7 +404,8 @@ Not supported at all yet, and the format is unusual enough to deserve its own ro
 | YouTube playlists, subscriptions, comments | `-` | Two-table CSVs with a blank line between sections - the same shape as Samsung's |
 | My Activity per product | `-` | Same HTML-or-JSON toggle. Twenty-odd product folders |
 | Maps saved places, reviews | `-` | |
-| Fit daily metrics, all-data JSON, TCX | `-` | Nanosecond epochs. Fit is being wound down |
+| Fit daily metrics | `S` | **Written from documentation, never run on a real export** - the Takeout here has no `Fit/` folder at all, so there was nothing to check it against. Column matching, the wide-row split and the average/max/min collapse were exercised against the documented column names through a Node harness: 9 documented columns produce 6 distinct panels with no duplicates, and Heart Points and latitude correctly stay tables. That tests the logic, not the format. First real Fit export settles whether the column names are right |
+| Fit all-data JSON, TCX per session | `-` | Nanosecond epochs. Not read |
 | Keep notes | `-` | One JSON+HTML pair per note; microsecond timestamps |
 | Tasks | `-` | |
 | Play Store (nine separate JSON files) | `-` | Each with a different top-level shape |
@@ -408,7 +417,7 @@ Not supported at all yet, and the format is unusual enough to deserve its own ro
 | Blogger Atom XML | `-` | |
 | Access Log Activity | `-` | Filename long enough to break Windows paths |
 | Android Device Configuration HTML | `-` | |
-| `.tgz` instead of `.zip` | `X` | |
+| `.tgz` instead of `.zip` | `V` | Stale `X` left over from before it was built. See section 1, which verifies it in detail |
 | A photo and its sidecar landing in different parts | `-` | |
 
 ## 5d. TikTok
@@ -473,10 +482,10 @@ one household reported 90,000 clips over three and a half years.
 
 | Service | State | Notes |
 |---|---|---|
-| Facebook posts, photos, comments | `V` | |
-| Facebook multi-part with repeated JSON | `V` | Content dedup handles it |
-| Instagram posts, stories, reels | `V` | |
-| Instagram messages | `V` | |
+| Facebook posts, photos, comments | `S` | **Was marked `V` on no evidence.** The `facebook` folder on this machine is empty and always has been, as the inventory further down this document says. `PROVIDERS.md` had it right: the Meta parser has never been run on a real Facebook export |
+| Facebook multi-part with repeated JSON | `S` | Content dedup handles it, on sample data |
+| Instagram posts, stories, reels | `V` | Real, but a 108 KB partial export of 42 entries. True for what was in it, which was not much |
+| Instagram messages | `V` | Same caveat |
 | **Meta mojibake, accented text** | `S` | Repaired. Twelve guard cases pass in the browser, including the negatives |
 | **Meta mojibake, emoji** | `S` | Was broken: the old repair matched only a C2 or C3 lead byte and an emoji leads with F0, so every one stayed mangled with three of its four bytes invisible |
 | Repair left off text that was never broken | `S` | Three guards: nothing above U+00FF, something above U+007F, and the bytes must decode as UTF-8 with the fatal flag set |
@@ -485,12 +494,12 @@ one household reported 90,000 clips over three and a half years.
 | Meta fixing this unevenly | `-` | A recent Facebook export was reportedly clean while Instagram was not, so the test has to be per string rather than per service |
 | Facebook / Instagram HTML instead of JSON | `-` | The user chooses at request time |
 | WhatsApp | `-` | |
-| Snapchat memories, chat, location | `V` | |
-| Snapchat `json/` and `html/` duplication | `V` | |
+| Snapchat memories, chat, location | `S` | **Was marked `V` on no evidence.** No Snapchat archive has ever existed on this machine - it is not in the inventory below. The pairing and merge were measured against the sample export, and the naming convention is from Snapchat's documentation rather than from a file Snapchat produced |
+| Snapchat `json/` and `html/` duplication | `S` | Same |
 | TikTok | `-` | |
 | X / Twitter | `-` | |
 | Discord | `-` | |
-| Reddit | `-` | |
+| Reddit | `S` | Parser written and run against `apps/web/samples/reddit-export.zip`. No real export requested yet |
 | Spotify standard | `-` | |
 | Spotify extended streaming history | `-` | A separate, slower request with different filenames |
 | LinkedIn | `-` | |
@@ -509,13 +518,13 @@ The most dangerous table in this document.
 
 | Browser | State | Notes |
 |---|---|---|
-| Chrome desktop | `V` | Everything has only ever been run here |
+| **Brave desktop** | `V` | **Everything has only ever been run here.** This table said Chrome for months and it was wrong - the maintainer's browser is Brave. Worth more than the Chrome row it replaces, not less: Shields were on throughout, so the one engine that has run this code ran it with content blocking active |
+| Chrome desktop | `-` | Same Chromium engine as Brave and without Shields, so the lowest risk in this table by a distance. Still, never actually run |
 | Edge desktop | `-` | Same engine; low risk |
 | **Firefox** | `-` | No `showDirectoryPicker`, so it takes the streamed fallback that has never been run |
 | **Safari desktop** | `-` | Same, plus its own file handling |
 | Safari iOS | `-` | Upload is deliberately disabled on handhelds |
 | Chrome Android | `-` | Same |
-| Brave | `-` | Shields may block things. A privacy audience will use it |
 
 Hacker News - the likeliest launch venue - skews heavily to Firefox and Safari.
 Launching before these are `V` means launching into the two browsers that have

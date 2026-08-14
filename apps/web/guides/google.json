@@ -86,7 +86,7 @@
   },
   {
    "q": "Why is my Google Takeout Location History empty?",
-   "a": "Google moved Timeline onto the phone during 2024 and 2025. A Takeout now returns little more than a notice about encrypted server-side backups. The real data comes from an on-device export instead: on Android, Settings, then Location, Location services, Timeline, Export. That file has a completely different structure from the old Records.json."
+   "a": "Google moved Timeline onto the phone during 2024 and 2025 and shut the server-side one down in June 2025, so a Takeout has nothing left to include. In a recent export the Timeline folder holds a settings file of about a kilobyte and no history at all. The data is still on your phone. Open the Google Maps app, tap your profile picture, then Settings, then Personal Content, and look for Export Timeline data - that route works on both Android and iPhone, and on iPhone the file saves through the share sheet as location-history.json. Some Android versions put the same thing under Settings, then Location, then Location services, then Timeline. What comes off the phone is a different format from the old Records.json rather than a newer version of it. There is a separate guide on this page called Why is my Google location history empty, which goes through it in full."
   },
   {
    "q": "What are the supplemental-metadata.json files in my Takeout?",

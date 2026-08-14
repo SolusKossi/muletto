@@ -118,6 +118,20 @@ const MCatalog = (function () {
   const HEALTH = [
     { key: "steps", name: "Steps", match: /step[ _]?count|pedometer|step_daily/i,
       needs: null, holds: "Daily step counts." },
+    /* Three that Samsung never produced and Google Fit does, so they had no
+       matcher until Fit was read. Ordered before the looser kinds below for
+       the usual reason: the first match wins, and "Calories (kcal)" would
+       otherwise be caught by something vaguer. */
+    { key: "calories", name: "Calories", match: /calorie|energy (burned|expended)/i,
+      needs: null, holds: "Energy burned, per day." },
+    { key: "distance", name: "Distance", match: /^distance|distance \(m\)|distance travelled/i,
+      needs: null, holds: "How far you moved." },
+    /* Heart Points is deliberately not matched here. It is Google's own
+       weighted score rather than a count of minutes, and matching it would
+       give a second panel identical in title to Move Minutes and different in
+       meaning. It stays a table. */
+    { key: "active", name: "Active minutes", match: /move minutes|active minutes/i,
+      needs: null, holds: "Time spent moving enough to count." },
     { key: "heart", name: "Heart rate", match: /heart[ _]?rate/i,
       needs: "A watch, or an older Galaxy with a sensor on the back.",
       holds: "Every reading taken." },

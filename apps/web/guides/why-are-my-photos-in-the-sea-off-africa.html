@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Why are my photos on a map in the sea off Africa? | Muletto</title>
+  <meta name="description" content="You imported a Google Takeout into a photo library and a large pile of your pictures has landed at one point in the Atlantic, a few hundred miles south of Ghana. They are not spread around badly. They are all stacked on the same spot in open water." />
+  <link rel="canonical" href="https://muletto.app/guides/why-are-my-photos-in-the-sea-off-africa.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Why are my photos on a map in the sea off Africa? | Muletto" />
+  <meta property="og:description" content="You imported a Google Takeout into a photo library and a large pile of your pictures has landed at one point in the Atlantic, a few hundred miles south of Ghana. They are not spread around badly. They are all stacked on the same spot in open water." />
+  <meta property="og:url" content="https://muletto.app/guides/why-are-my-photos-in-the-sea-off-africa.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=dca5de16" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Why are my photos on a map in the sea off Africa?","description":"You imported a Google Takeout into a photo library and a large pile of your pictures has landed at one point in the Atlantic, a few hundred miles south of Ghana. They are not spread around badly. They are all stacked on the same spot in open water.","mainEntityOfPage":"https://muletto.app/guides/why-are-my-photos-in-the-sea-off-africa.html","author":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"},"publisher":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Why are my photos on a map in the sea off Africa?","item":"https://muletto.app/guides/why-are-my-photos-in-the-sea-off-africa.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a><span>/</span>
+        <a href="../guides.html">Guides</a><span>/</span>
+        <span aria-current="page">Why are my photos on a map in the sea off Africa?</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Why are my photos on a map in the sea off Africa?</h1>
+        <p class="art-intro">You imported a Google Takeout into a photo library and a large pile of your pictures has landed at one point in the Atlantic, a few hundred miles south of Ghana. They are not spread around badly. They are all stacked on the same spot in open water.</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Can you get it back?</h2>
+        <p>There is nothing to recover, and that is the good news rather than the bad. Those photographs never had a location. They have not been given the wrong one by mistake, and no repair will find the right one, because none was ever recorded. What you can fix is them being drawn on the map at all.</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>What actually happened</h2>
+        <p>Latitude 0, longitude 0 is a real point on the Earth. It is where the equator crosses the prime meridian, in the Gulf of Guinea, and there is nothing there but sea. Sailors call it Null Island as a joke, because so much broken software ends up pointing at it.</p>
+        <p>Google writes a location for every photograph in the JSON file beside it, including the ones it has no location for. When it has none, it does not leave the field out - it fills it in with zeroes. A tool that reads the number and plots it, without asking whether zero means the Gulf of Guinea or means nothing, sends every one of them to the same patch of ocean.</p>
+        <p>It is common because the zeroes are common. In one real export, around seven of every ten sidecar files carried a location of exactly zero.</p>
+      </section>
+
+      <div class="note prob-gotcha">
+        <strong>The sidecar will not give you a location the photo has not already got</strong>
+        <p>It is worth knowing this before you go looking for a fix, because it saves a lot of effort. Counted across the same export: about a quarter of the photographs carried real coordinates, and every one of those had them inside the picture already. The number of photographs where the sidecar supplied a location the file did not have was zero. Not a handful - none. So for the three quarters with nothing, Google is not holding a location back and no tool can extract one. Those are screenshots, saved pictures, and anything that arrived through a messaging app, which strips location on the way. Dates are the opposite case, and it is easy to assume they behave the same way: for about half a library the sidecar is the only copy of the date in existence. Worth keeping the JSON files for that reason, just not for this one.</p>
+      </div>
+
+      <section class="prob-fix">
+        <h2>How to fix it</h2>
+        <p>Two approaches, depending on whether the pictures are already in your library.</p>
+        <dl><dt>Strip the zeroes before you import</dt><dd>If the coordinates were written into the files by an earlier repair pass, exiftool will take them back out where they are zero and leave every real location alone: exiftool -r -if &quot;$GPSLatitude eq &#39;0&#39; and $GPSLongitude eq &#39;0&#39;&quot; -gps:all= -overwrite_original . Run it on a copy first. The -if test is what keeps it from wiping the quarter of your library that has genuine coordinates.</dd><dt>If they are already imported</dt><dd>Most photo libraries let you select everything at a single map location and clear it. In Immich, PhotoPrism and Apple Photos you can search or filter by place, select the whole Null Island cluster, and remove the location from the selection. That is usually faster than reimporting.</dd><dt>Check before a large import</dt><dd>Import a few hundred photographs first and look at the map. A wrong location that arrives on twenty thousand files is a great deal more tedious to undo than one you catch on two hundred.</dd></dl>
+      </section>
+
+      <section class="prob-ours">
+        <h2>How Muletto does it</h2>
+        <p>Muletto treats a location of exactly zero as absent, because that is what it means. Those photographs get no coordinates written into them and do not appear on the map, while the ones with real coordinates do. Nothing has to be configured for it and there is nothing to undo afterwards.</p>
+        <p><a class="btn secondary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>
+
+      <section class="prob-prevent">
+        <h2>Stopping it happening again</h2>
+        <p>This is a property of the export rather than of anything you did, so there is no setting to change on Google&#39;s side. The one thing that helps is checking a sample on a map before committing a whole library to a new home.</p>
+      </section>
+
+      <p class="confirmed-line">Measured against one real Takeout of more than two thousand photographs. Around seven in ten sidecars carried a location of exactly zero, about a quarter of the photographs had genuine coordinates, and in no case did a sidecar supply a location that was not already in the file. That is one export rather than a survey, so treat the proportions as an indication.</p>
+
+      <section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list"><li><a href="google.html">The Google guide</a></li><li><a href="why-google-photos-wrong-date.html">why google photos wrong date</a></li><li><a href="why-google-location-history-empty.html">why google location history empty</a></li></ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Read the source
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../analytics.js?v=e2665599"></script>
+  <script src="../app.js?v=4082bbc7"></script>
+
+</body>
+</html>

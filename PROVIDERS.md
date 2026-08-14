@@ -54,6 +54,23 @@ its own blob - gzip is not seekable, so unlike a zip it cannot be read lazily.
 A `.zip` is still the better choice for a very large Takeout, because it is
 read without unpacking anything.
 
+**Google Fit is read, and has never met a real export.** Worth stating first
+because everything else in this section was measured and this was not. The
+Takeout inspected here contains no `Fit/` folder at all, so the parser was
+written from Google's documentation and from what several published Takeout
+readers agree the columns are called, and nothing has confirmed any of it.
+
+What it does, if the format is what the documentation says: reads
+`Fit/Daily activity metrics/`, splits each wide row into one series per
+measurement, and hands them to the Health view - so steps, calories, distance,
+active minutes, heart rate and weight each get their own panel rather than
+being folded into whichever one matched first. Average, maximum and minimum
+heart rate collapse to the average, because three panels with the same title
+is worse than one. `Fit/Activities/` holds a TCX per session and is not read.
+
+Treat the whole of it as a best guess until somebody opens a Takeout with Fit
+data in it. `TESTPLAN.md` marks it `S`.
+
 **Known gaps, in the order they hurt:**
 
 - **Mail is headers only.** Who, what and when - no bodies, no attachments, no

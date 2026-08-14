@@ -1,0 +1,255 @@
+{
+  "_comment": "Problem pages. A symptom, its real cause, and the fix - including the fix that does not involve Muletto, which is the section that makes the page worth linking to. Written from GUIDES-RESEARCH.md; anything not yet settled there is not a page here yet.",
+  "problems": [
+    {
+      "slug": "why-google-photos-wrong-date",
+      "title": "Why do my Google Photos have the wrong date?",
+      "aka": [
+        "google takeout wrong date",
+        "takeout photos all dated today",
+        "google photos export lost the date"
+      ],
+      "symptom": "You downloaded years of photographs from Google Takeout, and every one of them says it was taken on the day you downloaded it. Ten years of pictures land in your photo app as a single enormous day.",
+      "recoverable": "Almost certainly. Counted across one real Takeout of more than two thousand photographs: about half still carry their capture date inside the file, and for the other half it sits in a small JSON file beside the picture. Fewer than one in a hundred had no date anywhere at all. So it is nearly always already in the folder you downloaded - but for around half the library that JSON file is the only copy that exists, which makes deleting them the one mistake here you cannot undo.",
+      "cause": [
+        "Two different things go wrong here and they get run together. The first happens to everybody: the file that lands on your disk carries a modification time of the moment Google packed it, and most photo software sorts by exactly that. So the pictures arrive as one enormous day stamped with the date you pressed download, whatever else is true about them.",
+        "The second is the one worth measuring. Takeout is widely said to strip the capture date out of every photograph. Counted across more than two thousand pictures in a real export, about half still carried it and about half did not. For that half, the JSON file beside the picture holds the only copy of the date that exists anywhere, and once it is gone no tool can work the date out again."
+      ],
+      "gotcha_title": "The half that are fine are what make this so confusing",
+      "gotcha": "Because the split is roughly even, two people can look at the same kind of export and come away certain of opposite things. Whoever checks a photograph from the half that kept its date concludes Takeout is fine and the problem is their photo app. Whoever checks one from the other half concludes Takeout strips everything. Both are half right, which is why the advice online contradicts itself. The practical consequence is that a tool assuming the date is always in the file writes nothing for half your library and reports success. Where a photograph carried a date in both places the two agreed every single time, across more than a thousand of them, so the sidecar can be trusted for the half that need it.",
+      "manual_intro": "You do not need us for this. Two routes, both free.",
+      "manual": [
+        {
+          "title": "exiftool, if you are comfortable in a terminal",
+          "detail": "Check what your sidecars are actually called before you run anything. In the export measured here every single sidecar was named IMG_1234.jpg.supplemental-metadata.json, and the widely copied one-liner that ends .json matches none of those - it runs, reports no errors, and writes nothing. Matching the name that is really there: exiftool -r -d %s -tagsfromfile \"%d%f.%e.supplemental-metadata.json\" \"-DateTimeOriginal<PhotoTakenTimeTimestamp\" -overwrite_original -ext jpg . Google is also reported to cut that long suffix off partway when the whole file name runs long, giving names like .supplemental-me.json. A fixed pattern skips every one of those too, and exiftool will not tell you how many it skipped."
+        },
+        {
+          "title": "Google Photos Takeout Helper, if you would rather not",
+          "detail": "An open-source command line tool built for this exact job, and it handles the naming variants. If all you want is your Google photographs dated correctly and written into folders, it does that well and it is the right answer for a one-off."
+        }
+      ],
+      "muletto": "Muletto matches sidecars by prefix rather than by a fixed ending, so a truncated name is found as readily as the full one, and it reads the date out of the photograph itself where that is still there. It reports how many pictures it could not find a date for anywhere, rather than moving on quietly. The date and, where Google kept it, the location are written into the file, so whatever you import into afterwards reads them without needing the JSON any more. It runs in the browser and the archive is never uploaded.",
+      "prevent": "Keep the JSON files until the dates are written into the pictures. They look like clutter and for about half your library they are the only copy of the capture date. Once the dates are in the photographs themselves, the sidecars can go.",
+      "evidence": "Measured against one real Takeout of more than two thousand photographs. Roughly half carried an embedded capture date and roughly half did not; for about half the library the sidecar held the only copy, and fewer than one per cent had no date in either place. Every sidecar used the same .supplemental-metadata.json ending, and about one media file in nine had no sidecar at all. Where both existed the two dates agreed in every case, of more than a thousand. That is one export rather than a survey, so the proportions are an indication rather than a rule - what they do settle is that the flat claim Takeout strips the date from everything is not right.",
+      "related": ["google", "why-tgz-will-not-open", "why-google-location-history-empty"]
+    },
+    {
+      "slug": "why-are-my-photos-in-the-sea-off-africa",
+      "title": "Why are my photos on a map in the sea off Africa?",
+      "aka": [
+        "photos showing at 0,0 on the map",
+        "null island photos google takeout",
+        "imported photos wrong location gulf of guinea"
+      ],
+      "symptom": "You imported a Google Takeout into a photo library and a large pile of your pictures has landed at one point in the Atlantic, a few hundred miles south of Ghana. They are not spread around badly. They are all stacked on the same spot in open water.",
+      "recoverable": "There is nothing to recover, and that is the good news rather than the bad. Those photographs never had a location. They have not been given the wrong one by mistake, and no repair will find the right one, because none was ever recorded. What you can fix is them being drawn on the map at all.",
+      "cause": [
+        "Latitude 0, longitude 0 is a real point on the Earth. It is where the equator crosses the prime meridian, in the Gulf of Guinea, and there is nothing there but sea. Sailors call it Null Island as a joke, because so much broken software ends up pointing at it.",
+        "Google writes a location for every photograph in the JSON file beside it, including the ones it has no location for. When it has none, it does not leave the field out - it fills it in with zeroes. A tool that reads the number and plots it, without asking whether zero means the Gulf of Guinea or means nothing, sends every one of them to the same patch of ocean.",
+        "It is common because the zeroes are common. In one real export, around seven of every ten sidecar files carried a location of exactly zero."
+      ],
+      "gotcha_title": "The sidecar will not give you a location the photo has not already got",
+      "gotcha": "It is worth knowing this before you go looking for a fix, because it saves a lot of effort. Counted across the same export: about a quarter of the photographs carried real coordinates, and every one of those had them inside the picture already. The number of photographs where the sidecar supplied a location the file did not have was zero. Not a handful - none. So for the three quarters with nothing, Google is not holding a location back and no tool can extract one. Those are screenshots, saved pictures, and anything that arrived through a messaging app, which strips location on the way. Dates are the opposite case, and it is easy to assume they behave the same way: for about half a library the sidecar is the only copy of the date in existence. Worth keeping the JSON files for that reason, just not for this one.",
+      "manual_intro": "Two approaches, depending on whether the pictures are already in your library.",
+      "manual": [
+        {
+          "title": "Strip the zeroes before you import",
+          "detail": "If the coordinates were written into the files by an earlier repair pass, exiftool will take them back out where they are zero and leave every real location alone: exiftool -r -if \"$GPSLatitude eq '0' and $GPSLongitude eq '0'\" -gps:all= -overwrite_original . Run it on a copy first. The -if test is what keeps it from wiping the quarter of your library that has genuine coordinates."
+        },
+        {
+          "title": "If they are already imported",
+          "detail": "Most photo libraries let you select everything at a single map location and clear it. In Immich, PhotoPrism and Apple Photos you can search or filter by place, select the whole Null Island cluster, and remove the location from the selection. That is usually faster than reimporting."
+        },
+        {
+          "title": "Check before a large import",
+          "detail": "Import a few hundred photographs first and look at the map. A wrong location that arrives on twenty thousand files is a great deal more tedious to undo than one you catch on two hundred."
+        }
+      ],
+      "muletto": "Muletto treats a location of exactly zero as absent, because that is what it means. Those photographs get no coordinates written into them and do not appear on the map, while the ones with real coordinates do. Nothing has to be configured for it and there is nothing to undo afterwards.",
+      "prevent": "This is a property of the export rather than of anything you did, so there is no setting to change on Google's side. The one thing that helps is checking a sample on a map before committing a whole library to a new home.",
+      "evidence": "Measured against one real Takeout of more than two thousand photographs. Around seven in ten sidecars carried a location of exactly zero, about a quarter of the photographs had genuine coordinates, and in no case did a sidecar supply a location that was not already in the file. That is one export rather than a survey, so treat the proportions as an indication.",
+      "related": ["google", "why-google-photos-wrong-date", "why-google-location-history-empty"]
+    },
+    {
+      "slug": "why-google-location-history-empty",
+      "title": "Why is my Google location history empty?",
+      "aka": [
+        "takeout location history empty",
+        "google timeline missing from takeout",
+        "location history not in google takeout"
+      ],
+      "symptom": "You asked Takeout for Location History, expecting years of it, and got an archive with essentially nothing in it - often just a short notice saying you have encrypted Timeline backups stored on Google servers.",
+      "recoverable": "Partly, and only from your phone. The notice is accurate rather than a fault: your Timeline genuinely is not on Google's servers in a form anyone can export. Encrypted backups exist so a new phone can restore, and there is no route from them to a file you can read. What your phone still holds, you can still get.",
+      "cause": [
+        "Google moved Timeline off its servers and onto the device. The migration began around December 2024 and the cloud Timeline was shut down on 9 June 2025. Takeout exports account-level data, and after that change your location history is no longer account-level data.",
+        "Older exports are different. If you have a Takeout from before the change it will contain Records.json, holding raw points, and a Semantic Location History folder with a file per month. Those are still readable and still worth keeping."
+      ],
+      "gotcha_title": "What comes off the phone is not the old format",
+      "gotcha": "The on-device export is a different schema rather than a new version of the old one. Coordinates arrive as text carrying a degree sign instead of the integer form the old exports used, and timestamps carry a local UTC offset, so a tool that discards the offset moves every event by hours. It is also worth knowing what else is in there: alongside the places you visited, the file carries raw signal records including the MAC addresses of wifi networks your phone saw. That is the most revealing thing in the export and almost nobody who requests it realises it is included.",
+      "manual_intro": "The export lives in your phone now, so it has to come off the phone. Reports differ on where the button is, and it appears to depend on your Maps version, so try both.",
+      "manual": [
+        {
+          "title": "From the Maps app, either platform",
+          "detail": "Open Google Maps, tap your profile picture, then Settings, then Personal Content, and look for Export Timeline data. On iPhone the file goes through the share sheet, so choose Save to Files and pick somewhere you will find it again. It saves as location-history.json."
+        },
+        {
+          "title": "From Android system settings, if Maps does not offer it",
+          "detail": "Settings, then Location, then Location Services, then Timeline, then Export Timeline. The file lands in your Downloads folder."
+        },
+        {
+          "title": "If you are in the EU you may get a CSV",
+          "detail": "Reported rather than confirmed: some European accounts receive CSV instead of JSON. If yours does, it holds the same visits in a simpler shape."
+        }
+      ],
+      "muletto": "Muletto reads the older Records.json format and puts the points on a map alongside the rest of your export. The on-device format is not read yet - it is a different schema and it is being worked on rather than quietly half-supported.",
+      "prevent": "Export from the phone now rather than when you need it. Timeline on the device keeps a limited window, so waiting costs you the oldest part of it, and there is no copy on a server to fall back to any more.",
+      "evidence": "The dates and the current Takeout behaviour are from Google's own documentation and community reports, checked on 10 August 2026. The old Records.json format is read here and was verified against a real export.",
+      "related": ["google", "why-google-photos-wrong-date"]
+    },
+    {
+      "slug": "why-samsung-export-needs-a-password",
+      "title": "Why does my Samsung export ask for a password?",
+      "aka": [
+        "samsung data export password",
+        "samsung takeout zip will not open",
+        "cannot extract samsung privacy portal zip"
+      ],
+      "symptom": "Samsung sent your data as a set of zip files, and nothing will open them. Samsung's own My Files app refuses with a message about the file being password protected, and the built-in unzipper on Windows or a Mac either asks for a password that does not work or fails outright.",
+      "recoverable": "Yes, and nothing is damaged. Your export is complete and intact. It is encrypted, you have the password somewhere, and you need a tool that understands the particular kind of encryption Samsung used.",
+      "cause": [
+        "Every entry in every archive Samsung sends is encrypted, and the password arrives separately from the download rather than with it. Most of the archives use WinZip AES-256, which is a later addition to the zip format that plenty of unzippers still do not implement. At least one service still uses the older, weaker ZipCrypto.",
+        "That combination is why the error messages are so unhelpful. A tool that cannot do AES-256 often cannot even tell you that is the problem, so it reports the file as broken or simply refuses. Nothing is broken."
+      ],
+      "gotcha_title": "A short export is not necessarily an incomplete one",
+      "gotcha": "A Samsung service that holds nothing about you produces no archive at all, rather than an empty one. So an export with six archives in it when you selected twenty services has not failed and is not still coming. There is simply nothing in the other fourteen. This is the single most confusing thing about a Samsung export, and Samsung does not mention it anywhere.",
+      "manual_intro": "Any unzipper that implements AES-256 will open these. Two free ones:",
+      "manual": [
+        {
+          "title": "7-Zip on Windows",
+          "detail": "Right-click the archive, choose 7-Zip, then Extract here, and give it the password when asked. 7-Zip has handled WinZip AES for years. The Windows built-in zip handler does not."
+        },
+        {
+          "title": "Keka on macOS",
+          "detail": "The Finder's own Archive Utility does not do AES-256. Keka does, it is free, and it will prompt for the password."
+        },
+        {
+          "title": "If you cannot find the password",
+          "detail": "It is in a separate message from Samsung, sent around the same time as the download link rather than in the same email. Search your inbox for messages from Samsung on the day the export arrived, including the spam folder. It cannot be recovered or reset from the archive itself, so if it is genuinely gone the only route is to request the export again."
+        }
+      ],
+      "muletto": "Muletto opens encrypted Samsung archives directly, both the AES-256 ones and the legacy ZipCrypto one, and asks for the password when it meets the first locked entry. There is no unpacking step. It also shows which services produced an archive and which produced nothing, so you can see the shape of what Samsung actually sent.",
+      "prevent": "Save the password message somewhere before you download the archives. It is easy to file the download link and lose the mail with the password in it, and the two arrive separately.",
+      "evidence": "Measured across a real export of nine archives and 57 entries, every one of them encrypted. All 57 were decrypted and read.",
+      "related": ["samsung"]
+    },
+    {
+      "slug": "apple-export-missing-photos-and-health",
+      "title": "Why is my Apple data export missing my photos and health data?",
+      "aka": [
+        "apple data and privacy export no photos",
+        "apple export missing health data",
+        "icloud data download does not include messages"
+      ],
+      "symptom": "You asked Apple for everything and got a set of archives covering your account, purchases, AppleCare, contacts, calendars, bookmarks and notes. No photographs. No Health data. No messages. It looks like most of your life is missing, and it is reasonable to assume the export failed.",
+      "recoverable": "It did not fail, and almost all of it is still available - just not from that page. What Apple sends is the data Apple can read. Everything absent is either end-to-end encrypted, which means Apple holds it as a blob it has no key for, or it is offered as a separate download you have to ask for on its own. Each missing piece has somewhere else to get it, and most of them are quicker than the request you already made.",
+      "cause": [
+        "Apple's Data and Privacy export can only contain what Apple is able to decrypt. Some categories are end-to-end encrypted for every account, with no setting involved: Health, and the passwords in iCloud Keychain. Apple cannot produce those because it cannot read them. That is not a gap in the export, it is the encryption doing exactly what it is sold as doing.",
+        "Photographs and iCloud Drive files are a different case. They are not secret from Apple, they are simply enormous, so they are offered as their own download rather than bundled with the account records. If you did not tick them, or did not notice a second delivery, you will not have them.",
+        "A real export inspected for this page was eighteen archives covering account and device information, Apple Media Services, the Apple Store, AppleCare, Bookmarks, Calendars and Reminders, Contacts, Notes, Marketing communications, Wallet activity, Game Center and a category Apple simply calls Other Data. That is a complete export. It is also nothing like everything."
+      ],
+      "gotcha_title": "Advanced Data Protection makes your export smaller, not bigger",
+      "gotcha": "This one catches people who did the privacy-conscious thing. Normally a handful of categories are end-to-end encrypted. Turn on Advanced Data Protection and that rises to around twenty-three, taking in Photos, Notes and iCloud Backup among others - and every category it covers becomes one Apple can no longer hand over. So the more thoroughly you protect your iCloud data, the less of it appears in a data request, and the more you have to collect from your own devices instead. The data is not lost and nothing has gone wrong; the keys are on your hardware, which is the entire point. It is just the opposite of what you would expect the privacy setting to do to a privacy request. Related: if you have turned off web access to iCloud data, that also limits what the export tool can return.",
+      "manual_intro": "Where each missing piece actually lives. None of these needs a support ticket.",
+      "manual": [
+        {
+          "title": "Health data - from the phone, about a minute",
+          "detail": "Open the Health app, tap your profile picture at the top right, scroll to the very bottom and choose Export All Health Data. It produces a zip holding export.xml. Be ready for it to be large - years of watch data runs to hundreds of megabytes of XML in a single file, which is why plenty of tools choke on it. There is a full guide to this on the site under Apple Health, including the two places the export quietly fails."
+        },
+        {
+          "title": "Photos and videos - a separate request or a direct download",
+          "detail": "On the Data and Privacy page, iCloud Photos is its own item to select rather than part of the account archives, and it arrives as its own set of files. If you would rather not wait, you can download albums directly from iCloud.com, or from the Photos app on a Mac choose the originals and export them to a folder. The direct routes are usually faster and give you the same files."
+        },
+        {
+          "title": "Passwords - Settings, not the export",
+          "detail": "iCloud Keychain is end-to-end encrypted and will never appear in a data request. Recent versions of iOS and macOS can export your saved passwords to a CSV from the Passwords screen. Treat that file with care and delete it when you are done - it is the one genuinely dangerous thing in this list."
+        },
+        {
+          "title": "Messages - not offered at all",
+          "detail": "There is no route to get iMessage history from a data request. The only copy is the one on your device or in an unencrypted local backup made through a computer. If messages are what you are after, plan around that rather than waiting for an export that will not contain them."
+        }
+      ],
+      "muletto": "Muletto reads the Data and Privacy archives directly, including the ones nested inside other archives - in the export inspected here, seven of the eighteen contained further archives holding several hundred entries that are invisible until they are opened. Contacts, calendars, notes and the account tables all come through. Drop the separate photo download in alongside them and it is treated as one library rather than two.",
+      "prevent": "When you make the request, go through the category list rather than accepting the default selection, and take the photographs as their own item. If you are about to turn on Advanced Data Protection, take the export first: it is easier to ask Apple once than to collect the same material off four devices later.",
+      "evidence": "The category list is from a real Apple Data and Privacy export of eighteen archives, inspected for this page. Which categories are end-to-end encrypted, and that Advanced Data Protection widens that set to around twenty-three, is from Apple's own security documentation, checked in August 2026. The export routes for Health, passwords and photos are from Apple's documentation rather than walked here, so check the exact wording on your own device.",
+      "related": ["apple", "apple-health", "my-export-came-as-many-zip-files"]
+    },
+    {
+      "slug": "my-export-came-as-many-zip-files",
+      "title": "My export arrived as a dozen separate zip files",
+      "aka": [
+        "apple data export multiple zip files part 1 of",
+        "how to combine google takeout zip files",
+        "do i need to merge my export zips"
+      ],
+      "symptom": "You asked for your data and got a pile of numbered archives instead of one file. Apple labels them Part 1 of 3 and similar; Google just numbers them. It is not obvious which one to open, whether you need all of them, or whether they have to be stitched back together first.",
+      "recoverable": "Nothing is broken and nothing is missing. In almost every case these are complete archives that each open on their own, and you do not need to join them together. Downloading all of them still matters, because your files are spread across them, but that is a different thing from merging them.",
+      "cause": [
+        "You choose a maximum file size when you request the export - Apple and Google both offer it, and it is easy to accept the default without noticing. Anything larger than that gets written as several archives instead of one. Smaller files download more reliably on a poor connection, which is why it is offered and often why it is the default.",
+        "Apple also sends the same archive twice if you make the same request more than once, so you can end up with a file and a copy of it ending in (1). That is a duplicate rather than a missing piece."
+      ],
+      "gotcha_title": "You almost certainly do not need to combine them",
+      "gotcha": "The usual advice online is to merge the parts with a joining tool before opening anything, and for one kind of split archive that is correct and unavoidable. For the kind these exports actually produce it is wrong, and it is expensive: one guide to doing it notes needing about 68 GB of free space to merge a large set, and then more again to unpack the result. The test takes two seconds and it is the file extensions. If you have one .zip alongside files ending .z01, .z02 and so on, that is a genuine spanned archive and the parts really are fragments - you need all of them present and you must open the .zip, which pulls in the rest. If every file simply ends in .zip, they are separate complete archives and each opens by itself. A real Apple export checked here was 18 files, every one with its own working directory, 1,020 entries between them, and not a single spanned part.",
+      "manual_intro": "Once you know which kind you have, it is straightforward.",
+      "manual": [
+        {
+          "title": "All files end in .zip",
+          "detail": "Open each one normally. Nothing needs joining. It is worth extracting them into a single folder rather than one folder per archive, so that the export ends up in the shape it had before it was split up."
+        },
+        {
+          "title": "You have .z01, .z02 and one .zip",
+          "detail": "This is a real spanned archive. Keep every part in the same folder and open the .zip file - 7-Zip on Windows and Keka on macOS will pull in the numbered parts automatically. Do not try to open the .z01 directly. You need free space roughly equal to the whole set, twice over."
+        },
+        {
+          "title": "Two files with the same name, one ending (1)",
+          "detail": "Apple sending the same archive twice. Compare the file sizes: if they match, keep either one. Nothing is lost by deleting the copy."
+        }
+      ],
+      "muletto": "Drop all of them in at once. Muletto reads them as a single library, so a photograph in one archive finds its metadata in another, and duplicates between them are found rather than imported twice. It also opens archives that contain further archives, which Apple exports do - in the one measured here, seven of the eighteen held more zips inside them, and 394 entries were invisible until those were opened.",
+      "prevent": "When you make the request, look for the maximum file size setting and choose a larger value if your connection can manage it. You will get fewer, bigger files. On a connection that drops, the default is the better choice and several files is the lesser problem.",
+      "evidence": "Checked against a real Apple export of 18 archives: every one carried its own working central directory and opened independently, 1,020 entries in total, with no spanned parts anywhere in the set. Seven of the eighteen contained nested archives holding a further 394 entries.",
+      "related": ["apple", "google", "why-tgz-will-not-open"]
+    },
+    {
+      "slug": "why-tgz-will-not-open",
+      "title": "Takeout gave me a .tgz file and nothing will open it",
+      "aka": [
+        "google takeout tgz windows",
+        "cannot open tgz file",
+        "takeout tar.gz will not extract"
+      ],
+      "symptom": "You chose .tgz on the Takeout screen, or it was already selected, and now Windows does nothing at all when you double-click the file. It is not broken and it is not a failed download.",
+      "recoverable": "Yes. It is an ordinary archive in a format Windows has no handler for. One free tool opens it.",
+      "cause": [
+        "Google offers .tgz next to .zip on the same screen and the difference is not explained. A .tgz is two formats nested: a tar archive holding your files, compressed with gzip. Windows understands neither on its own, so a double-click does nothing.",
+        "This is also why extracting it feels like it takes two goes. Unpacking the gzip layer leaves you with a .tar, which then has to be unpacked in turn. Some tools do both in one step and some do not, which is where most of the confusion comes from."
+      ],
+      "gotcha_title": "For a very large Takeout, ask for .zip instead",
+      "gotcha": "This is not a preference. A zip carries an index at the end, so a tool can jump straight to any file inside without touching the rest. A gzip stream cannot be read out of order at all, so anything reading a .tgz has to work through it from the beginning. For a small export the difference does not matter. For a Takeout measured in tens of gigabytes it is the difference between opening it and unpacking all of it first, and you have to double your free disk space to unpack it.",
+      "manual_intro": "One tool, and on Windows it may take two passes.",
+      "manual": [
+        {
+          "title": "7-Zip on Windows",
+          "detail": "Right-click the file, 7-Zip, Extract here. That gives you a .tar. Right-click that and extract it too, and your files are there. Free, and it is the reason most people install 7-Zip in the first place."
+        },
+        {
+          "title": "macOS and Linux",
+          "detail": "Double-click works on macOS. In a terminal on either, tar -xzf takeout.tgz does both layers in one pass."
+        }
+      ],
+      "muletto": "Muletto reads .tgz directly, without an unpacking step and without needing the free space a full extraction would want. Because a gzip stream cannot be read out of order, it is unpacked in one pass as it goes rather than being read lazily the way a zip is.",
+      "prevent": "On the Takeout screen, set the file type to .zip before you request. It is a dropdown next to the delivery method and it is easy to scroll past.",
+      "evidence": "The .tgz reader was verified in the browser against a gzipped tar built to specification, checking every member size and reading a 3 MB member back byte for byte.",
+      "related": ["google", "why-google-photos-wrong-date"]
+    }
+  ]
+}

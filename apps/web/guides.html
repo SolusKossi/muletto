@@ -15,7 +15,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="og.png" />
-  <link rel="stylesheet" href="styles.css?v=d0432776" />
+  <link rel="stylesheet" href="styles.css?v=dca5de16" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"Muletto export guides","description":"Guides for exporting your personal data from major services.","url":"https://muletto.app/guides.html"}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does it cost anything?","acceptedAnswer":{"@type":"Answer","text":"The guides are free to read and the app is free to use. Opening an export, merging several, finding duplicates, repairing dates and writing the library back out all run on your own machine and cost nothing. The only paid part is having an AI describe your photographs so you can search them by what is in them, and that is optional and off unless you turn it on."}},{"@type":"Question","name":"Do I need an account?","acceptedAnswer":{"@type":"Answer","text":"No. There is no sign-up, no email address and no password, because there is no server holding anything to sign in to."}},{"@type":"Question","name":"Are my files uploaded anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. Your archives are read inside your browser, on your own machine. The page is served with a Content-Security-Policy that permits connections to almost nothing, so the browser itself refuses to send your files regardless of what the code asks for. Turn off your wifi and everything except the optional AI step still works."}},{"@type":"Question","name":"How long do the exports take to arrive?","acceptedAnswer":{"@type":"Answer","text":"It varies enormously. Meta is often minutes to hours, Google hours to days, Apple up to seven days, and Snapchat up to thirty. The waits run in parallel, so if you want several, request them all on the same day."}},{"@type":"Question","name":"Which services can I open an export from?","acceptedAnswer":{"@type":"Answer","text":"Apple, Google, Samsung, Snapchat, Facebook and Instagram each have their own guide, and the app reads the zip archives all of them produce. Several exports can be opened together and become one library."}},{"@type":"Question","name":"What do I get back at the end?","acceptedAnswer":{"@type":"Answer","text":"Ordinary folders of ordinary files, with the real dates and locations written into the photographs themselves, duplicates across services removed, and your messages, location history and account records readable. Nothing needs this site afterwards."}}]}</script>
 </head>
@@ -99,6 +99,43 @@
 
       <div class="gd-sec">
         <div class="section-head">
+          <h2>When something has gone wrong</h2>
+          <p>You already have the export and it will not open, or it opened and the dates are nonsense. The cause, and the fix, including the fix that does not involve us.</p>
+        </div>
+        <div class="probgrid">
+          <a class="probcard" href="guides/why-google-photos-wrong-date.html">
+            <h3>Why do my Google Photos have the wrong date?</h3>
+            <p>You downloaded years of photographs from Google Takeout, and every one of them says it was taken on the day you downloaded it. Ten years of picture...</p>
+          </a>
+          <a class="probcard" href="guides/why-are-my-photos-in-the-sea-off-africa.html">
+            <h3>Why are my photos on a map in the sea off Africa?</h3>
+            <p>You imported a Google Takeout into a photo library and a large pile of your pictures has landed at one point in the Atlantic, a few hundred miles s...</p>
+          </a>
+          <a class="probcard" href="guides/why-google-location-history-empty.html">
+            <h3>Why is my Google location history empty?</h3>
+            <p>You asked Takeout for Location History, expecting years of it, and got an archive with essentially nothing in it - often just a short notice saying...</p>
+          </a>
+          <a class="probcard" href="guides/why-samsung-export-needs-a-password.html">
+            <h3>Why does my Samsung export ask for a password?</h3>
+            <p>Samsung sent your data as a set of zip files, and nothing will open them. Samsung&#39;s own My Files app refuses with a message about the file being pa...</p>
+          </a>
+          <a class="probcard" href="guides/apple-export-missing-photos-and-health.html">
+            <h3>Why is my Apple data export missing my photos and health data?</h3>
+            <p>You asked Apple for everything and got a set of archives covering your account, purchases, AppleCare, contacts, calendars, bookmarks and notes. No ...</p>
+          </a>
+          <a class="probcard" href="guides/my-export-came-as-many-zip-files.html">
+            <h3>My export arrived as a dozen separate zip files</h3>
+            <p>You asked for your data and got a pile of numbered archives instead of one file. Apple labels them Part 1 of 3 and similar; Google just numbers the...</p>
+          </a>
+          <a class="probcard" href="guides/why-tgz-will-not-open.html">
+            <h3>Takeout gave me a .tgz file and nothing will open it</h3>
+            <p>You chose .tgz on the Takeout screen, or it was already selected, and now Windows does nothing at all when you double-click the file. It is not bro...</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="gd-sec">
+        <div class="section-head">
           <h2>Getting your data out</h2>
           <p>One service at a time, with what to expect and the parts people get wrong.</p>
         </div>
@@ -107,6 +144,11 @@
           <span class="svc-ic" data-icon="apple"></span>
           <span class="svc-name">Apple<span class="badge medium">medium</span></span>
           <span class="svc-meta"><span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>up to 7 days</span></span>
+        </a>
+        <a class="svc" href="guides/apple-health.html">
+          <span class="svc-ic" data-icon="heart"></span>
+          <span class="svc-name">Apple Health<span class="badge easy">easy</span></span>
+          <span class="svc-meta"><span class="svc-time"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></svg>a few minutes on the phone</span></span>
         </a>
         <a class="svc" href="guides/google.html">
           <span class="svc-ic" data-icon="google"></span>

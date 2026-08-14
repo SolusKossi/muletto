@@ -14,13 +14,14 @@ Reading the provider's help pages is not evidence for either. Both of the
 Snapchat corrections that mattered - the Export JSON files toggle, and the date
 range already defaulting to off - contradicted the documentation.
 
-**0 of 26 finished.** 4 part-way.
+**0 of 27 finished.** 4 part-way.
 
 ## Export guides
 
 | Provider | Request flow walked | Export opened in Muletto | Guide written from evidence |
 | --- | --- | --- | --- |
 | [Apple](apps/web/guides/apple.json) | no | no | no |
+| [Apple Health](apps/web/guides/apple-health.json) | no | no | no |
 | [Google](apps/web/guides/google.json) | 2026-07-30 (Martin) | no | request steps only |
 | [Snapchat](apps/web/guides/snapchat.json) | 2026-07-28 (Martin) | no | request steps only |
 | [Samsung](apps/web/guides/samsung.json) | 2026-07-30 (Martin) | no | request steps only |

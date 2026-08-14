@@ -2396,7 +2396,11 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 
 /* The pitfalls specific to doing a whole job end to end, as opposed to the
    ones inside either half of it. */
-.flow-stumbles { margin: 26px 0; }
+/* Same global `section { padding: 112px 0 }` as the problem pages hit. This is
+   a <section>, so it had 112px of dead space above and below it on every flow
+   page - a gap nobody put there and nobody wanted. .flow-step next door sets
+   its own padding and was never affected, which is why it went unnoticed. */
+.flow-stumbles { margin: 26px 0; padding-top: 0; padding-bottom: 0; }
 .flow-stumbles h3 { margin: 0 0 10px; font-size: 17px; font-weight: 640; }
 .flow-stumbles dl { margin: 0; border-top: 1px solid var(--line); }
 .flow-stumbles dt { padding: 14px 0 0; font-weight: 600; color: var(--ink); font-size: 15px; }
@@ -3589,3 +3593,65 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    that count their own things leave it empty rather than absent, so it has to
    collapse itself - and :empty is exactly the selector for that. */
 .ex-stats:empty { display: none; }
+
+/* ---------- problem pages ---------- */
+
+/* A symptom, a verdict, a cause and a fix.
+ *
+ * Read differently from a request guide: nobody arrives here to read top to
+ * bottom, they arrive having searched one sentence and they are scanning for
+ * the paragraph that matches what went wrong. So every part is separable at a
+ * glance, and the verdict - whether the data is recoverable at all - is a box
+ * rather than a paragraph, because it is the only thing some readers want.
+ *
+ * Spacing is on the margins of the sections rather than padding on a wrapper.
+ * Each block owns the gap below it, so adding a section cannot land it flush
+ * against the one before, which is how the gaps went missing on two other
+ * pages before this one. */
+.problem .art-head { margin-bottom: 30px; }
+/* `section { padding: 112px 0 }` is global, so a section inside an article
+   arrives with 112px above and below before any rule here is read. Zeroing it
+   is not tidying: without this each block sits a screen and a half from the
+   next, and the div-based blocks between them do not, so the rhythm alternates
+   between enormous and normal. Third time this has bitten in this codebase. */
+.problem section { max-width: 68ch; margin: 0 0 32px;
+  padding-top: 0; padding-bottom: 0; }
+.problem section h2 { margin: 0 0 12px; font-size: 19px; font-weight: 640; }
+.problem section p { margin: 0 0 12px; font-size: 15px; line-height: 1.75; }
+.problem section p:last-child { margin-bottom: 0; }
+
+.prob-verdict { max-width: 68ch; margin: 0 0 32px; padding: 20px 22px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--radius); }
+.prob-verdict h2 { margin: 0 0 8px; font-size: 17px; font-weight: 640; }
+.prob-verdict p { margin: 0; font-size: 15px; line-height: 1.75; }
+
+.prob-gotcha { max-width: 68ch; margin: 0 0 32px; padding: 16px 18px; }
+.prob-gotcha strong { display: block; margin-bottom: 8px; color: var(--ink); }
+.prob-gotcha p { margin: 0; font-size: 14px; line-height: 1.75; }
+
+.prob-fix dl { margin: 0; border-top: 1px solid var(--line); }
+.prob-fix dt { padding: 16px 0 0; font-weight: 600; color: var(--ink); font-size: 15px; }
+.prob-fix dd { margin: 5px 0 0; padding: 0 0 16px; border-bottom: 1px solid var(--line-2);
+  font-size: 14.5px; line-height: 1.75; color: var(--body); }
+
+.prob-related h3 { margin: 0 0 10px; font-size: 17px; font-weight: 640; }
+
+/* Index cards. Not .jobcard - that is a two-column grid expecting an icon
+   tile, and it carries no bottom padding because its inner column supplies
+   it. A card with neither would collapse into its own border. */
+/* Two columns, matching the whole-jobs grid immediately above rather than
+   packing tighter because the cards happen to be smaller. At 330px these fell
+   into three columns and left a fourth card alone on a row, directly under a
+   clean two-by-two - which reads as a mistake even though nothing is wrong. */
+.probgrid { display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+.probcard { display: block; padding: 20px 22px; border: 1px solid var(--line);
+  border-radius: var(--radius-lg); background: var(--surface); color: inherit;
+  text-decoration: none; box-shadow: var(--shadow-sm);
+  transition: border-color var(--t) var(--ease), transform var(--t) var(--ease),
+    box-shadow var(--t) var(--ease); }
+.probcard:hover { border-color: var(--ink); transform: translateY(-2px); }
+.probcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.probcard h3 { margin: 0 0 8px; font-size: 16.5px; font-weight: 640; line-height: 1.4; }
+.probcard p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--muted); }

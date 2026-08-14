@@ -399,6 +399,10 @@ const MTopics = (function () {
   const SHAPE = {
     steps:    { family: "move", chart: "bars", lead: true },
     floors:   { family: "move", chart: "bars" },
+    /* Google Fit's three. Daily totals, so bars, same as steps and floors. */
+    calories: { family: "move", chart: "bars" },
+    distance: { family: "move", chart: "bars" },
+    active:   { family: "move", chart: "bars" },
     exercise: { family: "move", chart: "dots" },
     sleep:    { family: "rest", chart: "band", lead: true },
     stress:   { family: "rest", chart: "line" },
@@ -1497,6 +1501,30 @@ const MTopics = (function () {
    */
   const ACTIVITY_FILE = /My Activity\/([^/]+)\/My ?Activity\.html$/i;
 
+  /* Above this, a product's history is not read at all.
+   *
+   * It guards `parseActivity`, which hands the whole file to `DOMParser`. The
+   * fear was an enormous DOM built on the main thread while the tab sits
+   * frozen. It was 20 MB and it was a guess.
+   *
+   * Measured, finally, against the real file it was written for: **46.1 MB of
+   * YouTube history parses in 953 ms and costs 16 MB of heap**, against a
+   * limit of 4,096 MB, producing 48,400 rows. The DOM is transient and
+   * collected as soon as the function returns, which is why the cost barely
+   * registers.
+   *
+   * So the old number was buying under a second and sixteen megabytes, and
+   * paying 48,400 of the reader's 49,782 activity rows for it - it hid 97% of
+   * the history it was meant to be protecting. Raised to 128 MB, which covers
+   * any real My Activity file several times over and still refuses something
+   * pathological. Files are read smallest first, so the big one never delays
+   * anything else appearing.
+   *
+   * One constant, used in both places. It was two - a named CAP here and a
+   * bare literal in the sidebar precount - and raising one without the other
+   * would have left the count in the sidebar disagreeing with the page. */
+  const ACTIVITY_CAP = 128 * 1024 * 1024;
+
   function findActivity(lib, ctx) {
     const files = ((ctx && ctx.entries) || []).filter((e) => ACTIVITY_FILE.test(e.name));
     return files.length ? [{ files }] : [];
@@ -1600,10 +1628,9 @@ const MTopics = (function () {
        products on screen first is the difference between a page that appears
        and a page that arrives. */
     const ordered = files.slice().sort((a, b) => (a.size || 0) - (b.size || 0));
-    const CAP = 20 * 1024 * 1024;
     let skipped = 0;
     for (const f of ordered) {
-      if ((f.size || 0) > CAP) { skipped++; continue; }
+      if ((f.size || 0) > ACTIVITY_CAP) { skipped++; continue; }
       const s = sourceOf(ctx, f);
       if (!s || !s.file) continue;
       const product = (ACTIVITY_FILE.exec(f.name) || [])[1] || "Google";
@@ -2271,7 +2298,7 @@ const MTopics = (function () {
       ["activity", findActivity, async (m) => {
         let n = 0;
         for (const f of m[0].files) {
-          if ((f.size || 0) > 20 * 1024 * 1024) continue;
+          if ((f.size || 0) > ACTIVITY_CAP) continue;
           const s = sourceOf(ctx, f);
           if (!s || !s.file) continue;
           try {
@@ -2302,8 +2329,15 @@ const MTopics = (function () {
   /* Shared with the file preview: a saved web page is somebody else's
      markup for exactly the same reasons a message is, and there should be one
      set of rules about what markup is allowed to do here. */
+  /* parseVcards and parseIcs are exposed for one reason: so a harness can run
+     the shipped parser over a real file instead of a copy of it. Harness gap 1
+     in TESTPLAN.md is that there is no assertion layer, and both of these are
+     pure text-in, objects-out - the only part of these views that can be
+     checked outside a browser. Nothing in the app calls them from here. */
   return Object.assign(api, { detect, draw, has, reset, precount, claims,
-                              safeHtml: renderMessage, TOPICS });
+                              safeHtml: renderMessage, TOPICS,
+                              parseVcards, parseIcs, parseActivity,
+                              ACTIVITY_FILE });
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MTopics;

@@ -614,7 +614,7 @@ const FAQ = [
    "Ordinary folders of ordinary files, with the real dates and locations written into the photographs themselves, duplicates across services removed, and your messages, location history and account records readable. Nothing needs this site afterwards."],
 ];
 
-function guidesIndex(all, dests, flows) {
+function guidesIndex(all, dests, flows, problems) {
   const body = `    <section class="page-head wrap">
       <h1>Guides</h1>
       <p>How to get a complete copy of your data out of any major service, what you will get back, and where to put it afterwards. All free to read, no account.</p>
@@ -631,6 +631,19 @@ function guidesIndex(all, dests, flows) {
 ${(flows || []).map(flowCard).join("\n")}
         </div>
       </div>
+
+      ${(problems || []).length ? `<div class="gd-sec">
+        <div class="section-head">
+          <h2>When something has gone wrong</h2>
+          <p>You already have the export and it will not open, or it opened and the dates are nonsense. The cause, and the fix, including the fix that does not involve us.</p>
+        </div>
+        <div class="probgrid">
+${problems.map((p) => `          <a class="probcard" href="guides/${esc(p.slug)}.html">
+            <h3>${esc(p.title)}</h3>
+            <p>${esc(p.symptom.length > 150 ? p.symptom.slice(0, 147) + "..." : p.symptom)}</p>
+          </a>`).join("\n")}
+        </div>
+      </div>` : ""}
 
       <div class="gd-sec">
         <div class="section-head">
@@ -827,6 +840,113 @@ function flowPage(f, all, dests) {
   });
 }
 
+/* A page about one thing going wrong.
+ *
+ * Not a request flow, so it does not get the numbered-step template. The
+ * reader here already has the export and something about it has failed; what
+ * they want is the cause and the fix, in that order, and they want to know
+ * whether the data is recoverable before they read anything else.
+ *
+ * The manual fix is a full section on purpose, naming other tools where they
+ * are the better answer. A page that solves the problem outright is the one
+ * that gets linked to and the one that ranks; a page that only says to use us
+ * does neither, and would be worse at the job these pages exist to do. */
+function problemPage(p, all) {
+  const canonical = `${SITE}/guides/${p.slug}.html`;
+  const paras = (v) => (Array.isArray(v) ? v : [v]).map((s) => `<p>${esc(s)}</p>`).join("\n        ");
+
+  const article = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: p.title,
+    description: p.symptom,
+    mainEntityOfPage: canonical,
+    author: { "@type": "Organization", name: "Muletto", url: SITE + "/" },
+    publisher: { "@type": "Organization", name: "Muletto", url: SITE + "/" },
+  };
+  const crumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Muletto", item: SITE + "/" },
+      { "@type": "ListItem", position: 2, name: "Guides", item: SITE + "/guides.html" },
+      { "@type": "ListItem", position: 3, name: p.title, item: canonical },
+    ],
+  };
+
+  const linkFor = (slug) => {
+    const g = all.find((x) => x.slug === slug);
+    return g ? { href: slug + ".html", label: `The ${g.provider} guide` } : null;
+  };
+
+  const body = `    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a><span>/</span>
+        <a href="../guides.html">Guides</a><span>/</span>
+        <span aria-current="page">${esc(p.title)}</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>${esc(p.title)}</h1>
+        <p class="art-intro">${esc(p.symptom)}</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Can you get it back?</h2>
+        <p>${esc(p.recoverable)}</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>What actually happened</h2>
+        ${paras(p.cause)}
+      </section>
+
+      ${p.gotcha ? `<div class="note prob-gotcha">
+        <strong>${esc(p.gotcha_title || "The bit people get wrong")}</strong>
+        <p>${esc(p.gotcha)}</p>
+      </div>` : ""}
+
+      <section class="prob-fix">
+        <h2>How to fix it</h2>
+        ${p.manual_intro ? `<p>${esc(p.manual_intro)}</p>` : ""}
+        <dl>${(p.manual || []).map((m) =>
+          `<dt>${esc(m.title)}</dt><dd>${esc(m.detail)}</dd>`).join("")}</dl>
+      </section>
+
+      ${p.muletto ? `<section class="prob-ours">
+        <h2>How Muletto does it</h2>
+        <p>${esc(p.muletto)}</p>
+        <p><a class="btn secondary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>` : ""}
+
+      ${p.prevent ? `<section class="prob-prevent">
+        <h2>Stopping it happening again</h2>
+        <p>${esc(p.prevent)}</p>
+      </section>` : ""}
+
+      ${p.evidence ? `<p class="confirmed-line">${esc(p.evidence)}</p>` : ""}
+
+      ${(p.related || []).length ? `<section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list">${(p.related || []).map((slug) => {
+          const g = linkFor(slug);
+          if (g) return `<li><a href="${esc(g.href)}">${esc(g.label)}</a></li>`;
+          return `<li><a href="${esc(slug)}.html">${esc(slug.replace(/-/g, " "))}</a></li>`;
+        }).join("")}</ul>
+      </section>` : ""}
+    </article>`;
+
+  return page({
+    depth: 1,
+    title: `${p.title} | Muletto`,
+    description: p.symptom.length > 300 ? p.symptom.slice(0, 297) + "..." : p.symptom,
+    canonical,
+    body,
+    jsonld: [article, crumbs],
+    active: "guides",
+  });
+}
+
 /* ---------- status tally ---------- */
 
 /* Generated, never hand-edited: it is derived from the guide files, so it
@@ -890,11 +1010,13 @@ function main() {
   const destIndex = readJson(path.join(GUIDES, "destinations.json"));
 
   const flowIndex = readJson(path.join(GUIDES, "flows.json"));
+  const problemIndex = readJson(path.join(GUIDES, "problems.json"));
 
   const load = (slug) => readJson(path.join(GUIDES, slug + ".json"));
   const all = index.providers.map((p) => ({ ...p, ...load(p.slug) }));
   const dests = destIndex.destinations.map((d) => ({ ...d, ...load(d.slug) }));
   const flows = flowIndex.flows;
+  const problems = problemIndex.problems;
 
   let n = 0;
   for (const g of [...all, ...dests]) {
@@ -905,7 +1027,11 @@ function main() {
     fs.writeFileSync(path.join(GUIDES, f.slug + ".html"), flowPage(f, all, dests), "utf8");
     n++;
   }
-  fs.writeFileSync(path.join(WEB, "guides.html"), guidesIndex(all, dests, flows), "utf8");
+  for (const p of problems) {
+    fs.writeFileSync(path.join(GUIDES, p.slug + ".html"), problemPage(p, all), "utf8");
+    n++;
+  }
+  fs.writeFileSync(path.join(WEB, "guides.html"), guidesIndex(all, dests, flows, problems), "utf8");
 
   fs.writeFileSync(path.join(__dirname, "..", "GUIDE-STATUS.md"), statusReport(all, dests), "utf8");
 
@@ -1098,14 +1224,35 @@ function main() {
    * sitemap without dates asks a crawler to re-read thirty-five pages to find
    * the two that moved.
    *
-   * Taken from the file's own mtime after it is written, so it is the truth
-   * rather than a build timestamp stamped on everything - a build that
-   * changes one guide should say that one guide changed. */
-  const when = (rel) => {
+   * Asked of git, not of the file.
+   *
+   * This first used the file's mtime, which was wrong in the way that matters:
+   * every generated page is rewritten on every build whether its content
+   * changed or not, so all thirty-five dates moved to today each time the
+   * build ran. That is the exact claim lastmod exists to avoid making, and a
+   * sitemap that says everything changed today, every day, is a sitemap a
+   * crawler learns to ignore.
+   *
+   * The last commit to touch a file is the honest answer and cannot be moved
+   * by rebuilding. One `git log` walk, newest first, so the first time a path
+   * appears is its most recent change. A page not yet committed has no date
+   * and gets no lastmod, which is better than guessing at one. */
+  const when = (() => {
+    const seen = new Map();
     try {
-      return fs.statSync(path.join(WEB, rel)).mtime.toISOString().slice(0, 10);
-    } catch (e) { return null; }
-  };
+      const log = require("child_process").execFileSync(
+        "git", ["log", "--pretty=format:%cs", "--name-only", "--", "apps/web"],
+        { cwd: path.join(__dirname, ".."), encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
+      let date = null;
+      for (const line of log.split("\n")) {
+        const s = line.trim();
+        if (!s) continue;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) { date = s; continue; }
+        if (date && !seen.has(s)) seen.set(s, date);
+      }
+    } catch (e) { /* no git, or no history - every page simply goes undated */ }
+    return (rel) => seen.get("apps/web/" + rel) || null;
+  })();
 
   const urls = [
     { loc: `${SITE}/`, pri: "1.0", file: "index.html" },
@@ -1115,6 +1262,8 @@ function main() {
     { loc: `${SITE}/privacy.html`, pri: "0.7", file: "privacy.html" },
     ...flows.map((f) => ({ loc: `${SITE}/guides/${f.slug}.html`, pri: "0.85",
                            file: "guides/" + f.slug + ".html" })),
+    ...problems.map((p) => ({ loc: `${SITE}/guides/${p.slug}.html`, pri: "0.85",
+                              file: "guides/" + p.slug + ".html" })),
     ...[...all, ...dests].map((g) => ({ loc: `${SITE}/guides/${g.slug}.html`, pri: "0.8",
                                         file: "guides/" + g.slug + ".html" })),
   ];

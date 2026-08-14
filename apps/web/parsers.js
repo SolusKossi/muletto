@@ -704,10 +704,17 @@ const MParse = (function () {
     }
 
     // Location history (can be enormous, so guard the size)
+    /* Counted across this block only, so the check below asks whether the
+       Timeline folder produced anything - not whether the export has places
+       at all, which it usually does from the photographs. */
+    const placesBefore = lib.places.length;
     const locEntry = entries.find((e) => /location\s*history.*\/records\.json$/i.test(e.name) || /\/records\.json$/i.test(e.name));
     if (locEntry) {
       if (locEntry.size > JSON_LIMIT) {
-        lib.notes.push("Your location history file is " + Math.round(locEntry.size / 1048576) + " MB, which is too large to open in a browser tab. The desktop app handles files this size.");
+        /* Said plainly. This used to promise that "the desktop app handles
+           files this size", and there is no desktop app - it offered the
+           reader a way out that does not exist. */
+        lib.notes.push("Your location history file is " + Math.round(locEntry.size / 1048576) + " MB, which is larger than this reads in one pass, so the places in it have been skipped. Everything else in the export is unaffected.");
       } else {
         const rec = await readJsonSafe(file, locEntry);
         const list = rec && (rec.locations || rec.Records || []);
@@ -720,6 +727,123 @@ const MParse = (function () {
           }
         }
       }
+    }
+
+    /* Google Fit, split one table per measurement.
+     *
+     * NEVER RUN ON A REAL EXPORT. Built from Google's own documentation and
+     * from what several published Takeout readers agree the columns are
+     * called. The maintainer's Takeout has no Fit folder at all, so there was
+     * nothing here to check it against. `PROVIDERS.md` says so plainly and
+     * `TESTPLAN.md` marks it `S`. Correct all of this the first time a real
+     * one turns up rather than trusting it.
+     *
+     * The shape, as documented: `Fit/Daily activity metrics/` holds one CSV
+     * per day of fifteen-minute windows plus a `Daily Summaries.csv` of one
+     * row per day, and `Fit/Activities/` holds a TCX per session. The daily
+     * summary is the one worth reading - it is small, it is already
+     * aggregated, and it covers the whole record.
+     *
+     * A wide row is split into one table per measurement rather than kept as
+     * it arrived, because the health page matches a table to a kind and takes
+     * the first that fits. Left wide, a file carrying steps, calories, heart
+     * rate and weight would be filed as whichever one matched first and the
+     * rest would vanish. One table each gives each measurement its own panel
+     * and its own chart, which is the whole point of that page.
+     *
+     * Columns are found by pattern and never by position. Google has renamed
+     * these between exports and a fixed index would read heart rate as
+     * distance without complaining. */
+    const fitCsv = entries.filter((e) =>
+      /(^|\/)fit\/.*\.csv$/i.test(e.name) && !/\/activities\//i.test(e.name));
+    if (fitCsv.length) {
+      /* The summary if it exists, otherwise the per-day files, capped. Reading
+         a decade of daily files is thousands of tiny CSVs for data the summary
+         already holds. */
+      const summary = fitCsv.filter((e) => /daily\s*summar/i.test(e.name));
+      const use = summary.length ? summary : fitCsv.slice(0, 400);
+      const series = new Map();          // measurement -> [[date, value], ...]
+
+      for (const e of use) {
+        let text;
+        try { text = await MZip.extractText(file, e); } catch (err) { continue; }
+        for (const sec of csvSections(text)) {
+          const cols = sec.columns || [];
+          if (!cols.length || !sec.rows.length) continue;
+          /* Whichever column carries the moment. A summary is dated by day, a
+             per-day file by the start of each fifteen-minute window. */
+          const timeIdx = cols.findIndex((c) => /^(date|start ?time)$/i.test(String(c).trim()));
+          if (timeIdx < 0) continue;
+          for (let c = 0; c < cols.length; c++) {
+            if (c === timeIdx) continue;
+            const label = String(cols[c] || "").trim();
+            if (!label || /^end ?time$/i.test(label)) continue;
+            for (const row of sec.rows) {
+              const raw = row[c];
+              if (raw === undefined || raw === null || String(raw).trim() === "") continue;
+              const v = Number(raw);
+              if (!isFinite(v)) continue;
+              if (!series.has(label)) series.set(label, []);
+              series.get(label).push([row[timeIdx], raw]);
+            }
+          }
+        }
+      }
+
+      /* One series per measurement, not three.
+       *
+       * Fit writes average, maximum and minimum heart rate as separate
+       * columns, and all three match the catalogue's heart rate pattern - so
+       * left alone they produce three panels with the same title and
+       * different numbers, which reads as a bug whichever one you look at.
+       * The average is the one that means "your heart rate that day". The
+       * others stay in the export and remain visible as tables. */
+      const better = (a, b) => (/^average/i.test(a) ? a : /^average/i.test(b) ? b : a);
+      const best = new Map();
+      for (const label of series.keys()) {
+        const norm = label.replace(/^(average|avg|max|min|maximum|minimum)\s+/i, "")
+                          .replace(/\s*\([^)]*\)\s*$/, "").toLowerCase().trim();
+        best.set(norm, best.has(norm) ? better(best.get(norm), label) : label);
+      }
+      const keep = new Set(best.values());
+
+      for (const [label, rows] of series) {
+        if (!rows.length || !keep.has(label)) continue;
+        lib.tables.push({
+          name: label,
+          /* The path keeps "Fit" in it deliberately: the health page will not
+             believe a loose kind like temperature or floors unless the source
+             has already proved itself health-shaped, and this is how it does. */
+          path: "Takeout/Fit/Daily activity metrics/" + label + ".csv",
+          columns: ["Date", label],
+          rows,
+        });
+      }
+      if (series.size) {
+        lib.stats.push({ n: series.size.toLocaleString(), label: "Fit measurements" });
+      }
+    }
+
+    /* Timeline that Google no longer sends.
+     *
+     * Google moved Location History onto the device during 2024 and 2025 and
+     * shut the server-side Timeline down on 9 June 2025. A Takeout requested
+     * since then still has a Timeline folder, so it looks like the data is
+     * there, but it holds settings and nothing else - measured in a real
+     * export: `Takeout/Timeline/Settings.json`, 1,099 bytes, and no records.
+     *
+     * Without this the reader gets an empty map and no reason for it, and
+     * concludes the export failed or that we cannot read it. Neither is true:
+     * Google did not send it. The note says so and says where it went. */
+    const hasTimelineFolder = entries.some((e) =>
+      /(^|\/)(location history|timeline)( \(timeline\))?\//i.test(e.name));
+    const gotPlaces = lib.places.length > placesBefore;
+    if (hasTimelineFolder && !gotPlaces) {
+      lib.notes.push("Google sent a Timeline folder with no location history in it. " +
+        "That is not a fault in the export: Google moved Timeline onto the phone during " +
+        "2024 and 2025 and shut the server-side one down in June 2025, so a Takeout has " +
+        "nothing left to include. The history is still on your phone and can be exported " +
+        "from the Google Maps app, under Settings and then Personal Content.");
     }
 
     // YouTube watch history

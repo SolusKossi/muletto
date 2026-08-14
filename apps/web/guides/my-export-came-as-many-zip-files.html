@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My export arrived as a dozen separate zip files | Muletto</title>
+  <meta name="description" content="You asked for your data and got a pile of numbered archives instead of one file. Apple labels them Part 1 of 3 and similar; Google just numbers them. It is not obvious which one to open, whether you need all of them, or whether they have to be stitched back together first." />
+  <link rel="canonical" href="https://muletto.app/guides/my-export-came-as-many-zip-files.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="My export arrived as a dozen separate zip files | Muletto" />
+  <meta property="og:description" content="You asked for your data and got a pile of numbered archives instead of one file. Apple labels them Part 1 of 3 and similar; Google just numbers them. It is not obvious which one to open, whether you need all of them, or whether they have to be stitched back together first." />
+  <meta property="og:url" content="https://muletto.app/guides/my-export-came-as-many-zip-files.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=dca5de16" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"My export arrived as a dozen separate zip files","description":"You asked for your data and got a pile of numbered archives instead of one file. Apple labels them Part 1 of 3 and similar; Google just numbers them. It is not obvious which one to open, whether you need all of them, or whether they have to be stitched back together first.","mainEntityOfPage":"https://muletto.app/guides/my-export-came-as-many-zip-files.html","author":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"},"publisher":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"My export arrived as a dozen separate zip files","item":"https://muletto.app/guides/my-export-came-as-many-zip-files.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a><span>/</span>
+        <a href="../guides.html">Guides</a><span>/</span>
+        <span aria-current="page">My export arrived as a dozen separate zip files</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>My export arrived as a dozen separate zip files</h1>
+        <p class="art-intro">You asked for your data and got a pile of numbered archives instead of one file. Apple labels them Part 1 of 3 and similar; Google just numbers them. It is not obvious which one to open, whether you need all of them, or whether they have to be stitched back together first.</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Can you get it back?</h2>
+        <p>Nothing is broken and nothing is missing. In almost every case these are complete archives that each open on their own, and you do not need to join them together. Downloading all of them still matters, because your files are spread across them, but that is a different thing from merging them.</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>What actually happened</h2>
+        <p>You choose a maximum file size when you request the export - Apple and Google both offer it, and it is easy to accept the default without noticing. Anything larger than that gets written as several archives instead of one. Smaller files download more reliably on a poor connection, which is why it is offered and often why it is the default.</p>
+        <p>Apple also sends the same archive twice if you make the same request more than once, so you can end up with a file and a copy of it ending in (1). That is a duplicate rather than a missing piece.</p>
+      </section>
+
+      <div class="note prob-gotcha">
+        <strong>You almost certainly do not need to combine them</strong>
+        <p>The usual advice online is to merge the parts with a joining tool before opening anything, and for one kind of split archive that is correct and unavoidable. For the kind these exports actually produce it is wrong, and it is expensive: one guide to doing it notes needing about 68 GB of free space to merge a large set, and then more again to unpack the result. The test takes two seconds and it is the file extensions. If you have one .zip alongside files ending .z01, .z02 and so on, that is a genuine spanned archive and the parts really are fragments - you need all of them present and you must open the .zip, which pulls in the rest. If every file simply ends in .zip, they are separate complete archives and each opens by itself. A real Apple export checked here was 18 files, every one with its own working directory, 1,020 entries between them, and not a single spanned part.</p>
+      </div>
+
+      <section class="prob-fix">
+        <h2>How to fix it</h2>
+        <p>Once you know which kind you have, it is straightforward.</p>
+        <dl><dt>All files end in .zip</dt><dd>Open each one normally. Nothing needs joining. It is worth extracting them into a single folder rather than one folder per archive, so that the export ends up in the shape it had before it was split up.</dd><dt>You have .z01, .z02 and one .zip</dt><dd>This is a real spanned archive. Keep every part in the same folder and open the .zip file - 7-Zip on Windows and Keka on macOS will pull in the numbered parts automatically. Do not try to open the .z01 directly. You need free space roughly equal to the whole set, twice over.</dd><dt>Two files with the same name, one ending (1)</dt><dd>Apple sending the same archive twice. Compare the file sizes: if they match, keep either one. Nothing is lost by deleting the copy.</dd></dl>
+      </section>
+
+      <section class="prob-ours">
+        <h2>How Muletto does it</h2>
+        <p>Drop all of them in at once. Muletto reads them as a single library, so a photograph in one archive finds its metadata in another, and duplicates between them are found rather than imported twice. It also opens archives that contain further archives, which Apple exports do - in the one measured here, seven of the eighteen held more zips inside them, and 394 entries were invisible until those were opened.</p>
+        <p><a class="btn secondary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>
+
+      <section class="prob-prevent">
+        <h2>Stopping it happening again</h2>
+        <p>When you make the request, look for the maximum file size setting and choose a larger value if your connection can manage it. You will get fewer, bigger files. On a connection that drops, the default is the better choice and several files is the lesser problem.</p>
+      </section>
+
+      <p class="confirmed-line">Checked against a real Apple export of 18 archives: every one carried its own working central directory and opened independently, 1,020 entries in total, with no spanned parts anywhere in the set. Seven of the eighteen contained nested archives holding a further 394 entries.</p>
+
+      <section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list"><li><a href="apple.html">The Apple guide</a></li><li><a href="google.html">The Google guide</a></li><li><a href="why-tgz-will-not-open.html">why tgz will not open</a></li></ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Read the source
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../analytics.js?v=e2665599"></script>
+  <script src="../app.js?v=4082bbc7"></script>
+
+</body>
+</html>

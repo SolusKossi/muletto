@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Why do my Google Photos have the wrong date? | Muletto</title>
+  <meta name="description" content="You downloaded years of photographs from Google Takeout, and every one of them says it was taken on the day you downloaded it. Ten years of pictures land in your photo app as a single enormous day." />
+  <link rel="canonical" href="https://muletto.app/guides/why-google-photos-wrong-date.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Why do my Google Photos have the wrong date? | Muletto" />
+  <meta property="og:description" content="You downloaded years of photographs from Google Takeout, and every one of them says it was taken on the day you downloaded it. Ten years of pictures land in your photo app as a single enormous day." />
+  <meta property="og:url" content="https://muletto.app/guides/why-google-photos-wrong-date.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=dca5de16" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Why do my Google Photos have the wrong date?","description":"You downloaded years of photographs from Google Takeout, and every one of them says it was taken on the day you downloaded it. Ten years of pictures land in your photo app as a single enormous day.","mainEntityOfPage":"https://muletto.app/guides/why-google-photos-wrong-date.html","author":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"},"publisher":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Why do my Google Photos have the wrong date?","item":"https://muletto.app/guides/why-google-photos-wrong-date.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a><span>/</span>
+        <a href="../guides.html">Guides</a><span>/</span>
+        <span aria-current="page">Why do my Google Photos have the wrong date?</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Why do my Google Photos have the wrong date?</h1>
+        <p class="art-intro">You downloaded years of photographs from Google Takeout, and every one of them says it was taken on the day you downloaded it. Ten years of pictures land in your photo app as a single enormous day.</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Can you get it back?</h2>
+        <p>Almost certainly. Counted across one real Takeout of more than two thousand photographs: about half still carry their capture date inside the file, and for the other half it sits in a small JSON file beside the picture. Fewer than one in a hundred had no date anywhere at all. So it is nearly always already in the folder you downloaded - but for around half the library that JSON file is the only copy that exists, which makes deleting them the one mistake here you cannot undo.</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>What actually happened</h2>
+        <p>Two different things go wrong here and they get run together. The first happens to everybody: the file that lands on your disk carries a modification time of the moment Google packed it, and most photo software sorts by exactly that. So the pictures arrive as one enormous day stamped with the date you pressed download, whatever else is true about them.</p>
+        <p>The second is the one worth measuring. Takeout is widely said to strip the capture date out of every photograph. Counted across more than two thousand pictures in a real export, about half still carried it and about half did not. For that half, the JSON file beside the picture holds the only copy of the date that exists anywhere, and once it is gone no tool can work the date out again.</p>
+      </section>
+
+      <div class="note prob-gotcha">
+        <strong>The half that are fine are what make this so confusing</strong>
+        <p>Because the split is roughly even, two people can look at the same kind of export and come away certain of opposite things. Whoever checks a photograph from the half that kept its date concludes Takeout is fine and the problem is their photo app. Whoever checks one from the other half concludes Takeout strips everything. Both are half right, which is why the advice online contradicts itself. The practical consequence is that a tool assuming the date is always in the file writes nothing for half your library and reports success. Where a photograph carried a date in both places the two agreed every single time, across more than a thousand of them, so the sidecar can be trusted for the half that need it.</p>
+      </div>
+
+      <section class="prob-fix">
+        <h2>How to fix it</h2>
+        <p>You do not need us for this. Two routes, both free.</p>
+        <dl><dt>exiftool, if you are comfortable in a terminal</dt><dd>Check what your sidecars are actually called before you run anything. In the export measured here every single sidecar was named IMG_1234.jpg.supplemental-metadata.json, and the widely copied one-liner that ends .json matches none of those - it runs, reports no errors, and writes nothing. Matching the name that is really there: exiftool -r -d %s -tagsfromfile &quot;%d%f.%e.supplemental-metadata.json&quot; &quot;-DateTimeOriginal&lt;PhotoTakenTimeTimestamp&quot; -overwrite_original -ext jpg . Google is also reported to cut that long suffix off partway when the whole file name runs long, giving names like .supplemental-me.json. A fixed pattern skips every one of those too, and exiftool will not tell you how many it skipped.</dd><dt>Google Photos Takeout Helper, if you would rather not</dt><dd>An open-source command line tool built for this exact job, and it handles the naming variants. If all you want is your Google photographs dated correctly and written into folders, it does that well and it is the right answer for a one-off.</dd></dl>
+      </section>
+
+      <section class="prob-ours">
+        <h2>How Muletto does it</h2>
+        <p>Muletto matches sidecars by prefix rather than by a fixed ending, so a truncated name is found as readily as the full one, and it reads the date out of the photograph itself where that is still there. It reports how many pictures it could not find a date for anywhere, rather than moving on quietly. The date and, where Google kept it, the location are written into the file, so whatever you import into afterwards reads them without needing the JSON any more. It runs in the browser and the archive is never uploaded.</p>
+        <p><a class="btn secondary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>
+
+      <section class="prob-prevent">
+        <h2>Stopping it happening again</h2>
+        <p>Keep the JSON files until the dates are written into the pictures. They look like clutter and for about half your library they are the only copy of the capture date. Once the dates are in the photographs themselves, the sidecars can go.</p>
+      </section>
+
+      <p class="confirmed-line">Measured against one real Takeout of more than two thousand photographs. Roughly half carried an embedded capture date and roughly half did not; for about half the library the sidecar held the only copy, and fewer than one per cent had no date in either place. Every sidecar used the same .supplemental-metadata.json ending, and about one media file in nine had no sidecar at all. Where both existed the two dates agreed in every case, of more than a thousand. That is one export rather than a survey, so the proportions are an indication rather than a rule - what they do settle is that the flat claim Takeout strips the date from everything is not right.</p>
+
+      <section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list"><li><a href="google.html">The Google guide</a></li><li><a href="why-tgz-will-not-open.html">why tgz will not open</a></li><li><a href="why-google-location-history-empty.html">why google location history empty</a></li></ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Read the source
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../analytics.js?v=e2665599"></script>
+  <script src="../app.js?v=4082bbc7"></script>
+
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Apple Health GDPR data export: how to request it and open it | Muletto</title>
+  <meta name="description" content="Request your Apple Health GDPR data export - health data - then open it and read what is inside. 6 steps, what actually arrives, and how long it takes (a few minutes on the phone, no waiting for anybody)." />
+  <link rel="canonical" href="https://muletto.app/guides/apple-health.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Apple Health GDPR data export: how to request it and open it | Muletto" />
+  <meta property="og:description" content="Request your Apple Health GDPR data export - health data - then open it and read what is inside. 6 steps, what actually arrives, and how long it takes (a few minutes on the phone, no waiting for anybody)." />
+  <meta property="og:url" content="https://muletto.app/guides/apple-health.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=dca5de16" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to request and open your Apple Health GDPR data export","description":"Request your Apple Health GDPR data export - health data - then open it and read what is inside. 6 steps, what actually arrives, and how long it takes (a few minutes on the phone, no waiting for anybody).","step":[{"@type":"HowToStep","position":1,"name":"Do it on the iPhone, not the watch or a Mac","text":"The export lives in the Health app on the phone. There is no route from a Mac, from iCloud.com or from the watch, and no way to request it from Apple. If you have no iPhone, you have no export."},{"@type":"HowToStep","position":2,"name":"Open Health and tap your own picture","text":"The button is your profile picture or initials in the top right corner of the Summary tab. It is easy to miss because it looks like an account button rather than a menu, and everything below is in a plain list with no search."},{"@type":"HowToStep","position":3,"name":"Scroll to the very bottom for Export All Health Data","text":"It is the last item on that screen, below Privacy, Units and the rest. Nothing above it hints that an export exists. Tap it, then confirm on the sheet that appears."},{"@type":"HowToStep","position":4,"name":"Wait while it builds, and do not leave the app","text":"A spinner appears and the phone assembles the file. On a few years of watch data this can take several minutes, and backgrounding the Health app can abandon it with no message. Leave the screen on and wait."},{"@type":"HowToStep","position":5,"name":"Send it somewhere you can actually reach","text":"The share sheet opens when it is done. Save to Files, or to iCloud Drive, rather than mailing it to yourself - it is routinely too large for an email attachment and the failure is silent. If you are moving it to a computer, Save to Files then copy it over by cable is the most reliable."},{"@type":"HowToStep","position":6,"name":"Check the size before you trust it","text":"You should get export.zip. Open it and you should see export.xml, usually much larger than the zip. A file of a few kilobytes means the export produced almost nothing, which happens if Health has never had data written to it on this phone - start it again rather than assuming that is all there is."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Apple Health","item":"https://muletto.app/guides/apple-health.html"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why is Health not in my Apple data and privacy export?","acceptedAnswer":{"@type":"Answer","text":"Because Apple cannot read it. Health is end-to-end encrypted in iCloud for every account, with no setting to change, so what Apple stores is a blob it has no key for. A data request can only return what the company can decrypt. This is the encryption doing its job rather than Apple withholding anything, and it is why the only route is the phone."}},{"@type":"Question","name":"Can I get it from iCloud.com or from a Mac?","acceptedAnswer":{"@type":"Answer","text":"No. Health data is not offered on iCloud.com and the Mac has no Health app. The iPhone is the only place the export exists."}},{"@type":"Question","name":"Why is the file so enormous?","acceptedAnswer":{"@type":"Answer","text":"Everything is written as one XML document with an element per reading. A watch records heart rate, steps, and often blood oxygen and temperature, all day every day, so a few years produces tens of millions of elements. The zip compresses it well, which is why the file inside is so much bigger than the file you downloaded."}},{"@type":"Question","name":"What is export_cda.xml?","acceptedAnswer":{"@type":"Answer","text":"A second file in the Clinical Document Architecture format, meant for sharing with health providers. It carries a subset of the same information and most tools ignore it in favour of export.xml."}},{"@type":"Question","name":"Can Muletto open it?","acceptedAnswer":{"@type":"Answer","text":"Not yet. The health page already exists and reads Samsung Health, and Apple Health is the next provider planned for it, but the parser is not written. The guide is here because getting the export off the phone is worth doing now - the file only covers what your phone still holds, so exporting later means exporting less."}}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html" class="active">Guides</a>
+          <a href="../pricing.html">Pricing <em class="nav-free">(free)</em></a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../app.html">Open an export</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span>/</span>
+        <a href="../guides.html">Guides</a>
+        <span>/</span>
+        <span aria-current="page">Apple Health</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>How to export your data from Apple Health</h1>
+        <p class="art-kicker">Requesting the GDPR export, what arrives, and how to open it.</p>
+        <div class="art-meta">
+          <span class="badge easy">easy</span>
+          <span class="muted">Wait: a few minutes on the phone, no waiting for anybody</span>
+        </div>
+        <p class="art-intro">Apple Health is required to give you a copy of the data it holds about you, including health data. The request itself is free, and arrives as .zip containing export.xml. Typical wait: a few minutes on the phone, no waiting for anybody.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="https://support.apple.com/en-us/HT203037" target="_blank" rel="noopener noreferrer">Apple&#39;s Health support page <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          
+
+          <h2>Step by step</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Do it on the iPhone, not the watch or a Mac</h3>
+              <p>The export lives in the Health app on the phone. There is no route from a Mac, from iCloud.com or from the watch, and no way to request it from Apple. If you have no iPhone, you have no export.</p>
+              
+            </li>
+            <li>
+              <h3>Open Health and tap your own picture</h3>
+              <p>The button is your profile picture or initials in the top right corner of the Summary tab. It is easy to miss because it looks like an account button rather than a menu, and everything below is in a plain list with no search.</p>
+              
+            </li>
+            <li>
+              <h3>Scroll to the very bottom for Export All Health Data</h3>
+              <p>It is the last item on that screen, below Privacy, Units and the rest. Nothing above it hints that an export exists. Tap it, then confirm on the sheet that appears.</p>
+              
+            </li>
+            <li>
+              <h3>Wait while it builds, and do not leave the app</h3>
+              <p>A spinner appears and the phone assembles the file. On a few years of watch data this can take several minutes, and backgrounding the Health app can abandon it with no message. Leave the screen on and wait.</p>
+              
+            </li>
+            <li>
+              <h3>Send it somewhere you can actually reach</h3>
+              <p>The share sheet opens when it is done. Save to Files, or to iCloud Drive, rather than mailing it to yourself - it is routinely too large for an email attachment and the failure is silent. If you are moving it to a computer, Save to Files then copy it over by cable is the most reliable.</p>
+              
+            </li>
+            <li>
+              <h3>Check the size before you trust it</h3>
+              <p>You should get export.zip. Open it and you should see export.xml, usually much larger than the zip. A file of a few kilobytes means the export produced almost nothing, which happens if Health has never had data written to it on this phone - start it again rather than assuming that is all there is.</p>
+              
+            </li>
+          </ol>
+
+          
+          <h2 id="open">Opening your Apple Health export</h2>
+          <p>Muletto opens a Apple Health export and lists everything in it. There is no reader written specifically for this service yet, so its tables are shown as Apple Health wrote them - which is still a great deal more than a folder of files.</p>
+          <p>It runs in the browser: the archive is never uploaded, there is no account, and nothing is installed. Open several exports at once and they become one library, with the photographs that appear in more than one of them found automatically.</p>
+          <div class="note">This is not part of Apple&#39;s Data and Privacy export and never will be. Health is end-to-end encrypted in iCloud, so Apple holds it as a blob it has no key for and cannot hand it over.</div>
+          <p><a class="btn primary" href="../app.html">Open your Apple Health export
+            <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+
+          <h2>Worth knowing</h2>
+          <div class="note">This is not part of Apple&#39;s Data and Privacy export and never will be. Health is end-to-end encrypted in iCloud, so Apple holds it as a blob it has no key for and cannot hand it over.</div>
+          <div class="note">Everything is in one XML file. Years of watch data commonly runs to several hundred megabytes of it, which is why so many tools fail on the file rather than on the data.</div>
+          <div class="note">There is a second file, export_cda.xml, in a clinical format. It holds a subset and most tools ignore it.</div>
+
+          <h2>Common questions</h2>
+          <div class="faq">
+            <details class="faq-q">
+              <summary>Why is Health not in my Apple data and privacy export?</summary>
+              <p>Because Apple cannot read it. Health is end-to-end encrypted in iCloud for every account, with no setting to change, so what Apple stores is a blob it has no key for. A data request can only return what the company can decrypt. This is the encryption doing its job rather than Apple withholding anything, and it is why the only route is the phone.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Can I get it from iCloud.com or from a Mac?</summary>
+              <p>No. Health data is not offered on iCloud.com and the Mac has no Health app. The iPhone is the only place the export exists.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Why is the file so enormous?</summary>
+              <p>Everything is written as one XML document with an element per reading. A watch records heart rate, steps, and often blood oxygen and temperature, all day every day, so a few years produces tens of millions of elements. The zip compresses it well, which is why the file inside is so much bigger than the file you downloaded.</p>
+            </details>
+            <details class="faq-q">
+              <summary>What is export_cda.xml?</summary>
+              <p>A second file in the Clinical Document Architecture format, meant for sharing with health providers. It carries a subset of the same information and most tools ignore it in favour of export.xml.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Can Muletto open it?</summary>
+              <p>Not yet. The health page already exists and reads Samsung Health, and Apple Health is the next provider planned for it, but the parser is not written. The guide is here because getting the export off the phone is worth doing now - the file only covers what your phone still holds, so exporting later means exporting less.</p>
+            </details>
+          </div>
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>At a glance</h4>
+            <dl>
+              <dt>Effort</dt><dd>easy</dd>
+              <dt>Typical wait</dt><dd>a few minutes on the phone, no waiting for anybody</dd>
+              <dt>Format</dt><dd>.zip containing export.xml</dd>
+              <dt>Delivery</dt><dd>on device</dd>
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Other services</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+              <li><a href="samsung.html"><span class="side-ic" data-icon="samsung"></span>Samsung</a></li>
+              <li><a href="facebook.html"><span class="side-ic" data-icon="facebook"></span>Facebook</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Where to keep your data</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">muletto</a>
+      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
+      <div class="foot-links">
+        <a href="../guides.html">Guides</a>
+        <a href="../app.html">Open export</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../privacy.html">Privacy</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Read the source
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../analytics.js?v=e2665599"></script>
+  <script src="../app.js?v=4082bbc7"></script>
+
+</body>
+</html>
