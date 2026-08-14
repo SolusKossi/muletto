@@ -41,6 +41,7 @@
     }
   ],
   "notes": [
+    "Photographs are not in the bulk export. The activity data is - one file per activity plus an activities.csv summarising every one of them with date, type, distance, moving time, elevation, heart rate, calories and gear - but the pictures you attached to those activities are not, and there is no option that adds them. The per-activity files come back in whatever format the activity was originally recorded in, GPX or FIT or TCX, and you cannot ask for one format across the lot; a run from a watch and a ride from a phone can arrive as different file types in the same download.",
     "Your activity files come back exactly as they went in, so one folder can hold .fit, .gpx and .tcx files and gzipped versions of all three.",
     "Activities entered by hand have no file at all and an empty filename column.",
     "The archive contains your photos and private notes as well as the tracks."

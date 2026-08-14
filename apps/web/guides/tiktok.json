@@ -41,6 +41,7 @@
     }
   ],
   "notes": [
+    "The export does not contain your videos. It contains links to them, held on TikTok's servers, and a link is not a copy - if the account goes or the platform does, so do they. If the videos are the reason you are exporting, save them separately rather than relying on this. Two other things worth knowing before you request: choose JSON rather than TXT, because TXT is a readable summary with the structure thrown away and cannot be parsed back into anything, and the download link is reported to last only about four days, after which the file is gone and the only route is to request it again and wait again.",
     "No media of any kind is included. Your own videos, your profile picture and anything sent in a message are all URLs pointing back at TikTok.",
     "The last day or two of activity is usually missing, because of how far behind the export runs.",
     "Everything is in one file. For a heavy account that is tens of megabytes of JSON in a single document."

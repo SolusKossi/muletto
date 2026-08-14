@@ -40,6 +40,7 @@
     }
   ],
   "notes": [
+    "What the default request leaves out, and it is most of it: the standard download covers roughly the last year of listening. Everything before that is Extended streaming history, which is a separate tick on the same page and is answered on a completely different timescale - days for the standard one, weeks for the extended. If you want your listening history rather than your recent listening, tick it, and expect to wait. Spotify has also had spells where extended history came back with streams missing the identifiers that say which track was played, which makes those rows unusable; if yours looks like that, request it again rather than assuming that is all there is.",
     "The two packages are requested together but arrive separately, sometimes days apart. It is easy to open the first one and assume that is all there is.",
     "Files are numbered with a counter that never resets, and sorting them alphabetically puts part 10 before part 2.",
     "A field recording whether a track was skipped was not populated at all between 2015 and late 2022."

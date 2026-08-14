@@ -41,6 +41,7 @@
     }
   ],
   "notes": [
+    "Your messages are in the package, which surprises people who expect otherwise - but only yours. A server's conversation is not exported to you, so a thread reads as your half of it with the replies absent. Anything you deleted by hand is gone from Discord and so is absent here too, and the package is a set of JSON files rather than anything readable, so it needs a tool to make sense of.",
     "Only your own messages are included. What other people wrote in the same conversation is not, so an exported chat reads as one half of it.",
     "Attachments are links rather than files, and those links are signed and expire. By the time an old export is opened they are usually dead.",
     "The activity folder is line-separated JSON rather than a JSON array, and for most accounts it is the bulk of the download."
