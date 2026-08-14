@@ -28,7 +28,7 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "981056853c36";
+const VERSION = "19d73f7e1096";
 const PRECACHE = [
   "/app.html",
   "/styles.css?v=dca5de16",
@@ -51,22 +51,23 @@ const PRECACHE = [
   "/exif.js?v=7b45a4ab",
   "/heif.js?v=d0ffffd5",
   "/video.js?v=a66813af",
+  "/applehealth.js?v=abef83f7",
   "/mbox.js?v=ee10197f",
   "/diagnose.js?v=d97b3ff8",
   "/contribute.js?v=c3b34297",
   "/mojibake.js?v=38849a41",
-  "/parsers.js?v=2460ad90",
-  "/catalog.js?v=9f58f444",
+  "/parsers.js?v=ceb8c8ea",
+  "/catalog.js?v=80ec9f61",
   "/insights.js?v=48350dd1",
   "/basemap.js?v=cbb6dfca",
   "/rail.js?v=b4bc5944",
   "/charts.js?v=5c0f8d4a",
-  "/topics.js?v=6cd7ed7d",
+  "/topics.js?v=627df103",
   "/views.js?v=11bc783b",
   "/export.js?v=58dc2cdb",
   "/explorer.js?v=86f22d6e",
   "/disclose.js?v=b24e640b",
-  "/app.js?v=4082bbc7",
+  "/app.js?v=1fdb52c3",
   "/swreg.js?v=266bec3b",
   "/fonts/host-grotesk-var-italic.woff2",
   "/fonts/host-grotesk-var.woff2"

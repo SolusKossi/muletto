@@ -1,0 +1,76 @@
+{
+  "slug": "microsoft",
+  "provider": "Microsoft",
+  "icon": "cloudup",
+  "confirmed": {
+    "flow": null,
+    "import": null
+  },
+  "difficulty": "medium",
+  "wait_time": "up to 30 days for the archive, minutes for the parts that matter",
+  "delivery": "download-page",
+  "format": ".zip containing JSON and CSV, plus separate downloads",
+  "data_types": [
+    "activity",
+    "search",
+    "records"
+  ],
+  "request": {
+    "url": "https://account.microsoft.com/privacy/download-data",
+    "label": "Microsoft privacy dashboard"
+  },
+  "notes": [
+    "The thing people expect and do not get: the privacy dashboard archive holds activity and usage records, not your files and not your email. OneDrive and Outlook are separate downloads from separate places, and both are faster than waiting for the archive.",
+    "Microsoft quotes up to 30 days. The two downloads that hold your actual content take minutes, so start the archive and then go and collect those rather than waiting.",
+    "A work or school account is not the same thing. Those requests go through whoever administers the tenant, and the dashboard will show far less or nothing at all."
+  ],
+  "muletto_support": {
+    "importable": false,
+    "adapter": null,
+    "status": "none"
+  },
+  "steps": [
+    {
+      "title": "Start the archive first, because it is the slow one",
+      "detail": "Sign in at account.microsoft.com/privacy, choose Download your data, then Create new archive. Tick every category offered rather than accepting the default selection - App and service usage is the one that carries the most, but browsing, search and location are separate ticks and are easy to leave behind."
+    },
+    {
+      "title": "Understand what that archive will and will not hold",
+      "detail": "It holds records of what you did: searches, app and service usage, browsing history, location history, media consumption. It does not hold your OneDrive files and it does not hold your email. If you stop here you will get a picture of your behaviour and none of your things."
+    },
+    {
+      "title": "Get OneDrive separately, and do not use the browser for a large one",
+      "detail": "Sign in at onedrive.com, select the top-level folders and choose Download; the browser zips them for you. For anything large this is slow and fails quietly on a poor connection. The OneDrive desktop app is more reliable: let it sync the folders you want, then copy them off. Files marked online-only need Always keep on this device before they exist locally."
+    },
+    {
+      "title": "Export Outlook.com mail from its own settings",
+      "detail": "In Outlook.com go to Settings, then General, then Privacy and data, and use the export option there. Contacts and calendar export separately from within People and Calendar. None of this appears in the privacy dashboard archive."
+    },
+    {
+      "title": "Collect Bing search history from the dashboard itself",
+      "detail": "Search history is viewable and exportable on the privacy dashboard directly, without waiting for the archive. If searches are what you are after, this is the quick route."
+    },
+    {
+      "title": "Come back for the archive when the mail arrives",
+      "detail": "Microsoft mails you when it is ready and the download sits at account.microsoft.com/privacy/download-data. Check that page rather than relying on the mail - it lists the archives you have requested and their status, which is the more reliable route if the address on the account is one you no longer read."
+    }
+  ],
+  "faq": [
+    {
+      "q": "Why is my OneDrive not in the download?",
+      "a": "Because the privacy dashboard exports records about you rather than the files you stored. Your documents and photographs live in OneDrive and come out of OneDrive, at onedrive.com or through the desktop app. The same is true of email, which comes out of Outlook.com's own settings. The archive is a record of activity, and it is easy to read the words Download your data as a promise of more than that."
+    },
+    {
+      "q": "How long does it really take?",
+      "a": "Microsoft says up to 30 days and it is often much less, but there is no progress indicator and no way to hurry it. The practical answer is to request it and then collect OneDrive and Outlook in the meantime, because those are the parts that hold anything you would miss."
+    },
+    {
+      "q": "What about a work or school account?",
+      "a": "A Microsoft 365 account belonging to an employer or a university is administered by them, not by you. The consumer privacy dashboard will show little or nothing for it. Those requests go to whoever runs the tenant, and what you get back is up to their policy."
+    },
+    {
+      "q": "Can Muletto open it?",
+      "a": "Not yet. The archive is JSON and CSV, which is a shape it already reads elsewhere, but no Microsoft export has been opened here so nothing has been written for it. It is on the list. Files pulled out of OneDrive are ordinary files and can be dropped in like any other folder."
+    }
+  ]
+}

@@ -141,12 +141,15 @@
   <script src="exif.js?v=7b45a4ab"></script>
   <script src="heif.js?v=d0ffffd5"></script>
   <script src="video.js?v=a66813af"></script>
+  <!-- Apple Health export.xml, streamed. 161 MB in a real one, so it is
+       never held. Must load before parsers.js, which calls it. -->
+  <script src="applehealth.js?v=abef83f7"></script>
   <script src="mbox.js?v=ee10197f"></script>
   <script src="diagnose.js?v=d97b3ff8"></script>
   <script src="contribute.js?v=c3b34297"></script>
   <script src="mojibake.js?v=38849a41"></script>
-  <script src="parsers.js?v=2460ad90"></script>
-  <script src="catalog.js?v=9f58f444"></script>
+  <script src="parsers.js?v=ceb8c8ea"></script>
+  <script src="catalog.js?v=80ec9f61"></script>
   <script src="insights.js?v=48350dd1"></script>
   <script src="basemap.js?v=cbb6dfca"></script>
   <script src="rail.js?v=b4bc5944"></script>
@@ -155,13 +158,13 @@
   <!-- Health charts, chosen by what the number means. Must load before
        topics.js, which asks it to draw. -->
   <script src="charts.js?v=5c0f8d4a"></script>
-  <script src="topics.js?v=6cd7ed7d"></script>
+  <script src="topics.js?v=627df103"></script>
   <script src="views.js?v=11bc783b"></script>
   <script src="export.js?v=58dc2cdb"></script>
   <script src="explorer.js?v=86f22d6e"></script>
   <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="disclose.js?v=b24e640b"></script>
-  <script src="app.js?v=4082bbc7"></script>
+  <script src="app.js?v=1fdb52c3"></script>
   <script src="swreg.js?v=266bec3b"></script>
 </body>
 </html>

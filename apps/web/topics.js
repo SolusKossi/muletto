@@ -403,6 +403,10 @@ const MTopics = (function () {
     calories: { family: "move", chart: "bars" },
     distance: { family: "move", chart: "bars" },
     active:   { family: "move", chart: "bars" },
+    /* Apple's three. Walking speed is a slow measure, so a line; headphone
+       volume is a level rather than a total, so a line too. */
+    walkspeed:{ family: "move", chart: "line" },
+    audio:    { family: "body", chart: "line" },
     exercise: { family: "move", chart: "dots" },
     sleep:    { family: "rest", chart: "band", lead: true },
     stress:   { family: "rest", chart: "line" },

@@ -262,7 +262,10 @@ const SIGNATURES = [
   { slug: "instagram", label: "Instagram", pats: ["your_instagram_activity", "instagram/", "/media/posts"] },
   { slug: "facebook", label: "Facebook", pats: ["your_facebook_activity", "facebook/", "personal_information/"] },
   { slug: "snapchat", label: "Snapchat", pats: ["memories_history", "chat_history", "snap_history", "json/account.json"] },
-  { slug: "apple", label: "Apple", pats: ["icloud", "apple media services", "apple id account", "apple_id"] },
+  /* apple_health_export is the folder inside the Health app's own zip, which
+     is a different export from a different place and shares none of the other
+     names. Without it a Health file is not recognised as Apple at all. */
+  { slug: "apple", label: "Apple", pats: ["icloud", "apple media services", "apple id account", "apple_id", "apple_health_export"] },
   { slug: "samsung", label: "Samsung", pats: ["samsung", "com.sec.", "com.samsung"] },
   /* A Reddit export is a flat bag of CSVs with no folder and no manifest, so
      it has to be recognised by the set of names rather than by one of them.

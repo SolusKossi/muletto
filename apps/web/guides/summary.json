@@ -85,6 +85,15 @@
       ]
     },
     {
+      "slug": "microsoft",
+      "provider": "Microsoft",
+      "icon": "cloudup",
+      "difficulty": "medium",
+      "wait_time": "up to 30 days for the archive, minutes for the parts that matter",
+      "typical_size": "10 MB to several GB",
+      "contents": []
+    },
+    {
       "slug": "snapchat",
       "provider": "Snapchat",
       "icon": "snapchat",

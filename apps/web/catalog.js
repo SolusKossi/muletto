@@ -132,15 +132,31 @@ const MCatalog = (function () {
        meaning. It stays a table. */
     { key: "active", name: "Active minutes", match: /move minutes|active minutes/i,
       needs: null, holds: "Time spent moving enough to count." },
+    /* Apple Health writes these and Samsung does not, so nothing matched them
+       until a real Health export was read. Flights climbed already had a
+       SHAPE entry and no catalogue kind at all, so it could never have been
+       found whoever produced it. */
+    { key: "floors", name: "Floors climbed", match: /flights? ?climbed|floors? ?climbed/i,
+      needs: null, holds: "Flights of stairs, per day." },
+    { key: "walkspeed", name: "Walking speed", match: /walking speed/i,
+      needs: "An iPhone carried in a pocket, or a watch.",
+      holds: "How fast you walk, averaged over a day." },
+    { key: "audio", name: "Headphone volume", match: /headphone audio|audio exposure/i,
+      needs: "Headphones paired to the phone.",
+      holds: "How loud you listen, and for how long." },
     { key: "heart", name: "Heart rate", match: /heart[ _]?rate/i,
       needs: "A watch, or an older Galaxy with a sensor on the back.",
       holds: "Every reading taken." },
-    { key: "sleep", name: "Sleep", match: /\bsleep\b/i,
+    /* "Time in bed" is here because a phone without a watch records only that,
+       and it is deliberately not called sleep - the phone knows when it was
+       put down, not when anybody fell asleep. The series keeps the honest
+       name and still lands in the right panel. */
+    { key: "sleep", name: "Sleep", match: /\bsleep\b|time in bed/i,
       needs: "A watch or ring worn overnight.",
       holds: "Time asleep, and the stages within it." },
     { key: "exercise", name: "Workouts", match: /exercise|workout/i,
       needs: null, holds: "Each session, with pace, route and heart rate." },
-    { key: "weight", name: "Weight", match: /weight|body[ _]?composition/i,
+    { key: "weight", name: "Weight", match: /weight|body[ _]?(composition|mass)/i,
       needs: null, holds: "Weight over time, with body composition from a smart scale." },
     { key: "stress", name: "Stress", match: /stress/i,
       needs: "A watch or ring.", holds: "Stress readings through the day." },

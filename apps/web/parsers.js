@@ -621,6 +621,42 @@ const MParse = (function () {
     if (!lib.media.length && lib.tables.length) {
       lib.notes.push("This part of your Apple export contains account and service records. Photos arrive in a separate iCloud Photos archive - open that file too.");
     }
+
+    /* Apple Health, which is a separate export from the phone rather than part
+       of this one - Health is end-to-end encrypted, so Apple cannot include
+       it. Read here because it is still an Apple archive and belongs in the
+       same library. Streamed: 161 MB of XML in a real one. */
+    const healthXml = entries.find((e) => /(^|\/)export\.xml$/i.test(e.name) &&
+                                          /apple_health_export/i.test(e.name));
+    if (healthXml && typeof MAppleHealth !== "undefined") {
+      try {
+        const res = await MAppleHealth.index(await MZip.streamEntry(file, healthXml));
+        /* Active and basal energy both read as "energy burned" and so both
+           match the calories kind, which would give two panels with the same
+           title. Active is the one people mean by calories burned; basal is
+           what a body costs to keep running and is kept as a table. */
+        for (const t of res.types) {
+          /* Renamed, not dropped. Both energy series match the calories kind,
+             which would put two panels on the page with the same title and
+             different numbers. Active energy is what anybody means by calories
+             burned; basal is what a body costs to keep running, and "Resting
+             energy" is Apple's own other name for it - so it keeps its data,
+             loses the collision, and says what it is. */
+          const label = /^Basal energy/i.test(t.label) ? "Resting energy" : t.label;
+          lib.tables.push({
+            name: label + (t.unit ? " (" + t.unit + ")" : ""),
+            path: "apple_health_export/Health/" + label + ".csv",
+            columns: ["Date", label],
+            rows: t.points.map((p) => [p[0], p[1]]),
+          });
+        }
+        if (res.records) {
+          lib.insights.push({ n: res.records.toLocaleString(), label: "Health records" });
+        }
+      } catch (err) {
+        lib.notes.push("The Health export in this archive could not be read. Everything else in it opened normally.");
+      }
+    }
     return lib;
   }
 
@@ -820,7 +856,7 @@ const MParse = (function () {
         });
       }
       if (series.size) {
-        lib.stats.push({ n: series.size.toLocaleString(), label: "Fit measurements" });
+        lib.insights.push({ n: series.size.toLocaleString(), label: "Fit measurements" });
       }
     }
 

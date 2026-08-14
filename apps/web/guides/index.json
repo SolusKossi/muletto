@@ -75,6 +75,11 @@
       ]
     },
     {
+      "slug": "microsoft",
+      "typical_size": "10 MB to several GB",
+      "contents": []
+    },
+    {
       "slug": "snapchat",
       "typical_size": "under 100 MB without Memories, tens of GB with",
       "contents": [
