@@ -335,3 +335,141 @@ body::before {
   --foot-3: #100c19;
   --foot-4: #110d1b;
 }
+
+/* ---------- everything the sweep tokenised ---------- */
+
+/* These were literals scattered through styles.css until they were given
+   names. Each default there is the light value it replaced; these are what
+   the same roles need on a dark ground. Grouped the way they are used rather
+   than by hue, so a future theme can see what each one is for. */
+:root {
+  /* A solid, high-contrast control. The light theme fills it with ink and
+     writes in paper; here the ink is pale, so the fill is the accent. */
+  --fill-bg: #b06cf0;
+  --fill-ink: #0a0710;
+  --tip-bg: #241c38;
+
+  /* Danger, which has to stay legible rather than stay the same red. */
+  --danger: #ff8f8f;
+  --danger-strong: #ffa3a3;
+  --danger-strong-2: #ff9d9d;
+  --danger-bright: #ff6b6b;
+  --danger-deep: #ff7a7a;
+  --danger-soft: #2a1620;
+  --danger-soft-2: #301820;
+
+  /* Caution. The warm paper tints go to a warm dark; the browns go to amber,
+     because a brown on near-black is mud. */
+  --warn-bg: #2a2015;
+  --warn-bg-2: #2a1f14;
+  --warn-bg-3: #281e14;
+  --warn-bg-4: #2b2116;
+  --warn-bg-5: #33260f;
+  --warn-line: #4a3a1e;
+  --warn-line-2: #4a3a22;
+  --warn-ink: #e8b866;
+  --warn-ink-2: #e0b060;
+  --warn-ink-3: #edc079;
+  --warn-ink-4: #e5b76a;
+  --warn-ink-5: #dcae62;
+  --warn-ink-6: #d9ab60;
+
+  /* The data-type colour coding, brightened enough to read on near-black
+     while keeping the hues people already associate with each kind. */
+  --c-photo: #6aa5ff;
+  --c-video: #b18cff;
+  --c-chat: #45d6a0;
+  --c-place: #ffbe4d;
+  --c-event: #93a3bb;
+
+  /* Tinted panels: the paper tint becomes a wash of the same hue. */
+  --tint-blue: #16213a;         --tint-blue-ink: #86b4ff;
+  --tint-violet: #241a38;       --tint-violet-ink: #c7a3ff;
+  --tint-green: #12281f;        --tint-green-ink: #4fd39c;
+  --tint-green-line: #26443a;   --tint-green-ink-2: #5cc79a;
+  --tint-green-ink-3: #6ed0a6;
+  --tint-sky: #16202e;          --tint-sky-line: #2a3c52;
+  --tint-sky-line-2: #33465e;   --tint-sand: #241f18;
+
+  /* Lines, scrollbars and quiet icons. */
+  --scroll-thumb: #2f2648;      --scroll-thumb-2: #362c52;
+  --scroll-thumb-3: #40355f;
+  --line-hi: #3a2f56;           --line-hi-2: #3a2f56;
+  --line-dash: #372c52;
+  --line-soft: #241d38;         --line-soft-2: #241d38;
+  --line-soft-3: #241d38;       --line-soft-4: #1e1830;
+  --line-soft-5: #241d38;       --line-soft-6: #2a2140;
+  --line-soft-7: #241d38;       --line-soft-8: #1e1830;
+  --surface-3: #171126;
+  --icon-mute: #8a82a0;         --icon-mute-2: #6f6788;
+  --icon-mute-3: #7d7594;
+  --ink-soft: #b3abc6;          --ink-soft-2: #9b93b0;
+}
+
+/* The one filled control that keeps using --ink-2 for its fill, because in
+   the light theme that is pure black and changing it would have moved the
+   original by a shade. Here --ink-2 is white, which is far too loud for a
+   selected toggle, so it takes the accent instead. */
+.sw-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* ---------- the app shell, second pass ---------- */
+
+/* Nothing below the footer.
+ *
+ * The body paints the page ground and the footer paints its own, so any space
+ * past the end of the content showed the ground again as a darker band under
+ * the footer - which reads as an empty section nobody put there. Giving the
+ * root the footer's colour means whatever is past the last element is the
+ * footer's colour too, and the band disappears without anything being hidden. */
+html { background: var(--foot-bg); }
+
+/* Resume and Start fresh.
+ *
+ * The card was a pale violet panel carrying two pale buttons, which on this
+ * theme read as a lit box rather than an offer. It is now a dark panel, the
+ * primary action is the only filled thing on it, and Start fresh is a quiet
+ * button that gains an edge and a background on hover rather than only a
+ * colour - it had a colour change alone, which on hover was invisible against
+ * the panel it sat on. */
+.resume-card {
+  background: linear-gradient(168deg, rgba(176, 108, 240, .10), rgba(0, 0, 0, .30) 70%), #0f0b18;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+}
+.resume-card strong { color: var(--ink); }
+.resume-card .btn.primary {
+  background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
+}
+.resume-card .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn.ghost {
+  color: var(--muted);
+  border: 1px solid transparent;
+  background: transparent;
+  transition: color var(--t) var(--ease), background var(--t) var(--ease),
+              border-color var(--t) var(--ease);
+}
+.btn.ghost:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--line-hi);
+}
+
+/* The sample-data note, given the same shape as the privacy note at the foot
+   of the same column - a dark panel with one coloured edge - so the two read
+   as the same kind of aside rather than as two unrelated boxes. Amber rather
+   than green, because this one is a caveat and that one is a reassurance. */
+.ex-demo {
+  background: linear-gradient(168deg, rgba(232, 184, 102, .07), rgba(0, 0, 0, .25) 70%), #0d0916;
+  border: 1px solid #241d36;
+  border-left: 2px solid var(--warn-ink);
+}
+.ex-demo strong { color: var(--warn-ink); }
+.ex-demo p { color: var(--muted); }
+
+/* The map. Sea and land were paper tints; on a dark ground they need to be
+   two dark values that still separate, with the coastline doing the work the
+   contrast used to do. */
+.mm-sea { fill: #0c1018; }
+.mm-land { fill: #191426; stroke: #322a4a; }
+.mm-dots circle { fill: var(--accent); fill-opacity: .7; }
+.mm-here { fill: var(--danger-bright); stroke: var(--bg); }
