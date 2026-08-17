@@ -105,7 +105,16 @@
    * dead ends between the reader and the sections that do have their data.
    *
    * Topic views were never listed empty, so this only affects the fixed ones. */
-  const ALWAYS = new Set(["timeline", "files"]);
+  /* Files stays because there is always at least one file - an export with
+     none of them is not an export. Timeline used to be here too and should
+     not have been: an Apple Health export carries 385,000 readings and not
+     one dated item a timeline can use, so the section sat in the list showing
+     zero, was the view that opened by default, and greeted the reader with
+     "No dated items in this export" as the first thing they saw. It now
+     demotes to the "Nothing here" line like every other empty section. The
+     default view already falls through to photos or files when there are no
+     days, so nothing lands on a section that is not there. */
+  const ALWAYS = new Set(["files"]);
   function navItems() {
     const lib = scopedLib();
     const stream = !filtering() ? state.stream : MViews.buildStream(lib);
@@ -492,7 +501,7 @@
             <button class="ex-clearsrc" id="ex-clearsrc" hidden>Show every source</button>
             <button class="ex-add" id="ex-add" data-tip="Add a second export to the same
               library - another service, or a newer download from the same one. Duplicates
-              between them are found automatically.">+ Open another export</button>
+              between them are found automatically.">+ Add another export</button>
           </div>
 
           ${state.ctx.demo ? `<div class="ex-demo">

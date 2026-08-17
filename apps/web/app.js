@@ -2276,7 +2276,27 @@ function coverageHtml(lib, want) {
 }
 
 function renderHighlights(panel, lib) {
-  const cards = (typeof MInsight !== "undefined" ? MInsight.build(lib.tables) : []);
+  /* Whatever no other page has already taken.
+   *
+   * This builds a card per table, and the Health page builds panels from the
+   * same tables, so an Apple Health export appeared in full twice - once as a
+   * dashboard and once as a heap of summaries underneath a coverage panel.
+   * That is what made this page read as a mess stealing from the others.
+   *
+   * The page is still worth having: the coverage panel is the only thing that
+   * says which services sent an archive and which sent none, and for a
+   * provider with no tailored view of its own these cards are the only thing
+   * that makes its tables readable. It just should not repeat a page that
+   * exists. `claims` already does this for contacts, calendar, notes, audio,
+   * mail and activity; health was the one it never covered. */
+  let tables = lib.tables;
+  if (typeof MTopics !== "undefined" && MTopics.findHealth) {
+    try {
+      const taken = new Set((MTopics.findHealth(lib) || []).map((h) => h.table));
+      if (taken.size) tables = tables.filter((t) => !taken.has(t));
+    } catch (e) { /* a duplicate card is better than no page */ }
+  }
+  const cards = (typeof MInsight !== "undefined" ? MInsight.build(tables) : []);
   const cover = coverageHtml(lib, "services");
   if (!cards.length && !cover) {
     panel.innerHTML = '<div class="ex-empty"><h3>Nothing to summarise yet</h3>' +

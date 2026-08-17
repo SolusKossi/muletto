@@ -643,10 +643,33 @@ const MParse = (function () {
              energy" is Apple's own other name for it - so it keeps its data,
              loses the collision, and says what it is. */
           const label = /^Basal energy/i.test(t.label) ? "Resting energy" : t.label;
+          /* The name is the label and nothing else.
+           *
+           * It carried the unit in brackets, which reads well and quietly
+           * cost most of the charts: the chart builder picks the measurement
+           * column by matching its name against the table's, and "Step count"
+           * never equals "Step count (count)". Heart rate drew anyway because
+           * its unit rule has a regex of its own, so the page looked like it
+           * worked while showing one signal out of nine. The unit is carried
+           * on the series and shown from there. */
           lib.tables.push({
-            name: label + (t.unit ? " (" + t.unit + ")" : ""),
+            name: label,
             path: "apple_health_export/Health/" + label + ".csv",
-            columns: ["Date", label],
+          /* The value column is called Value on purpose.
+           *
+           * The chart builder will not treat a column as the measurement
+           * unless a unit rule matches its name, or it is called one of
+           * value/amount/total/score/level/duration. Naming it after the
+           * signal - "Step count", "Flights climbed" - matches neither, and
+           * "Step count" is excluded outright by a rule that drops anything
+           * ending in "count" because Samsung's heart rate table carries
+           * heart_beat_count. Two of fifteen signals drew a chart, and the
+           * two that did were the two with unit rules behind them, which made
+           * it look like a working page rather than a broken one.
+           *
+           * That filter is right and stays. The table is named for the
+           * signal, so the column does not need to be. */
+            columns: ["Date", "Value"],
             rows: t.points.map((p) => [p[0], p[1]]),
           });
         }
@@ -851,7 +874,7 @@ const MParse = (function () {
              believe a loose kind like temperature or floors unless the source
              has already proved itself health-shaped, and this is how it does. */
           path: "Takeout/Fit/Daily activity metrics/" + label + ".csv",
-          columns: ["Date", label],
+          columns: ["Date", "Value"],   // see the note in the Health block
           rows,
         });
       }

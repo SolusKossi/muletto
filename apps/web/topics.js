@@ -347,7 +347,7 @@ const MTopics = (function () {
    * ones that dragged Apple's Game Center in. So the specific matchers stand
    * alone, and the loose ones are only believed inside a source that has
    * already proved itself health data some other way. */
-  const LOOSE_KINDS = new Set(["together", "rewards", "water", "food", "temp", "floors", "stress"]);
+  const LOOSE_KINDS = new Set(["together", "rewards", "water", "food", "temp", "floors", "stress", "distance"]);
 
   function findHealth(lib) {
     const kinds = (typeof MCatalog !== "undefined" && MCatalog.HEALTH) || [];
@@ -2347,7 +2347,7 @@ const MTopics = (function () {
   return Object.assign(api, { detect, draw, has, reset, precount, claims,
                               safeHtml: renderMessage, TOPICS,
                               parseVcards, parseIcs, parseActivity,
-                              ACTIVITY_FILE });
+                              ACTIVITY_FILE, findHealth });
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = MTopics;

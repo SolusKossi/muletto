@@ -124,7 +124,13 @@ const MCatalog = (function () {
        otherwise be caught by something vaguer. */
     { key: "calories", name: "Calories", match: /calorie|energy (burned|expended)/i,
       needs: null, holds: "Energy burned, per day." },
-    { key: "distance", name: "Distance", match: /^distance|distance \(m\)|distance travelled/i,
+    /* Anchored on `^` until a real Apple export showed why that cannot work:
+       the health page matches against the path and the name joined together,
+       so the haystack starts with a folder and never with the word. The panel
+       was simply absent, and the table sat in Highlights instead. Distance is
+       a plain enough word to need a health source behind it, so it is one of
+       the loose kinds rather than standing on its own. */
+    { key: "distance", name: "Distance", match: /\bdistance\b/i,
       needs: null, holds: "How far you moved." },
     /* Heart Points is deliberately not matched here. It is Google's own
        weighted score rather than a count of minutes, and matching it would
