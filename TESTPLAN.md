@@ -496,6 +496,8 @@ one household reported 90,000 clips over three and a half years.
 | WhatsApp | `-` | |
 | Snapchat memories, chat, location | `S` | **Was marked `V` on no evidence.** No Snapchat archive has ever existed on this machine - it is not in the inventory below. The pairing and merge were measured against the sample export, and the naming convention is from Snapchat's documentation rather than from a file Snapchat produced |
 | Snapchat `json/` and `html/` duplication | `S` | Same |
+| **Snapchat memories, real export** | `V` | A real export finally opened. Two archives, 607 files, 2.1 GB. Images and the timeline display correctly - 220 dated items, 480 media |
+| **Split captions, real counts** | `-` | The real export holds **480 memories with a `-main` file and 126 overlays, every one of them paired and no orphans**. 94 pair with a JPG, which is the composite path, and 32 with an MP4, which is the write-a-caption-beside path. Neither has been checked on real data yet, and the orphan path cannot be checked with this export because it contains none |
 | TikTok | `-` | |
 | X / Twitter | `-` | |
 | Discord | `-` | |
