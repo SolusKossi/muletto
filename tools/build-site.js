@@ -919,7 +919,7 @@ function problemPage(p, all) {
       ${p.muletto ? `<section class="prob-ours">
         <h2>How Muletto does it</h2>
         <p>${esc(p.muletto)}</p>
-        <p><a class="btn secondary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+        <p><a class="btn primary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
       </section>` : ""}
 
       ${p.prevent ? `<section class="prob-prevent">

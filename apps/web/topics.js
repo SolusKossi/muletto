@@ -347,7 +347,7 @@ const MTopics = (function () {
    * ones that dragged Apple's Game Center in. So the specific matchers stand
    * alone, and the loose ones are only believed inside a source that has
    * already proved itself health data some other way. */
-  const LOOSE_KINDS = new Set(["together", "rewards", "water", "food", "temp", "floors", "stress", "distance"]);
+  const LOOSE_KINDS = new Set(["together", "rewards", "water", "food", "temp", "floors", "stress", "distance", "height"]);
 
   function findHealth(lib) {
     const kinds = (typeof MCatalog !== "undefined" && MCatalog.HEALTH) || [];
@@ -411,7 +411,15 @@ const MTopics = (function () {
     active:   { family: "move", chart: "bars" },
     /* Apple's three. Walking speed is a slow measure, so a line; headphone
        volume is a level rather than a total, so a line too. */
-    walkspeed:{ family: "move", chart: "line" },
+    walkspeed:{ family: "gait", chart: "line", lead: true },
+    /* How you walk, rather than how much. Four slow measures that only mean
+       anything as a trend, so all of them are lines. */
+    steplength:   { family: "gait", chart: "line" },
+    doublesupport:{ family: "gait", chart: "line" },
+    asymmetry:    { family: "gait", chart: "line" },
+    steadiness:   { family: "gait", chart: "line" },
+    restenergy:   { family: "body", chart: "bars" },
+    height:       { family: "body", chart: "none" },
     audio:    { family: "body", chart: "line" },
     exercise: { family: "move", chart: "dots" },
     sleep:    { family: "rest", chart: "band", lead: true },
@@ -434,6 +442,7 @@ const MTopics = (function () {
     { key: "move", name: "Movement", holds: "Activity and workouts", icon: "activity" },
     { key: "rest", name: "Recovery", holds: "Sleep and stress", icon: "clock" },
     { key: "body", name: "Body", holds: "Vitals and composition", icon: "heart" },
+    { key: "gait", name: "Walking and balance", holds: "How you move, not how much", icon: "route" },
     { key: "log",  name: "Logged by hand", holds: "Meals, drinks and badges", icon: "note" },
   ];
 

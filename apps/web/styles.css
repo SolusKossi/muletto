@@ -72,6 +72,7 @@
   --fill-ink: #ffffff;
   /* The dark tooltip bubble, which was a literal in three places. */
   --tip-bg: #1b1e26;
+  --tip-ink: #f2f3f6;
   --danger: #b23b3b;
   --danger-strong: #9c3232;
   --danger-strong-2: #a03535;
@@ -2165,7 +2166,7 @@ button.ex-stat:hover { border-color: var(--accent); }
 
 .tip-bubble { position: fixed; z-index: 9999; pointer-events: none;
   padding: 9px 12px; border-radius: 9px; font-size: 12.5px; line-height: 1.5;
-  background: var(--tip-bg); color: var(--surface-3); box-shadow: var(--shadow-lg);
+  background: var(--tip-bg); color: var(--tip-ink); box-shadow: var(--shadow-lg);
   opacity: 0; transform: translateY(-3px); transition: opacity .13s ease, transform .13s ease; }
 .tip-bubble.above { transform: translateY(3px); }
 .tip-bubble.on { opacity: 1; transform: translateY(0); }
@@ -3772,3 +3773,19 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   border-radius: var(--radius); cursor: pointer; }
 .th-sel:hover { border-color: var(--ink); color: var(--ink); }
 .th-sel:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+
+/* The hover marker travels rather than jumping.
+ *
+ * charts.js moves it with a transform for exactly this reason: a geometry
+ * attribute cannot be transitioned and a transform can. This block was written
+ * once, then deleted by accident when a later edit replaced everything after a
+ * marker in this file, and nobody noticed until the movement was missed.
+ *
+ * Held back for anyone who has asked not to see motion. */
+.hv-cur { transition: transform var(--t) var(--ease-out); }
+.hv-cur-d { transition: transform var(--t) var(--ease-out), opacity var(--t-fast) linear; }
+.hv-tip { transition: transform var(--t) var(--ease-out), opacity var(--t-fast) linear; }
+@media (prefers-reduced-motion: reduce) {
+  .hv-cur, .hv-cur-d, .hv-tip { transition: none; }
+}

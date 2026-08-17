@@ -473,3 +473,68 @@ html { background: var(--foot-bg); }
 .mm-land { fill: #191426; stroke: #322a4a; }
 .mm-dots circle { fill: var(--accent); fill-opacity: .7; }
 .mm-here { fill: var(--danger-bright); stroke: var(--bg); }
+
+/* The tooltip. Its text token was mistaken for a surface during the colour
+   sweep and given a dark value, which put dark text on the dark bubble. */
+:root { --tip-ink: #ede9f6; }
+
+/* ---------- buttons ---------- */
+
+/* One button, everywhere, with a texture rather than a flat fill.
+ *
+ * The same action wore five different looks: the home page has its own button
+ * from its own design system, and the app used primary, secondary, large and
+ * active variants of another. They are one thing now - a violet fill with a
+ * light top edge, a darker foot and the same grain the panels carry, so it
+ * reads as a lit surface rather than a rectangle of colour.
+ *
+ * The grain is a pseudo-element so the gradient underneath stays editable on
+ * its own, and it is inert to the pointer so it cannot eat the click. */
+.btn.primary, .v2 .g-btn, .cta-band .btn.primary, .resume-card .btn.primary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-image: linear-gradient(180deg, #c084f5 0%, #a259e8 52%, #8f45d6 100%);
+  background-color: var(--accent);
+  border: 1px solid #8f45d6;
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28),
+              inset 0 -1px 0 rgba(0, 0, 0, .22),
+              0 1px 2px rgba(0, 0, 0, .45),
+              0 6px 18px rgba(140, 70, 214, .28);
+  transition: filter var(--t) var(--ease), box-shadow var(--t) var(--ease),
+              transform var(--t) var(--ease);
+}
+.btn.primary::after, .v2 .g-btn::after, .cta-band .btn.primary::after,
+.resume-card .btn.primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .35;
+  mix-blend-mode: overlay;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='110' height='110' filter='url(%23b)' opacity='.9'/%3E%3C/svg%3E");
+}
+.btn.primary:hover, .v2 .g-btn:hover, .cta-band .btn.primary:hover,
+.resume-card .btn.primary:hover {
+  filter: brightness(1.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .34),
+              inset 0 -1px 0 rgba(0, 0, 0, .22),
+              0 1px 2px rgba(0, 0, 0, .45),
+              0 8px 24px rgba(140, 70, 214, .40);
+}
+.btn.primary:active, .v2 .g-btn:active { transform: translateY(1px); filter: brightness(.97); }
+/* The outline variant of the same button, so a secondary action reads as the
+   same family rather than as a different control. */
+.v2 .g-btn.line, .btn.secondary {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.18));
+  border-color: var(--line-hi);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.v2 .g-btn.line:hover, .btn.secondary:hover {
+  border-color: var(--accent); color: var(--ink);
+  background-image: linear-gradient(180deg, rgba(176,108,240,.16), rgba(176,108,240,.05));
+}

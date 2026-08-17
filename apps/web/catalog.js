@@ -150,6 +150,28 @@ const MCatalog = (function () {
     { key: "audio", name: "Headphone volume", match: /headphone audio|audio exposure/i,
       needs: "Headphones paired to the phone.",
       holds: "How loud you listen, and for how long." },
+    /* The measurements a phone records about how you walk, plus the two that
+       sat homeless in Highlights because nothing named them. A health export
+       should be read on the health page in full; anything left over lands in
+       a generic list of tables, which is where these six were. */
+    { key: "steplength", name: "Step length", match: /step length/i,
+      needs: "A phone carried in a pocket, or a watch.",
+      holds: "How far you travel per step." },
+    { key: "doublesupport", name: "Double support", match: /double support/i,
+      needs: "A phone carried in a pocket.",
+      holds: "Time with both feet down, as a share of each walk." },
+    { key: "asymmetry", name: "Walking asymmetry", match: /asymmetry/i,
+      needs: "A phone carried in a pocket.",
+      holds: "How evenly your two sides move." },
+    { key: "steadiness", name: "Walking steadiness", match: /steadiness/i,
+      needs: "A recent iPhone.",
+      holds: "Apple's own estimate of how stable your walk is." },
+    { key: "restenergy", name: "Resting energy", match: /resting energy|basal energy/i,
+      needs: null, holds: "What your body spends before you do anything." },
+    /* Anchored, and the haystack starts with a folder - the same trap
+       distance fell into. Loose, so it needs a health source behind it. */
+    { key: "height", name: "Height", match: /\bheight\b/i,
+      needs: null, holds: "Recorded once, usually by hand." },
     { key: "heart", name: "Heart rate", match: /heart[ _]?rate/i,
       needs: "A watch, or an older Galaxy with a sensor on the back.",
       holds: "Every reading taken." },
