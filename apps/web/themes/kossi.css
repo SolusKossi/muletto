@@ -53,17 +53,44 @@
  * over the top. The grain is what stops a flat dark background reading as a
  * switched-off screen. */
 body {
+  position: relative;
   background-color: var(--bg);
+  /* Washes only. The grain is a layer of its own below, because a background
+     layer cannot be faded across the page and this one has to be. */
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.82'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.028' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='340' height='340' filter='url(%23c)' opacity='.4'/%3E%3C/svg%3E"),
     radial-gradient(58rem 40rem at 12% -8%, rgba(176, 108, 240, .22), transparent 62%),
-    radial-gradient(48rem 34rem at 92% 4%, rgba(64, 104, 232, .18), transparent 60%),
-    radial-gradient(40rem 30rem at 50% 108%, rgba(214, 96, 200, .12), transparent 66%);
-  background-attachment: fixed, fixed, fixed, fixed, fixed;
-  background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat;
-  background-blend-mode: overlay, soft-light, normal, normal, normal;
+    radial-gradient(48rem 34rem at 92% 4%, rgba(64, 104, 232, .16), transparent 60%),
+    radial-gradient(40rem 30rem at 50% 108%, rgba(214, 96, 200, .10), transparent 66%);
+  background-repeat: no-repeat, no-repeat, no-repeat;
   color: var(--body);
+}
+
+/* The grain, poured from the top left and running out.
+ *
+ * Not fixed and not everywhere. Tiling one noise field over the whole viewport
+ * and pinning it to the scroll is what made it read as a repeat: the same
+ * speckle sat under everything and never moved, so the eye found the tile. It
+ * is now absolute, so it stays where the page starts and scrolls away like
+ * anything else, and it is masked by a gradient from the top left corner so it
+ * is dense where the light is and gone by the time the page turns dark.
+ *
+ * Two sizes overlaid, and the coarse one is offset, so the two tiles do not
+ * line up and no single repeat is findable. */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1600px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .85;
+  mix-blend-mode: overlay;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='390' height='390'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.03' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='390' height='390' filter='url(%23c)' opacity='.55'/%3E%3C/svg%3E");
+  background-position: 0 0, 37px 91px;
+  -webkit-mask-image: radial-gradient(130% 100% at 0% 0%, #000 0%, rgba(0,0,0,.6) 32%, transparent 72%);
+  mask-image: radial-gradient(130% 100% at 0% 0%, #000 0%, rgba(0,0,0,.6) 32%, transparent 72%);
 }
 
 /* Panels lift off that ground with a gradient of their own rather than a flat
@@ -239,17 +266,58 @@ body {
    grain has to be claimed at the same weight. Hung off the theme attribute
    rather than the page's own class so it reads as this theme's doing. */
 [data-theme="kossi"] body.v2 {
+  /* Washes only, and not pinned. The grain is the shared body::before layer,
+     which already sits above this and fades from the corner. */
   background-color: var(--g-paper);
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.82'/%3E%3C/svg%3E"),
     radial-gradient(58rem 40rem at 12% -8%, rgba(176, 108, 240, .20), transparent 62%),
     radial-gradient(48rem 34rem at 92% 4%, rgba(64, 104, 232, .16), transparent 60%);
-  background-attachment: fixed, fixed, fixed;
-  background-repeat: repeat, no-repeat, no-repeat;
-  background-blend-mode: overlay, normal, normal;
+  background-repeat: no-repeat, no-repeat;
 }
-.v2 ::selection { background: rgba(176, 108, 240, .35); }
-.v2 .g-btn { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.v2 .g-btn:hover { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--accent-ink); }
-.v2 .g-btn.line { color: var(--g-ink); border-color: var(--g-line); background: none; }
-.v2 .g-btn.line:hover { border-color: var(--accent); color: var(--g-ink); }
+[data-theme="kossi"] .v2 ::selection { background: rgba(176, 108, 240, .35); }
+[data-theme="kossi"] .v2 .g-btn { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+[data-theme="kossi"] .v2 .g-btn:hover { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--accent-ink); }
+[data-theme="kossi"] .v2 .g-btn.line { color: var(--g-ink); border-color: var(--g-line); background: none; }
+[data-theme="kossi"] .v2 .g-btn.line:hover { border-color: var(--accent); color: var(--g-ink); }
+
+
+/* The seam between the pale section and the dark one, ramped between this
+   theme's own two grounds instead of from white to black. */
+:root {
+  --g-step-1: #100c1a;
+  --g-step-2: #120d1d;
+  --g-step-3: #151021;
+  --g-step-4: #171224;
+  --g-seam-body: #a79fbb;
+}
+[data-theme="kossi"] body.v2 {
+  --g-step-1: #100c1a;
+  --g-step-2: #120d1d;
+  --g-step-3: #151021;
+  --g-step-4: #171224;
+  --g-seam-body: #a79fbb;
+  /* The dark section below the seam. Kept a step lighter than the page so it
+     still reads as a section of its own rather than merging with the ground. */
+  --g-paper-2: #0d0916;
+  --g-dark: #1a1428;
+  --g-dark-2: #221a33;
+}
+
+/* The inverted band. Violet rather than the page's own near-black, so it still
+   separates from the ground it sits on. */
+:root {
+  --cta-bg: #1b1230;
+  --cta-ink: #f4f1fa;
+  --cta-body: #a79fbb;
+}
+.cta-band { border: 1px solid var(--line); }
+.cta-band .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.cta-band .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+
+/* Darker still. It is a quiet note at the foot of the sidebar, not a panel
+   that needs to lift off the page. */
+.ex-privacy {
+  background: linear-gradient(168deg, rgba(61, 220, 154, .05), rgba(0, 0, 0, .25) 70%), #0d0916;
+  border: 1px solid #241d36;
+  border-left: 2px solid var(--ok);
+}

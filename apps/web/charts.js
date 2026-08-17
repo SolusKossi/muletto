@@ -661,7 +661,48 @@ const MCharts = (function () {
         let lo = Math.min.apply(null, pts.map((q) => (q.lo === undefined ? q.v : q.lo)));
         let hi = Math.max.apply(null, pts.map((q) => (q.hi === undefined ? q.v : q.hi)));
         if (hi === lo) { lo -= 1; hi += 1; }
-        const cy = vh - 3 - ((pt.v - lo) / (hi - lo)) * (vh - 6);
+        /* Where the marker sits has to be worked out the way the chart it sits
+           on was drawn, and the three do not agree.
+           
+           A line and a band map a value between lo and hi with a 3-unit pad.
+           Bars grow from the floor against the highest value alone, so the top
+           of a bar is nowhere near what that formula gives. A dot chart puts
+           every dot on the same baseline and says the value with the radius,
+           so its y barely moves at all. One formula for all three put the
+           marker above or below the ink on two of them, which is exactly what
+           was reported and only on some charts. */
+        /* Each chart is asked where it drew the value, because the five do
+           not agree and one formula for all of them put the marker off the
+           ink on most.
+
+             line, band  a value between lo and hi inside a 3-unit pad
+             bars        grown from the floor against the highest value alone
+             dots        one baseline, the value carried by the radius
+             ridge       mirrored about the middle, so half the amplitude
+
+           Anything else - the stack, the ranked bars, the grid, the clock -
+           has a geometry this cannot reproduce, and a dot in the wrong place
+           is worse than none. Those keep the vertical line and the readout,
+           which is what people actually hover for, and lose the dot. */
+        const cl = chart.classList;
+        const kind = cl.contains("hv-bars") ? "bars"
+                   : cl.contains("hv-dots") ? "dots"
+                   : cl.contains("hv-ridge") ? "ridge"
+                   : (cl.contains("hv-line") || cl.contains("hv-band")) ? "line" : "";
+        let cy = null;
+        if (kind === "bars") {
+          const top = Math.max.apply(null, pts.map((q) => q.v)) || 1;
+          cy = vh - Math.max(1, (pt.v / top) * (vh - 2));
+        } else if (kind === "dots") {
+          cy = vh - 2 - (1.4 + 1.8 * ((pt.v - lo) / (hi - lo)));
+        } else if (kind === "ridge") {
+          const mid = vh / 2;
+          cy = mid - (((pt.v - lo) / (hi - lo)) * 0.78 + 0.22) * (vh / 2 - 2);
+        } else if (kind === "line") {
+          cy = vh - 3 - ((pt.v - lo) / (hi - lo)) * (vh - 6);
+        }
+        d.setAttribute("opacity", cy === null ? "0" : "1");
+        if (cy === null) cy = vh / 2;
         /* preserveAspectRatio is none, so one user unit across is not one unit
            down and a circle renders as a wide blob. Undo the stretch from the
            box the chart is actually drawn at, so the marker is round. */

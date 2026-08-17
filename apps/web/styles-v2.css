@@ -59,6 +59,14 @@
   --g-dark-2: #1b1b1b;
   --g-dark-line: #2e2e2e;
   --g-dark-mute: #909090;
+  /* The six-band ramp between the pale section and the dark one below it.
+     Hardcoded greys until a theme needed the ramp to run between its own
+     two backgrounds instead of between white and black. */
+  --g-step-1: #d2d2d2;
+  --g-step-2: #a2a2a2;
+  --g-step-3: #6e6e6e;
+  --g-step-4: #3d3d3d;
+  --g-seam-body: #4a4a4a;
   --g-sans: "Host Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   /* Real code only. Never a label, a number or a table cell. */
   --g-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -163,7 +171,7 @@
 .g-seam .g-wide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   gap: 26px 56px; align-items: end; }
 .g-seam h2 { font-size: clamp(22px, 2.6vw, 30px); color: var(--g-ink); }
-.g-seam p { font-size: 15px; line-height: 1.6; color: #4a4a4a; }
+.g-seam p { font-size: 15px; line-height: 1.6; color: var(--g-seam-body); }
 
 /* A step wedge, the strip a printer uses to check tone: six flat blocks
    walking from the paper to the datasheet's black. One idea, no texture, and
@@ -175,10 +183,10 @@
 .g-steps { display: flex; flex-direction: column; margin-top: 54px; }
 .g-steps i { display: block; height: 26px; }
 .g-steps i:nth-child(1) { background: var(--g-paper-2); }
-.g-steps i:nth-child(2) { background: #d2d2d2; }
-.g-steps i:nth-child(3) { background: #a2a2a2; }
-.g-steps i:nth-child(4) { background: #6e6e6e; }
-.g-steps i:nth-child(5) { background: #3d3d3d; }
+.g-steps i:nth-child(2) { background: var(--g-step-1); }
+.g-steps i:nth-child(3) { background: var(--g-step-2); }
+.g-steps i:nth-child(4) { background: var(--g-step-3); }
+.g-steps i:nth-child(5) { background: var(--g-step-4); }
 .g-steps i:nth-child(6) { background: var(--g-dark); }
 
 @media (max-width: 760px) {

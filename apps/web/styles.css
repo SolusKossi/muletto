@@ -52,6 +52,12 @@
   /* The reassurance panel's own edge and prose. Hardcoded until a dark
      theme arrived and turned them into an invisible border and unreadable
      text - the Forget link in particular was dark green on near-black. */
+  /* The inverted band at the foot of a page. It was drawn from --ink-2 with
+     white text, which works only while --ink-2 is near-black; a dark theme
+     flips it to white and the band became white text on white. */
+  --cta-bg: #000000;
+  --cta-ink: #ffffff;
+  --cta-body: #b7b9c4;
   --ok-line: #cdeadb;
   --ok-ink: #3f6b53;
 
@@ -364,9 +370,9 @@ section { padding-top: 112px; padding-bottom: 112px; }
 .page-head p { color: var(--muted); font-size: 18px; margin-top: 14px; max-width: 60ch; }
 
 /* ===== callout ===== */
-.cta-band { background: var(--ink-2); border-radius: var(--radius-xl); padding: 56px 56px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.cta-band h2 { color: #fff; font-size: 30px; }
-.cta-band p { color: #b7b9c4; margin-top: 8px; }
+.cta-band { background: var(--cta-bg); border-radius: var(--radius-xl); padding: 56px 56px; color: var(--cta-ink); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.cta-band h2 { color: var(--cta-ink); font-size: 30px; }
+.cta-band p { color: var(--cta-body); margin-top: 8px; }
 
 /* ===== footer ===== */
 main { flex: 1 0 auto; }
