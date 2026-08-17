@@ -37,6 +37,7 @@
     }
   ],
   "notes": [
+    "What the connections file does not contain, which is most of what people expect. It holds a name, a company and a job title, and that is close to all: no profile URL, no headline, no skills, no endorsements, no work history, no education, no location. Phone numbers are never included at all, and email addresses appear only for connections who chose to allow it - commonly around half of them are blank, which is a privacy setting on their side and not a fault in your download. Pending invitations are absent too; only connections who accepted are listed.",
     "Connections and messages, which are the two most people actually want, are in the slower batch. It is easy to download the first email and think that is everything.",
     "Connections.csv begins with several lines of explanatory text before the header row, so importing it directly into a spreadsheet mis-labels every column.",
     "Dates in that file use English month names regardless of your language setting."
@@ -58,6 +59,14 @@
     {
       "q": "How long is a LinkedIn data download available?",
       "a": "Seventy-two hours, which is shorter than most. After that you have to request it again."
+    },
+    {
+      "q": "Why are so many email addresses blank in Connections.csv?",
+      "a": "Because each of those people turned that off, or never turned it on. LinkedIn only includes a connection's email address if they have allowed it to be visible to their connections, so a column that is half empty is the setting working rather than the export failing. Requesting again will not fill it in, and no part of the archive holds the missing ones."
+    },
+    {
+      "q": "Can I get phone numbers, or full profiles, out of this?",
+      "a": "No. Phone numbers are not in the export under any setting. Neither are the things that make a connection recognisable later - headline, skills, work history, even the profile URL. If you are exporting because you want to keep your network, be aware that what you are keeping is a list of names and employers as they were on the day you asked."
     }
   ]
 }
