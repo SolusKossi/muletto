@@ -970,6 +970,7 @@
        were somewhere else, and another screenful joined them each time. */
     releaseDecoded();
 
+    let drawing = null;
     if (k === "timeline") drawTimeline(body);
     else if (k === "photos") drawPhotos(body);
     else if (k === "report") drawReport(body);
@@ -977,11 +978,22 @@
     else if (k === "chats") MViews.renderPeople(body, scopedLib(), viewCtx());
     else if (k === "map") MViews.renderMap(body, scopedLib(), viewCtx());
     else if (typeof MTopics !== "undefined" && MTopics.has(k) &&
-             MTopics.draw(k, body, scopedLib(),
+             (drawing = MTopics.draw(k, body, scopedLib(),
                { entries: filtering() ? state.entries.filter((e) => srcOk(e)) : state.entries,
-                 sources: state.sources })) { /* drawn */ }
+                 sources: state.sources }))) { /* drawn */ }
     else if (state.actions.legacy) state.actions.legacy(k, body, viewCtx(), scopedLib());
     state.ctx.hydrate(body);
+    /* Again when the topic finishes.
+     *
+     * A topic view draws asynchronously - it reads tables out of the archive
+     * first - so the hydrate above runs against an empty panel and every icon
+     * the view writes arrives after it. That is why the cards under "What
+     * stands out" were empty circles: the markup asked for an icon and nothing
+     * ever filled it in. Hydrating is idempotent, so doing it twice costs a
+     * walk of the panel and fixes the ones that were not there the first time. */
+    if (drawing && typeof drawing.then === "function") {
+      drawing.then(() => state.ctx.hydrate(body)).catch(() => { /* the view reports its own trouble */ });
+    }
   }
 
   function viewCtx() {

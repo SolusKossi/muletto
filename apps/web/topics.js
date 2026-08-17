@@ -621,6 +621,30 @@ const MTopics = (function () {
   }
 
   /* The two or three things that moved most, said in a sentence each. */
+  /* An icon per measurement, falling back to one per family.
+   *
+   * Picking by family alone gave every movement signal the same glyph, so
+   * Calories, Distance and Steps sat side by side under "What stands out"
+   * wearing identical icons - which is worse than none, because three
+   * matching icons read as three of the same thing. Only the kinds with an
+   * honest match are listed; anything else still takes its family's, which is
+   * what the family icon is for. */
+  const KIND_ICON = {
+    steps: "route", distance: "pin", floors: "layers", active: "activity",
+    calories: "activity", walkspeed: "route",
+    sleep: "clock", stress: "clock", hrv: "heart", resp: "clock",
+    heart: "heart", bp: "heart", spo2: "heart", ecg: "chart",
+    weight: "chart", temp: "chart", audio: "audio",
+    food: "note", water: "note", rewards: "note", together: "person",
+  };
+  function iconForKind(s) {
+    const byKind = KIND_ICON[s.kind && s.kind.key];
+    if (byKind) return byKind;
+    const fam = (s.shape && s.shape.family) || "";
+    return fam === "rest" ? "clock" : fam === "body" ? "heart"
+         : fam === "log" ? "note" : "activity";
+  }
+
   function standoutHtml(signal) {
     const movers = [...signal.values()]
       .filter((s) => s.trend && !s.trend.steady && s.series && s.series.chart)
@@ -631,8 +655,7 @@ const MTopics = (function () {
       movers.map((s) => {
         const t = s.trend, u = s.series.unit ? " " + s.series.unit : "";
         return '<article class="hh-card">' +
-          '<i data-icon="' + esc(SHAPE[s.kind.key] && SHAPE[s.kind.key].family === "rest"
-            ? "clock" : s.shape.family === "body" ? "heart" : "activity") + '"></i>' +
+          '<i data-icon="' + esc(iconForKind(s)) + '"></i>' +
           "<b>" + esc(s.kind.name) + "</b>" +
           '<p class="muted small"><strong>' + (t.up ? "Up " : "Down ") + Math.abs(t.pct) +
           "%</strong> across the record, from " + esc(num(t.from)) + esc(u) + " to " +

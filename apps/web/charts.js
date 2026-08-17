@@ -58,7 +58,7 @@ const MCharts = (function () {
   const CURSOR = '<g class="hv-cur" opacity="0">' +
     '<line class="hv-cur-l" y1="0" y2="100%" stroke="currentColor" stroke-width="1" ' +
     'opacity="0.45" vector-effect="non-scaling-stroke"/>' +
-    '<circle class="hv-cur-d" r="3" fill="currentColor"/></g>';
+    '<ellipse class="hv-cur-d" rx="9" ry="3.2" fill="currentColor"/></g>';
 
   const svg = (w, h, inner, cls, data) =>
     '<svg class="hv ' + (cls || "") + '" viewBox="0 0 ' + w + " " + h +
@@ -666,10 +666,37 @@ const MCharts = (function () {
            down and a circle renders as a wide blob. Undo the stretch from the
            box the chart is actually drawn at, so the marker is round. */
         const r = chart.getBoundingClientRect();
+        /* preserveAspectRatio is none, so one unit across is not one unit down
+           and anything round is drawn as a wide smear. Undoing the stretch
+           from the box the chart is really rendered at makes the marker's own
+           shape ours to choose rather than whatever the width imposed. */
         const k = (r.width && r.height) ? (r.height * vw) / (vh * r.width) : 1;
+
+        /* Lie along the line, not across it.
+         *
+         * The marker is a lozenge rather than a dot, and it is turned to the
+         * slope of the run it sits on, so it reads as a thickening of the line
+         * instead of a bead resting on top of it. The angle is measured in
+         * rendered pixels, because that is the only space where the slope you
+         * see is the slope that exists - and inside the corrected scale above
+         * the space is square again, so a rotation there comes out true.
+         *
+         * Both neighbours where there are two, so the lozenge follows the
+         * curve through a point instead of snapping between two straight runs.
+         * Transitioned along with everything else, which is what makes it
+         * appear to bend as it travels. */
+        const yOf = (q) => vh - 3 - ((q.v - lo) / (hi - lo)) * (vh - 6);
+        const a = pts[i - 1] || pt, b = pts[i + 1] || pt;
+        const stepX = vw / Math.max(1, pts.length - 1);
+        const dxU = ((pts[i + 1] ? 1 : 0) + (pts[i - 1] ? 1 : 0)) * stepX || stepX;
+        const dyU = yOf(b) - yOf(a);
+        const dxPx = dxU * (r.width || 1) / vw;
+        const dyPx = dyU * (r.height || 1) / vh;
+        const deg = Math.atan2(dyPx, dxPx) * 180 / Math.PI;
         d.setAttribute("cx", 0);
         d.setAttribute("cy", 0);
-        d.setAttribute("transform", "translate(0," + cy + ") scale(" + k.toFixed(4) + ",1)");
+        d.setAttribute("transform", "translate(0," + cy + ") scale(" + k.toFixed(4) +
+          ",1) rotate(" + deg.toFixed(2) + ")");
       }
       cur.setAttribute("transform", "translate(" + cx + ",0)");
       cur.setAttribute("opacity", "1");

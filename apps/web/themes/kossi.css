@@ -165,3 +165,19 @@ body {
   box-shadow: var(--shadow);
 }
 .hv-cur-d { filter: drop-shadow(0 0 5px rgba(217, 140, 255, .8)); }
+
+/* The privacy note.
+ *
+ * It is a green success panel on the light theme, where green reads as
+ * reassurance. On this one it was the only green thing on screen and looked
+ * like a validation message that had wandered in. The reassurance is in the
+ * words; here it just needs to be a quiet panel with the accent on the edge
+ * that carries the meaning. */
+.ex-privacy {
+  background: linear-gradient(168deg, rgba(176, 108, 240, .10), rgba(176, 108, 240, .02) 70%);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--ok);
+  color: var(--body);
+}
+.ex-privacy strong { color: var(--ink); }
+.ex-privacy p { color: var(--muted); }
