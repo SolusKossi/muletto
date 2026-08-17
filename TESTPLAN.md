@@ -89,7 +89,8 @@ The layer everything else sits on. A failure here loses a whole export.
 | The 48 MB YouTube history file | `S` | Skipped above 20 MB and the view says how many products it skipped. Not walked on the real file |
 | Mail view (`.mbox`) | `V` | **Run on the real 777 MB mailbox** by `tools/check-views.js`, streamed out of the zip exactly as the app does it. 11,081 messages indexed in 6.7 s, every body dropped as asked. A date parsed on 100%, a sender on 100%, a subject on 99.9%, and `summarise` gave 434 senders and 11,081 timeline events. Peak heap 250 MB on one run and 474 MB on another against a 777 MB file - it varies with when the collector runs, so treat it as an order of magnitude rather than a figure, but the file is plainly never held. That is the claim the streaming design exists to make |
 | Logins and devices | `S` | Recognised by column shape, because five providers describe the same thing five ways. Confirmed: 3 records collapsing to 2 distinct sign-ins, device, city, IP and time |
-| `.xlsx` spreadsheets | `S` | A zip of XML. Shared strings resolved (a sheet read without the pool is a page of integers), `&amp;` decoded, and an **absent cell placed by its `r=` reference** rather than shifting the row |
+| `.xlsx` spreadsheets | `V` | **Both spreadsheets in the real Samsung export, by `tools/check-xlsx.js`.** A zip of XML inside an AES-encrypted zip, so the nested open, the decrypt and the parse are proved together. Shared strings resolved (a sheet read without the pool is a page of integers), `&amp;` decoded, and an **absent cell placed by its `r=` reference** rather than shifting the row |
+| Several tables stacked in one `.xlsx` sheet | `V` | Samsung Account is five, each under a two-cell title row. Split on the shape; the row counts reconcile exactly against the flat reading. An ordinary irregular spreadsheet was checked as a negative and correctly stayed one table |
 | `.spd` S Note containers | `V` | **Confirmed against the real Samsung export.** `.spd` is a zip - magic bytes 50 4b 03 04 - so the 21 notes open and **21 pictures inside them** are recovered. 36 entries become 184. The page format is proprietary and stays unread, which the file list shows |
 | Nested archives (a zip inside a zip) | `V` | Seven of the eighteen Apple archives hold zips. Run over that export, expansion opens **all ten** and takes the listing from **1020 entries to 1414** - the full 394 that were unreachable, including the 319 `.m4a` Siri recordings. Nothing is skipped. A nested CSV was read end to end through its blob |
 | A nested archive over a gigabyte | `V` | `Apple Features Using iCloud.zip` is **1.34 GB** and now opens. It is streamed into a Blob rather than inflated into an array, so the browser pages it to disk: measured in Brave, **1.5 GB costs 12 MB of JS heap**, and slices out of it still read. The old 512 MB refusal was guarding the wrong thing |
@@ -139,12 +140,12 @@ kind was opened.
 |---|---|---|---|
 | Samsung Health | `samsungcloud` | `V` | Phone-only account: 7 folders |
 | Samsung Cloud sync | `samsungcloud` | `V` | S Note, Pinall, browser tabs |
-| Samsung Account | `SamsungAccount` | `X` | Arrives as `.xlsx`, which we do not read |
+| Samsung Account | `SamsungAccount` | `V` | Five tables stacked in one `.xlsx` sheet: basic information, login IDs, terms accepted, registered devices, consent history. 56 rows |
 | Galaxy Store | `galaxyapps` | `V` | Six sectioned tables |
 | PENUP | `PENUP` | `V` | |
 | SmartThings Find | `SmartThingsFind` | `V` | |
 | Subscription Hub | `Subscription Hub Server` | `V` | 1 byte - empty is a valid answer |
-| Support tickets | `ANS` | `X` | `.xlsx` |
+| Support tickets | `ANS` | `V` | One `.xlsx`, 18 columns, one ticket |
 | NCDM | `NCDM` | `V` | Header row only. Samsung does not document what it is |
 | Samsung Members | unknown | `-` | Selected in the picker, no archive arrived |
 | ConnecTime | unknown | `-` | Same |
@@ -224,7 +225,7 @@ other.
 | JSON stuffed into a CSV cell | `V` | S Note |
 | `.spd` S Note documents | `X` | Zip containers holding a cover image and page data. 21 of them sitting unread |
 | Extensionless files that are images | `V` | Six Pinall PNGs, found by first bytes |
-| `.xlsx` | `X` | Two files. A zip of XML - the inflate we already have would do it |
+| `.xlsx` | `V` | Two files, both read. The account dump is five tables in one sheet and was being read as one, which put a table code in the column slot and lost the other four |
 | `File_Description*.pdf` | `-` | Samsung's own field documentation. Should be labelled as such, not listed as user data |
 
 ## 4. Apple

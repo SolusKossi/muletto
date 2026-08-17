@@ -1292,7 +1292,71 @@ const MParse = (function () {
     }
     while (rows.length && rows[rows.length - 1].every((x) => !x)) rows.pop();
     if (rows.length < 2) return null;
-    return { columns: rows[0].map((c, i) => c || "Column " + (i + 1)), rows: rows.slice(1) };
+    return xlsxSections(rows);
+  }
+
+  /* One sheet, several tables - the same trick Samsung plays in its CSVs, and
+     it plays it here too.
+   *
+   * The Samsung Account dump is five tables stacked in one sheet, each
+   * introduced by a two-cell row holding a table code and its name, with the
+   * rows under it three or fifteen cells wide. Read as one table, the first
+   * of those title rows became the column names and the other four sections
+   * disappeared into rows that did not line up with them. The header said
+   * "TCSO_PRTY" and the values were nowhere.
+   *
+   * Sections are found by grouping consecutive rows on width. A group of one
+   * row that is narrower than the group after it is a title. Two guards keep
+   * that from firing on an ordinary sheet, where a row with an empty last
+   * column is also narrower than its neighbours: the sheet has to open with
+   * such a row, and there have to be at least two of them. One narrow row in
+   * the middle of a sheet is a gap in somebody's data, not a heading. */
+  function xlsxSections(rows) {
+    const width = (r) => { let n = 0; for (let i = 0; i < r.length; i++) if (r[i] !== "") n = i + 1; return n; };
+    const named = (cells, w) => {
+      const out = [];
+      for (let i = 0; i < w; i++) out.push((cells && cells[i]) || "Column " + (i + 1));
+      return out;
+    };
+    const plainly = () => [{ title: "", columns: named(rows[0], Math.max(...rows.map(width))),
+                             rows: rows.slice(1) }];
+
+    const groups = [];
+    for (const r of rows) {
+      const w = width(r);
+      const last = groups[groups.length - 1];
+      if (last && last.w === w) last.rows.push(r);
+      else groups.push({ w, rows: [r] });
+    }
+    const isTitle = (i) => groups[i].rows.length === 1 && groups[i + 1] &&
+                           groups[i].w < groups[i + 1].w && groups[i + 1].rows.length >= 2;
+    let titles = 0;
+    for (let i = 0; i < groups.length; i++) if (isTitle(i)) titles++;
+    if (titles < 2 || !isTitle(0)) return plainly();
+
+    const out = [];
+    for (let i = 0; i < groups.length; i++) {
+      if (!isTitle(i)) continue;
+      const head = groups[i].rows[0];
+      const body = groups[i + 1].rows;
+      const w = groups[i + 1].w;
+      /* Whether the section's first row is its column names or its first row
+         of data. Above four columns it is a table and the first row names the
+         columns - the fifteen-wide section is a matrix whose header is
+         obviously a header. At three columns it is a list of fields, where a
+         name and a value look exactly alike and nothing distinguishes the top
+         row from the rest. Guessing wrong there deletes a row, so nothing is
+         consumed and the columns are left unnamed. */
+      const hasHeader = w >= 4 && body.length >= 2;
+      out.push({
+        title: (head.filter((c) => c).pop() || "").trim(),
+        columns: named(hasHeader ? body[0] : null, w),
+        rows: (hasHeader ? body.slice(1) : body).map((r) => r.slice(0, w)),
+      });
+      i++;   // the body group belongs to this section
+    }
+    const kept = out.filter((t) => t.rows.length);
+    return kept.length ? kept : plainly();
   }
 
   async function addSpreadsheets(lib, file, entries, say) {
@@ -1301,9 +1365,11 @@ const MParse = (function () {
     if (say) say("Reading " + plural(sheets.length, "spreadsheet", "spreadsheets") + "...");
     for (const e of sheets.slice(0, 40)) {
       try {
-        const t = await readXlsx(file, e);
-        if (t && t.rows.length) {
-          lib.tables.push({ name: base(e.name).replace(/\.xlsx$/i, ""), path: e.name,
+        const tables = await readXlsx(file, e);
+        const stem = base(e.name).replace(/\.xlsx$/i, "");
+        for (const t of tables || []) {
+          if (!t.rows.length) continue;
+          lib.tables.push({ name: t.title || stem, path: e.name,
                             columns: t.columns, rows: t.rows });
         }
       } catch (err) { /* a spreadsheet we cannot read is still listed as a file */ }
@@ -1603,5 +1669,9 @@ const MParse = (function () {
     return finish(generic(file, entries, slug, detected && detected.label));
   }
 
-  return { parse, parseCsv, parseDate, mediaKind, mimeOf, renderable, heifFamily };
+  /* readXlsx is exposed for tools/check-xlsx.js. Nothing in the app calls it
+     directly - addSpreadsheets does - but a harness that retyped the parser
+     would be testing the copy. */
+  return { parse, parseCsv, parseDate, mediaKind, mimeOf, renderable, heifFamily,
+           readXlsx };
 })();
