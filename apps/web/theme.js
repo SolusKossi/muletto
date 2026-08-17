@@ -76,35 +76,55 @@ const MTheme = (function () {
      dark theme does not begin as a white flash. */
   function init() { apply(stored()); }
 
-  /* The picker, as markup. The caller decides where it lives - this file has
-     no opinion about the sidebar and should not gain one. */
-  function pickerHtml() {
+  /* A select, not a row of buttons.
+   *
+   * It lives in the site footer so it is reachable from any page and from any
+   * scroll position, and a footer is not the place for a widget that grows a
+   * button every time a theme is added. A native select also gets keyboard
+   * handling, touch handling and an accessible name for nothing. */
+  function pickerEl() {
+    const wrap = document.createElement("label");
+    wrap.className = "th-pick";
     const now = current();
-    return '<div class="th-pick" role="group" aria-label="Theme">' +
-      '<span class="th-label">Theme</span>' +
-      '<div class="th-opts">' +
+    wrap.innerHTML = '<span class="th-label">Theme</span>' +
+      '<select class="th-sel" aria-label="Theme">' +
       THEMES.map((t) =>
-        '<button type="button" class="th-opt' + (t.id === now ? " on" : "") + '"' +
-        ' data-theme-id="' + t.id + '" title="' + t.note + '"' +
-        ' aria-pressed="' + (t.id === now ? "true" : "false") + '">' +
-        t.name + "</button>").join("") +
-      "</div></div>";
+        '<option value="' + t.id + '"' + (t.id === now ? " selected" : "") + '>' +
+        t.name + "</option>").join("") + "</select>";
+    return wrap;
   }
 
-  /* One listener on the document, because the sidebar is rebuilt wholesale
-     every time the library changes and a listener bound to a button would be
-     gone by the time anybody clicked it. */
-  document.addEventListener("click", (ev) => {
-    const b = ev.target.closest && ev.target.closest("[data-theme-id]");
-    if (!b) return;
-    const id = set(b.getAttribute("data-theme-id"));
-    for (const el of document.querySelectorAll("[data-theme-id]")) {
-      const on = el.getAttribute("data-theme-id") === id;
-      el.classList.toggle("on", on);
-      el.setAttribute("aria-pressed", on ? "true" : "false");
-    }
+  /* Mounted into whatever footer the page has. Pages without one - the app
+     shell while an export is open - simply do not get it, which is why this
+     asks rather than assumes. */
+  /* The last footer on the page, whatever it is called.
+   *
+   * This asked for footer.site and the home page uses footer.g-foot, so the
+   * picker simply never appeared there - and nothing said so, because a
+   * missing element is indistinguishable from a page that has no footer. The
+   * last one is taken because a page with two has the site footer last. */
+  function mount() {
+    const feet = document.querySelectorAll("footer");
+    const foot = feet.length ? feet[feet.length - 1] : null;
+    if (!foot) return;
+    const host = foot.querySelector(".wrap") || foot;
+    if (host.querySelector(".th-pick")) return;
+    host.appendChild(pickerEl());
+  }
+
+  /* One listener, on the document, so a footer written after this ran is still
+     wired and nothing has to be re-bound when a view is redrawn. */
+  document.addEventListener("change", (ev) => {
+    const sel = ev.target.closest && ev.target.closest(".th-sel");
+    if (!sel) return;
+    const id = set(sel.value);
+    for (const el of document.querySelectorAll(".th-sel")) el.value = id;
   });
 
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mount);
+  } else mount();
+
   init();
-  return { THEMES, set, current, pickerHtml, init };
+  return { THEMES, set, current, mount, init };
 })();

@@ -146,6 +146,9 @@ function page({ depth, title, description, canonical, body, jsonld, active, noin
 ${noindex ? '  <meta name="robots" content="noindex,follow" />\n' : ""}  <link rel="icon" href="${up}favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="${up}og.png" />
   <link rel="stylesheet" href="${up}styles.css" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="${up}theme.js"></script>
 ${(jsonld || []).map((j) => `  <script type="application/ld+json">${JSON.stringify(j)}</script>`).join("\n")}
 </head>
 <body>

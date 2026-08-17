@@ -181,3 +181,75 @@ body {
 }
 .ex-privacy strong { color: var(--ink); }
 .ex-privacy p { color: var(--muted); }
+
+/* The reassurance panel, themed through the tokens it now uses rather than
+   the hex it used to. Green survives only as the edge; a green fill and green
+   prose on near-black were an unreadable Forget link and a border that looked
+   like a stray white line. */
+:root {
+  --ok-line: #26443a;
+  --ok-ink: #9fb8ac;
+}
+.ex-privacy {
+  background: linear-gradient(168deg, rgba(61, 220, 154, .08), rgba(61, 220, 154, .015) 70%);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--ok);
+}
+.ex-privacy strong { color: var(--ok); }
+.ex-forget { color: var(--muted); }
+.ex-forget:hover { color: var(--ink); }
+.ex-savework {
+  background: rgba(255, 255, 255, .04);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.ex-savework:hover { background: rgba(61, 220, 154, .12); border-color: var(--ok); }
+
+/* ---------- the home page ---------- */
+
+/* The home page is a second design system. It loads styles-v2.css, paints
+   itself from a --g- namespace of its own, and hangs everything off a .v2
+   class on the body - so a theme that only redefines the app's tokens leaves
+   it untouched, and the picker in its footer appears to do nothing at all.
+   Twelve colours, so it is cheaper to cover than to explain.
+   No layout, type or spacing is touched; that design is not this theme's.
+
+   Declared on the element rather than on :root, and that matters: index.html
+   loads styles-v2.css after this file, so two :root blocks of equal weight
+   would be settled by load order and this one would lose. A selector carrying
+   the theme attribute and the page's own class outranks it whatever the
+   order. */
+[data-theme="kossi"] body.v2 {
+  --g-paper: #0a0710;
+  --g-paper-2: #140f1e;
+  --g-ink: #f4f1fa;
+  --g-body: #c3bcd4;
+  --g-mute: #8a82a0;
+  --g-faint: #6f6788;
+  --g-line: #2a2140;
+  --g-line-2: #221a35;
+  --g-dark: #0f0a18;
+  --g-dark-2: #171021;
+  --g-dark-line: #2f2547;
+  --g-dark-mute: #9b93b0;
+  color: var(--g-body);
+}
+
+/* .v2 sets the ground with a class, which outranks a bare `body`, so the
+   grain has to be claimed at the same weight. Hung off the theme attribute
+   rather than the page's own class so it reads as this theme's doing. */
+[data-theme="kossi"] body.v2 {
+  background-color: var(--g-paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.82'/%3E%3C/svg%3E"),
+    radial-gradient(58rem 40rem at 12% -8%, rgba(176, 108, 240, .20), transparent 62%),
+    radial-gradient(48rem 34rem at 92% 4%, rgba(64, 104, 232, .16), transparent 60%);
+  background-attachment: fixed, fixed, fixed;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-blend-mode: overlay, normal, normal;
+}
+.v2 ::selection { background: rgba(176, 108, 240, .35); }
+.v2 .g-btn { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.v2 .g-btn:hover { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--accent-ink); }
+.v2 .g-btn.line { color: var(--g-ink); border-color: var(--g-line); background: none; }
+.v2 .g-btn.line:hover { border-color: var(--accent); color: var(--g-ink); }

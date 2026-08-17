@@ -49,6 +49,11 @@
   --accent-ink: #ffffff;
   --ok: #15925f;
   --ok-soft: #e7f6ee;
+  /* The reassurance panel's own edge and prose. Hardcoded until a dark
+     theme arrived and turned them into an invisible border and unreadable
+     text - the Forget link in particular was dark green on near-black. */
+  --ok-line: #cdeadb;
+  --ok-ink: #3f6b53;
 
   /* 2px for hairline chips, 12px is the ceiling. Nothing rounder. */
   --radius-sm: 4px;
@@ -586,7 +591,7 @@ a.card { color: inherit; }
 .dupe-group { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 14px; background: var(--surface-2); }
 .dupe-head { font-size: 13.5px; color: var(--muted); margin-bottom: 12px; }
 .dupe-group .thumbs { margin-top: 0; }
-.thumb .keep { font-size: 10.5px; font-weight: 650; color: var(--ok); background: var(--ok-soft); border: 1px solid #cdeadb; padding: 1px 6px; border-radius: 999px; }
+.thumb .keep { font-size: 10.5px; font-weight: 650; color: var(--ok); background: var(--ok-soft); border: 1px solid var(--ok-line); padding: 1px 6px; border-radius: 999px; }
 .src-chip { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; }
 .src-chip .d-ic, .src-chip .d-ic svg { width: 16px; height: 16px; }
 .btn:disabled { opacity: .55; cursor: default; }
@@ -903,9 +908,9 @@ body.no-scroll { overflow: hidden; }
 .ex-add:hover { border-color: var(--accent); color: var(--accent); }
 
 .ex-privacy { margin-top: auto; padding: 13px 14px; border-radius: 11px;
-  background: var(--ok-soft); border: 1px solid #cdeadb; }
+  background: var(--ok-soft); border: 1px solid var(--ok-line); }
 .ex-privacy strong { display: block; font-size: 12.5px; color: var(--ok); }
-.ex-privacy p { margin: 5px 0 0; font-size: 11.5px; line-height: 1.55; color: #3f6b53; }
+.ex-privacy p { margin: 5px 0 0; font-size: 11.5px; line-height: 1.55; color: var(--ok-ink); }
 
 /* Main column */
 .ex-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -1465,7 +1470,7 @@ body.exploring > nav.nav { display: block; position: relative; z-index: 70; }
 .ex-detail { contain: paint; }
 
 .ex-forget { margin-top: 10px; padding: 0; border: 0; background: none;
-  font: inherit; font-size: 11.5px; color: #3f6b53; text-decoration: underline;
+  font: inherit; font-size: 11.5px; color: var(--ok-ink); text-decoration: underline;
   cursor: pointer; opacity: 0.75; }
 .ex-forget:hover { opacity: 1; }
 .ex-forget[data-sure="1"] { color: #b23b3b; font-weight: 600; opacity: 1; }
@@ -1477,7 +1482,7 @@ body.exploring > nav.nav { display: block; position: relative; z-index: 70; }
   background: var(--surface-2); border: 1px solid var(--line); }
 
 .ex-work { display: flex; flex-direction: column; gap: 4px; margin-top: 10px;
-  padding-top: 10px; border-top: 1px solid #cdeadb; }
+  padding-top: 10px; border-top: 1px solid var(--ok-line); }
 .ex-worklink { padding: 0; border: 0; background: none; font: inherit;
   font-size: 11.5px; color: #2f7a58; text-align: left; cursor: pointer; }
 .ex-worklink:hover { text-decoration: underline; }
@@ -2008,7 +2013,7 @@ button.ex-stat:hover { border-color: var(--accent); }
 .flow-list { margin: 0 0 12px; padding-left: 20px; font-size: 14.5px; line-height: 1.7; }
 .flow-list li { margin-bottom: 8px; }
 .flow-end { max-width: 68ch; margin: 10px 0 40px; padding: 22px 24px; border-radius: 12px;
-  border: 1px solid #cdeadb; background: var(--ok-soft); }
+  border: 1px solid var(--ok-line); background: var(--ok-soft); }
 .flow-end h3 { margin: 0 0 8px; font-size: 15px; font-weight: 620; color: var(--ok); }
 .flow-end p { margin: 0 0 8px; font-size: 14px; line-height: 1.65; }
 
@@ -3658,33 +3663,13 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 
 /* ---------- theme picker ---------- */
 
-/* Lives at the foot of the explorer sidebar, under the privacy note. Two or
-   three short words in a row: this is a preference, not a feature, and it
-   should not compete with anything above it. The theme itself may restyle
-   these; what is here is how they look with no theme loaded. */
-.th-pick { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--line-2); }
-.th-label { display: block; margin-bottom: 7px; font-size: 11px; font-weight: 600;
-  letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-.th-opts { display: flex; flex-wrap: wrap; gap: 6px; }
-.th-opt { padding: 5px 10px; font: inherit; font-size: 12.5px; line-height: 1.2;
-  color: var(--body); background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); cursor: pointer;
-  transition: border-color var(--t) var(--ease), color var(--t) var(--ease); }
-.th-opt:hover { border-color: var(--ink); color: var(--ink); }
-.th-opt.on { border-color: var(--ink); color: var(--ink); font-weight: 600; }
-.th-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* The hover marker travels rather than jumping.
- *
- * charts.js moves it with a transform for exactly this reason: a geometry
- * attribute cannot be transitioned and a transform can. Because the marker
- * slides along the straight run between two readings, and that run is what
- * the line itself draws, it follows the line instead of cutting across it.
- *
- * Held back for anyone who has asked not to see motion. */
-.hv-cur { transition: transform var(--t) var(--ease-out); }
-.hv-cur-d { transition: transform var(--t) var(--ease-out); }
-.hv-tip { transition: transform var(--t) var(--ease-out), opacity var(--t-fast) linear; }
-@media (prefers-reduced-motion: reduce) {
-  .hv-cur, .hv-cur-d, .hv-tip { transition: none; }
-}
+/* In the site footer, beside the links. A preference, not a feature: it should
+   read as one more small thing in the footer and never compete with what is
+   above it. theme.js puts it there, so no page has markup for it. */
+.th-pick { display: inline-flex; align-items: center; gap: 7px; }
+.th-label { font-size: 13px; color: var(--muted); }
+.th-sel { font: inherit; font-size: 13px; padding: 3px 7px; color: var(--body);
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); cursor: pointer; }
+.th-sel:hover { border-color: var(--ink); color: var(--ink); }
+.th-sel:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

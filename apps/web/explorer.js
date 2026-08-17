@@ -531,7 +531,6 @@
               kept about this library from your browser. Your archives are untouched.">Forget
               this library</button>
           </div>
-          ${typeof MTheme !== "undefined" ? MTheme.pickerHtml() : ""}
         </aside>
 
         <main class="ex-main">

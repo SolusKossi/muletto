@@ -2288,7 +2288,15 @@ const MTopics = (function () {
       el.innerHTML = '<p class="loading">Reading your ' + esc(t.label.toLowerCase()) +
         " out of the archive...</p>";
     }
-    Promise.resolve()
+    /* The promise is returned, not dropped.
+     *
+     * This used to fire the work off and return true, so a caller had no way
+     * to know when the view had actually been written. The explorer hydrates
+     * icons after drawing a panel, and against a topic view it was hydrating
+     * an empty one - which is why the cards under "What stands out" had empty
+     * circles where an icon should be. A promise is truthy, so every caller
+     * testing this as a condition still behaves the same. */
+    return Promise.resolve()
       .then(() => t.draw(el, m, lib, ctx))
       .catch((err) => {
         // A view that fails says so; it does not sit on "Reading..." forever.
@@ -2296,7 +2304,6 @@ const MTopics = (function () {
         el.innerHTML = '<div class="ex-empty"><h3>That did not read</h3>' +
           '<p class="muted">' + esc(String((err && err.message) || err)) + "</p></div>";
       });
-    return true;
   }
 
   const has = (key) => TOPICS.some((t) => t.key === key);
