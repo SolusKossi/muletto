@@ -3655,3 +3655,21 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .probcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .probcard h3 { margin: 0 0 8px; font-size: 16.5px; font-weight: 640; line-height: 1.4; }
 .probcard p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--muted); }
+
+/* ---------- theme picker ---------- */
+
+/* Lives at the foot of the explorer sidebar, under the privacy note. Two or
+   three short words in a row: this is a preference, not a feature, and it
+   should not compete with anything above it. The theme itself may restyle
+   these; what is here is how they look with no theme loaded. */
+.th-pick { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--line-2); }
+.th-label { display: block; margin-bottom: 7px; font-size: 11px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.th-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.th-opt { padding: 5px 10px; font: inherit; font-size: 12.5px; line-height: 1.2;
+  color: var(--body); background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); cursor: pointer;
+  transition: border-color var(--t) var(--ease), color var(--t) var(--ease); }
+.th-opt:hover { border-color: var(--ink); color: var(--ink); }
+.th-opt.on { border-color: var(--ink); color: var(--ink); font-weight: 600; }
+.th-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

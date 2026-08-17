@@ -1,0 +1,111 @@
+/* Kossi - dark, grained, gradient.
+ *
+ * Loaded whole or not at all, so everything here can assume it is the active
+ * theme and nothing needs a [data-theme] prefix to win. Removing the theme is
+ * deleting this file and its line in theme.js.
+ *
+ * Almost all of it is custom properties. The layout, spacing and type belong
+ * to styles.css and stay there - a theme that restates them fights every
+ * future change to the thing it copied. The handful of real rules at the
+ * bottom exist because a grain field and a glow have nowhere to live in a
+ * variable.
+ *
+ * No image files. The grain is an inline SVG turbulence filter as a data URI,
+ * which keeps the theme to one file and keeps the Content-Security-Policy
+ * unchanged - img-src already allows data:.
+ */
+
+:root {
+  --bg: #0a0710;
+  --surface: #140f1e;
+  --surface-2: #1a1428;
+  --ink: #f4f1fa;
+  --ink-2: #ffffff;
+  --body: #c3bcd4;
+  --muted: #8a82a0;
+  --line: #2a2140;
+  --line-2: #221a35;
+
+  /* The accent is a violet that survives on near-black. The pink is the
+     highlight it resolves to on hover and on the things that matter. */
+  --accent: #b06cf0;
+  --accent-strong: #d98cff;
+  --accent-soft: #241a38;
+  --accent-ink: #0a0710;
+  --ok: #3ddc9a;
+  --ok-soft: #10241f;
+
+  /* Depth comes from glow rather than from drop shadow: on a dark ground a
+     black shadow is invisible and a soft light edge is what reads. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 26px rgba(120, 60, 200, .16);
+  --shadow-lg: 0 18px 48px rgba(120, 60, 200, .22), 0 2px 8px rgba(0, 0, 0, .6);
+
+  /* The dot grid, dimmed to a suggestion. */
+  --dots: radial-gradient(rgba(150, 120, 210, .13) 1px, transparent 1px);
+  --tint: #150f22;
+}
+
+/* The ground.
+ *
+ * Three layers, painted once on the body and fixed so they do not slide under
+ * a long scroll: two wide colour washes for the gradient, and a grain field
+ * over the top. The grain is what stops a flat dark background reading as a
+ * switched-off screen. */
+body {
+  background-color: var(--bg);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"),
+    radial-gradient(58rem 40rem at 12% -8%, rgba(176, 108, 240, .20), transparent 62%),
+    radial-gradient(48rem 34rem at 92% 4%, rgba(64, 104, 232, .16), transparent 60%);
+  background-attachment: fixed, fixed, fixed;
+  background-repeat: repeat, no-repeat, no-repeat;
+  color: var(--body);
+}
+
+/* Panels lift off that ground with a gradient of their own rather than a flat
+   fill, which is what keeps a dark interface from looking like slabs. */
+.card, .ex-panel, .hx-card, .hb-tile, .probcard, .jobcard, .svccard,
+.resume-card, .prob-verdict, .adm-wrap {
+  background-image: linear-gradient(168deg,
+    rgba(255, 255, 255, .045), rgba(255, 255, 255, 0) 60%);
+  border-color: var(--line);
+}
+
+/* The one place a border earns real colour: the cards carrying a headline
+   figure. A left edge rather than a full outline, so a row of them reads as a
+   row and not as a grid of boxes. */
+.hb-tile { border-left: 2px solid var(--accent); }
+
+/* Charts. The SVG primitives inherit currentColor, so a colour set here
+   reaches every bar, line and band without any of them being touched. */
+.hx-chart, .hh-shape, .hv { color: var(--accent); }
+.hx-card.has-chart .hx-chart { filter: drop-shadow(0 0 6px rgba(176, 108, 240, .35)); }
+
+/* The hero band at the top of a topic view, where the gradient belongs most. */
+.hh-shape {
+  background-image:
+    radial-gradient(34rem 14rem at 20% 120%, rgba(176, 108, 240, .22), transparent 70%),
+    radial-gradient(30rem 12rem at 80% 130%, rgba(64, 104, 232, .18), transparent 70%);
+  border-radius: var(--radius-lg);
+}
+
+/* Selection and focus, which on a dark ground need to be light rather than
+   dark, and are easy to leave behind. */
+::selection { background: rgba(176, 108, 240, .35); color: var(--ink-2); }
+:focus-visible { outline-color: var(--accent-strong); }
+
+/* Scrollbars, because a default light scrollbar on a near-black page is the
+   loudest thing on screen. */
+* { scrollbar-color: var(--line) transparent; }
+
+/* ---------- the picker itself ---------- */
+
+/* Styled here as well as in styles.css so the theme owns how it looks under
+   the theme. The base rules live with the rest of the sidebar. */
+.th-opt { border-color: var(--line); }
+.th-opt.on {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(176, 108, 240, .22), rgba(176, 108, 240, .10));
+  color: var(--ink);
+}
