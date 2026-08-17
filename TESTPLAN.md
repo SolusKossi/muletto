@@ -260,7 +260,7 @@ from Apple. Rows marked "reported" have a source but no sample here.
 | iCloud Contacts (`.vcf`) | `-` | Base64 photos make very long folded lines |
 | iCloud Calendars and Reminders (`.ics`) | `-` | VTODO and VEVENT in the same stream |
 | iCloud Notes | `-` | Text plus sketch files; attachment linking undocumented |
-| Health `export.xml` | `-` | On-device, not the portal. Multi-GB single XML |
+| **Health `export.xml`** | `V` | **Read, and confirmed against a real one.** 6.8 MB zip, 161 MB of XML, **385,299 readings over four years, about a second, ~10 MB of heap** - streamed and aggregated to a day as it passes, never held. Three faults found by running it and not by reading it: records straddling a chunk boundary were counted twice, which never threw and merely inflated each day's total until the same file read in Node and in the browser disagreed; a missing field made a successful parse report itself unreadable; and the same field would have made any Takeout containing Fit data fail outright. Sleep is named for what was measured - a watch gives Sleep, a phone alone gives Time in bed |
 | Apple Card / Apple Financing | `-` | **A separate request entirely.** PDF statements. Issuer changed in January 2026, so do not hard-code one |
 | Maps, Siri, Screen Time, Find My, Shortcuts, HomeKit | `-` | No confirmed filenames. Some may not be categories at all |
 | Messages / iMessage | `-` | No credible evidence it is offered. Confirm before building |

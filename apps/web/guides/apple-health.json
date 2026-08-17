@@ -18,14 +18,15 @@
     "label": "Apple's Health support page"
   },
   "notes": [
+    "Muletto reads this file. Measured on a real one: 161 MB of XML, 385,000 readings across four years, opened in about a second without the file ever being held in memory.",
     "This is not part of Apple's Data and Privacy export and never will be. Health is end-to-end encrypted in iCloud, so Apple holds it as a blob it has no key for and cannot hand it over.",
     "Everything is in one XML file. Years of watch data commonly runs to several hundred megabytes of it, which is why so many tools fail on the file rather than on the data.",
     "There is a second file, export_cda.xml, in a clinical format. It holds a subset and most tools ignore it."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "applehealth",
+    "status": "full"
   },
   "steps": [
     {
@@ -72,7 +73,7 @@
     },
     {
       "q": "Can Muletto open it?",
-      "a": "Not yet. The health page already exists and reads Samsung Health, and Apple Health is the next provider planned for it, but the parser is not written. The guide is here because getting the export off the phone is worth doing now - the file only covers what your phone still holds, so exporting later means exporting less."
+      "a": "Yes. Drop export.zip in as it came from the phone - it does not need unpacking. The file is read as a stream rather than loaded, which is what makes a 161 MB XML document practical in a browser tab, and every reading is aggregated to one value a day on the way past because a chart of eighty thousand individual samples is a solid block of ink. Steps, distance, calories, floors, heart rate, weight, walking speed, headphone volume and sleep each get their own panel on the health page; the rest stay as tables. Where only a phone recorded your sleep the series is called Time in bed rather than Sleep, because a phone knows when it was put down and not when you fell asleep."
     }
   ]
 }

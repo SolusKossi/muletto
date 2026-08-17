@@ -112,6 +112,39 @@ more archives, and 394 entries were invisible until that was handled.
 
 ---
 
+## Apple Health
+
+A different export from a different place. Health is end-to-end encrypted in
+iCloud, so Apple cannot include it in the Data and Privacy download and never
+will - it comes off the phone instead, as one XML document with an element per
+reading.
+
+**Measured, in a real export:** 6.8 MB zip holding **161 MB of `export.xml`**,
+**385,299 readings** across four years, read in about a second.
+
+| Area | What Muletto does |
+|---|---|
+| Steps, distance, floors | **View** - Health, one panel each |
+| Active energy | **View** - as Calories. Basal energy is kept as a table under Resting energy, so it does not collide |
+| Heart rate, weight | **View** |
+| Walking speed | **View**. Step length, asymmetry, double support and steadiness stay as tables |
+| Headphone audio exposure | **View** - as Headphone volume |
+| Sleep | **View**, and named for what was measured: a watch gives Sleep, a phone alone gives **Time in bed** |
+| `export_cda.xml`, workout GPX | Listed |
+
+**What works well.** It never holds the file. The XML is streamed and every
+reading is folded into a daily figure as it goes past, so a 161 MB document
+costs about 10 MB of memory. A chart of 87,000 individual basal energy
+readings would be a solid block of ink, and a day is the unit all of these are
+actually read in.
+
+**Known gaps:** the five gait metrics and headphone exposure had no catalogue
+kind until this was written, and four of them still do not - they are readable
+as tables but get no panel. Workouts and activity summaries are not read;
+this export contained one workout and 1,449 daily summaries.
+
+---
+
 ## Samsung
 
 Samsung's privacy portal sends one archive per service, and **every entry in
