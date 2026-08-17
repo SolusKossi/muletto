@@ -642,7 +642,22 @@ const MCharts = (function () {
        the screen's - preserveAspectRatio is none, so the box is stretched. */
     const box = (chart.getAttribute("viewBox") || "0 0 100 100").split(/\s+/).map(Number);
     const vw = box[2] || 100, vh = box[3] || 100;
-    const cx = (i / Math.max(1, pts.length - 1)) * vw;
+    /* Where along the box the reading sits, which is not the same question
+       for every chart. A line spreads its points from edge to edge, so the
+       first sits at 0 and the last at the full width. Bars are boxes with a
+       gap between them, so the reading is the middle of its bar - and using
+       the line's spacing put the marker left of the first bars and right of
+       the last, drifting further the nearer the ends, which is exactly what
+       it looked like. */
+    const nPts = Math.max(1, pts.length);
+    let cx;
+    if (chart.classList.contains("hv-bars")) {
+      const gap = 1.6;
+      const bw = Math.max(1.2, (vw - gap * (nPts - 1)) / nPts);
+      cx = i * (bw + gap) + bw / 2;
+    } else {
+      cx = (i / Math.max(1, nPts - 1)) * vw;
+    }
     const cur = chart.querySelector(".hv-cur");
     if (cur) {
       const l = cur.querySelector(".hv-cur-l");
@@ -658,8 +673,18 @@ const MCharts = (function () {
        * The line keeps its own x at zero and rides the group. */
       if (l) { l.setAttribute("x1", 0); l.setAttribute("x2", 0); }
       if (d) {
-        let lo = Math.min.apply(null, pts.map((q) => (q.lo === undefined ? q.v : q.lo)));
-        let hi = Math.max.apply(null, pts.map((q) => (q.hi === undefined ? q.v : q.hi)));
+        /* Measured against the same range the chart drew against.
+         *
+         * Every bucketed point carries a lo and a hi, and this took them for
+         * all of them. Only the band is drawn against that spread; a line, a
+         * ridge, bars and dots are drawn against the values alone. So on any
+         * series where the nightly spread is wider than the run of averages -
+         * which is most of them - the marker was working in a taller scale
+         * than the ink and sat above or below it by a fixed fraction, on every
+         * chart, at every point. */
+        const isBand = chart.classList.contains("hv-band");
+        let lo = Math.min.apply(null, pts.map((q) => (isBand && q.lo !== undefined ? q.lo : q.v)));
+        let hi = Math.max.apply(null, pts.map((q) => (isBand && q.hi !== undefined ? q.hi : q.v)));
         if (hi === lo) { lo -= 1; hi += 1; }
         /* Where the marker sits has to be worked out the way the chart it sits
            on was drawn, and the three do not agree.

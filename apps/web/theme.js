@@ -26,6 +26,19 @@ const MTheme = (function () {
   const KEY = "muletto:theme";
   const LINK_ID = "theme-css";
 
+  /* Where this script is, so the stylesheet beside it can be found from any
+     depth. The href used to be the bare "themes/kossi.css", which resolves
+     against the page rather than against this file - so it worked at the root
+     and asked for /guides/themes/kossi.css on every guide, got a 404, and the
+     guides stayed light while everything said the theme was on. A failed
+     stylesheet still appears in document.styleSheets with its href, so it
+     even looked loaded. */
+  const BASE = (function () {
+    const me = document.currentScript && document.currentScript.src;
+    if (!me) return "";
+    return me.slice(0, me.lastIndexOf("/") + 1);
+  })();
+
   const byId = (id) => THEMES.find((t) => t.id === id) || THEMES[0];
 
   function stored() {
@@ -51,7 +64,8 @@ const MTheme = (function () {
     const t = byId(id);
     const el = linkEl();
     if (t.css) {
-      if (el.getAttribute("href") !== t.css) el.setAttribute("href", t.css);
+      const href = BASE + t.css;
+      if (el.getAttribute("href") !== href) el.setAttribute("href", href);
     } else {
       /* Removed rather than blanked. An empty href resolves to the page
          itself, so the browser fetches the HTML and tries to parse it as CSS. */
