@@ -90,33 +90,40 @@ const MTheme = (function () {
      dark theme does not begin as a white flash. */
   function init() { apply(stored()); }
 
-  /* A select, not a row of buttons.
+  /* A button with an icon, and a list that opens from it.
    *
-   * It lives in the site footer so it is reachable from any page and from any
-   * scroll position, and a footer is not the place for a widget that grows a
-   * button every time a theme is added. A native select also gets keyboard
-   * handling, touch handling and an accessible name for nothing. */
+   * A native select was the right first move - free keyboard handling, free
+   * touch handling, an accessible name for nothing - but it paints itself
+   * from the operating system and cannot be made to match a theme, which is
+   * a strange thing for the control that picks the theme. So it is built
+   * here, and everything the native one gave away has to be given back by
+   * hand: it is a real button, the list is a real menu, arrow keys and Escape
+   * work, and the open state is announced. */
+  const SWATCH = {
+    default: "linear-gradient(135deg,#ffffff 0 50%,#e0e0e0 50% 100%)",
+    kossi: "linear-gradient(135deg,#b06cf0 0 50%,#0a0710 50% 100%)",
+  };
+
   function pickerEl() {
-    const wrap = document.createElement("label");
+    const wrap = document.createElement("div");
     wrap.className = "th-pick";
-    const now = current();
-    wrap.innerHTML = '<span class="th-label">Theme</span>' +
-      '<select class="th-sel" aria-label="Theme">' +
-      THEMES.map((t) =>
-        '<option value="' + t.id + '"' + (t.id === now ? " selected" : "") + '>' +
-        t.name + "</option>").join("") + "</select>";
+    wrap.innerHTML =
+      '<button type="button" class="th-btn" aria-haspopup="true" aria-expanded="false" ' +
+      'aria-label="Theme" title="Theme">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" ' +
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" ' +
+        'stroke="none"/></svg>' +
+      "</button>" +
+      '<div class="th-menu" hidden role="menu">' +
+        THEMES.map((t) =>
+          '<button type="button" role="menuitemradio" class="th-opt" data-theme-id="' + t.id + '">' +
+          '<i class="th-sw" style="background:' + (SWATCH[t.id] || "currentColor") + '"></i>' +
+          "<span><b>" + t.name + "</b><em>" + t.note + "</em></span></button>").join("") +
+      "</div>";
     return wrap;
   }
 
-  /* Mounted into whatever footer the page has. Pages without one - the app
-     shell while an export is open - simply do not get it, which is why this
-     asks rather than assumes. */
-  /* The last footer on the page, whatever it is called.
-   *
-   * This asked for footer.site and the home page uses footer.g-foot, so the
-   * picker simply never appeared there - and nothing said so, because a
-   * missing element is indistinguishable from a page that has no footer. The
-   * last one is taken because a page with two has the site footer last. */
   function mount() {
     const feet = document.querySelectorAll("footer");
     const foot = feet.length ? feet[feet.length - 1] : null;
@@ -124,15 +131,55 @@ const MTheme = (function () {
     const host = foot.querySelector(".wrap") || foot;
     if (host.querySelector(".th-pick")) return;
     host.appendChild(pickerEl());
+    sync();
   }
 
-  /* One listener, on the document, so a footer written after this ran is still
-     wired and nothing has to be re-bound when a view is redrawn. */
-  document.addEventListener("change", (ev) => {
-    const sel = ev.target.closest && ev.target.closest(".th-sel");
-    if (!sel) return;
-    const id = set(sel.value);
-    for (const el of document.querySelectorAll(".th-sel")) el.value = id;
+  /* Every picker on the page agrees with the stored choice. */
+  function sync() {
+    const id = current();
+    for (const b of document.querySelectorAll("[data-theme-id]")) {
+      const on = b.getAttribute("data-theme-id") === id;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    }
+  }
+
+  const closeAll = () => {
+    for (const m of document.querySelectorAll(".th-menu")) m.hidden = true;
+    for (const b of document.querySelectorAll(".th-btn")) b.setAttribute("aria-expanded", "false");
+  };
+
+  document.addEventListener("click", (ev) => {
+    const t = ev.target.closest && ev.target.closest(".th-btn, [data-theme-id]");
+    if (!t) { closeAll(); return; }
+    if (t.classList.contains("th-btn")) {
+      const menu = t.parentNode.querySelector(".th-menu");
+      const open = menu.hidden;
+      closeAll();
+      menu.hidden = !open;
+      t.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) { const f = menu.querySelector(".th-opt.on") || menu.querySelector(".th-opt"); if (f) f.focus(); }
+      return;
+    }
+    set(t.getAttribute("data-theme-id"));
+    sync();
+    closeAll();
+    const btn = t.closest(".th-pick") && t.closest(".th-pick").querySelector(".th-btn");
+    if (btn) btn.focus();
+  });
+
+  /* Escape shuts it, arrows move within it. A menu that traps nothing and
+     responds to nothing is a div pretending to be a control. */
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") { closeAll(); return; }
+    if (ev.key !== "ArrowDown" && ev.key !== "ArrowUp") return;
+    const here = ev.target.closest && ev.target.closest(".th-menu");
+    if (!here) return;
+    ev.preventDefault();
+    const all = [...here.querySelectorAll(".th-opt")];
+    const i = all.indexOf(document.activeElement);
+    const next = ev.key === "ArrowDown" ? i + 1 : i - 1;
+    (all[(next + all.length) % all.length] || all[0]).focus();
   });
 
   if (document.readyState === "loading") {
@@ -140,5 +187,5 @@ const MTheme = (function () {
   } else mount();
 
   init();
-  return { THEMES, set, current, mount, init };
+  return { THEMES, set, current, mount, init, sync };
 })();

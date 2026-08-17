@@ -111,7 +111,6 @@ function footer(depth) {
   return `  <footer class="site">
     <div class="wrap">
       <a class="wordmark" href="${up}index.html">muletto</a>
-      <p class="fine">Your data, back in your hands. Everything runs in your browser, on your own machine.</p>
       <div class="foot-links">
         <a href="${up}guides.html">Guides</a>
         <a href="${up}app.html">Open export</a>

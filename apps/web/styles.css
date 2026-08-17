@@ -475,7 +475,11 @@ footer.site::before { content: ""; position: absolute; left: 0; right: 0; bottom
     linear-gradient(to bottom, var(--bg) 0 16.666%, var(--foot-1) 16.666% 33.333%,
       var(--foot-2) 33.333% 50%, var(--foot-3) 50% 66.666%, var(--foot-4) 66.666% 83.333%,
       var(--foot-bg) 83.333% 100%); }
-footer.site .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+/* One row: the mark hard left, the links beside it, whatever the theme
+   picker is hard right. The tagline that used to sit in the middle said
+   what every page already says and pushed the links onto a second line. */
+footer.site .wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+footer.site .wrap > .th-pick { margin-left: auto; }
 footer.site .wordmark { height: 22px; background-color: var(--foot-ink); }
 footer.site .fine { color: var(--foot-ink); font-size: 14px; }
 .foot-links { display: flex; gap: 22px; }
@@ -1738,7 +1742,13 @@ body.curtained #curtain { opacity: 1; pointer-events: auto; }
 .nt-list { overflow-y: auto; padding: 6px; }
 .nt-empty { padding: 22px 14px; text-align: center; font-size: 13px; color: var(--muted); }
 .nt-item { display: flex; gap: 10px; width: 100%; padding: 10px; border: 0; border-radius: 9px;
-  background: none; font: inherit; text-align: left; }
+  background: none; font: inherit; text-align: left; color: var(--body); }
+/* A <button> takes the browser's own text colour rather than the page's, and
+   a disabled one is repainted in the system grey - so every notification
+   here showed nothing but its timestamp, which was the one part with a
+   colour of its own. Non-clickable is not the same as unavailable. */
+.nt-item:disabled { color: var(--body); opacity: 1; cursor: default; }
+.nt-item b { color: var(--ink); }
 .nt-item.go { cursor: pointer; }
 .nt-item.go:hover { background: var(--surface-2); }
 .nt-item b { display: block; font-size: 13px; font-weight: 540; line-height: 1.4; }
@@ -3762,6 +3772,34 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .probcard p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--muted); }
 
 /* ---------- theme picker ---------- */
+
+/* An icon in the footer that opens a small menu. Built rather than native,
+   because a native select is painted by the operating system and cannot match
+   a theme - which is an odd limitation for the control that picks one. */
+.th-pick { position: relative; display: inline-flex; }
+.th-btn { display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; padding: 0; color: var(--muted);
+  background: none; border: 1px solid var(--line); border-radius: var(--radius);
+  cursor: pointer; transition: color var(--t) var(--ease), border-color var(--t) var(--ease); }
+.th-btn:hover { color: var(--ink); border-color: var(--muted); }
+.th-btn svg { width: 16px; height: 16px; }
+.th-btn:focus-visible, .th-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Opens upwards: it lives at the foot of the page and there is nothing below. */
+.th-menu { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 40;
+  min-width: 210px; padding: 5px; display: flex; flex-direction: column; gap: 2px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+.th-menu[hidden] { display: none; }
+.th-opt { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 9px;
+  font: inherit; font-size: 13px; text-align: left; color: var(--body);
+  background: none; border: 0; border-radius: var(--radius); cursor: pointer; }
+.th-opt:hover { background: var(--surface-2); color: var(--ink); }
+.th-opt.on { color: var(--ink); }
+.th-opt.on .th-sw { box-shadow: 0 0 0 2px var(--accent); }
+.th-sw { flex: none; width: 15px; height: 15px; border-radius: 50%;
+  border: 1px solid var(--line); }
+.th-opt b { display: block; font-weight: 560; }
+.th-opt em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); }
 
 /* In the site footer, beside the links. A preference, not a feature: it should
    read as one more small thing in the footer and never compete with what is
