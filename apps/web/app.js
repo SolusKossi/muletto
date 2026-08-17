@@ -1683,8 +1683,20 @@ function renderLibrary(root, lib, sources, entries, demo) {
         if (demoBlocked("Saving your work to a file")) return;
         const n = await MDerived.count();
         if (!n) {
-          status.textContent = "There is nothing worked out yet to save. Compare photos first, " +
-            "and this will hold the results so they never need doing again.";
+          /* A notification, not a line under a button in the sidebar.
+             The status line sits at the foot of a column that is scrolled
+             away on most views - on the health page it is off screen
+             entirely - so pressing the button appeared to do nothing at all.
+             Anything that answers a press has to appear where the press
+             happened. */
+          MNotify.push("Nothing to save yet", {
+            body: "A work file holds the slow results - which photographs are " +
+              "duplicates, the dates and places read back out of them, any " +
+              "descriptions written. None of that has been worked out for this " +
+              "library yet, so the file would be empty. Compare photographs or " +
+              "repair dates first, then save, and next year's export can be read " +
+              "against it instead of doing the same work again.",
+          });
           return;
         }
         status.textContent = "Writing your work file...";

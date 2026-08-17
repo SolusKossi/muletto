@@ -52,7 +52,11 @@
 
     state = {
       lib, entries, sources, ctx, stream,
-      view: stream.days.length ? "timeline" : (lib.media.length ? "photos" : "files"),
+      /* Set below, once the sections are known. An export with no dated item
+         and no photographs - a Health export is both - used to open on Files,
+         which is the least interesting thing in it, while the section that
+         actually holds the data sat further down the list. */
+      view: "files",
       query: "", selected: null, actions: opts.actions || {},
       /* Sources are excluded rather than selected: everything is in view until
          you take something out. Choosing one source at a time made "Apple and
@@ -65,6 +69,19 @@
       // from the reader can hand their memory back.
       decoded: [],
     };
+
+    /* Open on the first section that has something in it.
+     *
+     * liveItems is the sidebar in order, already filtered to the sections that
+     * hold anything, so its first entry is the top of the menu and the most
+     * useful thing in this export by the same ordering the reader sees. Files
+     * is the fallback because it is always there.
+     *
+     * This has to come after state exists, since navItems reads it. */
+    try {
+      const first = liveItems()[0];
+      if (first && first[0]) state.view = first[0];
+    } catch (err) { /* the fallback above stands */ }
 
     let root = document.getElementById("explorer");
     if (!root) {

@@ -321,3 +321,17 @@ body::before {
   border: 1px solid #241d36;
   border-left: 2px solid var(--ok);
 }
+
+/* The footer every page but the home one uses, and the six-band ramp that
+   walks the page down into it. Same idea as the seam on the home page and a
+   separate copy of it, so it needed the same treatment: run the ramp between
+   the two grounds it actually joins instead of from white to black. */
+:root {
+  --foot-bg: #120d1c;
+  --foot-ink: #8a82a0;
+  --foot-ink-hi: #f4f1fa;
+  --foot-1: #0c0914;
+  --foot-2: #0e0b17;
+  --foot-3: #100c19;
+  --foot-4: #110d1b;
+}

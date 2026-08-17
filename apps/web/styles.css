@@ -55,6 +55,17 @@
   /* The inverted band at the foot of a page. It was drawn from --ink-2 with
      white text, which works only while --ink-2 is near-black; a dark theme
      flips it to white and the band became white text on white. */
+  /* The site footer and the six-band ramp that walks the page down into it.
+     The home page has its own copy of this idea in styles-v2.css; this is
+     the one every other page uses, and it was hardcoded greys, so a dark
+     theme left a white staircase above a near-black footer. */
+  --foot-bg: #111111;
+  --foot-ink: #909090;
+  --foot-ink-hi: #ffffff;
+  --foot-1: #d2d2d2;
+  --foot-2: #a2a2a2;
+  --foot-3: #6e6e6e;
+  --foot-4: #3d3d3d;
   --cta-bg: #000000;
   --cta-ink: #ffffff;
   --cta-body: #b7b9c4;
@@ -384,19 +395,19 @@ main { flex: 1 0 auto; }
    gradient, because a fade is the thing that was being avoided - and it sits
    above the footer's own black so the join has no edge to show. */
 footer.site { position: relative; margin-top: 80px; padding: 74px 0 52px;
-  border-top: 0; background: #111111; color: #909090; }
+  border-top: 0; background: var(--foot-bg); color: var(--foot-ink); }
 footer.site::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%;
   height: 156px;
   background:
-    linear-gradient(to bottom, var(--bg) 0 16.666%, #d2d2d2 16.666% 33.333%,
-      #a2a2a2 33.333% 50%, #6e6e6e 50% 66.666%, #3d3d3d 66.666% 83.333%,
-      #111111 83.333% 100%); }
+    linear-gradient(to bottom, var(--bg) 0 16.666%, var(--foot-1) 16.666% 33.333%,
+      var(--foot-2) 33.333% 50%, var(--foot-3) 50% 66.666%, var(--foot-4) 66.666% 83.333%,
+      var(--foot-bg) 83.333% 100%); }
 footer.site .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
-footer.site .wordmark { height: 22px; background-color: #909090; }
-footer.site .fine { color: #909090; font-size: 14px; }
+footer.site .wordmark { height: 22px; background-color: var(--foot-ink); }
+footer.site .fine { color: var(--foot-ink); font-size: 14px; }
 .foot-links { display: flex; gap: 22px; }
-.foot-links a { color: #909090; font-size: 14px; }
-.foot-links a:hover { color: #ffffff; }
+.foot-links a { color: var(--foot-ink); font-size: 14px; }
+.foot-links a:hover { color: var(--foot-ink-hi); }
 
 /* A page whose last section is already dark needs no run-up to one. */
 footer.site.flush { margin-top: 0; }
