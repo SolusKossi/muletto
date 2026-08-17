@@ -757,6 +757,22 @@ const MTopics = (function () {
     return "";
   }
 
+  /* What this panel actually holds, rather than what the kind can hold.
+   *
+   * The catalogue describes a kind's full range, because the greyed list of
+   * absent kinds needs that. A found panel should describe itself: two weights
+   * typed in by hand were being labelled "with body composition from a smart
+   * scale", which is a claim about equipment the reader may not own. The extra
+   * sentence is added only when a column proves the data is there. */
+  function holdsFor(s) {
+    const base = (s.kind && s.kind.holds) || "";
+    const extra = s.kind && s.kind.holdsIf;
+    if (!extra || !extra.cols) return base;
+    const has = (s.tables || []).some((t) =>
+      (t.columns || []).some((c) => extra.cols.test(String(c))));
+    return has ? base + " " + extra.more : base;
+  }
+
   function panelHtml(s, viz) {
     const c = s.series;
     let chart = "";
@@ -790,7 +806,7 @@ const MTopics = (function () {
       (chart ? '<div class="hx-chart">' + chart + "</div>" : "") +
       stagesHtml(s, viz) +
       trend +
-      '<p class="muted small hx-holds">' + esc(s.kind.holds || "") + "</p>" +
+      '<p class="muted small hx-holds">' + esc(holdsFor(s)) + "</p>" +
       '<p class="hx-n">' + plural(s.rows, "reading", "readings") +
         (s.tables.length > 1 ? " across " + plural(s.tables.length, "table", "tables") : "") +
         (range ? " &middot; " + range : "") + "</p></article>";

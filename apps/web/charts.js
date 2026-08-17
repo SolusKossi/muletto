@@ -647,15 +647,31 @@ const MCharts = (function () {
     if (cur) {
       const l = cur.querySelector(".hv-cur-l");
       const d = cur.querySelector(".hv-cur-d");
-      if (l) { l.setAttribute("x1", cx); l.setAttribute("x2", cx); }
+      /* Moved with transforms, not with x and y attributes.
+       *
+       * Two reasons. A geometry attribute cannot be transitioned, so setting
+       * cx and cy made the marker jump between readings; a transform can, so
+       * it now travels. And because the marker slides along the straight run
+       * between two points, and that run is exactly what the line draws, it
+       * follows the line rather than cutting across it.
+       *
+       * The line keeps its own x at zero and rides the group. */
+      if (l) { l.setAttribute("x1", 0); l.setAttribute("x2", 0); }
       if (d) {
-        const vals = pts.map((q) => q.v);
         let lo = Math.min.apply(null, pts.map((q) => (q.lo === undefined ? q.v : q.lo)));
         let hi = Math.max.apply(null, pts.map((q) => (q.hi === undefined ? q.v : q.hi)));
         if (hi === lo) { lo -= 1; hi += 1; }
-        d.setAttribute("cx", cx);
-        d.setAttribute("cy", vh - 3 - ((pt.v - lo) / (hi - lo)) * (vh - 6));
+        const cy = vh - 3 - ((pt.v - lo) / (hi - lo)) * (vh - 6);
+        /* preserveAspectRatio is none, so one user unit across is not one unit
+           down and a circle renders as a wide blob. Undo the stretch from the
+           box the chart is actually drawn at, so the marker is round. */
+        const r = chart.getBoundingClientRect();
+        const k = (r.width && r.height) ? (r.height * vw) / (vh * r.width) : 1;
+        d.setAttribute("cx", 0);
+        d.setAttribute("cy", 0);
+        d.setAttribute("transform", "translate(0," + cy + ") scale(" + k.toFixed(4) + ",1)");
       }
+      cur.setAttribute("transform", "translate(" + cx + ",0)");
       cur.setAttribute("opacity", "1");
     }
 

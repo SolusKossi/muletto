@@ -3673,3 +3673,18 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .th-opt:hover { border-color: var(--ink); color: var(--ink); }
 .th-opt.on { border-color: var(--ink); color: var(--ink); font-weight: 600; }
 .th-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* The hover marker travels rather than jumping.
+ *
+ * charts.js moves it with a transform for exactly this reason: a geometry
+ * attribute cannot be transitioned and a transform can. Because the marker
+ * slides along the straight run between two readings, and that run is what
+ * the line itself draws, it follows the line instead of cutting across it.
+ *
+ * Held back for anyone who has asked not to see motion. */
+.hv-cur { transition: transform var(--t) var(--ease-out); }
+.hv-cur-d { transition: transform var(--t) var(--ease-out); }
+.hv-tip { transition: transform var(--t) var(--ease-out), opacity var(--t-fast) linear; }
+@media (prefers-reduced-motion: reduce) {
+  .hv-cur, .hv-cur-d, .hv-tip { transition: none; }
+}

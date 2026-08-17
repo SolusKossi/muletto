@@ -55,11 +55,14 @@
 body {
   background-color: var(--bg);
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"),
-    radial-gradient(58rem 40rem at 12% -8%, rgba(176, 108, 240, .20), transparent 62%),
-    radial-gradient(48rem 34rem at 92% 4%, rgba(64, 104, 232, .16), transparent 60%);
-  background-attachment: fixed, fixed, fixed;
-  background-repeat: repeat, no-repeat, no-repeat;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.82'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.028' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='340' height='340' filter='url(%23c)' opacity='.4'/%3E%3C/svg%3E"),
+    radial-gradient(58rem 40rem at 12% -8%, rgba(176, 108, 240, .22), transparent 62%),
+    radial-gradient(48rem 34rem at 92% 4%, rgba(64, 104, 232, .18), transparent 60%),
+    radial-gradient(40rem 30rem at 50% 108%, rgba(214, 96, 200, .12), transparent 66%);
+  background-attachment: fixed, fixed, fixed, fixed, fixed;
+  background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat;
+  background-blend-mode: overlay, soft-light, normal, normal, normal;
   color: var(--body);
 }
 
@@ -109,3 +112,56 @@ body {
   background: linear-gradient(180deg, rgba(176, 108, 240, .22), rgba(176, 108, 240, .10));
   color: var(--ink);
 }
+
+
+/* Grain on the panels too, not only on the ground.
+ *
+ * A card with a clean fill sitting on a grained background reads as a sticker
+ * laid on top of it. The texture has to carry through, so every panel gets the
+ * same noise at a lower strength, painted under its own gradient. It is a
+ * pseudo-element rather than another background layer so the gradient above
+ * stays adjustable on its own, and it is inert to the pointer. */
+.card, .ex-panel, .hx-card, .hb-tile, .probcard, .jobcard, .svccard,
+.resume-card, .prob-verdict, .ex-privacy, .th-pick {
+  position: relative;
+  isolation: isolate;
+}
+.card::before, .ex-panel::before, .hx-card::before, .hb-tile::before,
+.probcard::before, .jobcard::before, .svccard::before, .resume-card::before,
+.prob-verdict::before, .ex-privacy::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: .5;
+  mix-blend-mode: overlay;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23p)' opacity='.9'/%3E%3C/svg%3E");
+}
+
+/* The hero band gets it heaviest, because that is the one area big enough for
+   texture to be the point rather than a finish. */
+.hh-shape::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: .55;
+  mix-blend-mode: overlay;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.62' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23h)' opacity='.95'/%3E%3C/svg%3E");
+}
+.hh-shape { position: relative; }
+
+/* The tooltip is glass rather than a panel: it sits over a chart and a solid
+   fill would punch a hole in it. */
+.hv-tip {
+  background: rgba(26, 20, 40, .86);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+}
+.hv-cur-d { filter: drop-shadow(0 0 5px rgba(217, 140, 255, .8)); }

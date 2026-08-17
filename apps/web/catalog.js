@@ -162,8 +162,15 @@ const MCatalog = (function () {
       holds: "Time asleep, and the stages within it." },
     { key: "exercise", name: "Workouts", match: /exercise|workout/i,
       needs: null, holds: "Each session, with pace, route and heart rate." },
+    /* `holds` describes what a kind can contain, which is what the greyed
+       list of absent kinds needs. A panel that was actually found should
+       describe what is in it instead - two hand-typed weights are not "body
+       composition from a smart scale". `holdsIf` is appended only when the
+       columns show that data is really there. */
     { key: "weight", name: "Weight", match: /weight|body[ _]?(composition|mass)/i,
-      needs: null, holds: "Weight over time, with body composition from a smart scale." },
+      needs: null, holds: "Weight over time.",
+      holdsIf: { cols: /fat|muscle|\bbmi\b|body water|bone mass|visceral/i,
+                 more: "Body composition from a smart scale." } },
     { key: "stress", name: "Stress", match: /stress/i,
       needs: "A watch or ring.", holds: "Stress readings through the day." },
     { key: "spo2", name: "Blood oxygen", match: /oxygen|spo2/i,
