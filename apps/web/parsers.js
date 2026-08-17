@@ -337,6 +337,152 @@ const MParse = (function () {
     }
   }
 
+  /* The date that was in the filename the whole time.
+   *
+   * Snapchat strips the metadata out of a memory and then names the file for
+   * the day it was taken: memories/2024-10-31_<snap id>-main.mp4. Every one of
+   * the 606 memories in the real export here is named that way, and before
+   * this the library dated 45 percent of them - the JPEGs whose EXIF survived
+   * and the videos small enough to unpack. The other 55 percent arrived with
+   * no date at all while the date sat in the name.
+   *
+   * This runs last, so anything the provider or the camera said wins. A name
+   * is the weakest evidence of the three: EXIF is what the camera recorded,
+   * a sidecar is what the service recorded, and a filename is a convention
+   * that can be wrong or can have been renamed by whoever moved the file.
+   *
+   * Three guards, because inventing a date is worse than having none:
+   *
+   *   - the pattern is anchored at the start of the name, so an id that
+   *     happens to contain eight digits cannot supply a date;
+   *   - the fields have to be a real date, checked by building it and asking
+   *     the Date back - 2024-02-31 comes back as 2 March and is refused;
+   *   - it has to be between 1990 and tomorrow. A file called 20240132 or
+   *     19700101 is a counter or a dead clock, not a day.
+   *
+   * Only the first pattern has been seen on a real export. The compact camera
+   * forms are how Android, Pixel and WhatsApp have named files for years and
+   * are written from the format; nothing on this machine exercises them, and
+   * TESTPLAN says so. */
+  const NAME_DATES = [
+    /* 2024-10-31_<id>   Snapchat memories, and any export that sorts by day.
+       The delimiter matters: without it, an id beginning 20241031-2 would read
+       as a date. A full stop counts, because a file called 2024-10-31.jpg is
+       a date and nothing else. */
+    /^(\d{4})-(\d{2})-(\d{2})(?:[._T -]|$)/,
+    // 20241031_142530, IMG_20241031_142530, PXL_20241031_142530123
+    /^(?:IMG|VID|PXL|MVIMG|Screenshot)?[_-]?(\d{4})(\d{2})(\d{2})[_-](\d{2})(\d{2})(\d{2})/i,
+    // IMG-20241031-WA0001  WhatsApp, which has no time in the name at all
+    /^(?:IMG|VID|AUD)-(\d{4})(\d{2})(\d{2})-WA\d+/i,
+    // Screenshot_20241031-142530
+    /^Screenshot[_-](\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})/i,
+  ];
+
+  function dateFromName(name) {
+    for (const re of NAME_DATES) {
+      const m = re.exec(name);
+      if (!m) continue;
+      const y = +m[1], mo = +m[2], d = +m[3];
+      const at = new Date(y, mo - 1, d, +(m[4] || 12), +(m[5] || 0), +(m[6] || 0));
+      if (isNaN(at)) continue;
+      // The round trip is the check: only a real day survives it unchanged.
+      if (at.getFullYear() !== y || at.getMonth() !== mo - 1 || at.getDate() !== d) continue;
+      if (y < 1990) continue;
+      if (at.getTime() > Date.now() + 86400000) continue;
+      return at;
+    }
+    return null;
+  }
+
+  function readNameDates(lib) {
+    let dated = 0;
+    for (const m of lib.media || []) {
+      if (m.at) continue;
+      const at = dateFromName(m.name || base(m.path || ""));
+      if (!at) continue;
+      m.at = at;
+      m.atFromName = true;
+      lib.events.push({ at, kind: m.kind === "video" ? "video" : "photo", label: m.name });
+      dated++;
+    }
+    if (!dated) return;
+    lib.notes.push(plural(dated, "file had", "files had") + " no date inside, but the " +
+      "service had written the date into the filename. " +
+      (dated === 1 ? "It has" : "They have") + " been dated from that. Where the file " +
+      "itself said something different, the file was believed.");
+  }
+
+  /* The date the archive itself is carrying, and when it means anything.
+   *
+   * Every zip entry has a DOS timestamp. Sometimes it is the file's own date
+   * and sometimes it is the moment the export was built, and the difference
+   * decides whether reading it is a repair or a lie. Measured on the real
+   * 38 GB Takeout, both cases are in the same download:
+   *
+   *   Takeout/Drive          846 entries, 64 distinct days, spread 2016 to 2026
+   *   Google Photos        5,041 entries, one single day, all of it 2026
+   *
+   * The Drive stamps are the files. The Photos stamps are the afternoon the
+   * export was packed, and writing that onto five thousand photographs would
+   * be the exact failure this product exists to undo - a library that all
+   * happened on one day.
+   *
+   * So the archive is asked before any entry is believed: count the distinct
+   * days across everything in it, and only trust the stamps if they spread.
+   * Two guards, both erring towards no date rather than a wrong one:
+   *
+   *   - at least eight distinct days, and
+   *   - no single day holding more than half the entries.
+   *
+   * The second is what stops a mostly-packed-at-once archive with a handful of
+   * stragglers from qualifying. An export where everything genuinely did
+   * happen on one day loses its dates, which is the acceptable direction to be
+   * wrong in. */
+  function dosDate(entry) {
+    const d = entry && entry.modDate, t = entry && entry.modTime;
+    if (!d) return null;                       // 0 means no timestamp was written
+    const y = 1980 + ((d >> 9) & 0x7f), mo = (d >> 5) & 0x0f, day = d & 0x1f;
+    if (mo < 1 || mo > 12 || day < 1 || day > 31) return null;
+    const at = new Date(y, mo - 1, day, (t >> 11) & 0x1f, (t >> 5) & 0x3f, (t & 0x1f) * 2);
+    if (isNaN(at) || at.getMonth() !== mo - 1 || at.getDate() !== day) return null;
+    if (y < 1990 || at.getTime() > Date.now() + 86400000) return null;
+    return at;
+  }
+
+  function archiveDatesAreReal(entries) {
+    const perDay = new Map();
+    let total = 0;
+    for (const e of entries || []) {
+      const at = dosDate(e);
+      if (!at) continue;
+      total++;
+      const key = at.getFullYear() + "-" + at.getMonth() + "-" + at.getDate();
+      perDay.set(key, (perDay.get(key) || 0) + 1);
+    }
+    if (total < 8 || perDay.size < 8) return false;
+    return Math.max(...perDay.values()) <= total / 2;
+  }
+
+  function readArchiveDates(lib, entries) {
+    const undated = (lib.media || []).filter((m) => !m.at && m.entry);
+    if (!undated.length || !archiveDatesAreReal(entries)) return;
+    let dated = 0;
+    for (const m of undated) {
+      const at = dosDate(m.entry);
+      if (!at) continue;
+      m.at = at;
+      m.atFromArchive = true;
+      lib.events.push({ at, kind: m.kind === "video" ? "video" : "photo", label: m.name });
+      dated++;
+    }
+    if (!dated) return;
+    lib.notes.push(plural(dated, "file has", "files have") + " no date inside and no " +
+      "metadata file beside " + (dated === 1 ? "it" : "them") + ", so the date the " +
+      "archive itself records has been used. Those dates run across several " +
+      "years rather than all landing on the day the export was made, which is what " +
+      "makes them worth trusting here.");
+  }
+
   /* What a file is, when the name refuses to say.
 
      Samsung's Pinall folder stores clipped screenshots under names like
@@ -1656,6 +1802,11 @@ const MParse = (function () {
       mergePagedTables(lib);
       await readPhotoDates(lib, file, 800, say);
       await readVideoDates(lib, file, 200, say);
+      /* Weakest evidence last. The camera and the provider's own metadata are
+         read first, then the filename, then the archive - each only filling
+         in what the one before it could not. */
+      readNameDates(lib);
+      readArchiveDates(lib, entries);
       return lib;
     };
     if (slug === "snapchat") return finish(snapchat(file, entries));
@@ -1669,9 +1820,11 @@ const MParse = (function () {
     return finish(generic(file, entries, slug, detected && detected.label));
   }
 
-  /* readXlsx is exposed for tools/check-xlsx.js. Nothing in the app calls it
-     directly - addSpreadsheets does - but a harness that retyped the parser
-     would be testing the copy. */
+  /* readXlsx, dateFromName and dosDate are exposed for the harnesses in
+     tools/. Nothing in the app calls them directly, but a harness that retyped
+     them would be testing the copy - and the guards on the two date readers
+     are the part real data cannot reach. No real export contains a file called
+     2024-02-31, which is exactly why that case has to be asked about. */
   return { parse, parseCsv, parseDate, mediaKind, mimeOf, renderable, heifFamily,
-           readXlsx };
+           readXlsx, dateFromName, dosDate };
 })();

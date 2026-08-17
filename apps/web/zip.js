@@ -86,6 +86,12 @@ const MZip = (function () {
       const descriptor = (flags & 8) === 8;
       const method = dv.getUint16(off + 10, true);
       const modTime = dv.getUint16(off + 12, true);
+      /* The other half of the DOS timestamp, which was being read past. Some
+         providers put a real file date here - Google Drive does - and for a
+         file with no metadata and no sidecar it is the only date there is.
+         Whether it can be trusted is decided in parsers.js, because it is a
+         property of the archive rather than of the entry. */
+      const modDate = dv.getUint16(off + 14, true);
       const crc = dv.getUint32(off + 16, true);
       let compSize = dv.getUint32(off + 20, true);
       let size = dv.getUint32(off + 24, true);
@@ -112,7 +118,7 @@ const MZip = (function () {
       }
 
       if (!name.endsWith("/")) entries.push({ name, size, compSize, crc, method, localOff,
-        encrypted, descriptor, modTime });
+        encrypted, descriptor, modTime, modDate });
       off += 46 + nameLen + extraLen + commentLen;
     }
     return entries;

@@ -280,7 +280,10 @@ observed rather than guessed.
 | `Photo Details.csv` encodings | `-` | utf-8 with BOM, GBK and **UTF-16** all seen. We assume UTF-8 |
 | Duplicate `imgName` with conflicting dates | `-` | Must be detected, not silently first-wins |
 | `_Original` and `-N` filename suffixes not matching the CSV row | `-` | |
-| Extracted files whose mtime is the export date, with no EXIF | `-` | A whole library can arrive dateless |
+| Extracted files whose mtime is the export date, with no EXIF | `V` | Both halves are in the same real Takeout, which is what made it decidable. `Takeout/Drive` stamps 846 entries across 64 distinct days from 2016 to 2026 - those are the files. Google Photos stamps all 5,041 with one single day in 2026 - that is the afternoon the export was packed. So the archive is asked before any entry is believed: eight distinct days minimum, and no one day holding over half. Drive went from 1 of 343 media dated to 343 of 343; Photos correctly refused, staying at 2,514 of 2,524 |
+| Date read out of the filename | `V` | Snapchat strips the metadata and then names the file for the day: 606 of 606 memories in the real export. The library dated 45 percent of them before this and 100 percent after. Runs last, so EXIF and the sidecar always win |
+| Filename dates, the guards | `V` | 19 cases in the browser, 11 of them refusals: 31 February, 1970, 1980, a year in the future, month 13, a date not anchored at the start, and bare ids. No real export contains a file called `2024-02-31`, which is why these have to be asked rather than measured |
+| Compact camera filenames (`IMG_20241031_142530`, `PXL_`, `-WA0001`) | `S` | Written from the format and passing the browser cases. Measured across every export on this machine: **zero occurrences**, so nothing here exercises them on real data |
 | Apple Music `Event ID` in scientific notation | `-` | `-2.60601E+18`. The int64 is already lossy in the file |
 | Embedded JSON inside a quoted CSV field | `-` | `Evaluation Variant`, with doubled quotes |
 | Curly apostrophe U+2019 in column names | `-` | `User's Audio Quality`. An ASCII match fails |
@@ -495,8 +498,10 @@ one household reported 90,000 clips over three and a half years.
 | Meta fixing this unevenly | `-` | A recent Facebook export was reportedly clean while Instagram was not, so the test has to be per string rather than per service |
 | Facebook / Instagram HTML instead of JSON | `-` | The user chooses at request time |
 | WhatsApp | `-` | |
-| Snapchat memories, chat, location | `S` | **Was marked `V` on no evidence.** No Snapchat archive has ever existed on this machine - it is not in the inventory below. The pairing and merge were measured against the sample export, and the naming convention is from Snapchat's documentation rather than from a file Snapchat produced |
-| Snapchat `json/` and `html/` duplication | `S` | Same |
+| Snapchat memories | `V` | The real export, both parts, through the shipped parser by `tools/check-export.js`. 480 memories, 126 paired overlays, **every memory dated**. Chat and location stay `S`: those live in the data part, which this download does not include |
+| Snapchat detection | `V` | **Was broken on the real export and nobody had opened one.** All four content markers live in `json/`, which the memories parts do not have, so both archives were detected as nothing at all - no label, no coverage panel, no Snapchat parser. Fixed by a shape test on the memory naming and a name test on `mydata~<digits>-<n>.zip`, both confirmed in the browser |
+| Snapchat `json/` and `html/` duplication | `S` | Measured against the sample export only. The real download here is memories-only and has no `json/` folder to duplicate |
+| Instagram not mistaken for Facebook | `V` | **It was.** `personal_information/` was a Facebook marker and is Meta's, not Facebook's: a real Instagram export has five entries under it, beating Instagram's own four markers, so the archive was labelled Facebook. Dropped from Facebook, and three Instagram-only markers added. Confirmed against the real export and in the browser |
 | **Snapchat memories, real export** | `V` | A real export finally opened. Two archives, 607 files, 2.1 GB. Images and the timeline display correctly - 220 dated items, 480 media |
 | **Split captions, real counts** | `-` | The real export holds **480 memories with a `-main` file and 126 overlays, every one of them paired and no orphans**. 94 pair with a JPG, which is the composite path, and 32 with an MP4, which is the write-a-caption-beside path. Neither has been checked on real data yet, and the orphan path cannot be checked with this export because it contains none |
 | TikTok | `-` | |
@@ -575,7 +580,8 @@ Facebook account with Norwegian in it.
 | `samsung` | 9 | 7.5 MB | **Backed end to end.** Every entry listed, all 57 decrypted, the real CSVs through the section splitter and the card builder |
 | `google` | 6 | **38 GB** | **The photo pipeline is proven.** 5,041 entries, 6 unread, zero orphan sidecars across 2,336 photographs. It is also the export that found the silent CSV cap |
 | `apple` | 18 | 1.4 GB | **Structure confirmed, parsing not.** It proved the nested-zip gap, the `(1).zip` duplicate and `Part N of M` grouping. 111 vCards, 809 notes, 2 calendars and 319 Siri recordings sit unread inside it |
-| `instagram` | 2 | 108 KB | Little. 42 JSON files with, measured, **no non-ASCII characters at all** |
+| `instagram` | 2 | 108 KB | Little. 42 JSON files with, measured, **no non-ASCII characters at all**. It did prove one thing: the archive was being labelled Facebook |
+| `snapchat` | 2 | **2.1 GB** | **Memories only, and enough.** 480 memories and 126 overlays, all paired, all dated. It found the detection failure - both parts were recognised as nothing - and the unused date in every filename |
 | `facebook` | 0 | empty | Nothing. The folder is empty |
 
 Three things follow, and they are about coverage rather than rigour:
@@ -603,9 +609,13 @@ opened directly. Those rows say so now.
 The things that would make this plan self-checking rather than a list somebody
 has to remember to update:
 
-1. **No assertion layer.** Every test above is run by hand and read by eye.
-   A `tools/test-parsers.js` that opens fixtures and asserts counts would turn
-   most of section 3 to 6 into something CI could keep honest.
+1. **Partly closed.** `tools/check-export.js` runs a real export through the
+   shipped zip reader and the shipped parser and prints what came out - what
+   was detected, how much was dated, what notes the parser wrote. It is what
+   found the Snapchat detection failure, the Instagram mislabel and the
+   undated Drive files, none of which reading the code had suggested. What it
+   still is not is an assertion layer: it prints numbers rather than failing
+   on them, and it needs the maintainer's own exports to run at all.
 2. **No fixture corpus.** Rebuilt exports should be committed under
    `tests/fixtures/` as they arrive, so a regression shows up immediately.
 3. **No golden output.** Nothing records what a fixture *should* produce, so

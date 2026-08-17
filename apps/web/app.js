@@ -259,9 +259,28 @@ const SIGNATURES = [
   { slug: "google", label: "Google Takeout",
     pats: ["takeout/", "archive_browser.html", "archiv_ubersicht.html",
            "arkiston_selain.html", "explorateur_d_archives.html"] },
-  { slug: "instagram", label: "Instagram", pats: ["your_instagram_activity", "instagram/", "/media/posts"] },
-  { slug: "facebook", label: "Facebook", pats: ["your_facebook_activity", "facebook/", "personal_information/"] },
-  { slug: "snapchat", label: "Snapchat", pats: ["memories_history", "chat_history", "snap_history", "json/account.json"] },
+  { slug: "instagram", label: "Instagram",
+    pats: ["your_instagram_activity", "instagram/", "/media/posts",
+           /* Measured in a real export rather than guessed at. Instagram was
+              losing to Facebook on its own archive and needed markers only it
+              has. */
+           "instagram_ads_and_businesses", "past_instagram_insights",
+           "instagram_profile_information"] },
+  /* personal_information/ used to be here and is not Facebook's.
+     It is Meta's, and a real Instagram export has five entries under it -
+     enough to beat Instagram's own four markers and label the archive
+     Facebook. A folder both products ship cannot tell them apart, so it
+     counts for neither. */
+  { slug: "facebook", label: "Facebook", pats: ["your_facebook_activity", "facebook/"] },
+  /* The json/ names are the data part of a Snapchat export. The media arrives
+     in separate parts that contain a memories folder and nothing else, so a
+     real split export scored zero on all four and was detected as nothing at
+     all - no label, no coverage, no Snapchat parser. The shape test is what
+     recognises those: Snapchat names every memory for the day it was taken and
+     the snap it came from, which nothing else does. */
+  { slug: "snapchat", label: "Snapchat",
+    pats: ["memories_history", "chat_history", "snap_history", "json/account.json"],
+    shape: /^memories\/\d{4}-\d{2}-\d{2}_[0-9a-f-]{8,}-(main|overlay)\./i },
   /* apple_health_export is the folder inside the Health app's own zip, which
      is a different export from a different place and shares none of the other
      names. Without it a Health file is not recognised as Apple at all. */
@@ -300,6 +319,11 @@ const NAME_SIGNATURES = [
   { slug: "apple", label: "Apple", test: (n) => APPLE_ARCHIVES.test(n.replace(/\s*\(\d+\)\s*(?=\.zip$)/i, "")) },
   /* Reddit names the download after the account and the date it was made. */
   { slug: "reddit", label: "Reddit", test: (n) => /^export_[a-z0-9_-]{3,}_\d{8}\.zip$/i.test(n) },
+  /* Snapchat calls every part mydata~<when it was made>-<n>.zip and puts the
+     account name nowhere in it. The parts holding only memories say nothing
+     about Snapchat inside either, so without this a real export is two
+     unnamed archives. */
+  { slug: "snapchat", label: "Snapchat", test: (n) => /^mydata~\d+(-\d+)?\.zip$/i.test(n) },
 ];
 
 function detectProvider(entries, fileName) {
@@ -307,7 +331,9 @@ function detectProvider(entries, fileName) {
   let best = null, bestScore = 0;
   for (const s of SIGNATURES) {
     let score = 0;
-    for (const n of names) if (s.pats.some((p) => n.includes(p))) score++;
+    for (const n of names) {
+      if (s.pats.some((p) => n.includes(p)) || (s.shape && s.shape.test(n))) score++;
+    }
     if (score > bestScore) { bestScore = score; best = s; }
   }
   if (best) return best;
