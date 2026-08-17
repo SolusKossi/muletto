@@ -431,6 +431,13 @@ async function unlockIfNeeded(file, entries, progress) {
       await MZip.extract(file, locked);
       return true;
     } catch (err) {
+      /* Damage in the probe entry is not an answer to the question being
+         asked. The authentication code only fails after the check bytes have
+         passed, so a damaged entry has already told us the password is right,
+         and refusing the archive over one bad entry would throw away every
+         good one. The damage is reported later, by whatever tries to read
+         that entry. */
+      if (err.damaged) return true;
       MZip.password = null;
       if (!err.badPassword) throw err;
       wrong = true;

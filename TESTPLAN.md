@@ -68,7 +68,7 @@ The layer everything else sits on. A failure here loses a whole export.
 | Data descriptors (general purpose bit 3) | `V` | Samsung sets it on two archives |
 | WinZip AES-256 (method 99) | `V` | All nine Samsung archives, 57 entries |
 | WinZip AES-128 and AES-192 | `S` | Keystream checked against a known-good implementation to 70,000 blocks; no real archive has used them |
-| AES authentication code check | `-` | We decrypt and inflate but never verify the 10-byte MAC. A wrong password that passes the 2-byte check would fail later and confusingly |
+| AES authentication code check | `V` | HMAC-SHA1 over the ciphertext of every entry. `tools/check-aes.js` verifies all 50 encrypted entries of the real Samsung export, and checks the two failures separately: a flipped ciphertext bit is reported as damage, a wrong password still as a wrong password. Costs about 1 percent of decryption |
 | ZipCrypto (legacy) | `V` | Samsung `galaxyapps` |
 | Wrong password, and retry | `V` | |
 | Cancelling the password prompt | `V` | |
@@ -560,8 +560,8 @@ is unfair in both directions.
 
 Where a service could be tested, it was tested hard. The AES keystream is
 checked block for block against a known-good implementation to 70,000 blocks at
-three key lengths. Every entry of every Samsung archive was decrypted and run
-through the parser. The chart code was measured at 400,000 rows, which found a
+three key lengths. Every entry of every Samsung archive was decrypted, its
+authentication code verified, and the result run through the parser. The chart code was measured at 400,000 rows, which found a
 crash nobody would have hit by clicking. The reconciliation balances to zero on
 a real 38 GB Takeout. That is not thin testing.
 
@@ -609,10 +609,9 @@ has to remember to update:
    `tests/fixtures/` as they arrive, so a regression shows up immediately.
 3. **No golden output.** Nothing records what a fixture *should* produce, so
    a change that quietly halves a row count passes.
-4. **The AES authentication code is never verified.**
-5. **No performance floor.** The 400,000-row measurement is a one-off in a
+4. **No performance floor.** The 400,000-row measurement is a one-off in a
    scratch script, not something that would notice a regression.
-6. **Nothing checks the reconciliation stays balanced.** `unexplained`
+5. **Nothing checks the reconciliation stays balanced.** `unexplained`
    should be zero for every archive anyone ever opens, and only a person
    looking at the page would notice if it were not.
 

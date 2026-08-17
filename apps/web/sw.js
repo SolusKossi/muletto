@@ -28,7 +28,7 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "5b638f289412";
+const VERSION = "f54d01b72097";
 const PRECACHE = [
   "/app.html",
   "/styles.css?v=0a19f7a0",
@@ -44,7 +44,7 @@ const PRECACHE = [
   "/planui.js?v=d3e286bf",
   "/caption.js?v=5d10cb7e",
   "/captionui.js?v=fc9b3409",
-  "/zipcrypt.js?v=8e2f0449",
+  "/zipcrypt.js?v=b750388c",
   "/zip.js?v=08665d7b",
   "/tar.js?v=535cfda4",
   "/zipout.js?v=5c9c3222",
@@ -68,7 +68,7 @@ const PRECACHE = [
   "/export.js?v=58dc2cdb",
   "/explorer.js?v=00b52fdf",
   "/disclose.js?v=b24e640b",
-  "/app.js?v=8c9380c3",
+  "/app.js?v=c482f825",
   "/swreg.js?v=266bec3b",
   "/fonts/host-grotesk-var-italic.woff2",
   "/fonts/host-grotesk-var.woff2"

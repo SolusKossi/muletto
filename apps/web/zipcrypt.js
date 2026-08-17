@@ -170,16 +170,45 @@ const MZipCrypt = (function () {
     const given = bytes.subarray(saltLen, saltLen + 2);
     const body = bytes.subarray(saltLen + 2, bytes.length - 10);
 
-    const { key, check } = await deriveAes(password, salt, strength);
+    const { key, macKey, check } = await deriveAes(password, salt, strength);
     if (given[0] !== check[0] || given[1] !== check[1]) {
       const err = new Error("That password does not open this archive");
       err.badPassword = true;
       throw err;
     }
-    // The authentication code at the end is not verified. It would confirm the
-    // data as well as the password, but the two check bytes have already told
-    // us the password is right, and a wrong password is the failure that
-    // actually happens.
+
+    /* The authentication code, which says the bytes are the bytes.
+     *
+     * The two check bytes above only say the password is right - they are
+     * derived from the password and know nothing about the file. The ten bytes
+     * at the end are an HMAC-SHA1 over the ciphertext, so they are the only
+     * thing that can tell a truncated or damaged entry from a good one.
+     *
+     * It matters because of what happens without it: a damaged entry decrypts
+     * to plausible-looking rubbish, and the failure surfaces somewhere further
+     * on as a parser complaining about a format, which sends anybody debugging
+     * it to the wrong place entirely. Better to say the entry is damaged at
+     * the point the damage is detectable.
+     *
+     * Computed over the encrypted bytes, not the decrypted ones - that is the
+     * order the format specifies, and doing it the other way silently never
+     * matches. */
+    const want = bytes.subarray(bytes.length - 10);
+    const macCryptoKey = await crypto.subtle.importKey(
+      "raw", macKey, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+    const full = new Uint8Array(await crypto.subtle.sign("HMAC", macCryptoKey, body));
+    /* Compared without an early exit. Nothing here is a secret worth timing,
+       but a comparison that returns on the first difference is a habit worth
+       not having in code that handles somebody's archive. */
+    let bad = 0;
+    for (let i = 0; i < 10; i++) bad |= full[i] ^ want[i];
+    if (bad !== 0) {
+      const err = new Error("This entry did not survive the download intact - " +
+        "the password is right but the data is damaged. Download the archive again.");
+      err.damaged = true;
+      throw err;
+    }
+
     return ctr(expandKey(key), body);
   }
 
