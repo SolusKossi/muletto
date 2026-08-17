@@ -32,8 +32,18 @@ const MStore = (function () {
      before AppleCare and the other archive names were recognised comes back
      still labelled as itself, and every view built on the provider - the
      grouping in the sidebar, the "not read in a tailored way" notice - goes
-     on being wrong until it is read again. */
-  const PARSE_VERSION = 5;
+     on being wrong until it is read again.
+
+     6: Apple Health, Google Fit, and the note explaining an empty Timeline
+     folder. This is the case the mechanism exists for and it was still missed:
+     the parser learned to read a 161 MB Health export, the stored library from
+     before knew nothing about it, and reopening the same file showed the same
+     three unread files as always. Nothing was broken and nothing said so -
+     which is exactly how a reader concludes the feature does not work.
+
+     If a change makes the reading produce anything it did not produce before,
+     this number goes up in the same commit. */
+  const PARSE_VERSION = 6;
   const KEY = "current";
 
   /* One database, four stores, opened from three files. They must all name the

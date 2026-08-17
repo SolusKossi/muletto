@@ -146,8 +146,14 @@ const MTopics = (function () {
    * than saying nothing at all: the whole point of the notice was honesty.
    *
    * The right question is whether a parser exists, which is what a slug means. */
+  /* Every slug with a parser behind it. Reddit was missing and had been since
+     its parser was written, so a Reddit export was told it is not read in a
+     tailored way while being read in a tailored way - the exact thing the
+     comment above says is worse than saying nothing. This list has to gain a
+     line whenever parse() gains a branch. */
   const PARSED = { google: "Google", apple: "Apple", samsung: "Samsung",
-                   snapchat: "Snapchat", facebook: "Facebook", instagram: "Instagram" };
+                   snapchat: "Snapchat", facebook: "Facebook",
+                   instagram: "Instagram", reddit: "Reddit" };
 
   function unsupportedNote(tables) {
     const unknown = [...new Set(tables.filter((t) => !PARSED[slugOf(t)])
