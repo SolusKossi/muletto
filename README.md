@@ -2,36 +2,44 @@
 
 **A GDPR data export viewer that runs in your browser.**
 
-Open the export zip that Apple, Google, Samsung, Snapchat, Reddit, Facebook or
-Instagram sends you, and actually read what is inside it. Nothing is uploaded,
+Every large service is obliged to hand over a copy of your data, and most of
+them do it in a format that is technically compliant and unreadable in
+practice. Google Takeout keeps each photograph's date in a separate JSON file
+beside it. Samsung encrypts every archive and emails the password separately.
+Apple splits one request across eighteen zip files, several of which contain
+further zip files.
+
+Muletto opens those archives and reads what is in them. Nothing is uploaded,
 there is no account, and there is nothing to install.
 
 ## [Open muletto.app](https://muletto.app)
 
-Drop the archive in and it opens. If you would rather not use your own data
-yet, six sample exports are one click away on the same page.
+Drop the archive in and it opens. Six sample exports are one click away on the
+same page if you would rather not use your own yet.
 
 ### What it does
 
 - **Opens the archive without unpacking it.** A 38 GB Takeout or an 18-part
   Apple export is read where it sits.
-- **Merges several exports into one library.** Your photographs from Google,
-  Apple and Snapchat in one place, with the ones that appear in more than one
-  found automatically.
+- **Merges several exports into one library.** Photographs from Google, Apple
+  and Snapchat in one place, with the ones that appear in more than one found
+  automatically.
 - **Puts the dates and locations back.** Google keeps a photograph's capture
-  date in a JSON file beside it, and every other tool throws that away.
-- **Reads the parts nobody else does** - messages across services, health
+  date in a JSON file beside it rather than in the photograph; Snapchat strips
+  it out and leaves it in the filename. Both are read, and written back into
+  the file.
+- **Reads more than the photographs** - messages across services, health
   records, location history, sign-in logs, saved web pages, Siri recordings.
 - **Writes it back out as ordinary folders**, with the real dates written into
   the files themselves, so nothing afterwards depends on this site.
 
 ### Which exports it reads
 
-| Service | Status |
+| Service | What is read |
 |---|---|
 | Google (Takeout) | Photos, videos, location history, messages, mail, activity |
 | Apple | Notes, contacts, calendar, audio, purchases, device records |
-| Samsung | Health, account and service records - including encrypted archives |
+| Samsung | Health, account and service records, including encrypted archives |
 | Snapchat | Memories, chat history, split captions merged back on |
 | Reddit | Posts, comments, votes, saved items, private messages |
 | Instagram and Facebook | Messages, posts, account records |
@@ -43,80 +51,66 @@ from documentation.
 
 ### Guides
 
-Thirty hand-written guides for [requesting and opening a GDPR
-export](https://muletto.app/guides.html) from each service - what actually
-arrives, how long it takes, and the part people get wrong.
-
-The whole application is in this repository, so anyone curious about how it
-works can see exactly what it does.
-
----
-
-Every large service is obliged to hand over a copy of your data, and most of
-them do it in a format that is technically compliant and practically unreadable.
-Google Takeout keeps each photograph's date in a separate JSON file beside it.
-Samsung encrypts every archive and emails the password separately. Apple splits
-one request across eighteen zip files, several of which contain further zip
-files.
-
-Muletto reads those archives, merges several exports into one library, finds
-duplicates across them, and can write the real capture dates and locations back
-into the files.
+[Thirty-nine guides](https://muletto.app/guides.html): how to request an
+export from each of eighteen services and what actually arrives, what to do
+when one goes wrong, and where to put the files afterwards. Each leads with
+the specific thing that catches people out rather than with generic steps.
 
 ## How you can tell nothing is uploaded
 
-Muletto keeps everything on your machine. That is easy to say, so here are three
-ways to see it for yourself, from the quickest to the most thorough.
-
 **Turn off your internet, then open an export.** Everything still works. A
-service worker caches the application itself, so even a reload succeeds with no
-connection.
+service worker caches the application itself, so even a reload succeeds with
+no connection.
 
-**Read the Content-Security-Policy** in `apps/web/_headers`. `connect-src` names
-every host the browser will permit this page to contact. If a future change
-tried to send an archive somewhere, the browser would refuse it rather than let
-it happen quietly.
+**Read the Content-Security-Policy** in `apps/web/_headers`. `connect-src`
+names every host the browser will permit this page to contact. If a later
+change tried to send an archive somewhere, the browser would refuse it rather
+than let it happen quietly.
 
-**Read the code that touches the network.** There are six files, and no others:
+**Read the code that touches the network.** Eight files do, and no others:
 
 ```
-apps/web/app.js         fetches the sample archives on the home page
+apps/web/app.js         fetches the sample archives and the guide index
 apps/web/sw.js          the offline cache
+apps/web/analytics.js   one beacon: path, referrer, phone or not. Not loaded
+                        on app.html, so the page holding your export makes no
+                        requests at all
+apps/web/admin.js       the operator's own usage page, behind a password
 apps/web/credits.js     the credit balance for AI descriptions
 apps/web/caption.js     the AI description request itself
 apps/web/captionui.js   the interface around it
 apps/web/plan.js        the sort-by-instruction request
 ```
 
-Everything else in the application works on data already in memory. To confirm
-that list rather than believing it:
+Everything else works on data already in memory. To confirm that list rather
+than believing it:
 
 ```
-grep -rn "fetch(\|XMLHttpRequest\|WebSocket" apps/web/
+grep -rln -e "fetch(" -e XMLHttpRequest -e WebSocket -e sendBeacon apps/web/
 ```
 
-The only feature that deliberately sends anything is AI image description, which
-is optional, off by default, and can be pointed at a model running on your own
-machine instead.
+The only features that deliberately send anything are AI image description and
+sorting by instruction. Both are optional, off by default, and can be pointed
+at a model running on your own machine instead.
 
 ## Running it
 
-No build step is required to use it. Serve the directory:
+No build step is needed to use it. Serve the directory:
 
 ```
-cd apps/web && python -m http.server 5173
+python -m http.server 5173 --bind 127.0.0.1 --directory apps/web
 ```
 
-To regenerate the guide pages, sitemap and asset stamps after editing:
+After editing, regenerate the guide pages, sitemap and asset stamps:
 
 ```
 node tools/build-site.js
 node tools/check.js
 ```
 
-`check.js` enforces the house rules: plain ASCII throughout, no inline scripts,
-no broken internal links, and generated pages matching their source. Run it
-before committing.
+`check.js` enforces the house rules: plain ASCII throughout, no inline
+scripts, no broken internal links, and generated pages matching their source.
+Run it before committing.
 
 ## Layout
 
@@ -135,13 +129,11 @@ tools/              site builder, checks, sample-data generator
 
 ## What is and is not tested
 
-`TESTPLAN.md` lists everything that has to work and marks how far each item has
-actually been proved: against generated data, against an archive rebuilt from a
-real person's structure report, or against a real export.
-
-It is candid on purpose. Safari and Firefox have never been run. Several
-services are read partially or not at all. If you are deciding whether to trust
-this with your own export, that file is the honest answer.
+`TESTPLAN.md` lists everything that has to work and marks how far each item
+has been proved: against generated data, against an archive rebuilt from a
+real person's structure report, or against a real export. It also lists what
+has not been proved. Safari and Firefox have never been run, and several
+services are read partially or not at all.
 
 `GUIDE-STATUS.md` records which request guides have been walked by hand, which
 is a stricter bar than being written from documentation.
@@ -151,22 +143,20 @@ is a stricter bar than being written from documentation.
 The most useful contribution is a service this does not read properly yet.
 
 You do not need to send anyone your data, and please do not. Open your export,
-go to **What is in here**, and download the structure report: folder names, file
-types, column headers and row counts, with no values, and file names reduced to
-their shape. Read it in full before deciding to share it.
+go to **What is in here**, and download the structure report: folder names,
+file types, column headers and row counts, with no values, and file names
+reduced to their shape. Read it in full before deciding to share it.
 
 Open an issue with that attached and it is usually enough to reproduce the
 problem, because `tools/rebuild-from-report.js` turns one back into a working
-archive with invented contents. Pull requests are welcome too, particularly for
-parsers. See `CONTRIBUTING.md`.
+archive with invented contents. Pull requests are welcome too, particularly
+for parsers. See `CONTRIBUTING.md`.
 
 ## Licence
 
 Source available, not open source. You may read, run, modify and self-host it
-for any non-commercial purpose. You may not sell it or charge for it. See
-`LICENSE` for the terms, which are the PolyForm Noncommercial License 1.0.0.
+for any non-commercial purpose. You may not sell it or charge for it. The
+terms are the PolyForm Noncommercial License 1.0.0, in `LICENSE`.
 
-Muletto is free and stays free. The source is here so nobody has to take the
-privacy claim on trust, and the licence exists to keep it free rather than to
-fence anything off. Use it, read it, change it, run your own copy. The one
-thing it asks is that nobody turns it into something people have to pay for.
+The source is here so the privacy claim can be checked against the code that
+actually runs, rather than taken on trust.

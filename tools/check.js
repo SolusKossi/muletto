@@ -184,6 +184,59 @@ console.log("\nInline scripts (the CSP refuses these in production)");
   }
 }
 
+/* Numbers the README states about the repository itself.
+ *
+ * It claimed thirty guides when there were thirty-nine, and listed six files
+ * that touch the network next to a grep command that returns eight. The
+ * second one matters: it is on the privacy claim, and it invited the reader
+ * to run a command that contradicts the page. A number nobody can recount by
+ * hand is a number that goes stale, so they are recounted here. */
+console.log("\nNumbers the README states");
+{
+  // Lowercased, so a number at the start of a sentence still matches.
+  const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8").toLowerCase();
+  const WORDS = {
+    ten: 10, eighteen: 18, twenty: 20, thirty: 30, forty: 40,
+    "thirty-nine": 39, "thirty-eight": 38, six: 6, seven: 7, eight: 8, nine: 9,
+  };
+  const spelled = (n) => Object.keys(WORDS).find((w) => WORDS[w] === n) || String(n);
+
+  const guides = walk(path.join(WEB, "guides"), (p) => p.endsWith(".html")).length;
+  const services = fs.readdirSync(path.join(WEB, "guides"))
+    .filter((f) => f.endsWith(".html"))
+    .filter((f) => !/^(dest-|flow-|why-|how-)/.test(f))
+    .filter((f) => !/-(came-as|missing)-/.test(f)).length;
+
+  /* Asked of the source, the same way the README tells the reader to ask. */
+  const NET = /fetch\(|XMLHttpRequest|WebSocket|sendBeacon/;
+  const talkers = walk(WEB, (p) => p.endsWith(".js"))
+    .filter((f) => NET.test(fs.readFileSync(f, "utf8")))
+    .map((f) => path.basename(f)).sort();
+
+  /* Plain substring matches rather than patterns. A regex here would need
+     escaped brackets, and building one in a generator is how this codebase
+     has repeatedly ended up with a literal backspace in its source. */
+  const claims = [
+    [guides, "guides", "[" + spelled(guides) + " guides]"],
+    [services, "services with a request guide", "each of " + spelled(services) + " services"],
+    [talkers.length, "files that touch the network", spelled(talkers.length) + " files do"],
+  ];
+  let wrong = 0;
+  for (const [n, what, phrase] of claims) {
+    if (!readme.includes(phrase)) {
+      fail("README should say " + spelled(n) + " " + what + ' - looked for "' + phrase + '"');
+      wrong++;
+    }
+  }
+  for (const f of talkers) {
+    if (!readme.includes("apps/web/" + f)) {
+      fail("README's network list leaves out apps/web/" + f + ", which the grep finds");
+      wrong++;
+    }
+  }
+  if (!wrong) ok("guide counts and the " + talkers.length + "-file network list match the repository");
+}
+
 console.log("");
 if (failed) {
   console.log(failed + " problem" + (failed === 1 ? "" : "s") + " found.\n");
