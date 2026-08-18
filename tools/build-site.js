@@ -1252,7 +1252,18 @@ function main() {
         if (/^\d{4}-\d{2}-\d{2}$/.test(s)) { date = s; continue; }
         if (date && !seen.has(s)) seen.set(s, date);
       }
-    } catch (e) { /* no git, or no history - every page simply goes undated */ }
+    } catch (e) { /* handled below, where the silence is made audible */ }
+    /* One page with no commit yet quietly gets no lastmod, which is right.
+       Every page at once is a different thing entirely, and it used to happen
+       silently: running this in a directory with no .git - a staging tree, a
+       downloaded archive - stripped the dates off the whole sitemap, and the
+       stripped file then got published. Losing every lastmod is a real
+       regression in what Google re-fetches, so it says so now. */
+    if (!seen.size) {
+      console.warn("  WARNING: no git history here, so the sitemap has no lastmod " +
+                   "dates at all. Do not publish this sitemap - build it in a clone " +
+                   "that has its history.");
+    }
     return (rel) => seen.get("apps/web/" + rel) || null;
   })();
 
