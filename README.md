@@ -54,7 +54,7 @@ from documentation.
 [Thirty-nine guides](https://muletto.app/guides.html): how to request an
 export from each of eighteen services and what actually arrives, what to do
 when one goes wrong, and where to put the files afterwards. Each leads with
-the specific thing that catches people out rather than with generic steps.
+the specific thing that catches people out, not with generic steps.
 
 ## How you can tell nothing is uploaded
 
@@ -159,4 +159,4 @@ for any non-commercial purpose. You may not sell it or charge for it. The
 terms are the PolyForm Noncommercial License 1.0.0, in `LICENSE`.
 
 The source is here so the privacy claim can be checked against the code that
-actually runs, rather than taken on trust.
+actually runs.

@@ -22,21 +22,20 @@ of the problem without reproducing anything of yours.
 
 ## Sending code
 
-Pull requests are welcome for parsers and format readers, which is where most
-of the work is and where formats change under us. Before opening one:
+Pull requests are welcome for parsers and format readers. That is where most
+of the work is, and where the formats change underneath us. Before opening one:
 
 - Run `node tools/build-site.js` then `node tools/check.js`. The checks enforce
-  plain ASCII, no inline scripts, no broken internal links, and generated pages
-  matching their source.
-- Add a fixture if you can. A rebuilt archive under `tests/fixtures/` is worth
-  more than a description.
+  plain ASCII, no inline scripts, no broken internal links, generated pages
+  matching their source, and the counts the README states.
+- Attach a rebuilt archive if you can. One is worth more than a description,
+  and `tools/check-export.js` will run it through the shipped parser.
 - Update `TESTPLAN.md` in the same commit. It records how far each thing has
-  been proved, and a change that moves a row from unstarted to working should
-  say so there.
+  been proved, and a change that moves a row should say so there.
 
-Comments in this codebase tend to explain why something is the way it is,
-usually because the obvious approach was tried first and broke. That style is
-deliberate. If you fix something subtle, leave the reason behind.
+Comments here explain why something is the way it is, usually because the
+obvious approach was tried first and broke. If you fix something subtle, leave
+the reason behind.
 
 ## What will not be merged
 

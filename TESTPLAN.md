@@ -4,14 +4,13 @@ What has to work, how each thing gets proved, and where each one currently
 stands. A working document: when a state changes, it changes here in the same
 commit as the code.
 
-Most rows are unstarted, and that is the honest picture of a young project
-rather than a confession. What has been tested has been tested properly; the
+Most rows are unstarted. What has been tested has been tested properly; the
 limit is how many different people's exports one person can get hold of.
 
 ## The three states
 
-Every row gets one of these. They are a ladder - each rung is worth less than
-the one above it, and the top rung is the only one that means "this works".
+A ladder. Each rung is worth less than the one above it, and only the top one
+means "this works".
 
 | Mark | State | What it means |
 |---|---|---|
@@ -46,8 +45,9 @@ node tools/rebuild-from-report.js report.json rebuilt/
 #   open the real export, then compare against what the owner says is there
 ```
 
-There is no automated assertion layer yet. That is the biggest gap in this
-plan and it is listed under **Harness gaps** at the end.
+`tools/check-export.js` runs a real export through the shipped reader and
+parser and prints what came out, but nothing asserts on the numbers yet. See
+**Harness gaps** at the end.
 
 ---
 
@@ -281,7 +281,7 @@ observed rather than guessed.
 | Duplicate `imgName` with conflicting dates | `-` | Must be detected, not silently first-wins |
 | `_Original` and `-N` filename suffixes not matching the CSV row | `-` | |
 | Extracted files whose mtime is the export date, with no EXIF | `V` | Both halves are in the same real Takeout, which is what made it decidable. `Takeout/Drive` stamps 846 entries across 64 distinct days from 2016 to 2026 - those are the files. Google Photos stamps all 5,041 with one single day in 2026 - that is the afternoon the export was packed. So the archive is asked before any entry is believed: eight distinct days minimum, and no one day holding over half. Drive went from 1 of 343 media dated to 343 of 343; Photos correctly refused, staying at 2,514 of 2,524 |
-| Date read out of the filename | `V` | Snapchat strips the metadata and then names the file for the day: 606 of 606 memories in the real export. The library dated 45 percent of them before this and 100 percent after. Runs last, so EXIF and the sidecar always win |
+| Date read out of the filename | `V` | Snapchat strips the metadata and then names the file for the day: 606 of 606 media files in the real export, being 480 memories and their 126 overlays. The library dated 45 percent before this and all of it after. Runs last, so EXIF and the sidecar always win |
 | Filename dates, the guards | `V` | 19 cases in the browser, 11 of them refusals: 31 February, 1970, 1980, a year in the future, month 13, a date not anchored at the start, and bare ids. No real export contains a file called `2024-02-31`, which is why these have to be asked rather than measured |
 | Compact camera filenames (`IMG_20241031_142530`, `PXL_`, `-WA0001`) | `S` | Written from the format and passing the browser cases. Measured across every export on this machine: **zero occurrences**, so nothing here exercises them on real data |
 | Apple Music `Event ID` in scientific notation | `-` | `-2.60601E+18`. The int64 is already lossy in the file |
@@ -292,87 +292,6 @@ observed rather than guessed.
 | Column names drifting between vintages | `-` | `Metrics Client ID` vs `Metrics Client Id` |
 | Zero-byte files as a normal result | `-` | `Additional Subscriptions` observed empty |
 | Any category arriving as PDF | `-` | Apple confirms PDFs exist but never says which |
-
-### 5a. Google, the cross-cutting trap
-
-**Takeout localises its own names, per string, inconsistently.** A German
-archive translates `Access Log Activity` to `Zugriffsprotokollaktivitaten`,
-`Saved` to `Gespeichert`, `Profile` to `Profil` and `archive_browser.html` to
-`Archiv_Ubersicht.html` - while leaving `Groups`, `Classroom`, `Discover`,
-`Home App` and `Search Contributions` in English **in the same archive**. A
-Finnish archive localises file names as well, and lower-cases some of them.
-
-This matters more here than anywhere else in this document, because this is a
-Norwegian product and its first testers will not have English archives.
-
-| What | State | Notes |
-|---|---|---|
-| Detecting a localised Takeout | `S` | Signature widened past the English index page. Still guesswork for languages nobody has sampled |
-| Sidecar matching | `V` | Language-independent by luck rather than design - it matches on the file extension pattern, not the folder |
-| Folder-name matching anywhere else | `-` | Anything that keys on an English folder name will fail. Worth an audit |
-| Detecting the archive language | `-` | The index page name is the only reliable signal |
-
-### 5b. Google, the long tail
-
-Not one of these has been opened. Listed because the shapes are unusual enough
-that each needs its own test rather than a generic reader.
-
-| Category | State | Notes |
-|---|---|---|
-| Google Voice | `-` | One HTML file per conversation *fragment*, tens of thousands of them. Attachment names have to be guessed by trying extensions. Base names truncated at 50 characters. The filename is UTC and the body carries a local offset, and they disagree |
-| Google Chat | `-` | `Groups/DM 1pRI-QAAAAE/messages.json` - the separator is a **space**. `created_date` is a localised human sentence, not an epoch |
-| Hangouts | `-` | Microsecond epochs as strings; message text is an array of segments to join; 500 MB single file |
-| Play Store | `-` | Top level is a list of single-key wrapper objects. `invoicePrice` is a localised currency string, so a naive strip of non-digits mangles `1.234,56` - which is exactly the Norwegian format |
-| Play Games | `-` | Four fixed HTML files per game, in a folder named after the game |
-| Access Log Activity | `-` | Filename is a truncated English sentence, cut mid-word. 645,000 rows in 106 MB for 28 days |
-| Android Device Configuration | `-` | Highest-PII folder in Takeout: IMEI, serials, MAC addresses. Structure entirely inferred |
-| Saved | `-` | **The header row is not row 1** - a description line and a blank line come first, so a naive reader mis-keys every column |
-| Blogger | `-` | `.atom`, not `.xml`, so an `*.xml` glob misses it. Images are referenced by URL and shipped separately with no documented mapping |
-| Waze | `-` | Not in Takeout at all. A password-protected zip emailed separately, with whole drives packed into one CSV cell |
-| Nest | `-` | Opaque generated ids, no readable device folder. Video export routinely completes with no video |
-| Gemini | `-` | Chats live under My Activity; the `Gemini` category is only Gems. Both must be selected or half is silently lost |
-| My Ad Center | `-` | Not a top-level category. Large activity files split into `MyActivity-1.html`, `-2.html` that must be concatenated |
-| Meet, Messages, Fi, Store, News, Home App | `-` | Categories confirmed to exist, contents unknown. Messages commonly exports nothing at all |
-| Podcasts, Cloud Print, Translator Toolkit | `-` | Dead products whose folders persist. Recognise and skip quietly rather than warn |
-
-## 5b. Snapchat
-
-The request form has per-category toggles, a date range, an **Export your
-Memories** checkbox and an **Export JSON Files** checkbox.
-
-| What | State | Notes |
-|---|---|---|
-| `mydata~<digits>.zip` | `V` | |
-| Multi-part `mydata~<digits>-1.zip` | `-` | **Only part 1 carries `json/` and `html/`.** Later parts are media and collide on names |
-| `json/` present | `V` | |
-| **`json/` absent entirely** | `X` | JSON is an opt-in checkbox. An HTML-only export is a first-class case, not an error. We would show nothing |
-| `html/` pages | `V` | |
-| `memories_history.json` | `V` | `Date` ends with a literal ` UTC` that must be stripped |
-| Memories bundled in `memories/` | `-` | `<date>_<uuid>-main.jpg` plus a separate `-overlay.png` that has to be composited |
-| Memories as links only | `-` | `Download Link` needs a **POST**, and the reply is a plain-text URL to fetch. **The CSP forbids this and should.** We must explain the export is links-only rather than showing an empty library |
-| Roughly 5% of referenced media missing | `-` | Normal, not an edge case |
-| Duplicate timestamps across memories | `-` | Split video segments. Never dedup on timestamp alone |
-| `chat_media/` nested zips | `-` | `media~zip-<uuid>.zip`, and `.zip.nomedia` which an extension filter skips |
-| `snap_history.json` with no media ids | `-` | Snap events cannot be linked to media at all |
-| `friends.json`, `location_history.json` | `V` | |
-
-## 5c. X / Twitter
-
-Not supported at all yet, and the format is unusual enough to deserve its own row set.
-
-| What | State | Notes |
-|---|---|---|
-| `Your archive.html` at the top level | `-` | With a space in the name |
-| `data/*.js` are **not JSON** | `X` | Each file is `window.YTD.<name>.part0 = [ ... ]`. A JSON parser fails on every one |
-| `data/manifest.js` uses a different prefix | `-` | `window.__THAR_CONFIG`. It is the authoritative index: read `globalName` from it rather than globbing |
-| Filename hyphens, variable underscores | `-` | `account-creation-ip.js` holds `YTD.account_creation_ip.part0` |
-| `tweets-part1.js` multi-part | `-` | **Parts are not in chronological order.** Concatenate then sort |
-| `note-tweet.js` holds the full text | `-` | `tweets.js` carries a truncated copy of every long post. Join by id or silently lose the body |
-| `created_at` in Twitter's legacy format | `-` | `Wed Oct 10 20:19:24 +0000 2018`. **`Date.parse` on this is not spec-guaranteed and Safari and Firefox have differed** - parse it with an explicit pattern |
-| Two date formats in one archive | `-` | `account.js` uses ISO 8601 |
-| `id_str` versus `id` | `-` | The numeric form overflows a double above 2^53 |
-| `extended_entities` for media | `-` | `entities.media` holds only the first image of four |
-| Empty files that still parse | `-` | `window.YTD.mute.part0 = [ ]` |
 
 ## 5. Google Takeout
 
@@ -424,7 +343,95 @@ Not supported at all yet, and the format is unusual enough to deserve its own ro
 | `.tgz` instead of `.zip` | `V` | Stale `X` left over from before it was built. See section 1, which verifies it in detail |
 | A photo and its sidecar landing in different parts | `-` | |
 
-## 5d. TikTok
+### 5a. Takeout localises its own names
+
+**Takeout localises its own names, per string, inconsistently.** A German
+archive translates `Access Log Activity` to `Zugriffsprotokollaktivitaten`,
+`Saved` to `Gespeichert`, `Profile` to `Profil` and `archive_browser.html` to
+`Archiv_Ubersicht.html` - while leaving `Groups`, `Classroom`, `Discover`,
+`Home App` and `Search Contributions` in English **in the same archive**. A
+Finnish archive localises file names as well, and lower-cases some of them.
+
+This matters more here than anywhere else in this document, because this is a
+Norwegian product and its first testers will not have English archives.
+
+| What | State | Notes |
+|---|---|---|
+| Detecting a localised Takeout | `S` | Signature widened past the English index page. Still guesswork for languages nobody has sampled |
+| Sidecar matching | `V` | Language-independent by luck rather than design - it matches on the file extension pattern, not the folder |
+| Folder-name matching anywhere else | `-` | Anything that keys on an English folder name will fail. Worth an audit |
+| Detecting the archive language | `-` | The index page name is the only reliable signal |
+
+### 5b. The long tail
+
+Not one of these has been opened. Listed because the shapes are unusual enough
+that each needs its own test rather than a generic reader.
+
+| Category | State | Notes |
+|---|---|---|
+| Google Voice | `-` | One HTML file per conversation *fragment*, tens of thousands of them. Attachment names have to be guessed by trying extensions. Base names truncated at 50 characters. The filename is UTC and the body carries a local offset, and they disagree |
+| Google Chat | `-` | `Groups/DM 1pRI-QAAAAE/messages.json` - the separator is a **space**. `created_date` is a localised human sentence, not an epoch |
+| Hangouts | `-` | Microsecond epochs as strings; message text is an array of segments to join; 500 MB single file |
+| Play Store | `-` | Top level is a list of single-key wrapper objects. `invoicePrice` is a localised currency string, so a naive strip of non-digits mangles `1.234,56` - which is exactly the Norwegian format |
+| Play Games | `-` | Four fixed HTML files per game, in a folder named after the game |
+| Access Log Activity | `-` | Filename is a truncated English sentence, cut mid-word. 645,000 rows in 106 MB for 28 days |
+| Android Device Configuration | `-` | Highest-PII folder in Takeout: IMEI, serials, MAC addresses. Structure entirely inferred |
+| Saved | `-` | **The header row is not row 1** - a description line and a blank line come first, so a naive reader mis-keys every column |
+| Blogger | `-` | `.atom`, not `.xml`, so an `*.xml` glob misses it. Images are referenced by URL and shipped separately with no documented mapping |
+| Waze | `-` | Not in Takeout at all. A password-protected zip emailed separately, with whole drives packed into one CSV cell |
+| Nest | `-` | Opaque generated ids, no readable device folder. Video export routinely completes with no video |
+| Gemini | `-` | Chats live under My Activity; the `Gemini` category is only Gems. Both must be selected or half is silently lost |
+| My Ad Center | `-` | Not a top-level category. Large activity files split into `MyActivity-1.html`, `-2.html` that must be concatenated |
+| Meet, Messages, Fi, Store, News, Home App | `-` | Categories confirmed to exist, contents unknown. Messages commonly exports nothing at all |
+| Podcasts, Cloud Print, Translator Toolkit | `-` | Dead products whose folders persist. Recognise and skip quietly rather than warn |
+
+## 6. Snapchat
+
+The request form has per-category toggles, a date range, an **Export your
+Memories** checkbox and an **Export JSON Files** checkbox.
+
+**Measured** in a real export: 2 archives, 2.1 GB, 608 entries, 606 media.
+480 memories and 126 overlays, every overlay paired and no orphans. It is a
+memories-only download, so everything that lives in `json/` is still unproved.
+
+| What | State | Notes |
+|---|---|---|
+| `mydata~<digits>-<n>.zip` naming | `V` | The real parts are `mydata~1786696263351-8.zip` and `-9`. The account name is nowhere in them, which is why detection also needs the archive name |
+| Multi-part | `V` | Confirmed: the media parts carry `memories/` and nothing else. Documentation says only part 1 has `json/` and `html/`, and neither part here does |
+| `json/` present | `S` | Sample export only. Neither real part contains a `json/` folder |
+| **`json/` absent entirely** | `X` | JSON is an opt-in checkbox. An HTML-only export is a first-class case, not an error. We would show nothing |
+| `html/` pages | `S` | Sample export only |
+| `memories_history.json` | `S` | Sample only. `Date` ends with a literal ` UTC` that must be stripped |
+| Memories bundled in `memories/` | `V` | `<date>_<uuid>-main.<ext>` plus a separate `-overlay.png`. 480 and 126 of them |
+| Memories as links only | `-` | `Download Link` needs a **POST**, and the reply is a plain-text URL to fetch. **The CSP forbids this and should.** We must explain the export is links-only rather than showing an empty library |
+| Roughly 5% of referenced media missing | `-` | Normal, not an edge case |
+| Duplicate timestamps across memories | `-` | Split video segments. Never dedup on timestamp alone |
+| `chat_media/` nested zips | `-` | `media~zip-<uuid>.zip`, and `.zip.nomedia` which an extension filter skips |
+| `snap_history.json` with no media ids | `-` | Snap events cannot be linked to media at all |
+| `friends.json`, `location_history.json` | `S` | Sample only |
+| Detected as Snapchat at all | `V` | **Was broken and nobody had opened a real export.** All four content markers live in `json/`, which the memories parts do not have, so both archives were detected as nothing: no label, no coverage panel, no Snapchat parser. Fixed by a shape test on the memory naming plus a name test on the archive, both confirmed in the browser |
+| Dates | `V` | Snapchat strips the metadata and writes the date into the filename. 45 percent of this export was dated from file contents alone; reading the names as well, 480 of 480 |
+| Split captions, real counts | `V` | 126 overlays, every one paired, no orphans. 94 pair with a picture, which composites; 32 with a video, which is written beside instead. The compositing output has not been looked at by eye, and the orphan path cannot be exercised by this export because it has none |
+
+## 7. X / Twitter
+
+Not supported at all yet, and the format is unusual enough to deserve its own row set.
+
+| What | State | Notes |
+|---|---|---|
+| `Your archive.html` at the top level | `-` | With a space in the name |
+| `data/*.js` are **not JSON** | `X` | Each file is `window.YTD.<name>.part0 = [ ... ]`. A JSON parser fails on every one |
+| `data/manifest.js` uses a different prefix | `-` | `window.__THAR_CONFIG`. It is the authoritative index: read `globalName` from it rather than globbing |
+| Filename hyphens, variable underscores | `-` | `account-creation-ip.js` holds `YTD.account_creation_ip.part0` |
+| `tweets-part1.js` multi-part | `-` | **Parts are not in chronological order.** Concatenate then sort |
+| `note-tweet.js` holds the full text | `-` | `tweets.js` carries a truncated copy of every long post. Join by id or silently lose the body |
+| `created_at` in Twitter's legacy format | `-` | `Wed Oct 10 20:19:24 +0000 2018`. **`Date.parse` on this is not spec-guaranteed and Safari and Firefox have differed** - parse it with an explicit pattern |
+| Two date formats in one archive | `-` | `account.js` uses ISO 8601 |
+| `id_str` versus `id` | `-` | The numeric form overflows a double above 2^53 |
+| `extended_entities` for media | `-` | `entities.media` holds only the first image of four |
+| Empty files that still parse | `-` | `window.YTD.mute.part0 = [ ]` |
+
+## 8. TikTok
 
 Not supported. One enormous JSON file, and almost every key in it has been
 renamed at least once, so a parser written against one export fails on another.
@@ -443,7 +450,7 @@ renamed at least once, so a parser written against one export fails on another.
 | One file, tens of megabytes | `-` | Nothing can be streamed per category. Measure `JSON.parse` on a real one before assuming |
 | Watch history absent from a narrow request | `-` | Selecting only "Activity" instead of all data reportedly drops it. Worth a line in the guide |
 
-## 5e. Amazon
+## 9. Amazon
 
 Not supported. Worth its own section because the request flow itself produces
 a shape nothing else does.
@@ -482,7 +489,7 @@ Scale is lopsided in a useful way: even a twenty-five-year customer's order
 history stays in single-digit megabytes. The gigabytes are Alexa `.wav` audio -
 one household reported 90,000 clips over three and a half years.
 
-## 6. Meta, Snapchat and the rest
+## 10. Meta, and everything else
 
 | Service | State | Notes |
 |---|---|---|
@@ -498,12 +505,7 @@ one household reported 90,000 clips over three and a half years.
 | Meta fixing this unevenly | `-` | A recent Facebook export was reportedly clean while Instagram was not, so the test has to be per string rather than per service |
 | Facebook / Instagram HTML instead of JSON | `-` | The user chooses at request time |
 | WhatsApp | `-` | |
-| Snapchat memories | `V` | The real export, both parts, through the shipped parser by `tools/check-export.js`. 480 memories, 126 paired overlays, **every memory dated**. Chat and location stay `S`: those live in the data part, which this download does not include |
-| Snapchat detection | `V` | **Was broken on the real export and nobody had opened one.** All four content markers live in `json/`, which the memories parts do not have, so both archives were detected as nothing at all - no label, no coverage panel, no Snapchat parser. Fixed by a shape test on the memory naming and a name test on `mydata~<digits>-<n>.zip`, both confirmed in the browser |
-| Snapchat `json/` and `html/` duplication | `S` | Measured against the sample export only. The real download here is memories-only and has no `json/` folder to duplicate |
 | Instagram not mistaken for Facebook | `V` | **It was.** `personal_information/` was a Facebook marker and is Meta's, not Facebook's: a real Instagram export has five entries under it, beating Instagram's own four markers, so the archive was labelled Facebook. Dropped from Facebook, and three Instagram-only markers added. Confirmed against the real export and in the browser |
-| **Snapchat memories, real export** | `V` | A real export finally opened. Two archives, 607 files, 2.1 GB. Images and the timeline display correctly - 220 dated items, 480 media |
-| **Split captions, real counts** | `-` | The real export holds **480 memories with a `-main` file and 126 overlays, every one of them paired and no orphans**. 94 pair with a JPG, which is the composite path, and 32 with an MP4, which is the write-a-caption-beside path. Neither has been checked on real data yet, and the orphan path cannot be checked with this export because it contains none |
 | TikTok | `-` | |
 | X / Twitter | `-` | |
 | Discord | `-` | |
@@ -520,7 +522,7 @@ one household reported 90,000 clips over three and a half years.
 A second research pass on this group was still running when this document was
 written. Fill in exact filenames when it lands.
 
-## 7. Browsers
+## 11. Browsers
 
 The most dangerous table in this document.
 
@@ -534,11 +536,11 @@ The most dangerous table in this document.
 | Safari iOS | `-` | Upload is deliberately disabled on handhelds |
 | Chrome Android | `-` | Same |
 
-Hacker News - the likeliest launch venue - skews heavily to Firefox and Safari.
-Launching before these are `V` means launching into the two browsers that have
-never once run the code.
+Every visitor on Firefox or Safari takes the streamed-archive fallback,
+because neither supports `showDirectoryPicker`. That path has no real-world
+testing at all, and these rows are the largest open risk in this document.
 
-## 8. Interface
+## 12. Interface
 
 | What | State | Notes |
 |---|---|---|
@@ -625,101 +627,3 @@ has to remember to update:
 5. **Nothing checks the reconciliation stays balanced.** `unexplained`
    should be zero for every archive anyone ever opens, and only a person
    looking at the page would notice if it were not.
-
----
-
-# Getting real exports without receiving anyone's data
-
-## The submission path
-
-**Do not add an upload endpoint to the app.** The Content-Security-Policy is
-the privacy promise, and `connect-src` is what enforces it. Adding a host so
-the app can post a report would change what the product is, and `privacy.html`
-would have to change in the same commit. It is not worth it.
-
-The report is a file. Let it be a file:
-
-1. The tester opens their export, goes to **What is in here**, and downloads
-   the structure report.
-2. They read it. It is deliberately readable - folder names, file types,
-   column headers, row counts, no values, file names reduced to their shape.
-3. They attach it to a **GitHub issue** using a template, or email it.
-
-GitHub issues are the right home: free, public, versioned, no server, and a
-tester can see what other people sent before deciding. Being able to read the
-whole corpus is itself reassuring in a way a private form is not.
-
-If a private channel is wanted as well, a plain email address is enough. A
-Vercel function plus Blob storage would work and needs no separate server, but
-it buys very little and costs the simplest possible answer to "where does my
-report go".
-
-**What about `/admin`?** Keep it for what it was for - counting interest, not
-receiving reports. A password-gated page that lists submissions is a database,
-a retention policy and a breach surface, in exchange for saving a click.
-
-## What to ask a tester for
-
-Three things, and a template so they arrive comparable:
-
-- **The structure report.** This is the one that matters. It produces an `R`.
-- **Browser and operating system**, and whether the folder picker appeared or
-  they got the archive fallback. This is the Safari and Firefox gap.
-- **One sentence on what looked wrong.** "It says 0 photos and I have 30,000"
-  is worth more than a stack trace.
-
-Never ask for the export. Never accept one if offered.
-
-## Who to ask
-
-**People you know first.** Ten exports from ten friends beats a hundred
-strangers, because you can go back and ask a second question. Ask specifically
-for the gaps: somebody with a **Galaxy Watch**, somebody with a **large iCloud
-Photos library**, somebody with **years of Gmail**, and a **Norwegian speaker
-with a Facebook export** - that last one will find the mojibake bug in about
-four seconds.
-
-**Then post.** Ask for a specific thing, not for testers in general.
-
-Rules change and several of these subreddits are strict about anything that
-looks like promotion. **Read the sidebar rules the same day you post**, and
-where a sub has a weekly self-promotion thread, use it rather than a top-level
-post. My rough read, all of which needs confirming before you post:
-
-| Subreddit | Why it fits | Care needed |
-|---|---|---|
-| r/DataHoarder | Biggest exports, most technical, most willing | Usually tolerant of a free tool; lead with the technical problem, not the product |
-| r/selfhosted | Overlapping audience, tool-friendly | Often expects self-hostable or open source - be upfront that it is neither |
-| r/degoogle | Directly on-topic | |
-| r/privacy | On-topic | Historically strict on self-promotion. Check first |
-| r/PrivacyGuides | On-topic | Stricter still |
-| r/SideProject, r/alphaandbetausers | Exist for exactly this | Low-quality traffic; fine for finding testers, useless as validation |
-| r/GalaxyWatch, r/SamsungHealth | The single most valuable gap | Frame it as "what does your export contain", not as a launch |
-| r/Norge | Native speakers for the mojibake bug | Post in Norwegian, and idiomatic Norwegian |
-
-Non-Reddit, and probably better per hour spent: Mastodon's privacy and
-fediverse crowd (and they skew Firefox, which is your untested browser),
-Lobsters if you have an invite, and the Immich and PhotoPrism communities -
-people already moving photo libraries around, who understand exactly what this
-is for.
-
-**Save Hacker News.** It is your one good launch, and its audience is
-overwhelmingly the two browsers that have never run this code.
-
-## A better idea than recruiting
-
-Recruiting gets you `R` rows. Two things get you more, faster:
-
-1. **Generate the exports you have never seen.** You now have a researched
-   catalogue of what exists. `tools/make-sample-data.py` can be extended to
-   emit those shapes at real scale - a watch owner's health export, a
-   50,000-photo Takeout with all six sidecar shapes, a Meta export with
-   latin-1-mangled Norwegian in it. That needs nobody. It is how the
-   400,000-row crash was found, and it is the fastest path to closing most of
-   the `-` rows above.
-2. **Make the app grade itself.** It already knows which file types it did not
-   read. Have it also report tables that produced no card, columns nothing
-   used, sidecars that matched nothing, and folders it walked past. Then a
-   tester's report is not just structure - it is structure plus a list of
-   everything we failed to do with it, which is a bug report we did not have
-   to ask anyone to write.
