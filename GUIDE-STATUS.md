@@ -22,12 +22,12 @@ range already defaulting to off - contradicted the documentation.
 | --- | --- | --- | --- |
 | [Apple](apps/web/guides/apple.json) | no | no | no |
 | [Apple Health](apps/web/guides/apple-health.json) | no | no | no |
-| [Google](apps/web/guides/google.json) | 2026-07-30 (Martin) | no | request steps only |
+| [Google](apps/web/guides/google.json) | 2026-07-30 | no | request steps only |
 | [Microsoft](apps/web/guides/microsoft.json) | no | no | no |
-| [Snapchat](apps/web/guides/snapchat.json) | 2026-07-28 (Martin) | no | request steps only |
-| [Samsung](apps/web/guides/samsung.json) | 2026-07-30 (Martin) | no | request steps only |
+| [Snapchat](apps/web/guides/snapchat.json) | 2026-07-28 | no | request steps only |
+| [Samsung](apps/web/guides/samsung.json) | 2026-07-30 | no | request steps only |
 | [Facebook](apps/web/guides/facebook.json) | no | no | no |
-| [Instagram](apps/web/guides/instagram.json) | 2026-07-30 (Martin) | no | request steps only |
+| [Instagram](apps/web/guides/instagram.json) | 2026-07-30 | no | request steps only |
 | [X (Twitter)](apps/web/guides/x-twitter.json) | no | no | no |
 | [TikTok](apps/web/guides/tiktok.json) | no | no | no |
 | [Amazon](apps/web/guides/amazon.json) | no | no | no |

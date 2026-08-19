@@ -20,10 +20,9 @@
             { "type": "null" },
             {
               "type": "object",
-              "required": ["on", "by"],
+              "required": ["on"],
               "properties": {
-                "on": { "type": "string", "format": "date", "description": "The date the flow was walked, not the date the guide was edited." },
-                "by": { "type": "string" }
+                "on": { "type": "string", "format": "date", "description": "The date the flow was walked, not the date the guide was edited." }
               }
             }
           ]
@@ -34,10 +33,9 @@
             { "type": "null" },
             {
               "type": "object",
-              "required": ["on", "by"],
+              "required": ["on"],
               "properties": {
                 "on": { "type": "string", "format": "date" },
-                "by": { "type": "string" },
                 "export_size": { "type": "string", "description": "How big the real export turned out to be. Feeds the size estimate shown to users." },
                 "findings": { "type": "string", "description": "What the import got wrong, or confirmed." }
               }

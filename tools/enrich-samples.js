@@ -702,7 +702,7 @@ function buildReddit() {
     msgs.push({ t, line: ["t4_" + (400000 + i).toString(36),
       "/message/messages/" + (400000 + i).toString(36) + "/",
       "thr_" + Math.floor(i / 3), stamp(t), pick(IPS),
-      mine ? "u/martin_l" : other, mine ? other : "u/martin_l",
+      mine ? "u/nora_v" : other, mine ? other : "u/nora_v",
       q("Re: " + pick(TITLES).slice(0, 40)), q(pick(BODIES))].join(",") });
   }
   msgs.sort((a, b) => b.t - a.t);

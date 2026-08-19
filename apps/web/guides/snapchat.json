@@ -3,8 +3,7 @@
  "provider": "Snapchat",
  "confirmed": {
   "flow": {
-   "on": "2026-07-28",
-   "by": "Martin"
+   "on": "2026-07-28"
   },
   "import": null
  },

@@ -28,7 +28,7 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "9fa734b8342a";
+const VERSION = "9817ac814c20";
 const PRECACHE = [
   "/app.html",
   "/styles.css?v=0a19f7a0",
@@ -68,7 +68,7 @@ const PRECACHE = [
   "/export.js?v=58dc2cdb",
   "/explorer.js?v=00b52fdf",
   "/disclose.js?v=b24e640b",
-  "/app.js?v=70857614",
+  "/app.js?v=29d037c0",
   "/swreg.js?v=266bec3b",
   "/fonts/host-grotesk-var-italic.woff2",
   "/fonts/host-grotesk-var.woff2"

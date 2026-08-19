@@ -247,7 +247,7 @@ function monthsSince(iso) {
 /* One stage: null, or {on, by} with a parseable date. */
 function stage(v) {
   const when = v && longDate(v.on);
-  return when ? { when, by: v.by, stale: monthsSince(v.on) > STALE_MONTHS, on: v.on } : null;
+  return when ? { when, stale: monthsSince(v.on) > STALE_MONTHS, on: v.on } : null;
 }
 
 function confirmation(g) {
@@ -967,8 +967,10 @@ function statusReport(all, dests) {
     L.push("| --- | --- | --- | --- |");
     for (const g of list) {
       const c = confirmation(g);
-      const f = c.flow ? `${c.flow.on} (${c.flow.by})` : "no";
-      const i = c.import ? `${c.import.on} (${c.import.by})` : "no";
+      /* The date, and not who. One person walks these, so a name here only
+         put that person's name in a public file. */
+      const f = c.flow ? c.flow.on : "no";
+      const i = c.import ? c.import.on : "no";
       const w = c.state === "full" ? "yes"
         : c.state === "partial" ? "request steps only" : "no";
       L.push(`| [${g.provider}](apps/web/guides/${g.slug}.json) | ${f} | ${i} | ${w} |`);

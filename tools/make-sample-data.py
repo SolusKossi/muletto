@@ -196,7 +196,9 @@ FRIENDS = [
     ("elena_r", "Elena Rossi"),
 ]
 
-ME_SNAP, ME_META = "martin.l", "Martin"
+# The demo account owner. Invented, like every other name in here - naming
+# the fixture after a real person puts that person in a public repository.
+ME_SNAP, ME_META = "nora.v", "Nora"
 
 CHAT_LINES = [
     "are we still on for saturday?", "yes! meet at 10", "sender that photo pls",

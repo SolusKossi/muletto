@@ -3,8 +3,7 @@
  "provider": "Samsung",
  "confirmed": {
   "flow": {
-   "on": "2026-07-30",
-   "by": "Martin"
+   "on": "2026-07-30"
   },
   "import": null
  },
