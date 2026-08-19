@@ -184,57 +184,52 @@ console.log("\nInline scripts (the CSP refuses these in production)");
   }
 }
 
-/* Numbers the README states about the repository itself.
+/* Claims the documents make about this repository.
  *
- * It claimed thirty guides when there were thirty-nine, and listed six files
- * that touch the network next to a grep command that returns eight. The
- * second one matters: it is on the privacy claim, and it invited the reader
- * to run a command that contradicts the page. A number nobody can recount by
- * hand is a number that goes stale, so they are recounted here. */
-console.log("\nNumbers the README states");
+ * The registry and the reasoning are in tools/claims.js. Short version: every
+ * documentation error found this week was a fact the repo could compute, and
+ * every paragraph explaining *why* something works survived untouched. So
+ * facts get computed and prose gets written, and this is where the first half
+ * is enforced. */
+console.log("\nClaims the documents make");
 {
-  // Lowercased, so a number at the start of a sentence still matches.
-  const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8").toLowerCase();
-  const WORDS = {
-    ten: 10, eighteen: 18, twenty: 20, thirty: 30, forty: 40,
-    "thirty-nine": 39, "thirty-eight": 38, six: 6, seven: 7, eight: 8, nine: 9,
+  const { facts, claims, deadPaths, spelled } = require("./claims.js");
+  const f = facts();
+  const cache = new Map();
+  const doc = (name) => {
+    if (!cache.has(name)) {
+      const p = path.join(ROOT, name);
+      cache.set(name, fs.existsSync(p) ? fs.readFileSync(p, "utf8").toLowerCase() : null);
+    }
+    return cache.get(name);
   };
-  const spelled = (n) => Object.keys(WORDS).find((w) => WORDS[w] === n) || String(n);
 
-  const guides = walk(path.join(WEB, "guides"), (p) => p.endsWith(".html")).length;
-  const services = fs.readdirSync(path.join(WEB, "guides"))
-    .filter((f) => f.endsWith(".html"))
-    .filter((f) => !/^(dest-|flow-|why-|how-)/.test(f))
-    .filter((f) => !/-(came-as|missing)-/.test(f)).length;
-
-  /* Asked of the source, the same way the README tells the reader to ask. */
-  const NET = /fetch\(|XMLHttpRequest|WebSocket|sendBeacon/;
-  const talkers = walk(WEB, (p) => p.endsWith(".js"))
-    .filter((f) => NET.test(fs.readFileSync(f, "utf8")))
-    .map((f) => path.basename(f)).sort();
-
-  /* Plain substring matches rather than patterns. A regex here would need
-     escaped brackets, and building one in a generator is how this codebase
-     has repeatedly ended up with a literal backspace in its source. */
-  const claims = [
-    [guides, "guides", "[" + spelled(guides) + " guides]"],
-    [services, "services with a request guide", "each of " + spelled(services) + " services"],
-    [talkers.length, "files that touch the network", spelled(talkers.length) + " files do"],
-  ];
-  let wrong = 0;
-  for (const [n, what, phrase] of claims) {
-    if (!readme.includes(phrase)) {
-      fail("README should say " + spelled(n) + " " + what + ' - looked for "' + phrase + '"');
-      wrong++;
+  let bad = 0, skipped = 0;
+  for (const c of claims(f)) {
+    const text = doc(c.doc);
+    /* A document that is not in this tree is not a failure. The public mirror
+       carries a subset on purpose, so RELEASE.md and TODO.md are absent there
+       and their claims simply have nothing to check against. */
+    if (text === null) { skipped++; continue; }
+    if (c.say !== undefined && !text.includes(c.say.toLowerCase())) {
+      fail(c.doc + ' should say "' + c.say + '" - ' + c.why); bad++;
+    }
+    if (c.never !== undefined && text.includes(c.never.toLowerCase())) {
+      fail(c.doc + ' still says "' + c.never + '" - ' + c.why); bad++;
     }
   }
-  for (const f of talkers) {
-    if (!readme.includes("apps/web/" + f)) {
-      fail("README's network list leaves out apps/web/" + f + ", which the grep finds");
-      wrong++;
-    }
+
+  const DOCS = fs.readdirSync(ROOT).filter((n) => n.endsWith(".md"))
+    .concat(fs.existsSync(path.join(ROOT, "DECISIONS"))
+      ? fs.readdirSync(path.join(ROOT, "DECISIONS")).map((n) => "DECISIONS/" + n) : []);
+  const dead = deadPaths(DOCS);
+  for (const [d, ref] of dead) { fail(d + " names `" + ref + "`, which does not exist"); bad++; }
+
+  if (!bad) {
+    ok((claims(f).length - skipped) + " stated facts match the repository" +
+       (skipped ? " (" + skipped + " skipped, their document is not in this tree)" : "") +
+       ", and " + DOCS.length + " documents name no path that is missing");
   }
-  if (!wrong) ok("guide counts and the " + talkers.length + "-file network list match the repository");
 }
 
 console.log("");
