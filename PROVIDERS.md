@@ -161,8 +161,11 @@ Muletto reads, and the HTML is the same data with the structure removed.
 | `personal_information/`, `login_and_profile_creation/` | **Read** as tables |
 | `followers_and_following/`, `past_instagram_insights/`, `shopping/`, `monetization/` | Listed |
 
-Facebook uses the same parser and **has never been run on a real Facebook
-export**. That is the largest untested claim in this file.
+Facebook uses the same parser. A real Facebook export has been opened in it,
+but from an account with almost nothing in it, so it shows the parser opens
+one and nothing about how it copes with a full account. **A Facebook export
+with years of posts and messages in it is the most useful thing anyone could
+send this project.**
 
 **Gaps:**
 

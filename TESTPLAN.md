@@ -493,7 +493,8 @@ one household reported 90,000 clips over three and a half years.
 
 | Service | State | Notes |
 |---|---|---|
-| Facebook posts, photos, comments | `S` | **Was marked `V` on no evidence.** The `facebook` folder on this machine is empty and always has been, as the inventory further down this document says. `PROVIDERS.md` had it right: the Meta parser has never been run on a real Facebook export |
+| Facebook posts, photos, comments | `V` | Thin. A real export was requested and opened, but the account is barely used, so what it proves is that the parser opens a genuine Facebook export - not that it handles a populated one. No copy is kept on this machine |
+| Facebook, a populated account | `-` | The gap that matters. Volume, multi-part splitting and accented text are all unexercised, and none of them can be tested against an empty account |
 | Facebook multi-part with repeated JSON | `S` | Content dedup handles it, on sample data |
 | Instagram posts, stories, reels | `V` | Real, but a 108 KB partial export of 42 entries. True for what was in it, which was not much |
 | Instagram messages | `V` | Same caveat |
