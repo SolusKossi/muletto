@@ -53,11 +53,17 @@ const MODULES = [
   "video.js",       // readVideoDates likewise
   "mojibake.js",    // Meta's mangled accents stay mangled without it
   "applehealth.js", // the Health export is skipped without it
+  /* reconcile() lives here and is pure. topics.js is deliberately not
+     loaded: it wants a DOM at load time, and without it the files a topic
+     view claims land in "unread" instead of "read". That makes the read
+     split pessimistic and leaves the one number that matters exactly as it
+     should be, because both buckets are subtracted from the same total. */
+  "diagnose.js",
   "parsers.js",
 ];
-const { MZip, MParse } = new Function(
+const { MZip, MParse, MDiagnose } = new Function(
   MODULES.map(load).join("\n") +
-  "\n; return { MZip: MZip, MParse: MParse };")();
+  "\n; return { MZip: MZip, MParse: MParse, MDiagnose: MDiagnose };")();
 
 /* detectProvider decides which parser runs, so a harness that guessed the
    provider itself would be testing the wrong half. app.js cannot be loaded
@@ -201,8 +207,28 @@ function stillMangled(lib) {
   return n;
 }
 
-function tally(lib) {
+function tally(lib, entries) {
   const media = lib.media || [];
+  /* The reconciliation is deliberately NOT asserted here, and the reason is
+     worth writing down because the numbers looked alarming first.
+     
+     `unexplained` must be zero for every archive anybody opens, and running
+     it from this harness gave minus thirteen for Apple - a negative count of
+     unaccounted files, which is not a thing an export can be. That was this
+     harness, twice over. It was handing reconcile the raw central directory
+     while the app hands it the list expanded through `MZip.expandNested`;
+     fixing that moved Apple to minus seven and Samsung from one to a hundred
+     and twenty-eight, which is not convergence.
+     
+     What remains missing cannot be supplied from Node. The app filters
+     entries through the cross-archive `seen` map before parsing, and
+     `reconcile` credits files to a topic view through `MTopics.claims` -
+     and topics.js wants a DOM at load. Without both, the arithmetic is
+     against a pipeline that does not exist.
+     
+     So this belongs in the browser, against the sample exports, where every
+     piece is real. Recording a number from here would have committed a wrong
+     one to the golden file and called it a baseline. TESTPLAN says so. */
   return {
     mangled: stillMangled(lib),
     media: media.length,
@@ -264,6 +290,25 @@ function report(lib) {
     const t0 = Date.now();
     try { entries = await MZip.readDirectory(blob); }
     catch (err) { console.log("  directory unreadable: " + err.message); continue; }
+
+    /* Archives inside archives, expanded the way readSource does it.
+     *
+     * Skipping this was the eighth harness bug on this project and the most
+     * misleading yet: it made the reconciliation look broken for three
+     * providers at once. reconcile() subtracts what was read, what was noise,
+     * what was nested and what was unread from the entry count, and it was
+     * being handed the raw central directory while the app hands it the
+     * expanded one. Apple came out at minus thirteen - a negative count of
+     * unexplained files, which is not a thing an export can be. */
+    const outerCount = entries.length;
+    try {
+      const nest = await MZip.expandNested(blob, entries, null, () => {});
+      entries = nest.entries;
+    } catch (err) { console.log("  nested expansion failed: " + err.message); }
+    if (entries.length !== outerCount) {
+      console.log("  nested       " + n(outerCount) + " entries became " +
+                  n(entries.length) + " once the archives inside were opened");
+    }
     const det = detectProvider(entries, path.basename(file));
     console.log("  entries      " + n(entries.length) +
       "   detected as " + (det ? det.label : "nothing"));
@@ -292,7 +337,7 @@ function report(lib) {
     const acc = seen[slug] || (seen[slug] = { archives: 0, entries: 0 });
     acc.archives++;
     acc.entries += entries.length;
-    for (const [k, v] of Object.entries(tally(lib))) acc[k] = (acc[k] || 0) + v;
+    for (const [k, v] of Object.entries(tally(lib, entries))) acc[k] = (acc[k] || 0) + v;
   }
 
   if (writeExpect) {

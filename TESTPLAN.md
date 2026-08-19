@@ -643,6 +643,22 @@ has to remember to update:
    should join the fixtures directory as they arrive.
 4. **No performance floor.** The 400,000-row measurement is a one-off in a
    scratch script, not something that would notice a regression.
-5. **Nothing checks the reconciliation stays balanced.** `unexplained`
-   should be zero for every archive anyone ever opens, and only a person
-   looking at the page would notice if it were not.
+5. **Nothing checks the reconciliation stays balanced, and it cannot be
+   checked from Node.** `unexplained` must be zero for every archive anyone
+   opens. Asserting it from `check-export.js` was attempted and abandoned,
+   which is worth recording because the first numbers looked like a serious
+   bug: Apple came out at **minus thirteen** unaccounted files, and a negative
+   count of unaccounted files is not a thing an export can be.
+
+   It was the harness. `reconcile` was being handed the raw central directory
+   while the app hands it the list expanded through `MZip.expandNested`. The
+   harness now expands it too, which is a real fidelity fix and moved Apple to
+   minus seven - but the remaining difference cannot be supplied from Node at
+   all. The app filters entries through the cross-archive `seen` map before
+   parsing, and `reconcile` credits files to a topic view through
+   `MTopics.claims`, and topics.js needs a DOM to load.
+
+   So this one belongs in the browser, against the sample exports, where every
+   part of the pipeline is real. Nothing was recorded into the golden file,
+   because a number derived from a pipeline that does not exist is worse than
+   no number.

@@ -17,18 +17,18 @@
   },
   "samsung": {
     "archives": 9,
-    "entries": 57,
+    "entries": 205,
     "mangled": 0,
-    "media": 6,
-    "dated": 0,
+    "media": 27,
+    "dated": 27,
     "located": 0,
     "captioned": 0,
-    "files": 35,
+    "files": 162,
     "tables": 25,
     "rows": 203,
     "conversations": 0,
     "messages": 0,
-    "events": 0,
+    "events": 27,
     "places": 0
   },
   "instagram": {
