@@ -171,10 +171,12 @@ send this project.**
 
 - **No dedicated view for anything.** Posts, reels, stories, comments, likes,
   saved items and ad interests all land in tables.
-- **The mojibake repair is unverified.** Meta writes UTF-8 escaped byte by
-  byte, so Norwegian text arrives mangled. The repair passes twelve cases
-  including the negatives, but no real export with accented text has been
-  opened.
+- **The mojibake repair now has a populated fixture, not a real export.**
+  Meta writes UTF-8 escaped byte by byte, so Norwegian text arrives mangled.
+  That transformation is exact rather than approximate, so it can be
+  generated: 2,100 messages of Norwegian and emoji, with the thread titles and
+  sender names mangled too, all of it repaired with nothing left broken. A
+  real export with accented text in it has still never been opened.
 
 ---
 

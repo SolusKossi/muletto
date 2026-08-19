@@ -164,9 +164,47 @@ const mb = (b) => (b / 1048576).toFixed(1) + " MB";
 /* Shapes, never contents. A count of how many media files carry a paired
    overlay says everything about whether Snapchat pairing worked and nothing
    about what anybody photographed. */
+/* Text that still looks mangled after parsing.
+ *
+ * The same test the repair itself uses to decide whether to act: every
+ * character under U+0100, something above U+007F, and the bytes decode as
+ * strict UTF-8. A string that satisfies all three on the way *out* is one the
+ * repair should have fixed and did not. Counting them turns "the mojibake
+ * repair works" from a claim into a number that can be zero. */
+function stillMangled(lib) {
+  const dec = new TextDecoder("utf-8", { fatal: true });
+  const looksBroken = (t) => {
+    if (typeof t !== "string" || !t) return false;
+    let high = false;
+    for (let i = 0; i < t.length; i++) {
+      const c = t.charCodeAt(i);
+      if (c > 0xff) return false;
+      if (c > 0x7f) high = true;
+    }
+    if (!high) return false;
+    const bytes = new Uint8Array(t.length);
+    for (let i = 0; i < t.length; i++) bytes[i] = t.charCodeAt(i);
+    try { dec.decode(bytes); return true; } catch (e) { return false; }
+  };
+  let n = 0;
+  for (const c of lib.conversations || []) {
+    if (looksBroken(c.title)) n++;
+    for (const m of c.messages || []) {
+      if (looksBroken(m.text)) n++;
+      if (looksBroken(m.from)) n++;
+    }
+  }
+  for (const t of lib.tables || []) {
+    for (const col of t.columns || []) if (looksBroken(col)) n++;
+    for (const row of t.rows || []) for (const v of row) if (looksBroken(v)) n++;
+  }
+  return n;
+}
+
 function tally(lib) {
   const media = lib.media || [];
   return {
+    mangled: stillMangled(lib),
     media: media.length,
     dated: media.filter((m) => m.at).length,
     located: media.filter((m) => m.gps).length,
@@ -174,7 +212,13 @@ function tally(lib) {
     files: (lib.files || []).length,
     tables: (lib.tables || []).length,
     rows: (lib.tables || []).reduce((s, t) => s + t.rows.length, 0),
-    messages: (lib.messages || []).length,
+    /* Conversations, and the messages inside them. `lib.messages` does not
+       exist - the parser puts them under `conversations` - so counting it
+       reported zero for a fixture holding 2,100, which is exactly the shape
+       of failure an assertion layer is supposed to stop rather than commit
+       to a golden file. */
+    conversations: (lib.conversations || []).length,
+    messages: (lib.conversations || []).reduce((n, c) => n + (c.messages || []).length, 0),
     events: (lib.events || []).length,
     places: (lib.places || []).length,
   };
@@ -200,7 +244,9 @@ function report(lib) {
   if (paired) console.log("  captioned    " + n(paired) + " memories carry a paired overlay");
   console.log("  tables       " + n((lib.tables || []).length) + ", " +
     n((lib.tables || []).reduce((s, t) => s + t.rows.length, 0)) + " rows");
-  console.log("  messages     " + n((lib.messages || []).length));
+  const convs = lib.conversations || [];
+  console.log("  messages     " + n(convs.reduce((s2, c) => s2 + (c.messages || []).length, 0)) +
+    (convs.length ? " in " + n(convs.length) + " conversations" : ""));
   console.log("  events       " + n((lib.events || []).length));
   console.log("  places       " + n((lib.places || []).length));
   for (const note of lib.notes || []) console.log("  note: " + note);

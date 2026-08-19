@@ -2,6 +2,7 @@
   "snapchat": {
     "archives": 2,
     "entries": 608,
+    "mangled": 0,
     "media": 480,
     "dated": 480,
     "located": 0,
@@ -9,6 +10,7 @@
     "files": 0,
     "tables": 0,
     "rows": 0,
+    "conversations": 0,
     "messages": 0,
     "events": 480,
     "places": 0
@@ -16,6 +18,7 @@
   "samsung": {
     "archives": 9,
     "entries": 57,
+    "mangled": 0,
     "media": 6,
     "dated": 0,
     "located": 0,
@@ -23,6 +26,7 @@
     "files": 35,
     "tables": 25,
     "rows": 203,
+    "conversations": 0,
     "messages": 0,
     "events": 0,
     "places": 0
@@ -30,6 +34,7 @@
   "instagram": {
     "archives": 2,
     "entries": 42,
+    "mangled": 0,
     "media": 0,
     "dated": 0,
     "located": 0,
@@ -37,7 +42,8 @@
     "files": 0,
     "tables": 40,
     "rows": 176,
-    "messages": 0,
+    "conversations": 2,
+    "messages": 2,
     "events": 0,
     "places": 0
   }

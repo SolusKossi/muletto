@@ -495,13 +495,13 @@ one household reported 90,000 clips over three and a half years.
 |---|---|---|
 | Facebook posts, photos, comments | `V` | Thin. A real export was requested and opened, but the account is barely used, so what it proves is that the parser opens a genuine Facebook export - not that it handles a populated one. No copy is kept on this machine |
 | Facebook, a populated account | `-` | The gap that matters. Volume, multi-part splitting and accented text are all unexercised, and none of them can be tested against an empty account |
-| Facebook multi-part with repeated JSON | `S` | Content dedup handles it, on sample data |
+| Facebook multi-part with repeated JSON | `S` | The fixture repeats four threads byte-for-byte across two parts, which is what Meta does. Still `S`: the dedup lives in `readSource` in app.js, not in the parser, so the Node harness parses each part independently and cannot exercise it. It needs the browser |
 | Instagram posts, stories, reels | `V` | Real, but a 108 KB partial export of 42 entries. True for what was in it, which was not much |
 | Instagram messages | `V` | Same caveat |
-| **Meta mojibake, accented text** | `S` | Repaired. Twelve guard cases pass in the browser, including the negatives |
-| **Meta mojibake, emoji** | `S` | Was broken: the old repair matched only a C2 or C3 lead byte and an emoji leads with F0, so every one stayed mangled with three of its four bytes invisible |
+| **Meta mojibake, accented text** | `V` | Against a populated fixture: 2,100 messages across seven threads, Norwegian throughout, plus mangled thread titles and sender names. **0 strings still mangled after parsing, and 3,200 when the repair is removed**, so the check is load-bearing rather than vacuous. The mangling is not approximated - Meta escapes the UTF-8 bytes one at a time, which is `encode(utf-8).decode(latin-1)`, and that transformation was round-tripped through the shipped repair before the fixture was built |
+| **Meta mojibake, emoji** | `V` | In the same fixture. Was broken once: the old repair matched only a C2 or C3 lead byte and an emoji leads with F0, so every one stayed mangled with three of its four bytes invisible |
 | Repair left off text that was never broken | `S` | Three guards: nothing above U+00FF, something above U+007F, and the bytes must decode as UTF-8 with the fatal flag set |
-| Repair applied to dictionary keys | `S` | A thread keyed by a broken name is as unreadable as a broken message |
+| Repair applied to dictionary keys | `V` | The fixture mangles thread titles and sender names as well as message text, and all three come back clean |
 | Repair **not** applied to an HTML export | `-` | Those are already correct UTF-8 and repairing them corrupts the words it is meant to save |
 | Meta fixing this unevenly | `-` | A recent Facebook export was reportedly clean while Instagram was not, so the test has to be per string rather than per service |
 | Facebook / Instagram HTML instead of JSON | `-` | The user chooses at request time |
@@ -629,11 +629,18 @@ has to remember to update:
    36 figures across Snapchat, Samsung and Instagram. Keyed by provider and
    never by filename, because an Instagram archive is named after the account
    and a file keyed by name would put somebody's handle in this repository.
-3. **It still needs somebody's real exports to run.** The figures are
-   committed and the harness is not: nobody else can reproduce the run,
-   because the archives it reads are one person's and stay on one machine.
-   A committed fixture corpus under `tests/fixtures/` is what would fix that,
-   and rebuilt exports should go there as they arrive.
+3. **Partly closed.** `tests/fixtures/meta-populated/` is committed, 36 KB,
+   built by `tools/make-meta-fixture.py`, with its own expectations beside it.
+   Anyone can run it and get the same 14 figures:
+
+   ```bash
+   node tools/check-export.js --expect tests/fixtures/meta-populated/expected.json tests/fixtures/meta-populated
+   ```
+
+   The real exports still cannot be reproduced by anybody else - they are one
+   person's and stay on one machine - so `tools/expected-exports.json` records
+   figures only that person can re-derive. Rebuilt exports from contributors
+   should join the fixtures directory as they arrive.
 4. **No performance floor.** The 400,000-row measurement is a one-off in a
    scratch script, not something that would notice a regression.
 5. **Nothing checks the reconciliation stays balanced.** `unexplained`
