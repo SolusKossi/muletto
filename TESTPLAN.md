@@ -612,17 +612,28 @@ opened directly. Those rows say so now.
 The things that would make this plan self-checking rather than a list somebody
 has to remember to update:
 
-1. **Partly closed.** `tools/check-export.js` runs a real export through the
-   shipped zip reader and the shipped parser and prints what came out - what
-   was detected, how much was dated, what notes the parser wrote. It is what
-   found the Snapchat detection failure, the Instagram mislabel and the
-   undated Drive files, none of which reading the code had suggested. What it
-   still is not is an assertion layer: it prints numbers rather than failing
-   on them, and it needs the maintainer's own exports to run at all.
-2. **No fixture corpus.** Rebuilt exports should be committed under
-   `tests/fixtures/` as they arrive, so a regression shows up immediately.
-3. **No golden output.** Nothing records what a fixture *should* produce, so
-   a change that quietly halves a row count passes.
+1. **Closed.** `tools/check-export.js` runs a real export through the shipped
+   zip reader and the shipped parser, and `--expect` asserts the result
+   against `tools/expected-exports.json` and exits non-zero on any difference.
+   It found the Snapchat detection failure, the Instagram mislabel and the
+   undated Drive files before it could assert anything; now a figure that
+   moves fails the run instead of waiting to be noticed.
+
+   ```bash
+   node tools/check-export.js --expect tools/expected-exports.json <dir>
+   ```
+
+   Confirmed to fail on a changed count, on a provider that was expected and
+   not opened, and to report a new provider without failing.
+2. **Golden output exists, keyed by provider.** `expected-exports.json` holds
+   36 figures across Snapchat, Samsung and Instagram. Keyed by provider and
+   never by filename, because an Instagram archive is named after the account
+   and a file keyed by name would put somebody's handle in this repository.
+3. **It still needs somebody's real exports to run.** The figures are
+   committed and the harness is not: nobody else can reproduce the run,
+   because the archives it reads are one person's and stay on one machine.
+   A committed fixture corpus under `tests/fixtures/` is what would fix that,
+   and rebuilt exports should go there as they arrive.
 4. **No performance floor.** The 400,000-row measurement is a one-off in a
    scratch script, not something that would notice a regression.
 5. **Nothing checks the reconciliation stays balanced.** `unexplained`

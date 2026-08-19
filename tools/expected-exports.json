@@ -1,0 +1,44 @@
+{
+  "snapchat": {
+    "archives": 2,
+    "entries": 608,
+    "media": 480,
+    "dated": 480,
+    "located": 0,
+    "captioned": 126,
+    "files": 0,
+    "tables": 0,
+    "rows": 0,
+    "messages": 0,
+    "events": 480,
+    "places": 0
+  },
+  "samsung": {
+    "archives": 9,
+    "entries": 57,
+    "media": 6,
+    "dated": 0,
+    "located": 0,
+    "captioned": 0,
+    "files": 35,
+    "tables": 25,
+    "rows": 203,
+    "messages": 0,
+    "events": 0,
+    "places": 0
+  },
+  "instagram": {
+    "archives": 2,
+    "entries": 42,
+    "media": 0,
+    "dated": 0,
+    "located": 0,
+    "captioned": 0,
+    "files": 0,
+    "tables": 40,
+    "rows": 176,
+    "messages": 0,
+    "events": 0,
+    "places": 0
+  }
+}

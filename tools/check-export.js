@@ -17,6 +17,14 @@
  * reading forward.
  *
  *   node tools/check-export.js <dir-or-zip> [more...]
+ *   node tools/check-export.js --expect tools/expected-exports.json <dir>
+ *   node tools/check-export.js --write-expect tools/expected-exports.json <dir>
+ *
+ * With --expect it stops being a report and becomes a test: every figure is
+ * compared against what a correct run produced, and any difference exits
+ * non-zero. Expectations are keyed by provider and never by filename, because
+ * an Instagram archive is named after the account and a file keyed by name
+ * would put somebody's handle in this repository.
  *
  * NOTHING LEAVES THE MACHINE and the output is counts and shapes only - no
  * filename from inside an archive, no message, no name, no place. The one
@@ -72,15 +80,20 @@ const detectProvider = detection();
 /* --password is a flag rather than a file, for the same reason check-aes.js
    takes one: it belongs to somebody's archive and not to this repository. */
 const args = [];
-let password = null;
+let password = null, expectPath = null, writeExpect = null;
 for (let i = 2; i < process.argv.length; i++) {
   if (process.argv[i] === "--password") password = process.argv[++i];
+  else if (process.argv[i] === "--expect") expectPath = process.argv[++i];
+  else if (process.argv[i] === "--write-expect") writeExpect = process.argv[++i];
   else args.push(process.argv[i]);
 }
 if (!args.length) {
-  console.error("usage: node tools/check-export.js [--password P] <dir-or-zip> [more...]");
+  console.error("usage: node tools/check-export.js [--password P] " +
+                "[--expect FILE | --write-expect FILE] <dir-or-zip> [more...]");
   process.exit(2);
 }
+const expect = expectPath ? JSON.parse(fs.readFileSync(expectPath, "utf8")) : null;
+const seen = {};
 if (password) MZip.password = password;
 
 function archives(p) {
@@ -151,6 +164,22 @@ const mb = (b) => (b / 1048576).toFixed(1) + " MB";
 /* Shapes, never contents. A count of how many media files carry a paired
    overlay says everything about whether Snapchat pairing worked and nothing
    about what anybody photographed. */
+function tally(lib) {
+  const media = lib.media || [];
+  return {
+    media: media.length,
+    dated: media.filter((m) => m.at).length,
+    located: media.filter((m) => m.gps).length,
+    captioned: media.filter((m) => m.overlay).length,
+    files: (lib.files || []).length,
+    tables: (lib.tables || []).length,
+    rows: (lib.tables || []).reduce((s, t) => s + t.rows.length, 0),
+    messages: (lib.messages || []).length,
+    events: (lib.events || []).length,
+    places: (lib.places || []).length,
+  };
+}
+
 function report(lib) {
   const media = lib.media || [];
   const withDate = media.filter((m) => m.at).length;
@@ -209,5 +238,49 @@ function report(lib) {
     }
     report(lib);
     console.log("  took         " + ((Date.now() - t0) / 1000).toFixed(1) + " s");
+
+    /* Totalled per provider, never per filename. An Instagram archive is named
+       after the account, so a file keyed by name would put somebody's handle
+       in this repository. */
+    const slug = (det && det.slug) || "unrecognised";
+    const acc = seen[slug] || (seen[slug] = { archives: 0, entries: 0 });
+    acc.archives++;
+    acc.entries += entries.length;
+    for (const [k, v] of Object.entries(tally(lib))) acc[k] = (acc[k] || 0) + v;
   }
+
+  if (writeExpect) {
+    fs.writeFileSync(writeExpect, JSON.stringify(seen, null, 2) + "\n");
+    console.log("\nwrote " + writeExpect + " - check it before committing, it is the" +
+                " record of what a correct run looks like");
+    return;
+  }
+  if (!expect) return;
+
+  /* The assertion layer. TESTPLAN harness gaps 1 and 3: printing numbers means
+     a person has to notice one moved, and nobody notices a row that quietly
+     halves. Anything absent from the expectations file is reported and not
+     failed, so a new provider does not break the run. */
+  console.log("\nAgainst " + path.basename(expectPath));
+  let bad = 0, checked = 0;
+  for (const [slug, want] of Object.entries(expect)) {
+    const got = seen[slug];
+    if (!got) {
+      console.log("  MISSING  " + slug + " - expected but not opened in this run");
+      bad++; continue;
+    }
+    for (const [k, v] of Object.entries(want)) {
+      checked++;
+      if (got[k] !== v) {
+        console.log("  CHANGED  " + slug + "." + k + ": expected " + n(v) + ", got " + n(got[k]));
+        bad++;
+      }
+    }
+  }
+  for (const slug of Object.keys(seen)) {
+    if (!expect[slug]) console.log("  new      " + slug + " - no expectations recorded yet");
+  }
+  console.log(bad ? "\n" + bad + " differed"
+                  : "\n" + checked + " figures all match");
+  process.exitCode = bad ? 1 : 0;
 })();
