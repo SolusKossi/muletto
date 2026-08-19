@@ -1,5 +1,5 @@
 {
-  "_comment": "Problem pages. A symptom, its real cause, and the fix - including the fix that does not involve Muletto, which is the section that makes the page worth linking to. Written from GUIDES-RESEARCH.md; anything not yet settled there is not a page here yet.",
+  "_comment": "Problem pages. A symptom, its real cause, and the fix - including the fix that does not involve Muletto, which is the section that makes the page worth linking to.",
   "problems": [
     {
       "slug": "why-google-photos-wrong-date",

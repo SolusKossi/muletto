@@ -792,11 +792,11 @@ function resolveSelf(lib) {
     else for (const n of senders) bump(n, 1);
   }
 
-  /* Take every strongly-scored name, not just the best one. The same person
-     is "martin.l" on Snapchat and "Martin" on Instagram, and both are the
-     account owner; keeping only the top score left the other platform's
-     messages rendering as if someone else had sent them. A score of 10 can
-     only come from a two-party thread where the title named the other person,
+  /* Take every strongly-scored name, not just the best one. One person is
+     usually a handle on one service and a display name on another, and both
+     are the account owner; keeping only the top score left the other
+     service's messages rendering as if someone else had sent them. A score
+     of 10 can only come from a two-party thread where the title named them,
      so it is a deduction rather than a guess. Group threads score 1 and are
      ignored. */
   for (const [name, score] of votes) if (score >= 10) self.add(name);
