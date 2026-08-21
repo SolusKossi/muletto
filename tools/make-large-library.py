@@ -27,7 +27,7 @@ frames, IntersectionObserver never fires at all - measured, along with
 requestAnimationFrame and requestIdleCallback, all three silent. A tile count
 taken there would say nothing was recycled, which is what a broken grid would
 also say. The measuring script is apps/web/_local/measure-tiles.js, pasted into the
-console on app.html with the Photos view open.
+console on app.html. It opens the library and picks the view itself.
 """
 
 import os
@@ -83,9 +83,10 @@ def main():
     print("")
     print("  To measure, in a real browser window (not a preview pane):")
     print("    1. open http://localhost:5173/app.html")
-    print("    2. switch to the Photos view")
-    print("    3. paste this into the console:")
+    print("    2. paste this into the console, and wait about a minute:")
     print('       fetch("_local/measure-tiles.js").then(r => r.text()).then(eval)')
+    print("")
+    print("  It opens the library and switches to the Images view itself.")
     return 0
 
 if __name__ == "__main__":
