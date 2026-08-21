@@ -542,7 +542,9 @@ The most dangerous table in this document.
 | Edge desktop | `-` | Same engine; low risk |
 | **Firefox** | `-` | No `showDirectoryPicker`, so it takes the streamed fallback that has never been run |
 | **Safari desktop** | `-` | Same, plus its own file handling |
-| Safari iOS | `-` | Upload is deliberately disabled on handhelds |
+| Opening an export on a phone | `V` | **Refused on purpose, and the refusal works.** At 375px with a coarse pointer: `isHandheld()` true, the opener closes, the file input is removed from the page entirely, and the explanation replaces it. Emulated rather than run on a handset, so what is proved is the gate and not the rendering |
+| A narrow desktop window mistaken for a phone | `V` | The guard's other half. At 800px with a fine pointer the opener stays, because it takes a coarse pointer **and** a narrow window to count as a phone. A touchscreen laptop and a half-width desktop window both keep working |
+| Safari iOS | `-` | The opener is refused there like any handheld, so what matters is whether the guides read well, not whether the app runs |
 | Chrome Android | `-` | Same |
 
 Every visitor on Firefox or Safari takes the streamed-archive fallback,
