@@ -26,7 +26,8 @@ by an IntersectionObserver, and in a browser pane that is not compositing
 frames, IntersectionObserver never fires at all - measured, along with
 requestAnimationFrame and requestIdleCallback, all three silent. A tile count
 taken there would say nothing was recycled, which is what a broken grid would
-also say. Open apps/web/_local/large-library.html in a window you can see.
+also say. The measuring script is apps/web/_local/measure-tiles.js, pasted into the
+console on app.html with the Photos view open.
 """
 
 import os
@@ -79,7 +80,12 @@ def main():
     size = os.path.getsize(out)
     print("wrote apps/web/_local/large-library.zip")
     print("  %d photographs, %.1f MB, gitignored" % (len(made), size / 1048576.0))
-    print("  open apps/web/_local/large-library.html in a real browser window")
+    print("")
+    print("  To measure, in a real browser window (not a preview pane):")
+    print("    1. open http://localhost:5173/app.html")
+    print("    2. switch to the Photos view")
+    print("    3. paste this into the console:")
+    print('       fetch("_local/measure-tiles.js").then(r => r.text()).then(eval)')
     return 0
 
 if __name__ == "__main__":
