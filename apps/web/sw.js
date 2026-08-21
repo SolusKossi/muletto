@@ -28,7 +28,7 @@
  */
 
 /* BUILD:PRECACHE */
-const VERSION = "9817ac814c20";
+const VERSION = "a7653c9a5e64";
 const PRECACHE = [
   "/app.html",
   "/styles.css?v=0a19f7a0",
@@ -54,10 +54,10 @@ const PRECACHE = [
   "/video.js?v=a66813af",
   "/applehealth.js?v=abef83f7",
   "/mbox.js?v=ee10197f",
-  "/diagnose.js?v=d97b3ff8",
+  "/diagnose.js?v=09c9e7d9",
   "/contribute.js?v=c3b34297",
   "/mojibake.js?v=38849a41",
-  "/parsers.js?v=b16281b4",
+  "/parsers.js?v=2aa52d1c",
   "/catalog.js?v=99efc7fa",
   "/insights.js?v=48350dd1",
   "/basemap.js?v=cbb6dfca",

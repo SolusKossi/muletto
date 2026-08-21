@@ -651,22 +651,24 @@ has to remember to update:
    should join the fixtures directory as they arrive.
 4. **No performance floor.** The 400,000-row measurement is a one-off in a
    scratch script, not something that would notice a regression.
-5. **Nothing checks the reconciliation stays balanced, and it cannot be
-   checked from Node.** `unexplained` must be zero for every archive anyone
-   opens. Asserting it from `check-export.js` was attempted and abandoned,
-   which is worth recording because the first numbers looked like a serious
-   bug: Apple came out at **minus thirteen** unaccounted files, and a negative
-   count of unaccounted files is not a thing an export can be.
+5. **Closed, and it found a bug on the first run.** `unexplained` must be
+   zero for every archive anyone opens. Checked in the browser against all six
+   sample exports, where the whole pipeline is real: `readSource` builds the
+   source records and `MTopics.claims` is loaded, which is the piece Node
+   cannot supply.
 
-   It was the harness. `reconcile` was being handed the raw central directory
-   while the app hands it the list expanded through `MZip.expandNested`. The
-   harness now expands it too, which is a real fidelity fix and moved Apple to
-   minus seven - but the remaining difference cannot be supplied from Node at
-   all. The app filters entries through the cross-archive `seen` map before
-   parsing, and `reconcile` credits files to a topic view through
-   `MTopics.claims`, and topics.js needs a DOM to load.
+   The first run said Google Takeout was **minus three**, and a negative count
+   of unaccounted files is not a thing an export can have. It was real, and it
+   was two faults at once:
 
-   So this one belongs in the browser, against the sample exports, where every
-   part of the pipeline is real. Nothing was recorded into the golden file,
-   because a number derived from a pipeline that does not exist is worse than
-   no number.
+   - The Fit reader named every series it derived after itself -
+     `Fit/Daily activity metrics/Step count.csv` and two more, **files that do
+     not exist**. One real wide CSV became four table paths, three invented.
+     `readCount` is `used.size`, so the sum came out short.
+   - `reconcile` marked whatever path a parser handed it without checking the
+     path was an entry. The Fit reader is fixed, but the guard belongs in
+     `reconcile`: that is the count's own invariant, and the next parser to
+     synthesise a path should not be able to break it silently.
+
+   Both fixed, and all six reconcile to zero - apple 86, google 201 (197 read,
+   4 unread), instagram 34, reddit 11, samsung 17, snapchat 17.

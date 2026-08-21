@@ -968,6 +968,7 @@ const MParse = (function () {
       const summary = fitCsv.filter((e) => /daily\s*summar/i.test(e.name));
       const use = summary.length ? summary : fitCsv.slice(0, 400);
       const series = new Map();          // measurement -> [[date, value], ...]
+      const from = new Map();            // measurement -> the file it came from
 
       for (const e of use) {
         let text;
@@ -988,7 +989,7 @@ const MParse = (function () {
               if (raw === undefined || raw === null || String(raw).trim() === "") continue;
               const v = Number(raw);
               if (!isFinite(v)) continue;
-              if (!series.has(label)) series.set(label, []);
+              if (!series.has(label)) { series.set(label, []); from.set(label, e.name); }
               series.get(label).push([row[timeIdx], raw]);
             }
           }
@@ -1016,10 +1017,20 @@ const MParse = (function () {
         if (!rows.length || !keep.has(label)) continue;
         lib.tables.push({
           name: label,
-          /* The path keeps "Fit" in it deliberately: the health page will not
-             believe a loose kind like temperature or floors unless the source
-             has already proved itself health-shaped, and this is how it does. */
-          path: "Takeout/Fit/Daily activity metrics/" + label + ".csv",
+          /* The real file these rows came from, not a name invented per
+             series. It used to be "<folder>/<label>.csv", which pointed at
+             three files that do not exist, and the reconciliation counted
+             each of them as an entry that had been read - so a Takeout came
+             out with minus three unaccounted files. A negative count of
+             unaccounted files is not a thing an export can have.
+             
+             The path still keeps "Fit" in it, which is what the health page
+             needs: it will not believe a loose kind like temperature or
+             floors unless the source has already proved itself health-shaped.
+             The real path proves that just as well as the invented one, and
+             has the advantage of being true. Several tables sharing one path
+             is correct here - one file was read. */
+          path: from.get(label) || use[0].name,
           columns: ["Date", "Value"],   // see the note in the Health block
           rows,
         });

@@ -221,7 +221,23 @@ const MDiagnose = (function () {
     const entries = source.entries || [];
     const lib = source.lib || {};
     const used = new Map();          // path -> what became of it
-    const mark = (path, what) => { if (path && !used.has(path)) used.set(path, what); };
+
+    /* Only a path that is really in the archive may be marked.
+     *
+     * `readCount` is `used.size`, and it is subtracted from the entry count,
+     * so a path that is not an entry makes the sum come out short - and the
+     * sum is "how many files did we fail to account for", which cannot be
+     * negative and was. The Fit reader used to name each series it derived
+     * after itself, three files that never existed, and a real Takeout
+     * reconciled to minus three.
+     *
+     * That reader is fixed, but the guard belongs here rather than there:
+     * this is the count's own invariant, and the next parser to synthesise a
+     * path should not be able to break it silently. */
+    const real = new Set((source.entries || []).map((e) => e.name));
+    const mark = (path, what) => {
+      if (path && real.has(path) && !used.has(path)) used.set(path, what);
+    };
 
     for (const m of lib.media || []) mark(m.path, "media");
     for (const t of lib.tables || []) mark(t.path, "table");
