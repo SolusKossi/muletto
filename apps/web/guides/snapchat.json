@@ -31,7 +31,7 @@
    "detail": "It is the first item in the left-hand menu once you are signed in. The page walks through three numbered stages: choose your data, confirm the date range and email, then wait.",
    "image": "snapchat-1-select-data.png",
    "alt": "The Snapchat My Data page showing stage 1, Select data to include, with a list of thirteen categories and a toggle beside each one.",
-   "caption": "Stage 1. Every toggle is on by default, but check them rather than assuming."
+   "caption": "Stage 1. Nothing is ticked for you - every category and every media export has to be switched on by hand."
   },
   {
    "title": "Leave Export JSON files switched on",
@@ -46,11 +46,11 @@
    "detail": "The remaining categories are User information, Chat history, Spotlight, Shopping, Support history, Ranking and location, Other media, Other, and My AI. Chat history covers snaps, chats, talk and Communities. Ranking and location covers your Snap Map places and location history. There is no reason to leave any of them out of a backup."
   },
   {
-   "title": "Leave the date range off, and check the email address",
-   "detail": "Stage 2 asks whether you want a specific date range. It is off by default, which is what you want for a full backup - turning it on gives you a slice instead. Then look hard at the address shown, because that is where the download link goes and it is the address on the account rather than one you pick here. If it is an old mailbox you no longer read, change it in your account settings before you submit rather than after - the request uses whatever address is on the account when you make it. If you cannot change it, you can still collect the export from the My Data page without the email, which is covered below. Press Submit.",
+   "title": "Choose All time, and check the email address",
+   "detail": "Stage 2 asks for a date range, and this is the step that quietly costs people their history: it does not default to everything. You have to pick All time yourself. Leave it alone and you get a window instead of an archive, which is not what anybody asking for their data means. Then look hard at the address shown, because that is where the download link goes and it is the address on the account rather than one you pick here. If it is an old mailbox you no longer read, change it in your account settings before you submit rather than after - the request uses whatever address is on the account when you make it. If you cannot change it, you can still collect the export from the My Data page without the email, which is covered below. Press Submit.",
    "image": "snapchat-2-date-range.png",
-   "alt": "Stage 2 of the Snapchat export, with the date range toggle switched off and an email address field below it.",
-   "caption": "Stage 2. The date range toggle is already off - leave it that way for a full backup."
+   "alt": "Stage 2 of the Snapchat export, with the date range set to All time and an email address field below it.",
+   "caption": "Stage 2. Set the range to All time. It does not do that on its own."
   },
   {
    "title": "Wait for the email",
