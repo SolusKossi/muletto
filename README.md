@@ -67,7 +67,8 @@ names every host the browser will permit this page to contact. If a later
 change tried to send an archive somewhere, the browser would refuse it rather
 than let it happen quietly.
 
-**Read the code that touches the network.** Eight files do, and no others:
+**Read the code that touches the network.** Four files do, and every one of
+them talks to this origin and nowhere else:
 
 ```
 apps/web/app.js         fetches the sample archives and the guide index
@@ -76,10 +77,6 @@ apps/web/analytics.js   one beacon: path, referrer, phone or not. Not loaded
                         on app.html, so the page holding your export makes no
                         requests at all
 apps/web/admin.js       the operator's own usage page, behind a password
-apps/web/credits.js     the credit balance for AI descriptions
-apps/web/caption.js     the AI description request itself
-apps/web/captionui.js   the interface around it
-apps/web/plan.js        the sort-by-instruction request
 ```
 
 Everything else works on data already in memory. To confirm that list rather
@@ -89,9 +86,10 @@ than believing it:
 grep -rln -e "fetch(" -e XMLHttpRequest -e WebSocket -e sendBeacon apps/web/
 ```
 
-The only features that deliberately send anything are AI image description and
-sorting by instruction. Both are optional, off by default, and can be pointed
-at a model running on your own machine instead.
+And the policy that enforces it, in `apps/web/_headers`, is now
+`connect-src 'self'` and nothing else. There is no host to add an exception
+for, so a change that tried to post your archive anywhere would be refused by
+the browser rather than succeeding quietly.
 
 ## Running it
 

@@ -8,17 +8,23 @@
 # future change tries to POST an archive somewhere, it fails in the console
 # instead of succeeding quietly.
 #
-# connect-src has to allow the caption endpoints, because that is the one
-# feature that legitimately sends something:
-#   'self'          the credit service is proxied through our own origin
-#   localhost etc.  a model running on the reader's own machine
-#   api.openai.com  bring-your-own-key, straight from their browser
-#   api.anthropic.com  the same
-# Anything else is blocked. Add a host here and you are changing the privacy
-# promise, so change privacy.html in the same commit.
+# connect-src is now 'self' and nothing else.
+#
+# It used to allow api.openai.com, api.anthropic.com and localhost, because the
+# AI description feature legitimately sent a picture somewhere. That feature is
+# withdrawn, and with it the last reason for this line to name anybody. Asked
+# of the source rather than assumed: the only files that touch the network are
+# app.js, sw.js, analytics.js and admin.js, and all four talk to this origin.
+#
+# So the promise is no longer "nothing leaves the machine, except the one thing
+# you opted into". There is no except. A page that tried to post an archive
+# anywhere at all would now be refused by the browser.
+#
+# Adding a host back here changes what the product is. privacy.html has to
+# change in the same commit, and so does the README's list.
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* https://localhost:* https://api.openai.com https://api.anthropic.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

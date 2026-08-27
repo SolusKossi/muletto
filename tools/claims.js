@@ -84,7 +84,17 @@ function facts() {
      dark, when the value that darkens it has since been filled in, sends
      somebody to do work that is already done. */
   const donateLink = (/const LINK = "([^"]*)"/.exec(read("apps/web/donate.js")) || [])[1] || "";
-  const creditsBase = (/base: "([^"]*)"/.exec(read("apps/web/credits.js")) || [])[1] || "";
+
+  /* The hosts the page is permitted to contact. This is the privacy claim in
+     its enforceable form, so it is worth failing the build over: if a host is
+     ever added back, the documents that describe the promise have to be
+     updated in the same commit or this check says so. */
+  /* Read from the policy line itself, not from the prose above it - the
+     comments in that file discuss connect-src at length and a loose match
+     picks up a sentence instead of the setting. */
+  const policy = read("apps/web/_headers").split(String.fromCharCode(10))
+    .find((l) => l.trim().startsWith("Content-Security-Policy:")) || "";
+  const connectSrc = ((/connect-src ([^;]*)/.exec(policy) || [])[1] || "").trim();
 
   return {
     guidePages: pages.length,
@@ -95,7 +105,7 @@ function facts() {
     sitemapUrls: sitemap,
     samples: fs.readdirSync(path.join(WEB, "samples")).filter((f) => f.endsWith(".zip")).length,
     donateLink,
-    creditsBase,
+    connectSrc,
   };
 }
 
@@ -139,9 +149,12 @@ function claims(f) {
     list.push({ doc: "RELEASE.md", never: "one line to finish it",
       why: "donate.js already has a LINK set, so there is no line left to set" });
   }
-  if (!f.creditsBase) {
-    list.push({ doc: "RELEASE.md", say: "credits.js` has `base: \"\"",
-      why: "hosted credits really are still dark" });
+  /* Nothing off this origin, and every document that says so stays true. */
+  if (f.connectSrc === "'self'") {
+    list.push({ doc: "README.md", never: "api.openai.com",
+      why: "connect-src is 'self' alone, so no document may name an outside host" });
+    list.push({ doc: "PROVIDERS.md", never: "your own key",
+      why: "the AI feature is withdrawn; nothing takes a key any more" });
   }
   return list;
 }
@@ -160,8 +173,14 @@ function deadPaths(docs) {
   const LOOKS_LIKE_PATH = /^(?![a-z]+:)(?!.*[ *?<>|])(?=.*[/.])[\w./-]+\/?$/i;
   const SKIP = /^(\.|node_modules|https?|com|www)/i;
 
+  /* NOTES.md is exempt, and the reason matters. It is an append-only log: it
+     describes what was true when each entry was written, so an entry naming a
+     file that has since been deleted is correct history rather than a dead
+     link. Making the check pass by editing the log would be rewriting the
+     record to satisfy a linter, which is the wrong way round. */
   const found = [];
   for (const doc of docs) {
+    if (doc === "NOTES.md") continue;
     if (!exists(doc)) continue;
     for (const m of read(doc).matchAll(/`([^`\n]+)`/g)) {
       const raw = m[1].trim();

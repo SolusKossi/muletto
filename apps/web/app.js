@@ -1686,26 +1686,15 @@ function renderLibrary(root, lib, sources, entries, demo) {
         if (f) f.click();
       },
       findSimilar: () => demoBlocked("Comparing photographs") || scanSimilar(),
-      plan: () => demoBlocked("Sorting by instruction") || MPlanUI.open({
-        media: lib.media,
-        thumb: (m) => ctx.thumb(m),
-        // Buckets and drops change what the export writes, so the library is
-        // saved and redrawn the moment a plan is applied or undone.
-        onDone: () => {
-          persist();
-          MExplorer.refresh();
-        },
-      }),
-      describe: () => demoBlocked("Tagging images with AI") || MCaptionUI.open({
-        media: lib.media,
-        sources,
-        // The library is redrawn so the new descriptions are searchable at
-        // once, and saved so they survive a reload even before an export.
-        onDone: () => {
-          persist();
-          MExplorer.refresh();
-        },
-      }),
+      /* `plan` and `describe` used to live here, opening the sort-by-
+         instruction and AI-description panels. Both are withdrawn for now.
+         They were the only features that cost anything and the only ones that
+         could send a file off the machine, and a free tool with a paid corner
+         reads as an advert for the paid corner.
+
+         explorer.js hides each panel when its action is absent, so removing
+         them here removes the buttons too. The code is in the history when it
+         comes back - see TODO.md. */
       manifest: () => demoBlocked("Writing a list of the files") || downloadManifest(),
       /* A copy of the work, as a file the user keeps.
 

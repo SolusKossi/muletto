@@ -26,7 +26,6 @@
         <a class="wordmark" href="index.html">muletto</a>
         <div class="nav-links">
           <a href="guides.html">Guides</a>
-          <a href="pricing.html">Pricing <em class="nav-free">(free)</em></a>
           <a href="privacy.html" class="active">Privacy</a>
         </div>
       </div>
@@ -50,42 +49,11 @@
         Reading it, merging services, finding duplicates, repairing dates, searching and exporting all happen
         on your machine. No part of the archive is sent anywhere. Open your browser's network tab while you
         use it and you will see the page load, and then nothing.</p>
-        <p>There is exactly one exception, it is optional, and it is never on by default: if you ask us to
-        tag your photos with AI, those photos are sent to be described. That is the only thing that ever
-        leaves, and the next section is about it.</p>
-      </div>
-    </section>
-
-    <section class="wrap tight">
-      <div class="section-head">
-        <h2>The one exception: AI tagging</h2>
-        <p>Tagging reads a picture and writes a sentence about what is in it. That needs a model, and models
-        do not run in a browser tab. So there are two ways to do it, and you choose before anything happens.</p>
-      </div>
-      <div class="grid cards">
-        <div class="card">
-          <h3>On your own machine</h3>
-          <p class="muted">Point Muletto at a model running on your own computer, or an API account you
-          already hold. With a local model nothing leaves the device at all, and there is nothing to pay.
-          This route will always exist.</p>
-        </div>
-        <div class="card">
-          <h3>Using our credits</h3>
-          <p class="muted">For people who do not want to install anything. You buy credits, and each photo
-          you tag is sent to be described. Only the picture - never the archive, the file list, the dates or
-          the messages.</p>
-        </div>
-        <div class="card">
-          <h3>What happens to the picture</h3>
-          <p class="muted">It is held for the moment it takes to describe it, then dropped. It is not written
-          to disk, not logged, and never used to train anything. No description or filename is kept after the
-          reply is sent back to you.</p>
-        </div>
-        <div class="card">
-          <h3>No account, ever</h3>
-          <p class="muted">A credit code identifies a balance, not a person. No email, no sign-up, nothing
-          tying the pictures to you. Everything else in Muletto stays free and needs no code at all.</p>
-        </div>
+        <p>There is no exception any more. There used to be one - an optional AI tagging feature that
+        sent a picture off to be described - and it has been withdrawn. The policy that enforces this is
+        not a promise in a paragraph: <code>connect-src</code> in the site's headers is now <code>'self'</code>
+        and nothing else, so a browser would refuse to send your archive anywhere even if a future change
+        tried to.</p>
       </div>
     </section>
 
@@ -182,7 +150,6 @@
       <div class="foot-links">
         <a href="guides.html">Guides</a>
         <a href="app.html">Open export</a>
-        <a href="pricing.html">Pricing</a>
         <a href="privacy.html">Privacy</a>
         <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
@@ -198,6 +165,6 @@
   <!-- Counts that a page was read. Nothing stored on the device, nothing
        about anybody, and never loaded on app.html. See privacy.html. -->
   <script src="analytics.js?v=e2665599"></script>
-  <script src="app.js?v=29d037c0"></script>
+  <script src="app.js?v=4179c3c2"></script>
 </body>
 </html>
