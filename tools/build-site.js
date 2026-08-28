@@ -601,11 +601,11 @@ function flowCard(f) {
 
 const FAQ = [
   ["Does it cost anything?",
-   "The guides are free to read and the app is free to use. Opening an export, merging several, finding duplicates, repairing dates and writing the library back out all run on your own machine and cost nothing. The only paid part is having an AI describe your photographs so you can search them by what is in them, and that is optional and off unless you turn it on."],
+   "No. Everything is free: the guides, and every part of the app. Opening an export, merging several, finding duplicates, repairing dates and writing the library back out all run on your own machine, so there is nothing to charge for. There is no paid tier, no account and nothing to buy."],
   ["Do I need an account?",
    "No. There is no sign-up, no email address and no password, because there is no server holding anything to sign in to."],
   ["Are my files uploaded anywhere?",
-   "No. Your archives are read inside your browser, on your own machine. The page is served with a Content-Security-Policy that permits connections to almost nothing, so the browser itself refuses to send your files regardless of what the code asks for. Turn off your wifi and everything except the optional AI step still works."],
+   "No. Your archives are read inside your browser, on your own machine. The page is served with a Content-Security-Policy whose connect-src is 'self' and nothing else, so the browser itself refuses to send your files anywhere regardless of what the code asks for. Turn off your wifi before you drop the files in and everything still works."],
   ["How long do the exports take to arrive?",
    "It varies enormously. Meta is often minutes to hours, Google hours to days, Apple up to seven days, and Snapchat up to thirty. The waits run in parallel, so if you want several, request them all on the same day."],
   ["Which services can I open an export from?",

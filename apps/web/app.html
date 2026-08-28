@@ -91,8 +91,8 @@
           your export. You will see this page load and then nothing further. No request
           carries your archive because no request is made.</li>
           <li><strong>Read the rule the browser enforces.</strong> This page is served with a
-          Content-Security-Policy that permits connections to nothing but itself and, if you
-          switch it on, an AI service you choose. It is not a promise in our words - your
+          Content-Security-Policy whose connect-src is <code>'self'</code> and nothing
+          else. There is no exception to it. It is not a promise in our words - your
           browser blocks anything else, and it applies to the code actually running rather
           than to a description of it.</li>
         </ol>
