@@ -2886,6 +2886,25 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    software does with your files is worth more when the software is readable,
    and the link is only useful if somebody can find it without being told. */
 .foot-src { display: inline-flex; align-items: center; gap: 6px; }
+
+/* The language switch. Deliberately almost invisible, because /no/ is a few
+   pages against forty-three and a visitor who takes an advertised switch
+   lands in a tree they have to click straight back out of.
+
+   Not display:none and not visibility:hidden: both would take it out of the
+   tab order and away from a screen reader, and the point is to stop it
+   catching the eye, not to stop it working. Opacity alone leaves the link
+   focusable, announced, and clickable by anybody who goes looking - and it
+   comes fully into view the moment it is hovered or focused, so keyboard
+   users are not chasing something they cannot see. */
+.foot-lang { opacity: 0.06; transition: opacity 120ms ease; }
+.foot-lang:hover, .foot-lang:focus, .foot-lang:focus-visible { opacity: 1; }
+/* Plain :focus as well as :focus-visible. A browser only counts focus as
+   'visible' when it decides the modality warrants it, and a link nobody
+   can see is not one to be clever about: if it has focus at all, draw it. */
+/* Somebody who has asked for less contrast has not asked for a link they
+   cannot find at all. */
+@media (prefers-contrast: more) { .foot-lang { opacity: 0.7; } }
 .foot-src svg { flex: none; opacity: 0.85; }
 
 /* The commit the deployed site was built from, linked to it. Quiet on purpose:

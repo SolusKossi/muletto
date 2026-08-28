@@ -140,6 +140,14 @@ const EN_STRINGS = {
   },
 
   and: "and",
+
+  descService: "Request your {provider} GDPR data export - {list} - then open it and " +
+    "read what is inside. {steps} steps, what actually arrives, and how long it takes ({wait}).",
+  descDest: "Step-by-step guide to moving your cleaned photo and data archive to " +
+    "{provider}. {steps} steps, written for people who want to keep their own copy.",
+  howtoService: "How to request and open your {provider} GDPR data export",
+  howtoDest: "How to move your data to {provider}",
+  locale: "en_GB",
 };
 
 const NB_STRINGS = JSON.parse(
@@ -193,23 +201,20 @@ const dataLabel = (k) => (STRINGS[LANG] || EN_STRINGS).dataTypes[k] || k;
    exist yet. Null is the important case: an untranslated page must not offer
    a switch to a URL that will 404, and must not claim an hreflang alternate
    for one either. */
-function nav(depth, active, lang, altHref) {
+function nav(depth, active, lang) {
   const up = upTo(depth);
   const t = STRINGS[lang || "en"];
   const home = up + (lang === "nb" && hasNo("index.html") ? "no/index.html" : "index.html");
   const at = (f) => up + (lang === "nb" && hasNo(f) ? "no/" + f : f);
   const on = (k) => (active === k ? ' class="active"' : "");
-  const langLink = altHref
-    ? `
-          <a class="nav-lang" href="${altHref}" hreflang="${t.otherLang}" lang="${t.otherLang}">${t.other}</a>`
-    : "";
+
   return `  <nav class="nav">
     <div class="wrap">
       <div class="nav-left">
         <a class="wordmark" href="${home}">muletto</a>
         <div class="nav-links">
           <a href="${at("guides.html")}"${on("guides")}>${t.guides}</a>
-          <a href="${at("privacy.html")}">${t.privacy}</a>${langLink}
+          <a href="${at("privacy.html")}">${t.privacy}</a>
         </div>
       </div>
       <div class="nav-right">
@@ -268,7 +273,22 @@ function commitLink() {
     + ' title="The commit this site was built from">build ' + COMMIT + "</a>";
 }
 
-function footer(depth, lang) {
+/* The language switch lives down here and is deliberately almost invisible.
+ *
+ * /no/ holds a handful of pages against forty-three in English, and a visitor
+ * offered a switch in the nav would take it, land somewhere Norwegian, click
+ * once more and be back in English - which reads as a broken site rather than
+ * an unfinished translation. Until the tree is complete there is nothing to
+ * gain by advertising it.
+ *
+ * It is not removed, because it still has to be reachable: to check the
+ * Norwegian pages, and because a reader who wants it should be able to get
+ * there. So it stays in the markup, stays keyboard-reachable, stays announced
+ * to a screen reader, and is simply not drawn until it is focused or hovered.
+ * Hidden from the eye is not the same as hidden from the page, and only the
+ * first of those is wanted here.
+ */
+function footer(depth, lang, altHref) {
   const up = upTo(depth);
   const t = STRINGS[lang || "en"];
   const home = up + (lang === "nb" && hasNo("index.html") ? "no/index.html" : "index.html");
@@ -283,7 +303,8 @@ function footer(depth, lang) {
         <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           ${t.source}
-        </a>${commitLink()}
+        </a>${commitLink()}${altHref ? `
+        <a class="foot-lang" href="${altHref}" hreflang="${t.otherLang}" lang="${t.otherLang}">${t.other}</a>` : ""}
       </div>
     </div>
   </footer>`;
@@ -303,6 +324,10 @@ function page({ depth, title, description, canonical, body, jsonld, active, noin
                 extraScript, lang, alt }) {
   const up = upTo(depth);
   const code = lang || "en";
+  /* The head is built here rather than by the caller, so LANG has to be right
+     for the strings in it - the body was rendered under the caller's setting
+     and this runs afterwards. */
+  LANG = code;
   /* x-default names the version to serve somebody the other two do not fit.
      English, because it is the one a reader from anywhere can probably use. */
   const hreflang = alt ? [
@@ -323,6 +348,8 @@ ${hreflang}  <meta property="og:type" content="article" />
   <meta property="og:description" content="${esc(description)}" />
   <meta property="og:url" content="${esc(canonical)}" />
   <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="${T("locale")}" />${alt ? `
+  <meta property="og:locale:alternate" content="${STRINGS[alt.lang].locale}" />` : ""}
   <meta property="og:image" content="${SITE}/og.png" />
   <meta name="twitter:card" content="summary_large_image" />
 ${noindex ? '  <meta name="robots" content="noindex,follow" />\n' : ""}  <link rel="icon" href="${up}favicon.svg" type="image/svg+xml" />
@@ -334,13 +361,13 @@ ${noindex ? '  <meta name="robots" content="noindex,follow" />\n' : ""}  <link r
 ${(jsonld || []).map((j) => `  <script type="application/ld+json">${JSON.stringify(j)}</script>`).join("\n")}
 </head>
 <body>
-${nav(depth, active, code, alt && alt.href)}
+${nav(depth, active, code)}
 
   <main>
 ${body}
   </main>
 
-${footer(depth, code)}
+${footer(depth, code, alt && alt.href)}
 
   <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="${up}disclose.js"></script>
@@ -659,13 +686,21 @@ function openerSection(g) {
             <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>`;
 }
 
+/* The sentence Google prints under the link. It was the one piece of prose on
+   a Norwegian page still coming out in English, which is the worst place for
+   it: the page reads as Norwegian to anybody who opens it and as English to
+   everybody deciding whether to. */
 function guideDescription(g) {
   if (isDest(g)) {
-    return `Step-by-step guide to moving your cleaned photo and data archive to ${g.provider}. ${g.steps.length} steps, written for people who want to keep their own copy.`;
+    return T("descDest", { provider: g.provider, steps: g.steps.length });
   }
-  const kinds = (g.data_types || []).map((k) => DATA_LABEL[k] || k);
-  const list = kinds.length ? kinds.slice(0, 3).join(", ") : "your data";
-  return `Request your ${g.provider} GDPR data export - ${list} - then open it and read what is inside. ${g.steps.length} steps, what actually arrives, and how long it takes (${g.wait_time}).`;
+  const kinds = (g.data_types || []).map(dataLabel).slice(0, 3);
+  return T("descService", {
+    provider: g.provider,
+    list: kinds.length ? kinds.join(", ") : "",
+    steps: g.steps.length,
+    wait: g.wait_time || "",
+  });
 }
 
 function guideIntro(g) {
@@ -720,8 +755,9 @@ function guidePage(g, all, dests, lang, alt) {
   const howto = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    name: dest ? `How to move your data to ${g.provider}` : `How to request and open your ${g.provider} GDPR data export`,
+    name: T(dest ? "howtoDest" : "howtoService", { provider: g.provider }),
     description: guideDescription(g),
+    inLanguage: LANG,
     totalTime: undefined,
     dateModified: g.verified && g.verified_on ? g.verified_on : undefined,
     step: g.steps.map((s, i) => ({
@@ -735,10 +771,13 @@ function guidePage(g, all, dests, lang, alt) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Muletto", item: SITE + "/" },
-      { "@type": "ListItem", position: 2, name: "Guides", item: SITE + "/guides.html" },
+      { "@type": "ListItem", position: 1, name: "Muletto",
+        item: SITE + (LANG === "nb" ? "/no/" : "/") },
+      { "@type": "ListItem", position: 2, name: T("guides"),
+        item: SITE + (LANG === "nb" && hasNo("guides.html") ? "/no/guides.html" : "/guides.html") },
       { "@type": "ListItem", position: 3, name: g.provider, item: canonical },
     ],
+    inLanguage: LANG,
   };
 
   /* FAQPage, when the guide has questions.
@@ -751,6 +790,7 @@ function guidePage(g, all, dests, lang, alt) {
   const faq = (g.faq && g.faq.length) ? {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    inLanguage: LANG,
     mainEntity: g.faq.map((f) => ({
       "@type": "Question",
       name: f.q,
