@@ -308,6 +308,20 @@ function guideTitle(g) {
  * to this export and not to the others. A page of interchangeable filler
  * helps nobody and reads as filler, which is the failure mode this is trying
  * to avoid. */
+/* "a Amazon export". Every provider name went through a hard-coded "a", and
+   five pages said it: Amazon, Apple, Apple Health, Instagram and X.
+   Vowel-initial names are the obvious half. The other half is X, where the
+   letter is read aloud as "ex" - so it takes "an" while its spelling says
+   otherwise, and so would an F or an S if a provider is ever named one. */
+const AN_LETTERS = "AEFHILMNORSX";
+function anArticle(name) {
+  const word = String(name || "").trim().split(/\s+/)[0] || "";
+  if (!word) return "a";
+  /* A single letter is read out as its name, not as a word. */
+  if (word.length === 1) return AN_LETTERS.includes(word.toUpperCase()) ? "an" : "a";
+  return /^[aeiou]/i.test(word) ? "an" : "a";
+}
+
 function openerSection(g) {
   if (isDest(g)) return "";
   const sup = g.muletto_support || {};
@@ -320,10 +334,10 @@ function openerSection(g) {
     : "what is in it";
 
   if (sup.importable) {
-    lines.push(`Muletto reads a ${name} export directly - the zip, without unpacking it ` +
+    lines.push(`Muletto reads ${anArticle(name)} ${name} export directly - the zip, without unpacking it ` +
       `first - and finds the ${esc(list)} inside.`);
   } else {
-    lines.push(`Muletto opens a ${name} export and lists everything in it. There is no ` +
+    lines.push(`Muletto opens ${anArticle(name)} ${name} export and lists everything in it. There is no ` +
       `reader written specifically for this service yet, so its tables are shown as ` +
       `${name} wrote them - which is still a great deal more than a folder of files.`);
   }
