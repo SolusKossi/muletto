@@ -75,7 +75,7 @@
  "muletto_support": {
   "importable": true,
   "adapter": "samsung",
-  "status": "planned"
+  "status": "reads the encrypted archives, Samsung Health and Cloud photos. Measured on a real nine-archive export"
  },
  "explain": {
   "title": "The archives are locked, and the password arrives separately",

@@ -77,6 +77,21 @@ function facts() {
     .filter((f) => NET.test(fs.readFileSync(f, "utf8")))
     .map((f) => path.basename(f)).sort();
 
+  /* Providers the app has a reader for, taken from the guides themselves.
+     PROVIDERS.md is the page a person reads to decide whether requesting an
+     export is worth an afternoon, so a service gaining a reader without
+     gaining a section there is the expensive kind of silence: the reader
+     exists and nobody is told. The guide-only services are deliberately not
+     required here - they are what the "Anything else" section is about. */
+  const readable = [];
+  for (const f of fs.readdirSync(guideDir).filter((n) => n.endsWith(".json"))) {
+    let g;
+    try { g = JSON.parse(fs.readFileSync(path.join(guideDir, f), "utf8")); }
+    catch (e) { continue; }
+    const sup = g.muletto_support || {};
+    if (sup.importable && g.provider) readable.push(g.provider);
+  }
+
   const sitemap = exists("apps/web/sitemap.xml")
     ? (read("apps/web/sitemap.xml").match(/<url>/g) || []).length : 0;
 
@@ -103,6 +118,7 @@ function facts() {
       .filter((f) => !/-(came-as|missing)-/.test(f)).length,
     talkers,
     sitemapUrls: sitemap,
+    readable: readable.sort(),
     samples: fs.readdirSync(path.join(WEB, "samples")).filter((f) => f.endsWith(".zip")).length,
     donateLink,
     connectSrc,
@@ -128,6 +144,11 @@ function claims(f) {
     { doc: "README.md", say: spelled(f.talkers.length) + " files do",
       why: "files matching the network grep the README prints" },
   ];
+
+  for (const name of f.readable) {
+    list.push({ doc: "PROVIDERS.md", say: name,
+      why: "a guide says Muletto reads this service, so PROVIDERS must cover it" });
+  }
 
   for (const name of f.talkers) {
     list.push({ doc: "README.md", say: "apps/web/" + name,

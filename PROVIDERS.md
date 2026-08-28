@@ -95,9 +95,12 @@ opened.
 
 ## Apple Health
 
-A different export from a different place. Health is end-to-end encrypted in
-iCloud, so Apple cannot include it in the Data and Privacy download and never
-will. It comes off the phone as one XML document with an element per reading.
+A different export from a different place, and worth being careful about.
+Apple's support pages say health data can be included in a Data and Privacy
+request, but the real eighteen-archive export measured here arrived without
+any, so this file is written against the phone's own export: one XML document
+with an element per reading, off the device in about a minute. Whether the
+account request can also deliver it has not been tested.
 
 **Measured** in a real export: a 6.8 MB zip holding 161 MB of `export.xml`,
 385,299 readings across four years, read in about a second. The XML is

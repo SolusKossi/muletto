@@ -34,7 +34,7 @@
     },
     {
       "title": "Pick format and quality",
-      "detail": "Choose JSON for the format. For media quality, High keeps your photographs at full size and roughly doubles the archive - often past 12 GB for a long-standing account - while Medium is far smaller and permanently smaller in quality. If this export is the copy you intend to keep, choose High: it is the only chance to get the originals out."
+      "detail": "Choose JSON for the format - and this is a change you have to make, because HTML is what the box starts on. HTML gives you a set of web pages that read fine and import nowhere, so leaving the default is how people end up with an export no tool will take. For media quality, High keeps your photographs at full size and roughly doubles the archive - often past 12 GB for a long-standing account - while Medium is far smaller and permanently smaller in quality. If this export is the copy you intend to keep, choose High: it is the only chance to get the originals out."
     },
     {
       "title": "Create the file and wait",
@@ -56,7 +56,7 @@
   "muletto_support": {
     "importable": true,
     "adapter": "meta",
-    "status": "planned"
+    "status": "reads the JSON export: posts, messages and media, with the mojibake repaired. Measured on a real export"
   },
   "explain": {
     "title": "JSON, not HTML, and it is not obvious why",

@@ -14,8 +14,8 @@
     "health"
   ],
   "request": {
-    "url": "https://support.apple.com/en-us/HT203037",
-    "label": "Apple's Health support page"
+    "url": "https://support.apple.com/guide/iphone/iph5ede58c3d/ios",
+    "label": "Apple on exporting Health data"
   },
   "notes": [
     "Muletto reads this file. Measured on a real one: 161 MB of XML, 385,000 readings across four years, opened in about a second without the file ever being held in memory.",

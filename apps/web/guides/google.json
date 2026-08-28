@@ -56,7 +56,7 @@
   },
   {
    "title": "Download all parts",
-   "detail": "Download every numbered part, and keep them together in one folder. The download links expire, so do not leave it a fortnight - if they lapse you have to request the whole export again and wait again. Do not unzip them: Muletto reads the archives directly, which is faster and avoids doubling the disk space you need."
+   "detail": "Download every numbered part, and keep them together in one folder. Google gives you seven days and allows each archive to be downloaded five times, and both limits catch people. Seven days is short for a library that arrives in a dozen parts, and the five-download cap is per archive - retry a failed part a few times and you can exhaust it. If either lapses you request the whole export again and wait again. Do not unzip them: Muletto reads the archives directly, which is faster and avoids doubling the disk space you need."
   },
   {
    "title": "Open all the parts at once",
@@ -72,7 +72,7 @@
  "muletto_support": {
   "importable": true,
   "adapter": "google-takeout",
-  "status": "planned"
+  "status": "reads Photos, the sidecar dates and places, Drive, YouTube, My Activity and Maps. Measured on a real 37 GB Takeout"
  },
  "explain": {
   "title": "Open every part together, not one at a time",
