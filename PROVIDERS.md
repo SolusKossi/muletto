@@ -528,6 +528,49 @@ becomes the reader's local time, so the same export shows different times to
 two people in different countries. The header says which zone it is, so
 Muletto believes the header.
 
+## Amazon
+
+The request flow produces a shape nothing else does. **The category dropdown
+takes one category at a time**, so anybody who wants orders and Kindle and
+Alexa files three separate requests, and those complete anywhere between six
+hours and nineteen days apart. One person's Amazon export on disk is very
+often several unrelated archives made on different dates - and since the
+format changed again in February 2026, one folder can hold two incompatible
+versions of the same file.
+
+**Not measured.** Written from what has been recorded about real Amazon
+exports and exercised against a fixture that reproduces the traps rather than
+the whole export.
+
+| Area | What Muletto does |
+|---|---|
+| Order history | **Read**. Every order on the timeline, with a total |
+| Digital orders, Prime Video, Audible | **Read**. All three write dates differently |
+| Everything else tabular | Listed, one table per file per archive |
+| Address PDFs, Alexa audio, call recordings | Listed as files |
+
+Three things that look like faults and are not:
+
+- **A file being present is not data being present.** Amazon ships an archive
+  for services you never used, and creates empty Alexa lists for accounts that
+  never had Alexa.
+- **An Amazon Photos export documents the library and does not contain it.**
+  The metadata is there; the photographs are not.
+- **The same filename appears in more than one archive with different contents
+  inside** - `Advertising.AdvertiserAudiences.csv` exists in `Advertising.1`
+  and `Advertising.2` and they are not the same table. Table names here carry
+  the archive they came from, because a name without its folder is two tables
+  wearing one label.
+
+Amazon writes its dates with no timezone on them and never says which one it
+meant. Prime Video uses `2019-04-08 18:48:31.276` - space, no T, no Z, two or
+three fractional digits - and Audible writes the date alone. Read plainly,
+those become the reader's own local time, so the same export shows a different
+hour to everybody who opens it and an order placed near midnight lands on a
+different day for each. They are read as UTC instead: not because that is
+known to be right, but because it is the same answer for everybody, and the
+reader says so.
+
 ## Anything else
 
 An export from a service with no reader still opens. Files are listed, tables

@@ -1,28 +1,35 @@
 #!/usr/bin/env python3
-"""Build one small export for each of the four services that just got a reader.
+"""Build a small export for each service whose reader was written from
+documentation rather than from a real export.
 
     python tools/make-social-fixtures.py
 
-Writes tests/fixtures/social/ - four zips, committed, a few kilobytes each.
+Writes tests/fixtures/social/ - a few kilobytes each, all committed.
 
 ---- what these are, and what they are not ----
 
-There is no real Spotify, X, Discord or Strava export on this machine, and
-the house rule is to say so rather than to imply an afternoon of testing that
-did not happen. So be exact about what a pass here means.
+Not one of these services has a real export on this machine. The house rule is
+to say that rather than imply an afternoon of testing that did not happen, so
+be exact about what a green run means.
 
 These fixtures encode the *container shape* each service documents: the file
 names, the folder layout, the JavaScript wrapper X puts in front of its JSON,
-the id-numbered channel folders Discord uses, the two different field
-vocabularies Spotify's two histories use. A green run proves the reader finds
-the right things in the right places and does not fall over. It proves
-nothing about whether a real export from any of these four actually matches
-what the service documents - only somebody's real export can prove that, and
-the contribute flow in the app exists to collect exactly that.
+the id-numbered channel folders Discord uses, the two field vocabularies
+Spotify's histories use. A pass proves the reader finds the right things in
+the right places and does not fall over. It proves nothing about whether a
+real export matches what the service documents - only somebody's real export
+can prove that, and the contribute flow in the app exists to collect exactly
+that.
 
-That gap is why all four sit at `S` in TESTPLAN section 7 and 7a - synthetic,
-the bottom rung - and why PROVIDERS says "not measured" for each of them in
-those words.
+That gap is why every one of these sits at `S` in TESTPLAN - synthetic, the
+bottom rung - and why PROVIDERS says "not measured" for each of them in those
+words.
+
+Two of them are not really about their provider. amazon.zip reproduces four
+faults that live in the *generic* reader, which every service without a reader
+of its own goes through; and the three tiktok zips exist as a set because a
+reader that works on whichever export its author happened to have is the
+failure being tested for.
 
 What each fixture does deliberately exercise, because these are the places a
 reader written from documentation goes wrong:
@@ -483,6 +490,33 @@ def amazon():
         "111-0000002,2026-02-20T12:00:00Z,Did not fit",
     ]) + eol
 
+    # The same filename in two archives, holding different rows. Flattening
+    # the tree by filename loses one of them silently.
+    ads_1 = eol.join([
+        "Audience,Source",
+        "Cyclists,inferred",
+    ]) + eol
+    ads_2 = eol.join([
+        "Audience,Source",
+        "Camera owners,purchase",
+    ]) + eol
+
+    # Prime Video writes its own format: space separator, no T, no Z, and
+    # two or three fractional digits. Audible is date-only.
+    prime = eol.join([
+        "Order Date,Order ID,Title,Total Owed",
+        "2019-04-08 18:48:31.276,D01-0000001,A film,3.99",
+        "2019-04-09 20:00:00.28,D01-0000002,Another film,4.99",
+    ]) + eol
+    # snake_case headings for the same fields. Four naming conventions appear
+    # in one export - Title Case With Spaces, PascalCaseNoSpaces, snake_case,
+    # and camelCase in the EU JSON build - so a reader keyed on the exact
+    # heading works on one archive of an export and not the next.
+    audible = eol.join([
+        "order_date,order_id,title,total_owed",
+        "2020-11-03,A01-0000001,An audiobook,12.00",
+    ]) + eol
+
     return write("amazon.zip", {
         "Retail.OrderHistory.1/Retail.OrderHistory.1.csv": orders,
         # The sidecar. It is valid JSON and holds none of your data.
@@ -490,6 +524,19 @@ def amazon():
             "fields": [{"name": "Order ID", "type": "string"},
                        {"name": "Order Date", "type": "timestamp"}]},
         "Retail.OrdersReturned.1/Retail.OrdersReturned.1.csv": returns,
+        # One name, two archives, different contents.
+        "Advertising.1/Advertising.AdvertiserAudiences.csv": ads_1,
+        "Advertising.2/Advertising.AdvertiserAudiences.csv": ads_2,
+        # Two more date formats, in two more archives.
+        "Digital-Ordering.1/Digital Items.csv": prime,
+        "Audible.1/Audible.Purchase History.csv": audible,
+        # An empty archive is a normal result for a service never used.
+        "Alexa_1/Alexa.Shopping List.csv": "",
+        # Photos documents the library and does not contain it.
+        "Amazon-Photos/Photos.Metadata.csv": eol.join([
+            "Photo ID,Taken At,Device",
+            "900001,2024-06-01T10:00:00Z,Phone",
+        ]) + eol,
     })
 
 

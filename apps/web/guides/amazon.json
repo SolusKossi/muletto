@@ -50,9 +50,9 @@
     "Photos in Amazon Photos are not included. The export describes the library without containing it."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "amazon",
+    "status": "reads the order history onto the timeline across all the archives a request fans out into, and keeps tables from different archives apart even when they share a filename. Built from what has been recorded about real exports; no real Amazon export has been opened yet"
   },
   "faq": [
     {

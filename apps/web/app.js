@@ -334,6 +334,13 @@ const SIGNATURES = [
      Connections.csv alone is far too ordinary to trust. */
   /* The privacy dashboard writes one file per kind of record and names them
      in prose, with spaces. The set is what identifies it. */
+  /* Amazon names its top-level folders after the category, with dots,
+     hyphens, underscores and spaces all in use at once. The Retail ones are
+     the reliable half; the archive names themselves carry the rest. */
+  { slug: "amazon", label: "Amazon",
+    pats: ["retail.orderhistory", "retail.ordersreturned", "digital-ordering",
+           "audible.", "alexa", "amazon-music", "advertising.",
+           "all data categories"] },
   { slug: "microsoft", label: "Microsoft",
     pats: ["search history", "browse history", "location history",
            "app and service usage", "app and service performance",

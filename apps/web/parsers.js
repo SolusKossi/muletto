@@ -2324,6 +2324,170 @@ const MParse = (function () {
     return lib;
   }
 
+  /* ---------- Amazon ---------- */
+
+  /* The request flow produces a shape nothing else here does, and it is worth
+     understanding before the code.
+
+     The category dropdown takes one category at a time. Anybody who wants
+     orders and Kindle and Alexa files three separate requests, and those
+     complete anywhere between six hours and nineteen days apart. So one
+     person's "Amazon export" on disk is very often several unrelated archives
+     made on different dates - and because the format keeps changing, one
+     folder can hold two incompatible versions of the same file. The format
+     changed again in February 2026: columns alphabetised, four renamed,
+     all-fields-quoting dropped. Both shapes are in the wild right now.
+
+     Two consequences shape this reader. Table names carry the archive folder
+     they came from, because `Advertising.AdvertiserAudiences.csv` exists in
+     `Advertising.1` and in `Advertising.2` with different contents inside, and
+     a name without its folder is two different tables wearing one label.
+     And nothing is keyed on a column position or an exact heading, because
+     four naming conventions appear in one export - Title Case With Spaces,
+     PascalCaseNoSpaces, snake_case, and camelCase in the EU build.
+
+     The things that are not tables - address PDFs, Alexa .wav, call
+     recordings - are left to the file list, which is where they belong. */
+
+  const AZ_COL = (cols, re) => cols.findIndex((c) =>
+    re.test(String(c).replace(/[^a-z0-9]/gi, "").toLowerCase()));
+
+  /* The folder that identifies which archive a file came from. Amazon mixes
+     dots, hyphens, underscores and spaces in these - `Retail.OrderHistory.1`,
+     `Amazon-Music`, `Alexa_1`, `Audio and Transcription` - so the separator is
+     never assumed, only the first path segment is taken. */
+  const azArchive = (name) => {
+    const parts = name.split("/");
+    return parts.length > 1 ? parts[0] : "";
+  };
+
+  /* Amazon's timestamps carry no zone. Prime Video writes
+     "2019-04-08 18:48:31.276" - space separator, no T, no Z, two or three
+     fractional digits - and Audible writes the date alone. Handed to Date,
+     a string in that shape is read as the reader's own local time, so the
+     same export shows 18:48 in London and 19:48 in Oslo, and an order placed
+     near midnight lands on a different day depending on who opened the file.
+
+     Nothing in the export says which zone Amazon meant, so there is no
+     correct answer to find - only a choice between an answer that is the same
+     for everybody and one that is not. UTC is taken, which is also what the
+     TikTok reader does with its zone-less dates, and the reader says so.
+     Values that do carry a zone are left exactly as they are. */
+  function azDate(v) {
+    const s = String(v == null ? "" : v).trim();
+    if (!s) return null;
+    if (/^\d{4}-\d{2}-\d{2}([ T][\d:.]+)?$/.test(s)) {
+      return parseDate(s.replace(" ", "T").replace(/\.\d+$/, "") +
+        (/[ T]/.test(s) ? "Z" : "T00:00:00Z"));
+    }
+    return parseDate(s);
+  }
+
+  async function amazon(file, entries) {
+    const lib = emptyLib("amazon", "Amazon");
+    const data = withinBudget(entries.filter((e) =>
+      /\.csv$/i.test(e.name) && !/\.schema\.json$/i.test(e.name)));
+    noteDropped(lib, data.dropped, "record tables");
+
+    let orders = 0, spend = 0, currency = "";
+    const archives = new Set();
+    let emptyTables = 0;
+
+    for (const e of data.taken) {
+      let text = null;
+      try { text = await MZip.extractText(file, e); } catch { continue; }
+      const arch = azArchive(e.name);
+      if (arch) archives.add(arch);
+      const stem = base(e.name).replace(/\.csv$/i, "");
+
+      const sections = csvSections(text);
+      if (!sections.length) { emptyTables++; continue; }
+
+      for (const sec of sections) {
+        const cols = sec.columns || [];
+        const rows = sec.rows || [];
+        if (!cols.length || !rows.length) continue;
+
+        /* The folder is part of the name, not decoration. Two archives ship a
+           file called Advertising.AdvertiserAudiences.csv with different
+           contents in each. */
+        lib.tables.push({
+          name: (arch && arch !== stem ? arch + ": " : "") + niceColumn(stem),
+          path: e.name, columns: cols.map(niceColumn), rows,
+        });
+
+        /* Orders are the part anybody actually came for. Recognised by having
+           an order date and an order id rather than by the file's name, which
+           has been Retail.OrderHistory and Your Orders and others. */
+        const iDate = AZ_COL(cols, /^orderdate$/);
+        const iId = AZ_COL(cols, /^orderid$/);
+        if (iDate < 0 || iId < 0) continue;
+        const iWhat = AZ_COL(cols, /^(productname|title|itemname)$/);
+        const iTotal = AZ_COL(cols, /^(totalowed|itemtotal|totalcharged)$/);
+        const iCur = AZ_COL(cols, /^currency$/);
+
+        for (const r of rows) {
+          const at = azDate(r[iDate]);
+          if (!at) continue;
+          orders++;
+          const what = iWhat >= 0 ? String(r[iWhat] || "") : "";
+          lib.events.push({ at, kind: "order",
+            label: (what || "An order").slice(0, 140) });
+          if (iTotal >= 0) {
+            /* Sentinels and localised thousands separators both live in this
+               column, so anything that is not plainly a number is skipped
+               rather than guessed at. */
+            const n = parseFloat(String(r[iTotal] || "").replace(/[^\d.-]/g, ""));
+            if (isFinite(n)) spend += n;
+          }
+          if (iCur >= 0 && !currency) currency = String(r[iCur] || "");
+        }
+      }
+    }
+
+    if (orders) {
+      lib.insights.push({ n: orders.toLocaleString(), label: "Orders", accent: true });
+      if (spend > 0) {
+        lib.insights.push({ n: Math.round(spend).toLocaleString(),
+          label: "Total ordered", note: currency || "in whatever the export was priced in" });
+      }
+    }
+    if (archives.size > 1) {
+      lib.insights.push({ n: String(archives.size), label: "Archives in this export" });
+    }
+
+    /* The three things people are surprised by, and none of them is a fault
+       in the export. */
+    if (archives.size > 1) {
+      lib.notes.push("This export is " + archives.size + " separate archives. Amazon's " +
+        "category dropdown takes one category at a time, so a full picture means several " +
+        "requests, which complete anywhere from six hours to a few weeks apart. Anything " +
+        "requested on a different date is a different archive, and they can hold two " +
+        "versions of the same file - Amazon changed the format in February 2026.");
+    }
+    if (emptyTables) {
+      lib.notes.push(plural(emptyTables, "file was", "files were") + " empty. That is a " +
+        "normal result rather than a failure: Amazon ships an archive for services you " +
+        "never used, and creates empty Alexa lists for accounts that never had Alexa. A " +
+        "file being present is not the same as data being present.");
+    }
+    if (orders) {
+      lib.notes.push("Amazon writes its dates with no timezone on them, and does not "
+        + "say anywhere which one it meant. They are read as UTC, so that everybody "
+        + "opening this export sees the same time - read as local time instead, an "
+        + "order placed near midnight lands on a different day for each person.");
+    }
+    if (entries.some((e) => /photo/i.test(e.name))) {
+      lib.notes.push("An Amazon Photos export documents the library rather than " +
+        "containing it - the metadata is here and the photographs are not. Downloading " +
+        "the pictures themselves is a separate job from the Photos app.");
+    }
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+
   /* ---------- Microsoft ---------- */
 
   /* The privacy dashboard archive is activity and usage records: what was
@@ -3480,6 +3644,7 @@ const MParse = (function () {
     if (slug === "fitbit") return finish(fitbit(file, entries));
     if (slug === "linkedin") return finish(linkedin(file, entries));
     if (slug === "microsoft") return finish(microsoft(file, entries));
+    if (slug === "amazon") return finish(amazon(file, entries));
     if (slug === "facebook" || slug === "instagram") {
       return finish(meta(file, entries, slug, detected.label));
     }

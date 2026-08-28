@@ -530,7 +530,7 @@ using the old names throughout, one using the new ones, and one TXT export.
 
 ## 9. Amazon
 
-Not supported as a provider - there is no Amazon reader. But four of the rows
+Read since 2026-08-28. Four of the rows
 below were never Amazon problems at all: a byte-order mark on one file and not
 the next, a sentinel string where a date belongs, several timestamps joined by
 the word "and", and a .schema.json sidecar beside the data it describes. Those
@@ -539,8 +539,11 @@ the generic reader. They were fixed there on 2026-08-28 and are exercised by
 tests/fixtures/social/amazon.zip, which is not an Amazon export - it is the
 smallest thing that reproduces the four.
 
-The section is otherwise worth keeping whole, because the request flow itself
-produces a shape nothing else does.
+The rest is worth keeping whole, because the request flow itself produces a
+shape nothing else does: the category dropdown takes one category at a time,
+so one person's Amazon export is often several unrelated archives requested
+weeks apart, and one folder can hold two incompatible versions of the same
+file.
 
 **The category dropdown is single-select.** Anyone who wants orders and Kindle
 and Alexa files three separate requests, which complete anywhere between six
@@ -556,21 +559,22 @@ document produces it.
 | One request fanning out to 50+ downloads | `-` | Reported for Kindle alone; 74 separate zips for a full request |
 | The same category arriving as `.csv` **or** `.json` | `-` | Non-deterministic. The same person re-requested a day later and got the other one. The JSON carries **fewer fields** than the CSV |
 | BOM present in one file, absent in another | `S` | Verified by byte inspection of two real files from one export |
-| Four naming conventions in one export | `-` | `Title Case With Spaces`, `PascalCaseNoSpaces`, `snake_case`, and `camelCase` in the EU JSON build |
+| Four naming conventions in one export | `S` | `Title Case With Spaces`, `PascalCaseNoSpaces`, `snake_case`, and `camelCase` in the EU JSON build |
 | Multi-valued cells joined with the literal `" and "` | `S` | A real `Ship Date` cell holds four ISO timestamps joined that way. A date reader throws on it |
-| Timestamp precision varying inside one column | `-` | 1,574 rows without fractional seconds, 309 with |
-| Prime Video using a different format entirely | `-` | `2019-04-08 18:48:31.276` - space separator, no `T`, no `Z`, two or three fractional digits. Audible is date-only |
+| Timestamp precision varying inside one column | `S` | 1,574 rows without fractional seconds, 309 with |
+| Prime Video using a different format entirely | `S` | `2019-04-08 18:48:31.276` - space separator, no `T`, no `Z`, two or three fractional digits. Audible is date-only |
+| No timezone on any Amazon date | `S` | Prime Video and Audible both write without one, and Amazon does not document which zone it meant. Read as UTC so that every reader sees the same time, and said out loud - read as local, an order near midnight lands on a different day for each person |
 | Sentinel strings in numeric and date columns | `S` | `Not Available`, `Not Applicable`, and lowercase `unknown` as a second sentinel in the same file |
 | Localised enum values mixed in one file | `-` | `Product Condition` holding both `New` and `Neuf`; `Website` mixing `Amazon.it` and `Amazon.fr`. A Norwegian account will do the same |
 | JSON embedded in a CSV column with doubled quotes | `-` | Alexa settings. Also a pipe-delimited key=value blob in a Kindle column |
 | Values containing literal quote characters | `-` | Prime Video titles render with the quotes inside the cell. Stripping them blindly damages real titles |
-| Identical filenames in different archives | `-` | `Advertising.AdvertiserAudiences.csv` exists in `Advertising.1` and `Advertising.2` with different contents. Flattening the tree silently loses one |
+| Identical filenames in different archives | `S` | `Advertising.AdvertiserAudiences.csv` exists in `Advertising.1` and `Advertising.2` with different contents. Flattening the tree silently loses one |
 | `.schema.json` sidecars alongside the data | `S` | A naive `*.json` glob picks them up |
 | Format changed again on 19 February 2026 | `-` | Columns alphabetised, four renamed, all-fields-quoting dropped, sort order changed, folder renamed. **Recent enough that both shapes are in the wild right now** |
-| Empty archives as a normal result | `-` | Unused services ship empty zips, and Amazon creates default empty Alexa lists for accounts that never used Alexa. File present is not data present |
-| Mixed separators in top-level names | `-` | Dots, hyphens, underscores and spaces all appear: `Retail.OrderHistory.1`, `Amazon-Music`, `Alexa_1`, `Audio and Transcription` |
+| Empty archives as a normal result | `S` | Unused services ship empty zips, and Amazon creates default empty Alexa lists for accounts that never used Alexa. File present is not data present |
+| Mixed separators in top-level names | `S` | Dots, hyphens, underscores and spaces all appear: `Retail.OrderHistory.1`, `Amazon-Music`, `Alexa_1`, `Audio and Transcription` |
 | Non-tabular members | `-` | Addresses arrive as a **PDF**. Also `.txt` field docs, `media/` folders of emails, `.mp3` call recordings, `.wav` Alexa audio |
-| Amazon Photos metadata with no photographs | `-` | The export documents the library and does not contain it. Another case where "explain, do not show an empty library" is the right answer |
+| Amazon Photos metadata with no photographs | `S` | The export documents the library and does not contain it. Another case where "explain, do not show an empty library" is the right answer |
 
 Scale is lopsided in a useful way: even a twenty-five-year customer's order
 history stays in single-digit megabytes. The gigabytes are Alexa `.wav` audio -
