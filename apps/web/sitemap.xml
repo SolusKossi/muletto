@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url><loc>https://muletto.app/</loc><lastmod>2026-08-28</lastmod><priority>1.0</priority></url>
   <url><loc>https://muletto.app/guides.html</loc><lastmod>2026-08-28</lastmod><priority>0.9</priority></url>
   <url><loc>https://muletto.app/app.html</loc><lastmod>2026-08-28</lastmod><priority>0.9</priority></url>
@@ -30,7 +30,7 @@
   <url><loc>https://muletto.app/guides/discord.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
   <url><loc>https://muletto.app/guides/reddit.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
   <url><loc>https://muletto.app/guides/linkedin.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
-  <url><loc>https://muletto.app/guides/whatsapp.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
+  <url><loc>https://muletto.app/guides/whatsapp.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority><xhtml:link rel="alternate" hreflang="en" href="https://muletto.app/guides/whatsapp.html"/><xhtml:link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/whatsapp.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/whatsapp.html"/></url>
   <url><loc>https://muletto.app/guides/google-fit-fitbit.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
   <url><loc>https://muletto.app/guides/strava.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
   <url><loc>https://muletto.app/guides/dest-nas-generic.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
@@ -43,4 +43,5 @@
   <url><loc>https://muletto.app/guides/dest-ente.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
   <url><loc>https://muletto.app/guides/dest-google-photos.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
   <url><loc>https://muletto.app/guides/dest-icloud.html</loc><lastmod>2026-08-28</lastmod><priority>0.8</priority></url>
+  <url><loc>https://muletto.app/no/guides/whatsapp.html</loc><priority>0.8</priority><xhtml:link rel="alternate" hreflang="en" href="https://muletto.app/guides/whatsapp.html"/><xhtml:link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/whatsapp.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/whatsapp.html"/></url>
 </urlset>

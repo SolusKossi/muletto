@@ -57,11 +57,34 @@ console.log("\nASCII and control characters");
 {
   const exts = /\.(js|css|html|md|json|svg|txt|xml|py)$/;
   const files = walk(ROOT, (p) => exts.test(p));
+
+  /* Norwegian needs six letters this rule was written to forbid.
+   *
+   * The rule is not really about ASCII, it is about two things: text that
+   * arrived mangled, and the punctuation that makes a page look machine-made
+   * - em dashes, curly quotes, arrows, emoji. Norwegian copy written without
+   * ae, oe and aa is not compliant, it is wrong: "Aapne" is not a spelling of
+   * "Apne" that anybody uses.
+   *
+   * So the six letters are allowed, and only in the places that hold
+   * Norwegian: the translation files and the /no/ tree. Everywhere else, and
+   * every other character above 126 everywhere including there, still fails.
+   * A curly quote in a Norwegian guide is as unwanted as it ever was.
+   */
+  /* ae, oe, aa - and e-acute, which Norwegian uses in a handful of ordinary
+     words: en with an accent means 'a single one' and is not optional, so
+     writing round it changes the sentence. */
+  const NORWEGIAN = new Set([0xc6, 0xd8, 0xc5, 0xe6, 0xf8, 0xe5, 0xc9, 0xe9]);
+  const mayHold = (f) => /\.nb\.json$/.test(f) ||
+    rel(f).split(path.sep).join("/").startsWith("apps/web/no/");
+
   const bad = [];
   for (const f of files) {
     const text = fs.readFileSync(f, "utf8");
+    const norsk = mayHold(f);
     for (let i = 0; i < text.length; i++) {
       const c = text.charCodeAt(i);
+      if (norsk && NORWEGIAN.has(c)) continue;
       if (c > 126 || (c < 32 && c !== 9 && c !== 10 && c !== 13)) {
         const line = text.slice(0, i).split("\n").length;
         bad.push(rel(f) + ":" + line + " 0x" + c.toString(16));
@@ -92,6 +115,8 @@ console.log("\nGenerated pages match the guide JSON");
 {
   const before = new Map();
   const gen = walk(path.join(WEB, "guides"), (p) => p.endsWith(".html"))
+    .concat(fs.existsSync(path.join(WEB, "no"))
+      ? walk(path.join(WEB, "no"), (p) => p.endsWith(".html")) : [])
     .concat([path.join(WEB, "guides.html"), path.join(WEB, "sitemap.xml")]);
   for (const f of gen) if (fs.existsSync(f)) before.set(f, fs.readFileSync(f, "utf8"));
 
@@ -115,8 +140,15 @@ console.log("\nGenerated pages match the guide JSON");
       fail("build-site.js exited " + run.status + ": " +
         String(run.stderr || "").split("\n").filter(Boolean).slice(-1)[0]);
     }
+    /* WARNING means something is damaged and must not ship. NOTE means the
+       build chose not to write something and said why - a translation that has
+       fallen behind its English, most often. The second is worth seeing and is
+       not a failure; conflating the two would make an ordinary edit to an
+       English guide impossible to commit until its Norwegian caught up, which
+       is how a rule gets deleted rather than obeyed. */
     for (const line of String(run.stderr || "").split("\n")) {
-      if (/warning/i.test(line)) fail("build-site.js warned:" + line.replace(/^\s*WARNING:/i, ""));
+      if (/^\s*NOTE:/.test(line)) console.log("  ..   " + line.trim().replace(/^NOTE:\s*/, ""));
+      else if (/warning/i.test(line)) fail("build-site.js warned:" + line.replace(/^\s*WARNING:/i, ""));
     }
   }
 
@@ -134,15 +166,94 @@ console.log("\nGenerated pages match the guide JSON");
   const STAMP = /\s*<a class="foot-commit"[\s\S]*?<\/a>/g;
   const withoutStamp = (t) => t.replace(STAMP, "");
 
-  const stale = [];
+  /* A file that was there before the build and is gone after it has not gone
+     stale - the build removed it on purpose, which is what happens to a
+     Norwegian page whose translation has fallen behind. Reading it back threw
+     ENOENT and took the whole check down with it, so a translation lagging
+     did not report a lag, it reported a crash. */
+  const stale = [], dropped = [];
   for (const [f, was] of before) {
+    if (!fs.existsSync(f)) { dropped.push(rel(f)); continue; }
     if (withoutStamp(fs.readFileSync(f, "utf8")) !== withoutStamp(was)) stale.push(rel(f));
+  }
+  for (const f of dropped) {
+    console.log("  ..   " + f + " is no longer generated, and the build said why above");
   }
   if (stale.length) {
     stale.forEach((f) => fail(f + " is stale - run the build and commit the result"));
   } else {
-    ok(before.size + " generated files are up to date");
+    ok((before.size - dropped.length) + " generated files are up to date");
   }
+}
+
+/* ---------- 3b. hreflang says the same thing from both ends ---------- */
+
+/* An hreflang pair is a claim that two pages are the same page in two
+   languages, and search engines only act on it when both sides say so. A
+   one-sided claim is not a half-working pair: it is ignored at best, and at
+   worst it points a crawler at a URL that is not there.
+ *
+ * Both failure modes are silent in a browser - the page looks perfect - so
+ * nothing but a check like this one would notice. Three things are verified:
+ * every alternate resolves to a file that exists, every page named as an
+ * alternate names its partner back, and no page in a language tree is left
+ * without a partner at all.
+ */
+console.log(String.fromCharCode(10) + "hreflang pairs");
+{
+  const pages = walk(WEB, (p) => p.endsWith(".html"));
+  const alts = new Map();
+  let paired = 0;
+  const problems = [];
+
+  for (const f of pages) {
+    const s = fs.readFileSync(f, "utf8");
+    const found = [];
+    const re = /<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"/g;
+    let m;
+    while ((m = re.exec(s))) if (m[1] !== "x-default") found.push([m[1], m[2]]);
+    if (found.length) alts.set(rel(f), found);
+  }
+
+  /* A site URL back to the file that serves it, so an alternate can be
+     followed without guessing at the deploy's routing. */
+  const SITE = "https://muletto.app";
+  const fileFor = (loc) => {
+    let p = String(loc).replace(SITE, "").replace(/^\//, "");
+    if (!p || p.endsWith("/")) p += "index.html";
+    return path.join(WEB, p);
+  };
+
+  for (const [page, found] of alts) {
+    for (const [lang, loc] of found) {
+      const target = fileFor(loc);
+      if (!fs.existsSync(target)) {
+        problems.push(page + ' claims an ' + lang + ' alternate at ' + loc +
+          ", and nothing is there");
+        continue;
+      }
+      const back = alts.get(rel(target));
+      if (!back || !back.some(([, l]) => fileFor(l) === path.join(WEB, page.replace("apps/web/", "")))) {
+        problems.push(page + " names " + rel(target) + " as its " + lang +
+          " alternate, and that page does not name it back");
+        continue;
+      }
+      paired++;
+    }
+  }
+
+  /* A page inside a language tree with no alternate at all is orphaned: it is
+     reachable, indexable, and nothing connects it to the page it translates. */
+  const noDir = path.join(WEB, "no");
+  if (fs.existsSync(noDir)) {
+    for (const f of walk(noDir, (p) => p.endsWith(".html"))) {
+      if (!alts.has(rel(f))) problems.push(rel(f) + " is in the /no/ tree and declares no alternate");
+    }
+  }
+
+  if (problems.length) problems.forEach(fail);
+  else ok(paired ? paired + " hreflang alternates resolve and point back"
+                 : "no hreflang alternates yet, and none half-declared");
 }
 
 /* ---------- 4. links and images resolve ---------- */

@@ -1,0 +1,54 @@
+{
+  "en_hash": "73e565c8b24d",
+
+  "wait_time": "omtrent tre dager for kontorapporten; eksport av en samtale skjer med en gang",
+  "format": "enten en .zip-rapport, eller en .txt per samtale med vedleggene ved siden av",
+
+  "request": {
+    "label": "Be om WhatsApp-dataene dine"
+  },
+
+  "steps": [
+    {
+      "title": "Bestem deg for hvilken av de to du vil ha",
+      "detail": "De er ikke to varianter av det samme. Kontorapporten er opplysninger om deg. Eksporterer du en samtale, er det meldingene selv du får."
+    },
+    {
+      "title": "Kontorapporten: Innstillinger, Konto, Be om kontoinfo",
+      "detail": "Finnes på telefonen og på WhatsApp Web, men ikke i Windows- eller Mac-appen. Det tar omtrent tre dager."
+    },
+    {
+      "title": "Meldingene: åpne samtalen det gjelder",
+      "detail": "Trykk på navnet øverst, bla helt ned og velg Eksporter chat. Du velger selv om vedleggene skal bli med."
+    },
+    {
+      "title": "Send den et sted du faktisk beholder den",
+      "detail": "Eksporten blir ikke lagret noe sted av seg selv. Den sendes rett til delingsmenyen, så velg e-post, en filapp eller skylagring med en gang."
+    },
+    {
+      "title": "Gjenta for hver eneste samtale",
+      "detail": "Det finnes ingen måte å ta alle samtalene på én gang. Dette er delen folk oppdager for sent."
+    }
+  ],
+
+  "notes": [
+    "Kontorapporten inneholder ikke én eneste melding. Den er nummeret ditt, profilen, gruppene du er med i, innstillingene og noen tellinger.",
+    "En chateksport er én tekstfil pluss vedleggene som egne filer. iOS og Android navngir og formaterer dem ulikt.",
+    "En samtale med Avansert chatpersonvern slått på lar seg ikke eksportere i det hele tatt."
+  ],
+
+  "faq": [
+    {
+      "q": "Får jeg med meldingene når jeg ber WhatsApp om dataene mine?",
+      "a": "Nei. Kontoinformasjonen er opplysninger om kontoen: nummeret ditt, profilen, gruppene, innstillingene og hvor mange meldinger du har sendt - men ikke én eneste melding. Skal du ha meldingene, må du eksportere hver samtale for seg inne i appen."
+    },
+    {
+      "q": "Hvordan eksporterer jeg alle WhatsApp-samtalene på én gang?",
+      "a": "Det går ikke. Eksporter chat tar én samtale om gangen, og noen samlefunksjon finnes ikke."
+    },
+    {
+      "q": "Hvorfor får jeg ikke eksportert en bestemt samtale?",
+      "a": "Er Avansert chatpersonvern slått på for den samtalen, er eksport blokkert helt."
+    }
+  ]
+}

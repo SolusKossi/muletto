@@ -37,20 +37,183 @@ const readJson = (p) => JSON.parse(fs.readFileSync(p, "utf8"));
 
 /* ---------- shared chrome ---------- */
 
-function nav(depth, active) {
-  const up = depth ? "../" : "";
+/* How far up the tree this page sits. Was `depth ? "../" : ""`, which is
+   correct for the two levels that existed and silently wrong for a third:
+   a Norwegian guide lives at /no/guides/x.html and needs three. */
+/* A newline, by code value. Building one inside a patch script is how this
+   repository has repeatedly ended up with a real line break inside a string
+   literal - there is a house rule about it and it has been broken again
+   since. Naming it once removes the temptation. */
+const NL = String.fromCharCode(10);
+
+/* Which language is being written, and which guides exist in it.
+ *
+ * Module state rather than another parameter, because the alternative is
+ * threading a language through a dozen helpers that only two of them use.
+ * The build is one synchronous pass, so there is nothing to race with; both
+ * are set immediately before each page is written.
+ *
+ * `sib` is the reason this exists. A Norwegian guide links to other guides,
+ * and most of them are not translated yet. Pointing at a Norwegian sibling
+ * that is not there gives the reader a 404; the honest fallback is the
+ * English page, which answers their question in the wrong language rather
+ * than not at all. As translations land, those links quietly become
+ * Norwegian without anybody editing a href.
+ */
+/* The four hand-written pages have no Norwegian version yet. Until one
+   exists, the Norwegian chrome points at the English page rather than at a
+   URL that is not there - the same fallback `sib` makes for guides, and for
+   the same reason. Checked on disk rather than listed, so writing the page
+   is all it takes to switch the links over. */
+const hasNo = (file) => fs.existsSync(path.join(WEB, "no", file));
+
+let LANG = "en";
+let TRANSLATED = new Set();
+/* A link from inside guides/ up to a top-level page. These were written as
+   "../index.html" back when every generated page sat exactly one level down.
+   A Norwegian guide sits two levels down, so the literal was quietly wrong
+   the moment the /no/ tree existed - and wrong in the way that produces a
+   404 rather than an error. */
+const topHref = (f) => (LANG === "nb" ? "../../" : "../") +
+  (LANG === "nb" && hasNo(f) ? "no/" + f : f);
+
+const sib = (slug) => (LANG === "nb" && !TRANSLATED.has(slug))
+  ? "../../guides/" + slug + ".html" : slug + ".html";
+
+const upTo = (depth) => "../".repeat(depth || 0);
+
+/* The words in the furniture, per language. Only the handful that appear on
+   every page live here; everything else belongs to the page that says it. */
+/* The words the template says itself, as opposed to the words a guide says.
+ *
+ * English stays inline because this file is English and reading it in place
+ * is worth more than the symmetry. Norwegian comes from strings.nb.json, for
+ * the ASCII reason above.
+ *
+ * `T()` is checked rather than trusted: asking for a key the Norwegian file
+ * does not have would return undefined and put the word "undefined" on a
+ * page, or - if it fell back to English - put an English sentence in the
+ * middle of a Norwegian one, which is the quieter and worse failure. Every
+ * key the templates use is verified against the file at startup, so a missing
+ * one stops the build instead of shipping.
+ */
+const EN_STRINGS = {
+  guides: "Guides", privacy: "Privacy", open: "Open an export",
+  openShort: "Open export", source: "Read the source",
+  other: "Norsk", otherLang: "nb",
+
+  home: "Home",
+  stepByStep: "Step by step",
+  worthKnowing: "Worth knowing",
+  commonQuestions: "Common questions",
+  whereToKeep: "Where to keep your data",
+  everyGuide: "Every export guide",
+
+  titleService: "{provider} GDPR data export: how to request it and open it | Muletto",
+  titleDest: "{provider}: where to keep your data | Muletto",
+  h1Service: "How to export your data from {provider}",
+  h1Dest: "Move your data to {provider}",
+  kicker: "Requesting the GDPR export, what arrives, and how to open it.",
+
+  introService: "{provider} is required to give you a copy of the data it holds about you, " +
+    "including {list}. The request itself is free, and arrives as {format}. Typical wait: {wait}.",
+  introDest: "Once you have your data out of the big services and cleaned up, it needs to " +
+    "live somewhere you control. This guide covers moving your archive to {provider}.",
+
+  openHeading: "Opening your {provider} export",
+  openerRead: "Muletto reads {article} {provider} export directly - the zip, without " +
+    "unpacking it first - and finds the {list} inside.",
+  openerGeneric: "Muletto opens {article} {provider} export and lists everything in it. " +
+    "There is no reader written specifically for this service yet, so its tables are shown " +
+    "as {provider} wrote them - which is still a great deal more than a folder of files.",
+  openerBrowser: "It runs in the browser: the archive is never uploaded, there is no " +
+    "account, and nothing is installed. Open several exports at once and they become one " +
+    "library, with the photographs that appear in more than one of them found automatically.",
+  openButton: "Open your {provider} export",
+  openFallback: "what is in it",
+
+  dataTypes: {
+    photos: "photos", videos: "videos", messages: "messages", location: "location history",
+    contacts: "contacts", email: "email", browsing: "browsing activity",
+    purchases: "purchase history", social: "posts and social activity",
+    health: "health data", files: "files", other: "other records",
+  },
+
+  and: "and",
+};
+
+const NB_STRINGS = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "strings.nb.json"), "utf8"));
+
+/* Every key the English side defines has to exist on the Norwegian side, and
+   the check runs once at startup rather than at the moment a page happens to
+   need one. A translation missing a key is a build that stops, not a page
+   that ships with a hole in it. */
+(function verifyStrings() {
+  const missing = [];
+  for (const k of Object.keys(EN_STRINGS)) {
+    if (k === "dataTypes") {
+      for (const d of Object.keys(EN_STRINGS.dataTypes)) {
+        if (!(NB_STRINGS.dataTypes || {})[d]) missing.push("dataTypes." + d);
+      }
+    } else if (!NB_STRINGS[k]) missing.push(k);
+  }
+  if (missing.length) {
+    throw new Error("tools/strings.nb.json is missing " + missing.length +
+      " key(s) the templates need: " + missing.join(", ") +
+      ". Add them, or the Norwegian pages would carry English text.");
+  }
+})();
+
+const STRINGS = { en: EN_STRINGS, nb: NB_STRINGS };
+
+/* Fill {name} holes. Deliberately not a template literal: the values come
+   from guide JSON and are inserted into HTML, so they go through `esc` at the
+   call site the same as any other content. */
+function T(key, vars) {
+  const table = STRINGS[LANG] || EN_STRINGS;
+  let s = table[key];
+  if (s === undefined) throw new Error("no string '" + key + "' for " + LANG);
+  if (vars) {
+    for (const k of Object.keys(vars)) s = s.split("{" + k + "}").join(vars[k]);
+  }
+  return s;
+}
+
+/* A list in the reader's language: "a, b and c" / "a, b og c". */
+function joinList(items) {
+  if (!items.length) return "";
+  if (items.length === 1) return items[0];
+  return items.slice(0, -1).join(", ") + " " + T("and") + " " + items[items.length - 1];
+}
+
+const dataLabel = (k) => (STRINGS[LANG] || EN_STRINGS).dataTypes[k] || k;
+
+/* Where the same page lives in the other language, or null if it does not
+   exist yet. Null is the important case: an untranslated page must not offer
+   a switch to a URL that will 404, and must not claim an hreflang alternate
+   for one either. */
+function nav(depth, active, lang, altHref) {
+  const up = upTo(depth);
+  const t = STRINGS[lang || "en"];
+  const home = up + (lang === "nb" && hasNo("index.html") ? "no/index.html" : "index.html");
+  const at = (f) => up + (lang === "nb" && hasNo(f) ? "no/" + f : f);
   const on = (k) => (active === k ? ' class="active"' : "");
+  const langLink = altHref
+    ? `
+          <a class="nav-lang" href="${altHref}" hreflang="${t.otherLang}" lang="${t.otherLang}">${t.other}</a>`
+    : "";
   return `  <nav class="nav">
     <div class="wrap">
       <div class="nav-left">
-        <a class="wordmark" href="${up}index.html">muletto</a>
+        <a class="wordmark" href="${home}">muletto</a>
         <div class="nav-links">
-          <a href="${up}guides.html"${on("guides")}>Guides</a>
-          <a href="${up}privacy.html">Privacy</a>
+          <a href="${at("guides.html")}"${on("guides")}>${t.guides}</a>
+          <a href="${at("privacy.html")}">${t.privacy}</a>${langLink}
         </div>
       </div>
       <div class="nav-right">
-        <a class="btn primary" href="${up}app.html">Open an export</a>
+        <a class="btn primary" href="${at("app.html")}">${t.open}</a>
       </div>
     </div>
   </nav>`;
@@ -105,35 +268,57 @@ function commitLink() {
     + ' title="The commit this site was built from">build ' + COMMIT + "</a>";
 }
 
-function footer(depth) {
-  const up = depth ? "../" : "";
+function footer(depth, lang) {
+  const up = upTo(depth);
+  const t = STRINGS[lang || "en"];
+  const home = up + (lang === "nb" && hasNo("index.html") ? "no/index.html" : "index.html");
+  const at = (f) => up + (lang === "nb" && hasNo(f) ? "no/" + f : f);
   return `  <footer class="site">
     <div class="wrap">
-      <a class="wordmark" href="${up}index.html">muletto</a>
+      <a class="wordmark" href="${home}">muletto</a>
       <div class="foot-links">
-        <a href="${up}guides.html">Guides</a>
-        <a href="${up}app.html">Open export</a>
-        <a href="${up}privacy.html">Privacy</a>
+        <a href="${at("guides.html")}">${t.guides}</a>
+        <a href="${at("app.html")}">${t.openShort}</a>
+        <a href="${at("privacy.html")}">${t.privacy}</a>
         <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-          Read the source
+          ${t.source}
         </a>${commitLink()}
       </div>
     </div>
   </footer>`;
 }
 
-function page({ depth, title, description, canonical, body, jsonld, active, noindex, extraScript }) {
-  const up = depth ? "../" : "";
+/* `alt` is the same page in the other language, as { href, loc, lang }, or
+   null when it has not been translated yet.
+ *
+ * Null has to stay a real case rather than an edge one. Google treats an
+ * hreflang pair as a claim that both sides exist and point back at each
+ * other, and a claim pointing at a 404 is worse than no claim: it can suppress
+ * the page that does exist. So a page with no counterpart declares no
+ * alternates at all, offers no language switch, and is simply a page in one
+ * language - which is exactly what it is. `check.js` verifies the pairing in
+ * both directions rather than trusting this to stay right. */
+function page({ depth, title, description, canonical, body, jsonld, active, noindex,
+                extraScript, lang, alt }) {
+  const up = upTo(depth);
+  const code = lang || "en";
+  /* x-default names the version to serve somebody the other two do not fit.
+     English, because it is the one a reader from anywhere can probably use. */
+  const hreflang = alt ? [
+    `  <link rel="alternate" hreflang="${code}" href="${esc(canonical)}" />`,
+    `  <link rel="alternate" hreflang="${alt.lang}" href="${esc(alt.loc)}" />`,
+    `  <link rel="alternate" hreflang="x-default" href="${esc(code === "en" ? canonical : alt.loc)}" />`,
+  ].join(NL) + NL : "";
   return `<!doctype html>
-<html lang="en">
+<html lang="${code}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}" />
   <link rel="canonical" href="${esc(canonical)}" />
-  <meta property="og:type" content="article" />
+${hreflang}  <meta property="og:type" content="article" />
   <meta property="og:title" content="${esc(title)}" />
   <meta property="og:description" content="${esc(description)}" />
   <meta property="og:url" content="${esc(canonical)}" />
@@ -149,13 +334,13 @@ ${noindex ? '  <meta name="robots" content="noindex,follow" />\n' : ""}  <link r
 ${(jsonld || []).map((j) => `  <script type="application/ld+json">${JSON.stringify(j)}</script>`).join("\n")}
 </head>
 <body>
-${nav(depth, active)}
+${nav(depth, active, code, alt && alt.href)}
 
   <main>
 ${body}
   </main>
 
-${footer(depth)}
+${footer(depth, code)}
 
   <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="${up}disclose.js"></script>
@@ -167,6 +352,131 @@ ${extraScript ? `  <script src="${up}${extraScript}"></script>\n` : ""}
 </html>
 `;
 }
+
+/* ---------- translations ---------- */
+
+/* A Norwegian guide is `<slug>.nb.json` beside the English one, holding the
+ * same shape with the prose replaced. Two rules decide whether it is used,
+ * and both exist because the failure they prevent is silent.
+ *
+ * **It must be complete.** A missing field would fall back to English, and an
+ * English sentence in the middle of a Norwegian page is the kind of thing
+ * that survives for months: it reads as an oversight nobody owns rather than
+ * as a bug. So a translation covering less than all of its prose is not used
+ * at all, and the build says which fields are missing. Half a page is worse
+ * than no page, because no page is honest about being absent.
+ *
+ * **It must be current.** Every translation records a hash of the English
+ * file it was made from. Edit the English and the hash stops matching, the
+ * Norwegian page drops out of the tree until somebody retranslates it, and
+ * the build says so. This is the one guarantee that matters over time: this
+ * repository has a documented history of two copies of one fact drifting
+ * apart, and a translation is exactly that shape - so it is not left to
+ * anybody remembering.
+ *
+ * The cost is that /no/ is only ever a subset of the site, which is correct
+ * rather than a compromise. hreflang is a claim that two pages are the same
+ * page in two languages; a page with no counterpart makes no such claim, and
+ * `check.js` verifies the pairing from both ends.
+ */
+
+const crypto = require("crypto");
+
+/* Which fields hold prose. Everything not here is a slug, an enum, a brand
+   name or a URL, and translating any of those would break something. */
+const TRANSLATABLE = [
+  "wait_time", "format", "request.label",
+  "steps[].title", "steps[].detail", "steps[].note",
+  "notes[]", "faq[].q", "faq[].a",
+];
+
+const enHash = (obj) =>
+  crypto.createHash("sha256")
+    .update(JSON.stringify(obj, Object.keys(obj).sort()))
+    .digest("hex").slice(0, 12);
+
+/* Walk one of the paths above and return every value it names, with the
+   position, so the English and the translation can be compared field by
+   field rather than by counting keys. */
+function fieldsAt(obj, spec) {
+  const out = [];
+  const parts = spec.split(".");
+  const dive = (node, i, trail) => {
+    if (node === undefined || node === null) return;
+    if (i === parts.length) {
+      if (typeof node === "string" && node.trim()) out.push([trail, node]);
+      return;
+    }
+    const part = parts[i];
+    if (part.endsWith("[]")) {
+      const key = part.slice(0, -2);
+      const list = key ? node[key] : node;
+      if (!Array.isArray(list)) return;
+      list.forEach((v, n) => dive(v, i + 1, trail + "/" + (key || "") + "[" + n + "]"));
+    } else {
+      dive(node[part], i + 1, trail + "/" + part);
+    }
+  };
+  /* `notes[]` is a bare array of strings: the last segment is the value. */
+  if (parts.length === 1 && parts[0].endsWith("[]")) {
+    const key = parts[0].slice(0, -2);
+    const list = obj[key];
+    if (Array.isArray(list)) {
+      list.forEach((v, n) => {
+        if (typeof v === "string" && v.trim()) out.push(["/" + key + "[" + n + "]", v]);
+      });
+    }
+    return out;
+  }
+  dive(obj, 0, "");
+  return out;
+}
+
+/* Every prose field in a guide, as path -> text. */
+function prose(g) {
+  const map = new Map();
+  for (const spec of TRANSLATABLE) {
+    for (const [where, text] of fieldsAt(g, spec)) map.set(where, text);
+  }
+  return map;
+}
+
+/* Load the Norwegian overlay for a guide, or explain why there is not one.
+   Returns { ok: true, guide } or { ok: false, why } - never a partial. */
+function translation(g, dir, lang) {
+  const file = path.join(dir, g.slug + "." + lang + ".json");
+  if (!fs.existsSync(file)) return { ok: false, why: "no translation yet" };
+
+  let t;
+  try { t = readJson(file); }
+  catch (e) { return { ok: false, why: "the file does not parse: " + e.message }; }
+
+  /* The English this was translated from, minus the bookkeeping. The hash is
+     taken over the guide's own file rather than over the merged object,
+     because the merged one carries the index entry too and that moves for
+     unrelated reasons. */
+  const source = readJson(path.join(dir, g.slug + ".json"));
+  const want = enHash(source);
+  if (t.en_hash !== want) {
+    return { ok: false, why: t.en_hash
+      ? "the English has changed since this was translated (" + t.en_hash +
+        " -> " + want + "); retranslate it and update en_hash"
+      : "it has no en_hash, so nothing can tell whether it is current" };
+  }
+
+  const need = prose(source);
+  const have = prose(t);
+  const missing = [...need.keys()].filter((k) => !have.has(k));
+  if (missing.length) {
+    return { ok: false, why: missing.length + " field" + (missing.length === 1 ? "" : "s") +
+      " not translated: " + missing.slice(0, 4).join(", ") +
+      (missing.length > 4 ? ", ..." : "") };
+  }
+  /* Anything the translation left out that is not prose - the slug, the URL,
+     the enums - comes from the English, which is where it belongs. */
+  return { ok: true, guide: { ...g, ...t } };
+}
+
 
 /* ---------- guide page ---------- */
 
@@ -295,9 +605,7 @@ function confirmation(g) {
 function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
 
 function guideTitle(g) {
-  return isDest(g)
-    ? `${g.provider}: where to keep your data | Muletto`
-    : `${g.provider} GDPR data export: how to request it and open it | Muletto`;
+  return T(isDest(g) ? "titleDest" : "titleService", { provider: g.provider });
 }
 
 /* What happens after the download finishes.
@@ -328,33 +636,26 @@ function openerSection(g) {
   const name = esc(g.provider);
 
   const lines = [];
-  const kinds = (g.data_types || []).map((k) => DATA_LABEL[k] || k);
-  const list = kinds.length
-    ? kinds.slice(0, 3).join(", ").replace(/, ([^,]*)$/, " and $1")
-    : "what is in it";
+  const kinds = (g.data_types || []).map(dataLabel);
+  const list = kinds.length ? joinList(kinds.slice(0, 3)) : T("openFallback");
 
-  if (sup.importable) {
-    lines.push(`Muletto reads ${anArticle(name)} ${name} export directly - the zip, without unpacking it ` +
-      `first - and finds the ${esc(list)} inside.`);
-  } else {
-    lines.push(`Muletto opens ${anArticle(name)} ${name} export and lists everything in it. There is no ` +
-      `reader written specifically for this service yet, so its tables are shown as ` +
-      `${name} wrote them - which is still a great deal more than a folder of files.`);
-  }
-  lines.push(`It runs in the browser: the archive is never uploaded, there is no account, ` +
-    `and nothing is installed. Open several exports at once and they become one ` +
-    `library, with the photographs that appear in more than one of them found ` +
-    `automatically.`);
+  /* The article only exists in English. Norwegian does not put one here at
+     all - "en Amazon-eksport" would be wrong - so the placeholder is filled
+     with nothing and the sentence is written without it. */
+  const article = LANG === "en" ? anArticle(name) : "";
+  lines.push(T(sup.importable ? "openerRead" : "openerGeneric",
+    { article, provider: esc(name), list: esc(list) }).replace(/  +/g, " "));
+  lines.push(T("openerBrowser"));
 
   /* The gotcha, from the guide's own notes rather than invented. The first
      note on every guide is the thing that goes wrong, by house rule. */
   const gotcha = (g.notes && g.notes.length) ? g.notes[0] : "";
 
   return `
-          <h2 id="open">Opening your ${name} export</h2>
+          <h2 id="open">${esc(T("openHeading", { provider: name }))}</h2>
           ${lines.map((l) => `<p>${l}</p>`).join("\n          ")}
           ${gotcha ? `<div class="note">${esc(gotcha)}</div>` : ""}
-          <p><a class="btn primary" href="../app.html">Open your ${name} export
+          <p><a class="btn primary" href="${topHref("app.html")}">${esc(T("openButton", { provider: name }))}
             <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>`;
 }
 
@@ -369,15 +670,12 @@ function guideDescription(g) {
 
 function guideIntro(g) {
   if (isDest(g)) {
-    return `Once you have your data out of the big services and cleaned up, it needs to live somewhere you control. This guide covers moving your archive to ${g.provider}.`;
+    return T("introDest", { provider: g.provider });
   }
-  const kinds = (g.data_types || []).map((k) => DATA_LABEL[k] || k);
-  const list = kinds.length > 1
-    ? kinds.slice(0, -1).join(", ") + " and " + kinds[kinds.length - 1]
-    : (kinds[0] || "your data");
-  return `${g.provider} is required to give you a copy of the data it holds about you, including ${list}. ` +
-    `The request itself is free, and arrives as ${g.format || "a downloadable archive"}. ` +
-    `Typical wait: ${g.wait_time}.`;
+  const list = joinList((g.data_types || []).map(dataLabel));
+  return T("introService", {
+    provider: g.provider, list, format: g.format || "", wait: g.wait_time || "",
+  });
 }
 
 /* Screenshots are redacted crops produced by tools/redact-screenshot.py, so
@@ -399,14 +697,20 @@ function shot(s) {
 /* Sidebar links carry the same brand mark the homepage uses. app.js fills
    [data-icon] with the inline SVG, so there is one copy of each logo. */
 function sideLink(r) {
-  return `<li><a href="${esc(r.slug)}.html">` +
+  return `<li><a href="${esc(sib(r.slug))}">` +
     `<span class="side-ic" data-icon="${esc(r.icon || "box")}"></span>${esc(r.provider)}</a></li>`;
 }
 
-function guidePage(g, all, dests) {
+/* `lang` and `alt` ride along rather than being threaded through every helper
+   below, which would mean touching a dozen signatures to pass a value that
+   only two of them use. The page's own canonical is derived from the language
+   rather than passed, so the two cannot disagree. */
+function guidePage(g, all, dests, lang, alt) {
   const dest = isDest(g);
   const conf = confirmation(g);
-  const canonical = `${SITE}/guides/${g.slug}.html`;
+  const canonical = lang === "nb"
+    ? `${SITE}/no/guides/${g.slug}.html`
+    : `${SITE}/guides/${g.slug}.html`;
 
   const related = (dest ? dests : all)
     .filter((x) => x.slug !== g.slug).slice(0, 5);
@@ -456,16 +760,16 @@ function guidePage(g, all, dests) {
 
   const body = `    <article class="wrap article">
       <nav class="crumbs" aria-label="Breadcrumb">
-        <a href="../index.html">Home</a>
+        <a href="${topHref("index.html")}">${esc(T("home"))}</a>
         <span>/</span>
-        <a href="../guides.html">Guides</a>
+        <a href="${topHref("guides.html")}">${esc(T("guides"))}</a>
         <span>/</span>
         <span aria-current="page">${esc(g.provider)}</span>
       </nav>
 
       <header class="art-head">
-        <h1>${dest ? `Move your data to ${esc(g.provider)}` : `How to export your data from ${esc(g.provider)}`}</h1>
-        ${dest ? "" : `<p class="art-kicker">Requesting the GDPR export, what arrives, and how to open it.</p>`}
+        <h1>${esc(T(dest ? "h1Dest" : "h1Service", { provider: g.provider }))}</h1>
+        ${dest ? "" : `<p class="art-kicker">${esc(T("kicker"))}</p>`}
         <div class="art-meta">
           <span class="badge ${esc(g.difficulty)}">${esc(g.difficulty)}</span>
           <span class="muted">${dest ? "Takes" : "Wait:"} ${esc(g.wait_time)}</span>
@@ -478,7 +782,7 @@ function guidePage(g, all, dests) {
           ${g.request ? `<p><a class="btn primary lg" href="${esc(g.request.url)}" target="_blank" rel="noopener noreferrer">${esc(g.request.label)} <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>` : ""}
           ${g.explain ? `<aside class="explain"><h2>${esc(g.explain.title)}</h2><p>${esc(g.explain.body)}</p></aside>` : ""}
 
-          <h2>Step by step</h2>
+          <h2>${esc(T("stepByStep"))}</h2>
           ${!dest && conf.line ? `<p class="confirmed-line">${esc(conf.line)}</p>` : ""}
           <ol class="steps-ol">
             ${g.steps.map((s) => `<li>
@@ -490,10 +794,10 @@ function guidePage(g, all, dests) {
 
           ${openerSection(g)}
 
-          ${(g.notes && g.notes.length) ? `<h2>Worth knowing</h2>
+          ${(g.notes && g.notes.length) ? `<h2>${esc(T("worthKnowing"))}</h2>
           ${g.notes.map((n) => `<div class="note">${esc(n)}</div>`).join("\n          ")}` : ""}
 
-          ${(g.faq && g.faq.length) ? `<h2>Common questions</h2>
+          ${(g.faq && g.faq.length) ? `<h2>${esc(T("commonQuestions"))}</h2>
           <div class="faq">
             ${g.faq.map((f) => `<details class="faq-q">
               <summary>${esc(f.q)}</summary>
@@ -536,10 +840,10 @@ function guidePage(g, all, dests) {
     </article>`;
 
   return page({
-    depth: 1, active: "guides",
+    depth: lang === "nb" ? 2 : 1, active: "guides",
     title: guideTitle(g),
     description: guideDescription(g),
-    canonical,
+    canonical, lang, alt,
     jsonld: [howto, crumbs].concat(faq ? [faq] : []),
     body,
   });
@@ -765,8 +1069,8 @@ function flowPage(f, all, dests) {
 
   const body = `    <article class="wrap article flow">
       <nav class="crumbs" aria-label="Breadcrumb">
-        <a href="../index.html">Home</a><span>/</span>
-        <a href="../guides.html">Guides</a><span>/</span>
+        <a href="${topHref("index.html")}">${esc(T("home"))}</a><span>/</span>
+        <a href="${topHref("guides.html")}">${esc(T("guides"))}</a><span>/</span>
         <span aria-current="page">${esc(f.title)}</span>
       </nav>
 
@@ -800,8 +1104,8 @@ function flowPage(f, all, dests) {
              come back. The full guide has the steps and the traps.</p>`
           : `<p>Every service you use, all at once. They run independently and most take days, so
              the sooner they are all requested the sooner you can do the rest in one sitting.</p>`,
-        from ? { href: `${from.slug}.html`, label: `The ${from.provider} guide` }
-             : { href: "../guides.html", label: "Every export guide" })}
+        from ? { href: sib(from.slug), label: `The ${from.provider} guide` }
+             : { href: topHref("guides.html"), label: T("everyGuide") })}
 
       ${step(2, "Open it in your browser",
         `<p>Drop the archive into Muletto. It is read on your own machine - nothing is uploaded -
@@ -809,7 +1113,7 @@ function flowPage(f, all, dests) {
          been. Open several exports together and they merge into one library.</p>
          <p class="muted small">Large archives are fine. They are read in pieces rather than
          loaded whole, so size is not the limit it usually is in a browser.</p>`,
-        { href: "../app.html", label: "Open an export" })}
+        { href: topHref("app.html"), label: T("open") })}
 
       ${step(3, "Clean it up before you move it",
         `<p>This is the step worth not skipping, because it is far easier now than once the files
@@ -831,7 +1135,7 @@ function flowPage(f, all, dests) {
          network share, or as a single archive. You choose the arrangement, and it writes an index
          of everything it wrote.</p>
          ${to ? `<p>The destination guide covers the part that happens at the other end.</p>` : ""}`,
-        to ? { href: `${to.slug}.html`, label: `The ${to.provider} guide` } : null)}
+        to ? { href: sib(to.slug), label: `The ${to.provider} guide` } : null)}
 
       <div class="flow-end">
         <h3>When it is done</h3>
@@ -890,13 +1194,13 @@ function problemPage(p, all) {
 
   const linkFor = (slug) => {
     const g = all.find((x) => x.slug === slug);
-    return g ? { href: slug + ".html", label: `The ${g.provider} guide` } : null;
+    return g ? { href: sib(slug), label: `The ${g.provider} guide` } : null;
   };
 
   const body = `    <article class="wrap article problem">
       <nav class="crumbs" aria-label="Breadcrumb">
-        <a href="../index.html">Home</a><span>/</span>
-        <a href="../guides.html">Guides</a><span>/</span>
+        <a href="${topHref("index.html")}">${esc(T("home"))}</a><span>/</span>
+        <a href="${topHref("guides.html")}">${esc(T("guides"))}</a><span>/</span>
         <span aria-current="page">${esc(p.title)}</span>
       </nav>
 
@@ -930,7 +1234,7 @@ function problemPage(p, all) {
       ${p.muletto ? `<section class="prob-ours">
         <h2>How Muletto does it</h2>
         <p>${esc(p.muletto)}</p>
-        <p><a class="btn primary" href="../app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+        <p><a class="btn primary" href="${topHref('app.html')}">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
       </section>` : ""}
 
       ${p.prevent ? `<section class="prob-prevent">
@@ -945,7 +1249,7 @@ function problemPage(p, all) {
         <ul class="flow-list">${(p.related || []).map((slug) => {
           const g = linkFor(slug);
           if (g) return `<li><a href="${esc(g.href)}">${esc(g.label)}</a></li>`;
-          return `<li><a href="${esc(slug)}.html">${esc(slug.replace(/-/g, " "))}</a></li>`;
+          return `<li><a href="${esc(sib(slug))}">${esc(slug.replace(/-/g, " "))}</a></li>`;
         }).join("")}</ul>
       </section>` : ""}
     </article>`;
@@ -1034,10 +1338,67 @@ function main() {
   const flows = flowIndex.flows;
   const problems = problemIndex.problems;
 
-  let n = 0;
+  /* Which guides have a usable Norwegian translation. Worked out before
+     anything is written, because both pages need to know: the English one has
+     to point at its counterpart and the Norwegian one has to exist. A guide
+     that fails either test is simply English-only this build, and the reason
+     is printed rather than swallowed - a translation silently dropping out
+     because somebody edited the English is the whole failure this guards. */
+  const NO_GUIDES = path.join(WEB, "no", "guides");
+  const translated = new Map();
+  const skipped = [];
   for (const g of [...all, ...dests]) {
-    fs.writeFileSync(path.join(GUIDES, g.slug + ".html"), guidePage(g, all, dests), "utf8");
+    const t = translation(g, GUIDES, "nb");
+    if (t.ok) translated.set(g.slug, t.guide);
+    else if (t.why !== "no translation yet") skipped.push([g.slug, t.why]);
+  }
+  if (translated.size) fs.mkdirSync(NO_GUIDES, { recursive: true });
+  /* NOTE rather than WARNING, and the difference is deliberate. check.js
+     fails the build on anything the build warns about, which is right for a
+     sitemap that lost its dates - something is damaged and shipping it makes
+     it worse. A translation falling behind damages nothing: the page is not
+     written, the tree is a little smaller, and every link to it falls back to
+     English on its own. Failing the build for that would mean no English
+     guide could be edited until its Norwegian caught up, which would get the
+     rule deleted within a week rather than obeyed. It is loud and it does not
+     block. */
+  for (const [slug, why] of skipped) {
+    console.warn("  NOTE: no/guides/" + slug + ".html not built - " + why);
+  }
+
+  /* Anything left in the Norwegian tree from a previous build whose
+     translation has since gone or gone stale. Left alone it would keep being
+     served, and keep being linked from a sitemap, long after the thing it
+     was translated from changed. */
+  if (fs.existsSync(NO_GUIDES)) {
+    for (const f of fs.readdirSync(NO_GUIDES)) {
+      if (!f.endsWith(".html")) continue;
+      if (translated.has(f.replace(/\.html$/, ""))) continue;
+      fs.unlinkSync(path.join(NO_GUIDES, f));
+      console.warn("  NOTE: removed no/guides/" + f + " - it has no current translation");
+    }
+  }
+
+  const altEn = (slug) => translated.has(slug)
+    ? { href: "../no/guides/" + slug + ".html",
+        loc: `${SITE}/no/guides/${slug}.html`, lang: "nb" } : null;
+  const altNb = (slug) => ({ href: "../../guides/" + slug + ".html",
+        loc: `${SITE}/guides/${slug}.html`, lang: "en" });
+
+  TRANSLATED = new Set(translated.keys());
+  let n = 0, nNo = 0;
+  for (const g of [...all, ...dests]) {
+    fs.writeFileSync(path.join(GUIDES, g.slug + ".html"),
+      guidePage(g, all, dests, "en", altEn(g.slug)), "utf8");
     n++;
+    const t = translated.get(g.slug);
+    if (t) {
+      LANG = "nb";
+      fs.writeFileSync(path.join(NO_GUIDES, g.slug + ".html"),
+        guidePage(t, all, dests, "nb", altNb(g.slug)), "utf8");
+      LANG = "en";
+      nNo++;
+    }
   }
   for (const f of flows) {
     fs.writeFileSync(path.join(GUIDES, f.slug + ".html"), flowPage(f, all, dests), "utf8");
@@ -1319,14 +1680,40 @@ function main() {
     ...[...all, ...dests].map((g) => ({ loc: `${SITE}/guides/${g.slug}.html`, pri: "0.8",
                                         file: "guides/" + g.slug + ".html" })),
   ];
+  /* The Norwegian pages, and the alternates pairing them with the English.
+     A sitemap is the one place a search engine hears about a page nothing
+     links to yet, so a translation missing from here may simply never be
+     found. Both directions are listed: hreflang in a sitemap has the same
+     reciprocity rule as hreflang in a head, and a one-sided claim is ignored. */
+  for (const slug of translated.keys()) {
+    urls.push({ loc: `${SITE}/no/guides/${slug}.html`, pri: "0.8",
+                file: "no/guides/" + slug + ".html",
+                alt: { en: `${SITE}/guides/${slug}.html`,
+                       nb: `${SITE}/no/guides/${slug}.html` } });
+  }
+  for (const u of urls) {
+    const m = /\/guides\/([a-z0-9-]+)\.html$/.exec(u.loc);
+    if (m && !u.alt && !u.loc.includes("/no/") && translated.has(m[1])) {
+      u.alt = { en: u.loc, nb: `${SITE}/no/guides/${m[1]}.html` };
+    }
+  }
+
+  const xhtmlNs = urls.some((u) => u.alt)
+    ? ' xmlns:xhtml="http://www.w3.org/1999/xhtml"' : "";
   fs.writeFileSync(path.join(WEB, "sitemap.xml"),
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    `<?xml version="1.0" encoding="UTF-8"?>` + NL +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${xhtmlNs}>` + NL +
     urls.map((u) => {
       const d = when(u.file);
+      const alts = u.alt
+        ? Object.keys(u.alt).map((k) =>
+            `<xhtml:link rel="alternate" hreflang="${k}" href="${u.alt[k]}"/>`).join("") +
+          `<xhtml:link rel="alternate" hreflang="x-default" href="${u.alt.en}"/>`
+        : "";
       return `  <url><loc>${u.loc}</loc>` + (d ? `<lastmod>${d}</lastmod>` : "") +
-        `<priority>${u.pri}</priority></url>`;
-    }).join("\n") +
-    `\n</urlset>\n`, "utf8");
+        `<priority>${u.pri}</priority>${alts}</url>`;
+    }).join(NL) +
+    NL + `</urlset>` + NL, "utf8");
   /* Crawling is allowed, and the sitemap is advertised.
    *
    * Worth keeping the reasoning that was here: "Disallow: /" sounds stronger
