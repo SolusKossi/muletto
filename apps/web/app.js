@@ -294,6 +294,34 @@ const SIGNATURES = [
   { slug: "reddit", label: "Reddit",
     pats: ["subscribed_subreddits.csv", "post_votes.csv", "comment_votes.csv",
            "saved_posts.csv", "hidden_posts.csv", "reddit/"] },
+  /* Spotify names every history file after the kind of history it is, and
+     nothing else in the export says Spotify anywhere. Both spellings are
+     matched because the one-year and the extended exports use different
+     ones, and somebody with only the short one still has a Spotify export. */
+  { slug: "spotify", label: "Spotify",
+    pats: ["streaminghistory_music", "streaming_history_audio", "streaminghistory_podcast",
+           "yourlibrary.json", "marquee.json", "userdata.json"] },
+  /* An X archive is `data/` full of .js files with a fixed set of names. The
+     folder alone is far too common to match on, so the file names carry it. */
+  { slug: "x-twitter", label: "X (Twitter)",
+    pats: ["data/tweets.js", "data/tweet.js", "data/direct-messages.js",
+           "data/account.js", "data/tweets_media/", "data/profile.js"] },
+  /* Discord numbers its channel folders, so the two index files and the
+     account dump are what identify the package. */
+  { slug: "discord", label: "Discord",
+    pats: ["messages/index.json", "account/user.json", "servers/index.json",
+           "activity/analytics"],
+    shape: /^messages\/c?\d{5,}\/(channel|messages)\.(json|csv)$/i },
+  /* Strava is recognised by the shape of its GPS folder rather than by the
+     names beside it. `activities/`, `media/` and even `activities.csv` are
+     ordinary enough that a Meta export full of media/ entries outscored
+     Strava on them, which is exactly the kind of miscount that files an
+     export under the wrong service. The numbered track files are not
+     ambiguous, and a real export has hundreds of them. */
+  { slug: "strava", label: "Strava",
+    pats: ["activities.csv", "clubs.csv", "profile.csv", "followers.csv",
+           "connected_apps.csv", "global_challenges.csv"],
+    shape: /^activities\/\d+\.(gpx|fit|tcx)(\.gz)?$/i },
 ];
 /* Some providers are recognisable from the archive's own name, and that was
    being thrown away.

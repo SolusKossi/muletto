@@ -47,9 +47,9 @@
     "The activity folder is line-separated JSON rather than a JSON array, and for most accounts it is the bulk of the download."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "discord",
+    "status": "reads both the old messages.csv and the newer messages.json, and names each channel from the index rather than leaving it as a number. Built from Discord's documented package; no real package has been opened yet"
   },
   "faq": [
     {

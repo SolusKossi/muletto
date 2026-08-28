@@ -46,9 +46,9 @@
     "A field recording whether a track was skipped was not populated at all between 2015 and late 2022."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "spotify",
+    "status": "reads both streaming histories, separates plays from skips at Spotify's own thirty-second line, and puts the listening on the timeline. Built from Spotify's documented format; no real Spotify export has been opened yet"
   },
   "faq": [
     {

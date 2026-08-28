@@ -50,9 +50,9 @@
     "Media in the archive is downsized rather than original. The original URLs are in the data, but they only resolve while the post is still live."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "x-twitter",
+    "status": "reads posts, direct messages, likes and followers through the JavaScript wrapper X puts in front of its JSON. Built from the documented archive format; no real X archive has been opened yet"
   },
   "faq": [
     {

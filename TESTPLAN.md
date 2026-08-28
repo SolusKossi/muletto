@@ -423,21 +423,45 @@ memories-only download, so everything that lives in `json/` is still unproved.
 
 ## 7. X / Twitter
 
-Not supported at all yet, and the format is unusual enough to deserve its own row set.
+Read since 2026-08-28, against a fixture built to the documented format. Every row below that this list already warned about is now handled; the rows still marked `-` are known and not done. `S` is the ceiling here until somebody's real archive turns up, because the whole section was written from documentation.
 
 | What | State | Notes |
 |---|---|---|
 | `Your archive.html` at the top level | `-` | With a space in the name |
-| `data/*.js` are **not JSON** | `X` | Each file is `window.YTD.<name>.part0 = [ ... ]`. A JSON parser fails on every one |
+| `data/*.js` are **not JSON** | `S` | Each file is `window.YTD.<name>.part0 = [ ... ]`. A JSON parser fails on every one |
 | `data/manifest.js` uses a different prefix | `-` | `window.__THAR_CONFIG`. It is the authoritative index: read `globalName` from it rather than globbing |
-| Filename hyphens, variable underscores | `-` | `account-creation-ip.js` holds `YTD.account_creation_ip.part0` |
-| `tweets-part1.js` multi-part | `-` | **Parts are not in chronological order.** Concatenate then sort |
-| `note-tweet.js` holds the full text | `-` | `tweets.js` carries a truncated copy of every long post. Join by id or silently lose the body |
-| `created_at` in Twitter's legacy format | `-` | `Wed Oct 10 20:19:24 +0000 2018`. **`Date.parse` on this is not spec-guaranteed and Safari and Firefox have differed** - parse it with an explicit pattern |
-| Two date formats in one archive | `-` | `account.js` uses ISO 8601 |
+| Filename hyphens, variable underscores | `S` | `account-creation-ip.js` holds `YTD.account_creation_ip.part0` |
+| `tweets-part1.js` multi-part | `S` | **Parts are not in chronological order.** Concatenate then sort |
+| `note-tweet.js` holds the full text | `S` | `tweets.js` carries a truncated copy of every long post. Join by id or silently lose the body |
+| `created_at` in Twitter's legacy format | `S` | `Wed Oct 10 20:19:24 +0000 2018`. **`Date.parse` on this is not spec-guaranteed and Safari and Firefox have differed** - parse it with an explicit pattern |
+| Two date formats in one archive | `S` | `account.js` uses ISO 8601 |
 | `id_str` versus `id` | `-` | The numeric form overflows a double above 2^53 |
 | `extended_entities` for media | `-` | `entities.media` holds only the first image of four |
-| Empty files that still parse | `-` | `window.YTD.mute.part0 = [ ]` |
+| Empty files that still parse | `S` | `window.YTD.mute.part0 = [ ]` |
+
+## 7a. Spotify, Discord and Strava
+
+Read since 2026-08-28, each against a fixture built to the service's own
+documented format by `tools/make-social-fixtures.py`. `S` is the ceiling for
+all of it: no real export from any of the three has been opened here, and the
+fixtures were written from the same documentation the readers were, so a run
+proves the reader does what was intended and nothing about whether the
+intention matches a real archive.
+
+| What | State | Notes |
+|---|---|---|
+| Spotify: two histories, different field names | `S` | `endTime`/`trackName`/`msPlayed` against `ts`/`master_metadata_track_name`/`ms_played`. Neither is a superset |
+| Spotify: under thirty seconds is a skip | `S` | Spotify's own threshold. Counting skips as plays is what makes these look like thousands of plays a week |
+| Spotify: which history you actually got | `S` | The one-year and the extended export are named almost the same and nothing on screen says which arrived |
+| Spotify: IP address on every extended row | `S` | Reported, because nobody expects it in a music export |
+| Discord: channel folders are numbers | `S` | The readable name is only in `messages/index.json` |
+| Discord: csv in old packages, json in new | `S` | Both read; which one you have depends on the year |
+| Discord: only your half of every conversation | `S` | Said out loud, because reading one without knowing is baffling |
+| Discord: attachments are links, not files | `S` | The pictures stay on Discord's servers |
+| Strava: distance mixes metres and kilometres | `S` | In one file, under one heading. Reported rather than summed |
+| Strava: plain `.gpx` placed on the map | `S` | First track point per activity, capped at 400 |
+| Strava: `.gpx.gz` and `.fit.gz` | `-` | Counted and kept whole, not read. Needs `DecompressionStream` and a FIT reader |
+| Strava: activity dates | `S` | `Apr 11, 2026, 6:02:11 AM`. A row whose date will not parse stays off the timeline and is counted |
 
 ## 8. TikTok
 

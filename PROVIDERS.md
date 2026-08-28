@@ -244,6 +244,103 @@ its author's to license, so the format is all that is shared.
 
 ---
 
+## Spotify
+
+Two exports, confusingly named. The one that arrives in a few days is your
+last year; the extended history, which goes back to the start of the account,
+is a separate request on the same page and takes up to thirty days. People who
+asked for the second and got the first have no way to tell from the file names
+which one they are holding, so Muletto says which it found.
+
+**Not measured.** Written from Spotify's documented format and exercised
+against a fixture built to it. No real Spotify export has been opened.
+
+| Area | What Muletto does |
+|---|---|
+| Streaming history | **Read**. Every play on the timeline, both file formats |
+| Playlists, library, follows | Listed |
+| Profile and payments | Listed |
+
+Two things worth knowing before you spend the wait:
+
+- **Anything under thirty seconds is a skip, not a play.** Spotify's own
+  threshold. Counting skips is what makes these exports look like you listened
+  to four thousand things in a week, so both numbers are shown.
+- **Your IP address is on every row of the extended history**, along with the
+  country and the device. Nobody expects that in a music export.
+
+## X (Twitter)
+
+Every data file is JSON with a line of JavaScript stuck to the front, so that
+the bundled `index.html` can load them as scripts. The variable name has
+changed between archives - `tweets`, `tweet`, and a `tweet-part1.js` once it
+is large - which is why the reader cuts at the first bracket instead of
+matching a prefix. A reader that matches the exact name works on the archive
+its author had and fails on everybody else's.
+
+**Not measured.** Written from the documented archive format and exercised
+against a fixture built to it. No real X archive has been opened.
+
+| Area | What Muletto does |
+|---|---|
+| Posts | **Read**. On the timeline, with likes and reposts |
+| Direct messages | **Read**. As conversations |
+| Media | **Read**. The pictures and video in `data/tweets_media/` |
+| Likes, followers, following, blocks | Listed |
+
+The gap is X's, not ours: **a conversation is titled with a number.** The
+archive records account ids and never the other person's handle, anywhere. So
+"Conversation with 222222" is not a failure to look something up, it is
+everything the export contains.
+
+## Discord
+
+Every conversation is a folder named after its channel id, and the readable
+names live in one file, `messages/index.json`. Without reading that first the
+whole export is folders called `c1122334455`, which is how these get written
+off as empty when they are not.
+
+Discord has also changed format: older packages ship `messages.csv`, newer
+ones `messages.json`. Both are read, because somebody holding either is
+holding a real export.
+
+**Not measured.** Written from Discord's documented package and exercised
+against a fixture built to it. No real package has been opened.
+
+| Area | What Muletto does |
+|---|---|
+| Messages | **Read**. As conversations, named from the index |
+| Account and relationships | Listed |
+| Servers | Listed |
+| Activity analytics | Listed |
+
+The thing to know before requesting one: **a Discord package contains only
+what you sent.** The replies are not in it. A conversation here is one side of
+one, and reading it without knowing that is baffling.
+
+Attachments are not in it either - messages link to pictures by address, and
+those files stay on Discord's servers.
+
+## Strava
+
+`activities.csv` is the index and the GPS files are the data. Strava sends
+each activity in whatever format it was recorded in, so a real export is a
+mixture of `.gpx`, `.gpx.gz` and Garmin `.fit.gz`.
+
+**Not measured.** Written from Strava's documented export and exercised
+against a fixture built to it. No real Strava export has been opened.
+
+| Area | What Muletto does |
+|---|---|
+| activities.csv | **Read**. Every activity on the timeline |
+| Plain `.gpx` tracks | **Read**. The start of each one goes on the map |
+| Gzipped and `.fit` tracks | Listed. Kept whole, not read yet |
+| Posts, comments, clubs, gear, profile | Listed |
+
+One trap in Strava's own file: **the distance column mixes metres and
+kilometres**, under the same heading, in the same file. Muletto says so when
+it sees both rather than adding them up.
+
 ## Anything else
 
 An export from a service with no reader still opens. Files are listed, tables

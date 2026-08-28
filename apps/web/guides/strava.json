@@ -48,9 +48,9 @@
   "The archive contains your photos and private notes as well as the tracks."
  ],
  "muletto_support": {
-  "importable": false,
-  "adapter": null,
-  "status": "none"
+  "importable": true,
+  "adapter": "strava",
+  "status": "reads activities.csv onto the timeline and places each plain GPX track on the map. Built from Strava's documented export; no real Strava export has been opened yet"
  },
  "faq": [
   {

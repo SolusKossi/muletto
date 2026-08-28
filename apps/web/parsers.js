@@ -1802,6 +1802,617 @@ const MParse = (function () {
     lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
     return lib;
   }
+  /* ---------- Spotify ---------- */
+
+  /* Spotify sends two different histories and calls them almost the same
+     thing. The one that arrives in a few days is `StreamingHistory_music_N`
+     and holds a year; the one that takes up to thirty is
+     `Streaming_History_Audio_YYYY-YYYY_N` and holds everything. People who
+     asked for the second and got the first believe they have their whole
+     history, so the reader says which one it found rather than merging them
+     silently into a number.
+
+     The field names differ between the two and neither is a superset: the
+     short one has endTime/artistName/trackName/msPlayed, the long one has
+     ts/master_metadata_album_artist_name/master_metadata_track_name/ms_played
+     plus the platform and the country. Both are read into the same shape. */
+  const SPOT_PLAY_MS = 30 * 1000;   /* Spotify's own definition of a play. */
+
+  function spotifyRow(o) {
+    const at = parseDate(o.ts || o.endTime || o.end_time);
+    if (!at) return null;
+    const track = o.master_metadata_track_name || o.trackName || o.episode_name || "";
+    const artist = o.master_metadata_album_artist_name || o.artistName ||
+                   o.episode_show_name || "";
+    const ms = Number(o.ms_played != null ? o.ms_played : o.msPlayed) || 0;
+    if (!track && !artist) return null;
+    return {
+      at, track, artist, ms,
+      podcast: !!(o.episode_name || o.episode_show_name),
+      country: o.conn_country || "",
+      platform: o.platform || "",
+      ip: o.ip_addr_decrypted || o.ip_addr || "",
+    };
+  }
+
+  async function spotify(file, entries) {
+    const lib = emptyLib("spotify", "Spotify");
+    const isHistory = (n) => /streaming[_ ]?history/i.test(base(n)) && /\.json$/i.test(n);
+    const hist = withinBudget(entries.filter((e) => isHistory(e.name)));
+    noteDropped(lib, hist.dropped, "history files");
+
+    const plays = [];
+    let extended = false, short = false;
+    for (const e of hist.taken) {
+      const data = await readJsonSafe(file, e);
+      if (!Array.isArray(data)) continue;
+      if (/^Streaming_History_Audio/i.test(base(e.name))) extended = true;
+      if (/^StreamingHistory/i.test(base(e.name))) short = true;
+      for (const o of data) {
+        const r = spotifyRow(o);
+        if (r) plays.push(r);
+      }
+    }
+
+    if (plays.length) {
+      plays.sort((a, b) => a.at - b.at);
+
+      /* Everything under thirty seconds is a skip by Spotify's own reckoning,
+         and counting those as plays is what makes these exports look like
+         somebody listened to four thousand things in a week. Both numbers are
+         shown, because the skips are a real part of the history. */
+      const real = plays.filter((p) => p.ms >= SPOT_PLAY_MS);
+      for (const p of real) {
+        lib.events.push({
+          at: p.at, kind: p.podcast ? "podcast" : "play",
+          label: p.track + (p.artist ? " - " + p.artist : ""),
+        });
+      }
+
+      const ms = plays.reduce((s, p) => s + p.ms, 0);
+      const hours = Math.round(ms / 3600000);
+      const artists = new Set(real.map((p) => p.artist).filter(Boolean));
+      const tracks = new Set(real.map((p) => p.track + " - " + p.artist));
+
+      lib.insights.push({ n: real.length.toLocaleString(), label: "Tracks played",
+        note: "of " + plays.length.toLocaleString() + " entries; the rest were " +
+              "under thirty seconds, which Spotify counts as a skip", accent: true });
+      lib.insights.push({ n: hours.toLocaleString(), label: "Hours of listening" });
+      lib.insights.push({ n: artists.size.toLocaleString(), label: "Different artists" });
+      lib.insights.push({ n: tracks.size.toLocaleString(), label: "Different tracks" });
+
+      const span = [plays[0].at, plays[plays.length - 1].at];
+      lib.notes.push("The history runs from " + span[0].toISOString().slice(0, 10) +
+        " to " + span[1].toISOString().slice(0, 10) + ".");
+
+      /* The distinction that decides whether this export was worth waiting
+         for. Said plainly, because the file names do not say it. */
+      if (extended && !short) {
+        lib.notes.push("This is the extended history, which is the one that covers " +
+          "your whole account rather than the last year.");
+      } else if (short && !extended) {
+        lib.notes.push("This is the one-year history. The extended history, which goes " +
+          "back to the beginning, is a separate request on the same page and takes " +
+          "up to thirty days.");
+      }
+
+      /* Spotify writes the address you were listening from onto every row of
+         the extended history. Nobody expects that in a music export. */
+      const withIp = plays.filter((p) => p.ip).length;
+      if (withIp) {
+        lib.notes.push(plural(withIp, "play was", "plays were") + " recorded with the " +
+          "internet address you were listening from. Spotify puts it on every row of " +
+          "the extended history.");
+      }
+      const countries = new Set(plays.map((p) => p.country).filter(Boolean));
+      if (countries.size > 1) {
+        lib.insights.push({ n: String(countries.size), label: "Countries listened from",
+          note: [...countries].sort().join(", ") });
+      }
+
+      lib.tables.push({
+        name: "Streaming history", path: hist.taken[0] ? hist.taken[0].name : "",
+        columns: ["When", "Track", "Artist", "Seconds"],
+        rows: plays.slice(-5000).reverse().map((p) => [
+          p.at.toISOString().replace("T", " ").slice(0, 19),
+          p.track, p.artist, String(Math.round(p.ms / 1000)),
+        ]),
+      });
+    }
+
+    /* Playlists, the library and the rest arrive as ordinary JSON objects of
+       named arrays, which the generic reader already turns into tables. Doing
+       it here keeps them beside the history instead of in a second pass. */
+    const rest = withinBudget(entries.filter((e) =>
+      /\.json$/i.test(e.name) && !isHistory(e.name)));
+    for (const e of rest.taken) {
+      const data = await readJsonSafe(file, e);
+      if (!data || typeof data !== "object") continue;
+      const lists = Array.isArray(data) ? [{ key: "entries", list: data }] : pickArrays(data, /./);
+      for (const { key, list } of lists) {
+        if (!list.length || typeof list[0] !== "object") continue;
+        const cols = Object.keys(list[0]).filter((c) => typeof list[0][c] !== "object").slice(0, 8);
+        if (!cols.length) continue;
+        lib.tables.push({
+          name: base(e.name).replace(/\.json$/i, "") + (key === "entries" ? "" : " - " + key),
+          path: e.name, columns: cols.map(niceColumn),
+          rows: list.slice(0, 2000).map((o) => cols.map((c) =>
+            String(o[c] === undefined || o[c] === null ? "" : o[c]))),
+        });
+      }
+      if (lib.tables.length > 40) break;
+    }
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+  /* ---------- X (Twitter) ---------- */
+
+  /* Every data file in an X archive is JSON with a line of JavaScript stuck to
+     the front, so that opening the bundled index.html in a browser loads them
+     as scripts. `window.YTD.tweets.part0 = [` - except the name changes
+     between archives (tweets, tweet, and a -part1 file once it is large), so
+     matching the exact prefix fails on somebody else's export. Cutting at the
+     first bracket works on all of them and does not care what Twitter renamed
+     the variable to this year. */
+  function xJson(text) {
+    if (typeof text !== "string") return null;
+    const i = text.indexOf("=");
+    if (i < 0) return null;
+    const rest = text.slice(i + 1);
+    const start = rest.search(/[[{]/);
+    if (start < 0) return null;
+    try { return JSON.parse(rest.slice(start)); } catch { return null; }
+  }
+
+  /* "Wed Oct 10 20:19:24 +0000 2018", which is X's own legacy format and not
+     one the standard requires an engine to accept. Chromium parses it, and
+     TESTPLAN has had a line for a while saying Safari and Firefox have
+     differed on it - which matters here more than anywhere, because those are
+     the two browsers this project has never run. A date that parses in
+     development and returns Invalid Date on a reader's machine does not throw;
+     it silently produces an archive with no timeline at all.
+
+     So it is matched explicitly and Date is only handed numbers. The ISO form
+     is tried first because account.js uses that instead, in the same archive. */
+  const X_MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+                     Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+  const X_LEGACY =
+    /^\w{3} (\w{3}) (\d{2}) (\d{2}):(\d{2}):(\d{2}) ([+-]\d{4}) (\d{4})$/;
+
+  function xDate(v) {
+    if (!v) return null;
+    const s = String(v).trim();
+    const m = X_LEGACY.exec(s);
+    if (m) {
+      const mon = X_MONTHS[m[1]];
+      if (mon === undefined) return null;
+      const offset = (m[6][0] === "-" ? 1 : -1) *
+        (parseInt(m[6].slice(1, 3), 10) * 60 + parseInt(m[6].slice(3), 10));
+      const at = new Date(Date.UTC(+m[7], mon, +m[2], +m[3], +m[4], +m[5]));
+      at.setUTCMinutes(at.getUTCMinutes() + offset);
+      return isNaN(at) ? null : at;
+    }
+    const d = parseDate(s);
+    return d && !isNaN(d) ? d : null;
+  }
+
+  async function xTwitter(file, entries) {
+    const lib = emptyLib("x-twitter", "X (Twitter)");
+    const find = (re) => entries.filter((e) => re.test(base(e.name)));
+    const textOf = async (e) => {
+      try { return await MZip.extractText(file, e); } catch { return null; }
+    };
+
+    /* Who this archive belongs to. Needed before the messages, because it is
+       the only thing that says which side of a conversation is you - the DM
+       file records account ids and nothing else. */
+    let me = null, handle = "";
+    for (const e of find(/^account\.js$/i)) {
+      const rows = xJson(await textOf(e));
+      const acc = Array.isArray(rows) && rows[0] && rows[0].account;
+      if (!acc) continue;
+      me = String(acc.accountId || "");
+      handle = acc.username || "";
+      lib.accounts.push({ name: handle ? "@" + handle : "Account",
+        detail: [acc.email, acc.createdAt ? "joined " + String(acc.createdAt).slice(0, 10) : ""]
+          .filter(Boolean).join(", ") });
+    }
+
+    /* Long posts are truncated in tweets.js and complete in note-tweet.js.
+       Reading only the first file gives every long post cut off mid-sentence
+       with nothing to say anything is missing, which is worse than an error:
+       the text still looks like text.
+
+       X has nested the note under three different key names across archive
+       versions, so rather than guess which one this archive uses, every id
+       found anywhere in that file is collected and a replacement is only made
+       when it is longer than what tweets.js had. A join key that turns out to
+       be wrong then matches nothing and changes nothing, instead of replacing
+       a post with somebody else's. */
+    const notes = new Map();
+    for (const e of find(/^note-tweets?\.js$/i)) {
+      const rows = xJson(await textOf(e));
+      if (!Array.isArray(rows)) continue;
+      for (const r of rows) {
+        const n = (r && (r.noteTweet || r)) || {};
+        const core = (n.noteTweetResults && n.noteTweetResults.result) || n.core || n;
+        const id = String(n.noteTweetId || core.id || n.id || "");
+        const text = core.text || core.full_text || n.text;
+        if (id && text) notes.set(id, String(text));
+      }
+    }
+
+    /* Posts. The wrapper key differs between archives; the row shape does
+       not, so the rows are recognised by having a `tweet` in them.
+
+       An archive large enough to be split arrives as tweets.js plus
+       tweets-part1.js, and the parts are not in date order - so they are
+       gathered first and sorted once, rather than appended in file order and
+       left looking like a shuffled timeline. */
+    const tweets = [];
+    let restored = 0;
+    for (const e of find(/^tweets?(-part\d+)?\.js$/i)) {
+      const rows = xJson(await textOf(e));
+      if (!Array.isArray(rows)) continue;
+      for (const r of rows) {
+        const t = r && (r.tweet || r);
+        if (!t || typeof t !== "object") continue;
+        const id = String(t.id_str || t.id || "");
+        let text = String(t.full_text || t.text || "");
+        const embedded = t.note_tweet &&
+          ((t.note_tweet.note_tweet_results && t.note_tweet.note_tweet_results.result) ||
+           t.note_tweet);
+        const full = notes.get(id) ||
+          (embedded && (embedded.text || embedded.full_text)) || "";
+        if (full && full.length > text.length) { text = String(full); restored++; }
+        tweets.push({ at: xDate(t.created_at), text, path: e.name,
+          likes: t.favorite_count || 0, reposts: t.retweet_count || 0 });
+      }
+    }
+    tweets.sort((a, b) => (a.at || 0) - (b.at || 0));
+
+    for (const t of tweets) {
+      if (t.at) lib.events.push({ at: t.at, kind: "tweet", label: t.text.slice(0, 140) || "Posted" });
+    }
+    if (tweets.length) {
+      lib.insights.push({ n: tweets.length.toLocaleString(), label: "Posts", accent: true });
+      lib.tables.push({
+        name: "Posts", path: tweets[0].path,
+        columns: ["When", "Text", "Likes", "Reposts"],
+        rows: tweets.slice(-5000).reverse().map((t) => [
+          t.at ? t.at.toISOString().replace("T", " ").slice(0, 19) : "",
+          t.text, String(t.likes), String(t.reposts),
+        ]),
+      });
+      const undated = tweets.filter((t) => !t.at).length;
+      if (undated) {
+        lib.notes.push(plural(undated, "post has", "posts have") + " a date X wrote in " +
+          "a format nothing could read, so " + (undated === 1 ? "it is" : "they are") +
+          " in the table but not on the timeline.");
+      }
+    }
+    if (restored) {
+      lib.notes.push(plural(restored, "post was", "posts were") + " truncated in the " +
+        "main file and complete in note-tweet.js. The full text has been used. Reading " +
+        "only the first file leaves those cut off mid-sentence with nothing to say so.");
+    }
+
+    /* Direct messages. One conversation per entry, and the only name X gives
+       a conversation is the two account ids joined by a dash, so the title is
+       built from whichever id is not yours. That is still a number, and the
+       reader says so rather than pretending it found a name: the archive
+       genuinely does not contain the other person's handle. */
+    let dmCount = 0, unnamed = 0;
+    for (const e of find(/^direct-messages(-group)?(-part\d+)?\.js$/i)) {
+      const rows = xJson(await textOf(e));
+      if (!Array.isArray(rows)) continue;
+      for (const r of rows) {
+        const c = r && (r.dmConversation || r.dmConversationGroup);
+        if (!c || !Array.isArray(c.messages)) continue;
+        const other = String(c.conversationId || "").split("-").filter((p) => p && p !== me);
+        const title = other.length === 1 ? "Conversation with " + other[0]
+                                         : "Group conversation";
+        if (other.length === 1) unnamed++;
+        const messages = [];
+        for (const m of c.messages.slice(0, 3000)) {
+          const mc = m.messageCreate || m.welcomeMessageCreate;
+          if (!mc) continue;
+          const at = xDate(mc.createdAt);
+          messages.push({
+            from: String(mc.senderId || ""),
+            direction: me && String(mc.senderId) === me ? "out" : "in",
+            text: String(mc.text || ""),
+            type: "TEXT", at,
+          });
+        }
+        if (!messages.length) continue;
+        messages.sort((a, b) => (a.at || 0) - (b.at || 0));
+        dmCount += messages.length;
+        lib.conversations.push({ title, messages });
+      }
+    }
+    if (dmCount) {
+      lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
+      lib.insights.push({ n: dmCount.toLocaleString(), label: "Direct messages",
+        note: "across " + lib.conversations.length.toLocaleString() + " conversations",
+        accent: true });
+      if (unnamed) {
+        lib.notes.push("X names a conversation after the account numbers in it and " +
+          "does not include the other person's handle anywhere in the archive, so " +
+          plural(unnamed, "conversation is", "conversations are") + " titled with a " +
+          "number. That is what the export contains.");
+      }
+    }
+
+    /* Likes, followers and the rest are flat lists; useful as tables and not
+       worth inventing a view for. */
+    for (const e of find(/^(like|follower|following|block|mute|list-.*|moment|account-creation-ip|connected-application|ip-audit)\.js$/i)) {
+      const rows = xJson(await textOf(e));
+      if (!Array.isArray(rows) || !rows.length) continue;
+      const flat = rows.map((r) => (typeof r === "object" && r !== null)
+        ? (r[Object.keys(r)[0]] || r) : r).filter((o) => o && typeof o === "object");
+      if (!flat.length) continue;
+      const cols = Object.keys(flat[0]).filter((c) => typeof flat[0][c] !== "object").slice(0, 8);
+      if (!cols.length) continue;
+      lib.tables.push({
+        name: niceColumn(base(e.name).replace(/\.js$/i, "").replace(/-/g, " ")), path: e.name,
+        columns: cols.map(niceColumn),
+        rows: flat.slice(0, 5000).map((o) => cols.map((c) =>
+          String(o[c] === undefined || o[c] === null ? "" : o[c]))),
+      });
+    }
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+  /* ---------- Discord ---------- */
+
+  /* Discord numbers every conversation folder after its channel id and puts
+     the readable names in one file, `messages/index.json`, as an id-to-name
+     map. Without reading that first, the whole export is folders called
+     c1234567890 - which is how these end up looking empty when they are not.
+
+     Discord has also changed the message format: older packages ship
+     messages.csv, newer ones messages.json. Both are read, because somebody
+     with a package from either year is holding a real export. */
+  function discordTitle(id, index, channel) {
+    if (channel) {
+      if (channel.name) {
+        return channel.guild && channel.guild.name
+          ? channel.guild.name + ": #" + channel.name : "#" + channel.name;
+      }
+      const who = (channel.recipients || []).filter(Boolean);
+      if (who.length) return "Direct messages with " + who.slice(0, 3).join(", ");
+    }
+    const named = index && index[id];
+    if (named) return String(named);
+    return "Channel " + id;
+  }
+
+  async function discord(file, entries) {
+    const lib = emptyLib("discord", "Discord");
+
+    let index = null;
+    const idx = entries.find((e) => /messages\/index\.json$/i.test(e.name));
+    if (idx) index = await readJsonSafe(file, idx);
+
+    const user = entries.find((e) => /account\/user\.json$/i.test(e.name));
+    if (user) {
+      const u = await readJsonSafe(file, user);
+      if (u && typeof u === "object") {
+        lib.accounts.push({
+          name: u.global_name || u.username || "Account",
+          detail: [u.email, u.id ? "id " + u.id : ""].filter(Boolean).join(", "),
+        });
+      }
+    }
+
+    /* Group the message files by their channel folder, so the csv/json file
+       and the channel.json beside it are read together. */
+    const byChannel = new Map();
+    for (const e of entries) {
+      const m = /messages\/(c?\d+)\//i.exec(e.name);
+      if (!m) continue;
+      const id = m[1].replace(/^c/i, "");
+      if (!byChannel.has(id)) byChannel.set(id, {});
+      const slot = byChannel.get(id);
+      if (/channel\.json$/i.test(e.name)) slot.meta = e;
+      else if (/messages\.csv$/i.test(e.name)) slot.csv = e;
+      else if (/messages\.json$/i.test(e.name)) slot.json = e;
+    }
+
+    let total = 0, attachments = 0;
+    for (const [id, slot] of byChannel) {
+      if (!slot.csv && !slot.json) continue;
+      const channel = slot.meta ? await readJsonSafe(file, slot.meta) : null;
+      const messages = [];
+
+      if (slot.json) {
+        const rows = await readJsonSafe(file, slot.json);
+        for (const m of (Array.isArray(rows) ? rows : []).slice(0, 5000)) {
+          const at = parseDate(m.Timestamp || m.timestamp);
+          const att = m.Attachments || m.attachments || "";
+          if (att) attachments++;
+          messages.push({
+            from: "You", direction: "out",
+            text: String(m.Contents || m.contents || ""),
+            type: att ? "MEDIA" : "TEXT", at,
+          });
+        }
+      } else {
+        let text = null;
+        try { text = await MZip.extractText(file, slot.csv); } catch { text = null; }
+        for (const sec of (text ? csvSections(text) : [])) {
+          const cols = sec.columns || [];
+          const iAt = cols.findIndex((c) => /^timestamp$/i.test(c));
+          const iTx = cols.findIndex((c) => /^contents?$/i.test(c));
+          const iAtt = cols.findIndex((c) => /^attachments$/i.test(c));
+          for (const r of (sec.rows || []).slice(0, 5000)) {
+            const att = iAtt >= 0 ? r[iAtt] : "";
+            if (att) attachments++;
+            messages.push({
+              from: "You", direction: "out",
+              text: String(iTx >= 0 ? r[iTx] : ""),
+              type: att ? "MEDIA" : "TEXT",
+              at: iAt >= 0 ? parseDate(r[iAt]) : null,
+            });
+          }
+        }
+      }
+
+      if (!messages.length) continue;
+      messages.sort((a, b) => (a.at || 0) - (b.at || 0));
+      total += messages.length;
+      lib.conversations.push({ title: discordTitle(id, index, channel), messages });
+    }
+
+    if (total) {
+      lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
+      lib.insights.push({ n: total.toLocaleString(), label: "Messages",
+        note: "across " + lib.conversations.length.toLocaleString() + " channels",
+        accent: true });
+      /* The thing people are surprised by: a Discord package holds only what
+         you typed. Everybody else's half of every conversation is missing,
+         and reading one without knowing that is baffling. */
+      lib.notes.push("A Discord package contains only the messages you sent. The " +
+        "replies are not in it, so a conversation here is one side of one.");
+    }
+    if (attachments) {
+      lib.notes.push(plural(attachments, "message links", "messages link") + " to an " +
+        "attachment by address rather than including the file. Those pictures are " +
+        "on Discord's servers, not in this export.");
+    }
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+  /* ---------- Strava ---------- */
+
+  /* activities.csv is the index and the GPS files are the data. The csv has
+     changed column names between exports and carries several columns with the
+     same name in different units, so columns are found by pattern rather than
+     by position. */
+  const STRAVA_COL = (cols, re) => cols.findIndex((c) => re.test(String(c).trim()));
+
+  /* One track point out of each GPX, which is enough to put the activity on
+     the map without reading a hundred thousand points into memory. Strava
+     gzips most of them and leaves some plain; only the plain ones are read
+     here, and the count of the others is reported rather than passed over. */
+  function gpxFirstPoint(text) {
+    const m = /<trkpt[^>]*\blat="([-\d.]+)"[^>]*\blon="([-\d.]+)"/i.exec(text) ||
+              /<trkpt[^>]*\blon="([-\d.]+)"[^>]*\blat="([-\d.]+)"/i.exec(text);
+    if (!m) return null;
+    const swapped = /lon=/i.test(m[0].slice(0, m[0].indexOf(m[1])));
+    const lat = parseFloat(swapped ? m[2] : m[1]);
+    const lon = parseFloat(swapped ? m[1] : m[2]);
+    if (isNaN(lat) || isNaN(lon)) return null;
+    const t = /<time>([^<]+)<\/time>/i.exec(text);
+    return { lat, lon, at: t ? parseDate(t[1]) : null };
+  }
+
+  async function strava(file, entries) {
+    const lib = emptyLib("strava", "Strava");
+    const GPX_CAP = 400;
+
+    let activities = 0;
+    for (const e of entries.filter((x) => /(^|\/)activities\.csv$/i.test(x.name))) {
+      let text = null;
+      try { text = await MZip.extractText(file, e); } catch { continue; }
+      for (const sec of csvSections(text)) {
+        const cols = sec.columns || [];
+        const rows = sec.rows || [];
+        if (!cols.length || !rows.length) continue;
+        const iDate = STRAVA_COL(cols, /^activity date$/i);
+        const iName = STRAVA_COL(cols, /^activity name$/i);
+        const iType = STRAVA_COL(cols, /^activity type$/i);
+        const iDist = STRAVA_COL(cols, /^distance$/i);
+
+        lib.tables.push({ name: "Activities", path: e.name,
+          columns: cols.map(niceColumn), rows });
+
+        for (const r of rows) {
+          const at = iDate >= 0 ? parseDate(r[iDate]) : null;
+          if (!at) continue;
+          const name = (iName >= 0 && r[iName]) ? r[iName] : (iType >= 0 ? r[iType] : "Activity");
+          lib.events.push({ at, kind: "activity", label: String(name) });
+          activities++;
+        }
+
+        /* Distance is the column people look for and Strava writes it in
+           metres in one place and kilometres in another, in the same file,
+           under the same heading. Saying so is cheaper than a wrong total. */
+        if (iDist >= 0) {
+          const vals = rows.map((r) => parseFloat(r[iDist])).filter((v) => !isNaN(v));
+          const big = vals.filter((v) => v > 1000).length;
+          if (big && vals.length && big < vals.length) {
+            lib.notes.push("The distance column mixes metres and kilometres: " +
+              plural(big, "row looks", "rows look") + " like metres and the rest like " +
+              "kilometres. Strava writes both under the same heading.");
+          }
+        }
+      }
+    }
+    if (activities) {
+      lib.insights.push({ n: activities.toLocaleString(), label: "Activities", accent: true });
+    }
+
+    /* The GPS files themselves. */
+    const gpx = entries.filter((e) => /\.gpx$/i.test(e.name));
+    const gz = entries.filter((e) => /\.(gpx|fit|tcx)\.gz$/i.test(e.name));
+    const fit = entries.filter((e) => /\.fit$/i.test(e.name));
+
+    let placed = 0;
+    for (const e of gpx.slice(0, GPX_CAP)) {
+      let text = null;
+      try { text = await MZip.extractText(file, e); } catch { continue; }
+      const p = gpxFirstPoint(text);
+      if (!p) continue;
+      lib.places.push({ at: p.at, lat: p.lat, lon: p.lon });
+      placed++;
+    }
+    if (placed) {
+      lib.insights.push({ n: placed.toLocaleString(), label: "Activities placed on the map",
+        note: "from the start of each GPX track" });
+    }
+    if (gpx.length > GPX_CAP) {
+      lib.notes.push("Read the start of the first " + GPX_CAP + " GPX tracks. " +
+        (gpx.length - GPX_CAP) + " more are in the export and are listed as files.");
+    }
+    if (gz.length || fit.length) {
+      const parts = [];
+      if (gz.length) parts.push(plural(gz.length, "track is", "tracks are") + " gzipped");
+      if (fit.length) parts.push(plural(fit.length, "is", "are") + " in Garmin's FIT format");
+      lib.notes.push("Strava sends whatever format each activity was recorded in, so " +
+        parts.join(" and ") + ". Those are kept as files: they are not read here yet, " +
+        "and nothing in them has been lost.");
+    }
+
+    /* The remaining CSVs - posts, comments, clubs, profile, gear - are tables
+       and nothing more, which is what they are. */
+    const other = withinBudget(entries.filter((e) =>
+      /\.csv$/i.test(e.name) && !/(^|\/)activities\.csv$/i.test(e.name)));
+    noteDropped(lib, other.dropped, "record tables");
+    for (const e of other.taken) {
+      let text = null;
+      try { text = await MZip.extractText(file, e); } catch { continue; }
+      for (const sec of csvSections(text)) {
+        if (!(sec.columns || []).length || !(sec.rows || []).length) continue;
+        lib.tables.push({
+          name: niceColumn(base(e.name).replace(/\.csv$/i, "")),
+          path: e.name, columns: sec.columns.map(niceColumn), rows: sec.rows,
+        });
+      }
+    }
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+
 
   async function parse(file, entries, detected, say) {
     const slug = detected && detected.slug;
@@ -1825,6 +2436,10 @@ const MParse = (function () {
     if (slug === "google") return finish(google(file, entries));
     if (slug === "samsung") return finish(samsung(file, entries));
     if (slug === "reddit") return finish(reddit(file, entries));
+    if (slug === "spotify") return finish(spotify(file, entries));
+    if (slug === "x-twitter") return finish(xTwitter(file, entries));
+    if (slug === "discord") return finish(discord(file, entries));
+    if (slug === "strava") return finish(strava(file, entries));
     if (slug === "facebook" || slug === "instagram") {
       return finish(meta(file, entries, slug, detected.label));
     }
