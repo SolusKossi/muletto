@@ -443,6 +443,56 @@ def png_bytes():
         "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==")
 
 
+# ---------------------------------------------------------------- Amazon
+
+def amazon():
+    """The generic-reader traps, taken from TESTPLAN section 9.
+
+    None of these are Amazon-specific in their effect - a byte-order mark on
+    one file and not the next, a sentinel string where a date belongs, several
+    timestamps joined by the word "and", a .schema.json sidecar next to the
+    data it describes. They are listed under Amazon because that is the export
+    they were found in, by byte inspection of real files, but every one of them
+    reaches any service with no reader of its own. Fixing them in the generic
+    reader fixes them everywhere at once, which is why this fixture is worth
+    more than its provider.
+
+    So this is deliberately not a full Amazon export. It is the smallest thing
+    that reproduces the four traps."""
+    eol = chr(10)
+    bom = chr(0xfeff)
+
+    # A BOM on this one. If it survives, the first column is not called
+    # "Order ID" any more and nothing that looks for that column finds it.
+    orders = bom + eol.join([
+        "Order ID,Order Date,Ship Date,Total Owed",
+        # Four parcels, four timestamps, joined by the word "and".
+        '111-0000001,2026-01-04T09:00:00Z,'
+        '"2026-01-05T10:00:00Z and 2026-01-06T10:00:00Z and '
+        '2026-01-07T10:00:00Z and 2026-01-08T10:00:00Z",41.50',
+        # Sentinels where a date and a number belong, two spellings of it.
+        "111-0000002,2026-02-11T09:00:00Z,Not Available,19.99",
+        "111-0000003,2026-03-02T09:00:00Z,unknown,Not Applicable",
+        "111-0000004,2026-04-20T09:00:00Z,2026-04-21T10:00:00Z,7.25",
+    ]) + eol
+
+    # No BOM on this one, in the same export. That mixture is the documented
+    # observation, not an invention.
+    returns = eol.join([
+        "Order ID,Return Date,Reason",
+        "111-0000002,2026-02-20T12:00:00Z,Did not fit",
+    ]) + eol
+
+    return write("amazon.zip", {
+        "Retail.OrderHistory.1/Retail.OrderHistory.1.csv": orders,
+        # The sidecar. It is valid JSON and holds none of your data.
+        "Retail.OrderHistory.1/Retail.OrderHistory.1.schema.json": {
+            "fields": [{"name": "Order ID", "type": "string"},
+                       {"name": "Order Date", "type": "timestamp"}]},
+        "Retail.OrdersReturned.1/Retail.OrdersReturned.1.csv": returns,
+    })
+
+
 if __name__ == "__main__":
     print("Writing " + os.path.normpath(OUT))
     spotify()
@@ -453,4 +503,5 @@ if __name__ == "__main__":
     tiktok_newer()
     tiktok_txt()
     whatsapp()
+    amazon()
     print("Run them with:  node tools/check-export.js tests/fixtures/social")

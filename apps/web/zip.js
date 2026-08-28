@@ -270,8 +270,14 @@ const MZip = (function () {
     return new TextDecoder("utf-8").decode(await extract(file, entry));
   }
 
+  /* The byte-order mark has to come off before JSON.parse, which rejects it
+     outright. Every caller wraps this in a try that returns null, so a single
+     invisible byte at the front of a file turned the whole of it into "no data
+     here" with nothing to say why. Exports mix them: one real Amazon export
+     was found to have a BOM on some members and not on others. */
   async function extractJson(file, entry) {
-    return JSON.parse(await extractText(file, entry));
+    const text = await extractText(file, entry);
+    return JSON.parse(text && text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
   }
 
   /* Streamed, for the same reason `expandNested` is: `extract` returns one

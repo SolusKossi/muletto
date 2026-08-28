@@ -53,6 +53,22 @@ const MParse = (function () {
       return ms ? new Date(ms) : null;
     }
     let s = String(v).trim();
+
+    /* A cell holding several timestamps joined by the word "and". Amazon does
+       this - a real Ship Date cell holds four ISO timestamps that way, because
+       an order shipped in four parcels - and it is not a corruption, it is
+       what the column means. Read whole it parses as nothing and the row
+       silently loses its date; the first one is the answer to "when did this
+       start", which is what a timeline wants. */
+    if (/\d\s+and\s+\d/.test(s)) s = s.split(/\s+and\s+/)[0].trim();
+
+    /* Sentinels. Amazon writes these into date and number columns, in more
+       than one spelling in the same file. `new Date("Not Available")` is
+       Invalid Date and already returns null, so this changes no result - it
+       is here so the next person does not go looking for why a column of
+       "unknown" produced no dates. */
+    if (/^(not available|not applicable|unknown|n\/a|none)$/i.test(s)) return null;
+
     // "2024-03-01 12:33:55 UTC" -> ISO
     const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(s);
     if (m) {
@@ -64,9 +80,20 @@ const MParse = (function () {
     return isNaN(d2) ? null : d2;
   }
 
-  /* RFC4180-ish CSV parser: handles quotes, embedded commas and newlines. */
+  /* RFC4180-ish CSV parser: handles quotes, embedded commas and newlines.
+   *
+   * The byte-order mark is stripped first, and it matters more than it looks.
+   * One real Amazon export was found by byte inspection to have a BOM on some
+   * files and not on others, and a BOM that survives becomes part of the first
+   * column's name - so the header reads as something invisibly different from
+   * "Order ID", every lookup of that column by name misses, and the column
+   * behaves as though it were not there. Nothing about it looks wrong on
+   * screen, which is what makes it worth removing here rather than at each of
+   * the places that ask for a column.
+   */
   function parseCsv(text) {
     const rows = [];
+    if (text && text.charCodeAt(0) === 0xfeff) text = text.slice(1);
     let row = [], field = "", inQ = false;
     for (let i = 0; i < text.length; i++) {
       const c = text[i];
@@ -1305,7 +1332,14 @@ const MParse = (function () {
         }
       } catch { /* skip */ }
     }
-    const genJson = withinBudget(entries.filter((x) => /\.json$/i.test(x.name)));
+    /* `.schema.json` sidecars describe the file beside them and contain none
+       of your data. Amazon ships one per table, and a plain *.json glob turns
+       each into a table of field definitions sitting in the sidebar next to
+       the real one, with a nearly identical name. Excluded by name rather than
+       by sniffing the contents, because the name is the convention Amazon
+       actually follows and a schema is still valid JSON. */
+    const genJson = withinBudget(entries.filter((x) =>
+      /\.json$/i.test(x.name) && !/\.schema\.json$/i.test(x.name)));
     noteDropped(lib, genJson.dropped, "data files");
     for (const e of genJson.taken) {
       try {
