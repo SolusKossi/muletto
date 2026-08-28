@@ -271,7 +271,16 @@ console.log("\nInternal links and images");
     while ((m = attr.exec(s))) refs.push(m[1]);
     for (const r of refs) {
       if (/^(https?:|mailto:|data:|#|\/\/)/.test(r)) continue;
-      const target = path.join(dir, r.split("#")[0].split("?")[0]);
+      const clean = r.split("#")[0].split("?")[0];
+      /* A leading slash is the site root, not the folder this file happens to
+         sit in. Joining it to the folder was harmless while every page with
+         absolute links sat directly in apps/web - the two answers coincide -
+         and started reporting every asset on the /no/ 404 as missing the
+         moment a page one level deeper used them. The page was right and the
+         check was wrong, which is the more dangerous way round. */
+      const target = clean.startsWith("/")
+        ? path.join(WEB, clean.slice(1))
+        : path.join(dir, clean);
       if (!fs.existsSync(target)) missing.push(rel(f) + " -> " + r);
     }
   }

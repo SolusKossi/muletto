@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Åpne en GDPR-eksport - Muletto</title>
+  <meta name="description" content="Åpne GDPR-eksporten fra Apple, Google, Samsung, Snapchat, Facebook, Instagram og tolv til. Muletto leser zip-fila i nettleseren din - ingen opplasting, ingen konto - og viser deg hva som ligger i den." />
+  <link rel="canonical" href="https://muletto.app/no/app.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/app.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/app.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/app.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Åpne en GDPR-eksport - Muletto" />
+  <meta property="og:description" content="Åpne GDPR-eksporten fra Apple, Google, Samsung, Snapchat, Facebook, Instagram og tolv til. Muletto leser zip-fila i nettleseren din - ingen opplasting, ingen konto - og viser deg hva som ligger i den." />
+  <meta property="og:url" content="https://muletto.app/no/app.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../theme.js?v=4ef9956d"></script>
+
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html">Veiledninger</a>
+          <a href="../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- One thing to do, made the biggest thing on the page.
+
+         This page used to make its privacy argument three times - a red alarm
+         box, the last line of the intro, and a numbered list of three long
+         paragraphs - while the drop zone, which is the entire point, was the
+         fourth element down and the weakest thing on screen. Five bordered
+         cards of equal weight is hierarchy for nothing. The order now follows
+         the decision somebody is actually making: what this is, do it, not
+         ready yet, and only then why you can believe any of it. -->
+    <section class="open-head wrap">
+      <h1>Åpne dataeksporten din</h1>
+      <p>Slipp inn GDPR-eksporten en tjeneste har sendt deg. Atten tjenester har en egen leser - Apple, Google, Samsung, Snapchat, Facebook og Instagram er blant dem - og en eksport fra hva som helst annet åpnes også, listet opp og lest så langt formen tillater. Den leses her, i denne nettleseren, på denne maskinen. Åpner du flere samtidig, blir de ett bibliotek, og duplikatene mellom dem finner appen selv.</p>
+    </section>
+
+    <section class="wrap open-wrap">
+      <div id="resume" hidden></div>
+      <!-- Offers to reopen what was kept. Nothing is read until it is clicked. -->
+      <div id="restore" hidden></div>
+      <!-- What is open now. Above the drop zone, because a result shown below
+           the thing that produced it reads as a second, competing offer. -->
+      <div id="import-result" class="import-result" hidden></div>
+
+      <div id="drop" class="drop">
+        <svg class="drop-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/>
+          <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>
+        </svg>
+        <p><strong>Slipp eksportfilene her</strong><span>eller klikk for å velge dem</span></p>
+        <input id="file" type="file" accept=".zip,.tgz,.tar.gz,.muletto,.json,.gz" multiple hidden />
+      </div>
+      <p class="drop-fine">Zip-arkiver fra hvilken som helst tjeneste - en hel mappe av dem på én gang går fint, og det samme gjør en eksport som kom i et dusin deler. En Muletto-arbeidsfil hører også hjemme her, så du får tilbake det som ble regnet ut sist. Ingenting lastes opp, og det kan du <a href="#check">sjekke selv</a> på fire sekunder.</p>
+
+      <p class="open-alt">Ikke klar til å bruke din egen?
+        <button class="linkish" id="try-samples">Åpne seks eksempeleksporter</button> -
+        ekte arkiver, oppdiktede mennesker.</p>
+
+      <details class="open-check" id="check">
+        <summary>Slik sjekker du at ingenting lastes opp</summary>
+        <ol>
+          <li><strong>Skru av wifi.</strong> Åpne så en eksport og bruk alt sammen - søk i den, sammenlign bilder, skriv den ryddede kopien til disken din. Det virker fortsatt, for ingenting av det har noen gang trengt nettet. En side som lastet opp filene dine kunne ikke gjort det.</li>
+          <li><strong>Følg med på nettverket.</strong> Trykk F12, åpne nettverksfanen, og åpne så eksporten din. Du ser denne siden laste, og deretter ingenting mer. Ingen forespørsel bærer med seg arkivet ditt, for det gjøres ingen forespørsel.</li>
+          <li><strong>Les regelen nettleseren håndhever.</strong> Denne siden leveres med en Content-Security-Policy der connect-src er <code>'self'</code> og ingenting annet. Det finnes ingen unntak fra den. Det er ikke et løfte med våre ord - nettleseren din blokkerer alt annet, og det gjelder koden som faktisk kjører, ikke en beskrivelse av den.</li>
+        </ol>
+        <p class="fine">Det er heller ingenting her å bryte seg inn i: ingen konto, ingen e-postadresse, intet passord, ingen informasjonskapsler, og ingen server som tar imot filer. Det ene som lagres er ditt eget arbeid, i din egen nettleser, slik at en stor eksport ikke må leses fra bunnen av på nytt - og én knapp sletter det. <a href="../no/privacy.html">Personvernsiden går gjennom det i detalj</a>.</p>
+      </details>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../guides.html">Veiledninger</a>
+        <a href="../no/app.html">Åpne eksport</a>
+        <a href="../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="/app.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../notify.js?v=7515182b"></script>
+  <script src="../tips.js?v=0bdfdea4"></script>
+  <script src="../jobs.js?v=3f996b9f"></script>
+  <script src="../store.js?v=b6b017cd"></script>
+  <script src="../derived.js?v=b52d2219"></script>
+  <script src="../donate.js?v=e8f71043"></script>
+  <script src="../zipcrypt.js?v=b750388c"></script>
+  <script src="../zip.js?v=916f9640"></script>
+  <!-- Gzipped tar, because Google offers .tgz next to .zip. -->
+  <script src="../tar.js?v=535cfda4"></script>
+  <script src="../zipout.js?v=5c9c3222"></script>
+  <!-- Puts a Snapchat caption back on the memory it was drawn on. -->
+  <script src="../overlay.js?v=aaede613"></script>
+  <script src="../exif.js?v=7b45a4ab"></script>
+  <script src="../heif.js?v=d0ffffd5"></script>
+  <script src="../video.js?v=a66813af"></script>
+  <!-- Apple Health export.xml, streamed. 161 MB in a real one, so it is
+       never held. Must load before parsers.js, which calls it. -->
+  <script src="../applehealth.js?v=abef83f7"></script>
+  <script src="../mbox.js?v=ee10197f"></script>
+  <script src="../diagnose.js?v=09c9e7d9"></script>
+  <script src="../contribute.js?v=c3b34297"></script>
+  <script src="../mojibake.js?v=38849a41"></script>
+  <script src="../parsers.js?v=d91bb4a4"></script>
+  <script src="../catalog.js?v=99efc7fa"></script>
+  <script src="../insights.js?v=48350dd1"></script>
+  <script src="../basemap.js?v=cbb6dfca"></script>
+  <script src="../rail.js?v=b4bc5944"></script>
+  <!-- Health charts, chosen by what the number means. Must load before
+       topics.js, which asks it to draw. -->
+  <script src="../charts.js?v=e61fe580"></script>
+  <script src="../topics.js?v=6f69baf0"></script>
+  <script src="../views.js?v=11bc783b"></script>
+  <script src="../export.js?v=58dc2cdb"></script>
+  <script src="../explorer.js?v=00b52fdf"></script>
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <script src="../app.js?v=dd658390"></script>
+  <script src="../swreg.js?v=266bec3b"></script>
+</body>
+</html>

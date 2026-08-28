@@ -60,12 +60,19 @@ const NL = String.fromCharCode(10);
  * than not at all. As translations land, those links quietly become
  * Norwegian without anybody editing a href.
  */
-/* The four hand-written pages have no Norwegian version yet. Until one
-   exists, the Norwegian chrome points at the English page rather than at a
-   URL that is not there - the same fallback `sib` makes for guides, and for
-   the same reason. Checked on disk rather than listed, so writing the page
-   is all it takes to switch the links over. */
-const hasNo = (file) => fs.existsSync(path.join(WEB, "no", file));
+/* Which top-level pages exist in Norwegian. Until one does, the Norwegian
+   chrome points at the English page rather than at a URL that is not there -
+   the same fallback `sib` makes for guides, and for the same reason.
+ *
+ * Declared rather than read off the disk, and that is the whole point. The
+ * first version asked `fs.existsSync`, which made the build depend on what
+ * the *previous* build had left lying around: the 404 was written before
+ * privacy.html existed, so it linked to English, and then the next run found
+ * privacy.html on disk and wrote a different 404. Two runs, two answers, from
+ * one input - and the only symptom was a page reported stale forever. A build
+ * has to be a function of its sources. */
+const NO_PAGES = new Set(["404.html", "privacy.html", "app.html", "index.html"]);
+const hasNo = (file) => NO_PAGES.has(file);
 
 let LANG = "en";
 let TRANSLATED = new Set();
@@ -77,10 +84,28 @@ let TRANSLATED = new Set();
 const topHref = (f) => (LANG === "nb" ? "../../" : "../") +
   (LANG === "nb" && hasNo(f) ? "no/" + f : f);
 
+/* A number as a word, in the page's language. English spells these out in
+   prose; Norwegian does the same, and using the English list on a Norwegian
+   page would put "eighteen" in the middle of a sentence. Above twenty both
+   fall back to digits, which is what a style guide would say anyway. */
+/* Norwegian numerals live in strings.nb.json, not here: "en" carries an
+   accent and this file is ASCII. Above twenty both languages fall back to
+   digits, which is what a style guide would say anyway. */
+const EN_WORDS = { 1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
+  7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve",
+  13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixteen", 17: "seventeen",
+  18: "eighteen", 19: "nineteen", 20: "twenty" };
+const spelledWord = (n) =>
+  String((LANG === "nb" ? (NB_STRINGS.numbers || {}) : EN_WORDS)[n] || n);
+
 const sib = (slug) => (LANG === "nb" && !TRANSLATED.has(slug))
   ? "../../guides/" + slug + ".html" : slug + ".html";
 
-const upTo = (depth) => "../".repeat(depth || 0);
+/* "root" rather than a number, for the 404. That page is served in answer to
+   any address that matched nothing, including ones several folders deep, so a
+   relative link on it would resolve somewhere that does not exist either. It
+   is the one page whose links have to be absolute. */
+const upTo = (depth) => (depth === "root" ? "/" : "../".repeat(depth || 0));
 
 /* The words in the furniture, per language. Only the handful that appear on
    every page live here; everything else belongs to the page that says it. */
@@ -107,6 +132,7 @@ const EN_STRINGS = {
   worthKnowing: "Worth knowing",
   commonQuestions: "Common questions",
   whereToKeep: "Where to keep your data",
+  exportGuides: "Export guides",
   everyGuide: "Every export guide",
 
   titleService: "{provider} GDPR data export: how to request it and open it | Muletto",
@@ -148,6 +174,200 @@ const EN_STRINGS = {
   howtoService: "How to request and open your {provider} GDPR data export",
   howtoDest: "How to move your data to {provider}",
   locale: "en_GB",
+
+  nfMetaTitle: "Not here - Muletto",
+  nfMetaDesc: "That page does not exist. The guides, the opener and the privacy page all do.",
+  nfTitle: "Not here",
+  nfLead: "Nothing lives at that address. Either it never did, or it moved and " +
+    "something still points at where it was.",
+  nfApp: "The app itself. Drop in an archive from any of the big services and read " +
+    "it in your browser.",
+  nfGuidesHead: "The export guides",
+  nfGuides: "How to ask each service for your data, what comes back, and what goes " +
+    "wrong on the way. {count} of them.",
+  nfPrivacyHead: "Where your data goes",
+  nfPrivacy: "Nowhere. The long version, because a promise you cannot check is not " +
+    "worth much.",
+  nfBugHead: "A link that should work",
+  nfBug: "If something on this site sent you here, that is a bug and worth saying " +
+    "so. It takes one sentence.",
+
+  pvMetaTitle: "Privacy: where your data actually goes | Muletto",
+  pvMetaDesc: "Nothing is uploaded. What is kept, where, and how to check the claim yourself rather than take it on trust.",
+  pvTitle: "Where your data actually goes",
+  pvLead: "Short version: nowhere. Everything happens in your browser, on your machine. This page is the long version, because a promise you cannot check is not worth much.",
+  pvUploadH: "Your export is never uploaded",
+  pvUpload1: "Your export is opened by the browser itself, the same way it would open a file you double-click. Reading it, merging services, finding duplicates, repairing dates, searching and exporting all happen on your machine. No part of the archive is sent anywhere. Open your browser's network tab on the page where your export is open and you will see it load, and then nothing at all - not one request, for as long as you use it. Do the same on this page and you will see a single count go out, which is {link} and is the only thing on this site that ever does.",
+  pvDescribedBelow: "described below",
+  pvUpload2: "There is no exception, and the thing enforcing that is not a paragraph on this page. {csp} in the site's headers is {self} and nothing else, so the browser would refuse to send your archive anywhere even if a future change to this site tried to. You can read that header in your own browser's network tab, and the file that sets it is in the public source.",
+  pvKeptH: "Some things are kept, on your device",
+  pvKeptLead: "Reading a large export takes time, and working out which photos are near-duplicates takes longer. Doing that again every visit would be a poor trade, so the results are kept - in your browser's own storage, on your own disk.",
+  pvKept1H: "What is kept",
+  pvKept1: "The list of what is inside your export, the dates and places read out of it, and the results of any analysis. Plus a reference to each archive, so it can be reopened without asking you to find it again.",
+  pvKept2H: "What is not kept",
+  pvKept2: "Copies of your photos, videos or messages. A reference to an archive is a pointer to the file already on your disk, not a second copy of it. Move or delete the archive and Muletto will tell you it is gone.",
+  pvKept3H: "Who can read it",
+  pvKept3: "This browser, on this machine, for this site. Not us, not another site, not another profile. It is the same storage a web app uses to remember your settings.",
+  pvKept4H: "Getting rid of it",
+  pvKept4: "One button. Forget this library, in the sidebar, clears everything Muletto has kept, immediately. Clearing site data in your browser does the same.",
+  pvPortableH: "Work you can take with you",
+  pvPortable: "Browser storage belongs to the browser, and it can be cleared - by you, or by the browser needing room. Anything that took real effort can be written out to a file you keep. It holds the results only: no photos, no messages, not even file names. Feed it back next year alongside a fresh export and everything that still applies is recognised, because results are filed against the contents of each file rather than its name.",
+  pvBackgroundH: "Nothing happens in the background",
+  pvBackground: "There is no telemetry and no crash reporting. Nothing is sent while you are not looking. The app makes no network requests at all - not one, with your data or without it - which is a shorter claim than any list of exceptions could be, and an easier one to check.",
+  pvCountH: "The one thing we do count",
+  pvCountLead: "The pages of this site - not the app - send a note that a page was read. It is worth being exact about what that is, because most sites are not.",
+  pvCount1H: "What is recorded",
+  pvCount1: "Which page, which site you arrived from, which country the connection came from, a browser family, and whether the screen is a phone. Added to a tally for that day and nothing else.",
+  pvCount2H: "What is not",
+  pvCount2: "No cookie and nothing else stored on your device - which is the entire reason this site has no consent banner, because a banner exists to ask permission for exactly that. No address is kept, hashed, or turned into an identifier, so there is no such thing here as a visitor, a session or a return visit. Only counts.",
+  pvCount3H: "Never from the app",
+  pvCount3: "The page where your export is open sends nothing at all. That is why you can open the Network tab, use the whole app, and see no requests - a claim with an exception in it is not worth making, so there is no exception.",
+  pvCount4H: "And it is refusable",
+  pvCount4: "Do Not Track and Global Privacy Control are both honoured, though neither is required of a site that stores nothing on your machine. Turn either on and even the tally stops.",
+
+  apMetaTitle: "Open a GDPR data export - Muletto",
+  apMetaDesc: "Open the GDPR data export from Apple, Google, Samsung, Snapchat, Facebook, Instagram and twelve more. Muletto reads the zip in your browser - no upload, no account - and shows you what is inside.",
+  apTitle: "Open your data export",
+  apLead: "Drop in the GDPR export a service sent you. {count} services have a reader - Apple, Google, Samsung, Snapchat, Facebook and Instagram among them - and an export from anything else opens too, listed and read as far as its shape allows. It is read here, in this browser, on this machine. Open several together and they become one library, with the duplicates between them found automatically.",
+  apDrop: "Drop your export files here",
+  apDropAlt: "or click to choose them",
+  apFine: "Zip archives from any service - a folder of them at once is fine, and so is one that arrived in a dozen parts. A Muletto work file goes here too, to bring back what was worked out last time. Nothing is uploaded, and you can {link} in about four seconds.",
+  apFineLink: "check that yourself",
+  apSamplesLead: "Not ready to use your own?",
+  apSamples: "Open {count} sample exports",
+  apSamplesTail: "real archives, invented people.",
+  apCheckSummary: "How to check that nothing is uploaded",
+  apCheck1H: "Turn off your wifi.",
+  apCheck1: "Then open an export and use everything - search it, compare photos, write the tidied copy to your disk. It all still works, because none of it ever needed the network. A page that was uploading your files could not do that.",
+  apCheck2H: "Watch the network.",
+  apCheck2: "Press F12, open the Network tab, then open your export. You will see this page load and then nothing further. No request carries your archive because no request is made.",
+  apCheck3H: "Read the rule the browser enforces.",
+  apCheck3: "This page is served with a Content-Security-Policy whose connect-src is {self} and nothing else. There is no exception to it. It is not a promise in our words - your browser blocks anything else, and it applies to the code actually running rather than to a description of it.",
+  apCheckFine: "There is also nothing here to breach: no account, no email address, no password, no cookies, and no server that receives files. The one thing that is stored is your own progress, in your own browser, so a large export does not have to be read again from scratch - and one button clears it. {link}.",
+  apCheckFineLink: "The privacy page spells that out",
+
+  hmMetaTitle: "Muletto - a GDPR data export viewer that runs in your browser",
+  hmMetaDesc: "Open the GDPR export from Apple, Google, Samsung, Snapchat, Facebook and Instagram in one place. Duplicates found across services, dates and locations put back, everything written out as ordinary folders. Nothing is uploaded.",
+  dismiss: "Dismiss",
+  vowBold: "Your files never leave this device.",
+  vow: "There is no upload, no account and no server that could receive them - the browser is told to refuse it.",
+  vowLink: "What is stored, and where",
+  heroA: "They have to give you your data.",
+  heroB: "Nobody said it had to arrive readable.",
+  lede1: "Ask Apple, Google, Meta or Snapchat for everything they hold on you and a few zip files turn up. Inside: numbered folders, machine-written JSON, your messages split across services, years of locations you did not know were kept, and the same photograph four times over with the dates stripped out.",
+  lede2: "Muletto opens the lot in this tab and hands back one thing you can read, search and keep.",
+  ctaRequest: "I need to request one",
+  ctaFine: "No account. Nothing uploaded.",
+  gTimelineH: "One timeline",
+  gTimeline: "Every archive on a single thread, in the order it happened, rather than four folders that share no filenames and no dates.",
+  gMessagesH: "Your messages, together",
+  gMessages: "Conversations that ran across Snapchat, Instagram and Messenger read as one conversation, with the person, not the platform.",
+  gPlacesH: "Everywhere you have been",
+  gPlaces: "The location logs each service kept, drawn on your own machine. The coastline ships with the page, so drawing your movements does not hand them to a map company as well.",
+  gPhotosH: "Photos with their dates back",
+  gPhotos: "Duplicates across services removed, real dates and places written into the files, ready for Photos, Immich, a NAS or a drive in a drawer.",
+  gFilesH: "Files you own",
+  gFiles: "Everything is written out as ordinary folders and ordinary files. Nothing needs this site to keep working - export once through Muletto, keep the organised files forever, and leave no trace behind.",
+  gFreeH: "Free, and staying that way",
+  gFree: "All of the above runs on your machine and costs nothing. If it saved you an afternoon, {link} - entirely optional, and nothing is held back if you do not.",
+  gFreeLink: "you can buy me a coffee",
+  easyHalfH: "Reading the export is the easy half",
+  easyHalf: "Messages and records only have to be made legible. The pictures are a different job. There are (usually) tens of thousands, spread across every archive, most with their dates gone and plenty of them saved more than once.",
+  uDupesH: "Duplicates found across services",
+  uDupes1: "Any photo tool spots two copies in the same folder. The ones filling your disk sit in four different archives under four filenames with four different dates, and nothing else finds them because nothing else opens more than one export at a time.",
+  uDupes2: "Muletto compares the contents, so the same picture from iCloud, Google, Snapchat and a WhatsApp re-save is one picture. It catches the near-copies too: the burst, the crop, the screenshot of the screenshot.",
+  uFilesH: "The work goes into the files, not an account",
+  uFiles1: "Dates and places are written into the photographs themselves, in the fields every photo application already reads. Move the library to Apple Photos, to Immich, to a NAS or to a drive in a drawer and it stays sorted and searchable.",
+  uFiles2: "Nothing is held here. There is no account to lose and no library that stops working if this site does.",
+  seamH: "The rest is detail",
+  seam: "Worth reading if you want to know exactly what happens to a file before you point this at your own archive. Same product, told properly.",
+  specH: "What happens, in order, from asking to keeping",
+  spec: "One pass through the whole thing, from asking a service for your data to clearing it away again. Each step says what happens and why it works that way.",
+  fAskH: "You ask them for it",
+  fAsk: "Every service has to hand over what it holds on you, and every one of them has buried the button somewhere different. The guides walk each request, screen by screen, and say what the wait usually is.",
+  fAskWhy: "Muletto is not involved. You are asking them directly, with your own account, and the archive arrives at your machine.",
+  fOpenH: "You open it here",
+  fOpen: "The zip's index is read from the end of the file, and entries are inflated one at a time with <code>DecompressionStream</code> over <code>File.slice()</code>. The archive is never held whole, so a 50 GB Takeout behaves like a small one. Archives past 2 GB arrive in a different format again, and that is read here too.",
+  fOpenWhy: "Nothing is sent anywhere, and the page is served with a Content-Security-Policy whose <code>connect-src</code> lets the browser refuse it on our behalf. Turn off your wifi and every step below still runs.",
+  fReadH: "It is read into one library",
+  fRead: "Photographs, messages, location history, searches, watch history, payments and account tables, out of whatever shape each service chose - Snapchat's JSON, Meta's per-thread files, Google's per-product folders, Apple's and Samsung's CSVs - merged onto one timeline by the timestamps they already carry.",
+  fReadWhy: "Two services that logged the same afternoon end up next to each other, which you cannot see while they sit in separate folders.",
+  fThumbsH: "Small copies are made, once",
+  fThumbs: "Each picture is shrunk to a 320px copy and written to your browser's own storage, on disk. Videos give up their first frame the same way.",
+  fThumbsWhy: "A wall of three thousand photographs cannot open the originals every time you scroll - that is megabytes each. The copies are made once, in background threads so the page stays alive, and are still there next visit and when the same photograph turns up inside next year's export.",
+  fDupesH: "Duplicates are found by content",
+  fDupes: "Every file is keyed by a SHA-256 of its bytes. The archive's own checksum and length are a free first pass that only suggests a match; nothing is treated as the same photograph until the hash agrees. Near-copies are caught separately with a perceptual hash, with the flat images held back because a blank screenshot has no fingerprint worth comparing.",
+  fDupesWhy: "The copies wasting your disk are in four different archives under four filenames with four dates. Only content finds those.",
+  fDatesH: "Dates and places are put back",
+  fDates: "Recovered from the sidecar JSON that Google and Meta ship beside each file, or from the container for video, then written into the JPEG as EXIF <code>DateTimeOriginal</code> and a GPS block - rebuilt whole rather than spliced, because inserting a tag shifts every offset after it.",
+  fDatesWhy: "A half-correct EXIF loses the date and moves the location, which is worse than leaving it alone.",
+  fWriteH: "You write it out and keep it",
+  fWrite: "Straight to a folder through the File System Access API where the browser has it, or one streamed archive where it does not - compressed as it is written, so only the index is held. Descriptions go in as XMP <code>dc:description</code>, which Lightroom, digiKam, Immich, Bridge and Apple Photos all read.",
+  fWriteWhy: "Ordinary folders and ordinary files. Move them to a NAS or a drive in a drawer and they stay sorted and searchable with nothing of ours involved.",
+  fForgetH: "You forget this ever happened",
+  fForget: "We hold nothing to delete - there is no account, no server and no copy of your data anywhere but your own machine. What is left after a session is a small pile of working files in your own browser: the comparisons, the repaired dates and the little thumbnail copies. Harmless, and yours.",
+  fForgetWhy: "One button clears them, after saying what goes and offering to save the work to a file first. Take that option and your exported folders are all that remains; take the button and there is no trace left of any of this - not with us, because there never was any, and not on your machine either.",
+  tblCaption: "What each service sends, where a real export has been opened",
+  tblService: "Service",
+  tblHow: "Delivered as",
+  tblWait: "Typical wait",
+  tblValid: "Link valid",
+  tblParsed: "Parsed",
+  tblApple: ".zip, often several",
+  tblGoogle: ".zip, up to 50 GB each",
+  tblSnap: ".zip, JSON + media",
+  tblSamsung: ".zip, often several",
+  tblMeta: ".zip, JSON or HTML",
+  tbl7days: "up to 7 days",
+  tbl30days: "up to 30 days",
+  tblFewDays: "a few days",
+  tblHoursDays: "hours to days",
+  tbl1week: "1 week",
+  tbl4days: "4 days",
+  tblAppleParsed: "Photos, videos, purchases, files",
+  tblGoogleParsed: "Photos, videos, location history, mail, browsing, purchases",
+  tblSnapParsed: "Memories, messages, location, friends",
+  tblSamsungParsed: "Photos, videos, health records, files",
+  tblInstaParsed: "Photos, videos, messages, posts",
+  tblFbParsed: "Photos, messages, posts",
+  caveatReaders: "Apple Health has been opened for real as well - 383,000 records out of one 161 MB file - and is left out of the table only because it arrives from the phone rather than from a website. These are read too: {list}. Those readers are written from what each service documents and none of them has met a real export yet, which is a weaker thing and is said as such on {link}.",
+  caveatReadersLink: "every one of their guides",
+  glance: "At a glance",
+  glEffort: "Effort",
+  glWait: "Typical wait",
+  glTime: "Time",
+  glFormat: "Format",
+  glDelivery: "Delivery",
+  glChecked: "Checked",
+  otherServices: "Other services",
+  otherDests: "Other destinations",
+  diff_easy: "easy",
+  diff_medium: "medium",
+  /* Every value the guides actually use, taken from the guides rather than
+     guessed at. The first attempt invented four and missed one that was in
+     use - and T() threw on the missing one rather than printing "undefined"
+     into the page, which is the whole reason it throws. */
+  "del_email-link": "email link",
+  "del_download": "download",
+  "del_download-page": "download page",
+  "del_on-device": "on the device",
+  confNoun: "the request flow",
+  confNounDest: "this",
+  confChecked: "Checked {when}",
+  confBadge: "Confirmed {when}",
+  confBadgeFull: "Confirmed end to end {when}",
+  confPartial: "Every screenshot below is from {provider}'s own pages on {when}.",
+  confStale: "{noun} was walked on {walked} and the export opened in Muletto on {opened}. That is more than {months} months ago, so {provider} may have changed the page since. If what you see does not match, trust the screenshots least.",
+  confFull: "{noun} was walked on {walked}, and the real export was opened in Muletto on {opened} to check it does what this guide says. Every screenshot below is from those runs.",
+  footTagline: "Built by one person. Everything runs in your browser, and the source is public.",
+  feat1: "Opens GDPR export archives without unzipping them",
+  feat2: "Merges exports from several services into one library",
+  feat3: "Finds duplicate photos across services",
+  feat4: "Repairs capture dates and locations",
+  feat5: "Reads messages, health data, location history and sign-in records",
+  feat6: "Writes a tidied copy back to your own disk",
+  browserReq: "Requires JavaScript. No account, no installation.",
+  caveatLimits: "Two honest limits. Writing a date back needs JPEG - other formats are copied untouched and reported, not silently skipped. And folder writing needs {picker}, which today means Chrome or Edge; Safari and Firefox get one streamed archive instead.",
 };
 
 const NB_STRINGS = JSON.parse(
@@ -288,7 +508,7 @@ function commitLink() {
  * Hidden from the eye is not the same as hidden from the page, and only the
  * first of those is wanted here.
  */
-function footer(depth, lang, altHref) {
+function footer(depth, lang, altHref, tagline) {
   const up = upTo(depth);
   const t = STRINGS[lang || "en"];
   const home = up + (lang === "nb" && hasNo("index.html") ? "no/index.html" : "index.html");
@@ -304,7 +524,8 @@ function footer(depth, lang, altHref) {
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           ${t.source}
         </a>${commitLink()}${altHref ? `
-        <a class="foot-lang" href="${altHref}" hreflang="${t.otherLang}" lang="${t.otherLang}">${t.other}</a>` : ""}
+        <a class="foot-lang" href="${altHref}" hreflang="${t.otherLang}" lang="${t.otherLang}">${t.other}</a>` : ""}${tagline ? `
+        <span class="small">${esc(tagline)}</span>` : ""}
       </div>
     </div>
   </footer>`;
@@ -321,7 +542,7 @@ function footer(depth, lang, altHref) {
  * language - which is exactly what it is. `check.js` verifies the pairing in
  * both directions rather than trusting this to stay right. */
 function page({ depth, title, description, canonical, body, jsonld, active, noindex,
-                extraScript, lang, alt }) {
+                extraScript, lang, alt, bodyScripts, tagline }) {
   const up = upTo(depth);
   const code = lang || "en";
   /* The head is built here rather than by the caller, so LANG has to be right
@@ -367,14 +588,14 @@ ${nav(depth, active, code)}
 ${body}
   </main>
 
-${footer(depth, code, alt && alt.href)}
+${footer(depth, code, alt && alt.href, tagline)}
 
-  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+${bodyScripts !== undefined ? bodyScripts : `  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="${up}disclose.js"></script>
   <!-- Counts that a guide was read. See privacy.html. -->
   <script src="${up}analytics.js"></script>
   <script src="${up}app.js"></script>
-${extraScript ? `  <script src="${up}${extraScript}"></script>\n` : ""}
+${extraScript ? `  <script src="${up}${extraScript}"></script>\n` : ""}`}
 </body>
 </html>
 `;
@@ -564,12 +785,24 @@ const SHOTS = (() => {
    The date matters as much as the fact, because a provider can redesign its
    export page at any time. Past STALE_MONTHS the page says so. */
 const STALE_MONTHS = 6;
-const MONTHS = ["January", "February", "March", "April", "May", "June",
+/* Month names, per language. The date on a Norwegian page was coming out as
+   "28 July 2026", which is not a date in Norwegian - and the class on the
+   badge beside it stays English on purpose, because that one is a CSS hook
+   rather than a word anybody reads. */
+const EN_MONTHS = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
+const monthName = (m) => (LANG === "nb"
+  ? (NB_STRINGS.months || [])[m] || EN_MONTHS[m]
+  : EN_MONTHS[m]);
 
 function longDate(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
-  return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}` : null;
+  if (!m) return null;
+  const d = Number(m[3]), name = monthName(Number(m[2]) - 1);
+  /* Norwegian writes the day as an ordinal with a full stop after it, and
+     does not capitalise the month. "28 July 2026" is not a date in Norwegian
+     any more than "July 28th 2026" is one in the middle of a sentence here. */
+  return LANG === "nb" ? `${d}. ${name} ${m[1]}` : `${d} ${name} ${m[1]}`;
 }
 
 function monthsSince(iso) {
@@ -589,7 +822,6 @@ function confirmation(g) {
   const c = g.confirmed || {};
   const flow = stage(c.flow);
   const imp = stage(c.import);
-  const noun = isDest(g) ? "this" : "the request flow";
 
   /* What the reader is told, as against what we track.
    *
@@ -609,23 +841,21 @@ function confirmation(g) {
   }
   if (!imp) {
     return {
-      state: "partial", badge: "Checked " + flow.when, cls: " medium",
+      state: "partial", badge: T("confChecked", { when: flow.when }), cls: " medium",
       flow, import: null, short: flow.when,
-      line: `Every screenshot below is from ${g.provider}'s own pages on ${flow.when}.`,
+      line: T("confPartial", { provider: g.provider, when: flow.when }),
     };
   }
   const stale = flow.stale || imp.stale;
   return {
-    state: "full", badge: (stale ? "Confirmed " : "Confirmed end to end ") + imp.when,
+    state: "full",
+    badge: T(stale ? "confBadge" : "confBadgeFull", { when: imp.when }),
     cls: stale ? " medium" : " verified", flow, import: imp, short: imp.when,
-    line: stale
-      ? `${cap(noun)} was walked on ${flow.when} and the export opened in Muletto on ` +
-        `${imp.when}. That is more than ${STALE_MONTHS} months ago, so ${g.provider} may ` +
-        `have changed the page since. If what you see does not match, trust the ` +
-        `screenshots least.`
-      : `${cap(noun)} was walked on ${flow.when}, and the real export was opened in ` +
-        `Muletto on ${imp.when} to check it does what this guide says. Every screenshot ` +
-        `below is from those runs.`,
+    line: T(stale ? "confStale" : "confFull", {
+      noun: cap(T(isDest(g) ? "confNounDest" : "confNoun")),
+      walked: flow.when, opened: imp.when,
+      months: STALE_MONTHS, provider: g.provider,
+    }),
   };
 }
 
@@ -749,7 +979,7 @@ function guidePage(g, all, dests, lang, alt) {
 
   const related = (dest ? dests : all)
     .filter((x) => x.slug !== g.slug).slice(0, 5);
-  const crossLabel = dest ? "Export guides" : "Where to keep your data";
+  const crossLabel = T(dest ? "exportGuides" : "whereToKeep");
   const cross = (dest ? all : dests).slice(0, 4);
 
   const howto = {
@@ -811,7 +1041,7 @@ function guidePage(g, all, dests, lang, alt) {
         <h1>${esc(T(dest ? "h1Dest" : "h1Service", { provider: g.provider }))}</h1>
         ${dest ? "" : `<p class="art-kicker">${esc(T("kicker"))}</p>`}
         <div class="art-meta">
-          <span class="badge ${esc(g.difficulty)}">${esc(g.difficulty)}</span>
+          <span class="badge ${esc(g.difficulty)}">${esc(T("diff_" + g.difficulty))}</span>
           <span class="muted">${dest ? "Takes" : "Wait:"} ${esc(g.wait_time)}</span>
         </div>
         <p class="art-intro">${esc(guideIntro(g))}</p>
@@ -854,17 +1084,17 @@ function guidePage(g, all, dests, lang, alt) {
 
         <aside class="art-side">
           <div class="side-card">
-            <h4>At a glance</h4>
+            <h4>${esc(T("glance"))}</h4>
             <dl>
-              <dt>Effort</dt><dd>${esc(g.difficulty)}</dd>
-              <dt>${dest ? "Time" : "Typical wait"}</dt><dd>${esc(g.wait_time)}</dd>
-              ${g.format ? `<dt>Format</dt><dd>${esc(g.format)}</dd>` : ""}
-              ${g.delivery ? `<dt>Delivery</dt><dd>${esc(g.delivery.replace(/-/g, " "))}</dd>` : ""}
-              ${!dest && conf.flow ? `<dt>Checked</dt><dd>${esc(conf.flow.when)}</dd>` : ""}
+              <dt>${esc(T("glEffort"))}</dt><dd>${esc(T("diff_" + g.difficulty))}</dd>
+              <dt>${esc(T(dest ? "glTime" : "glWait"))}</dt><dd>${esc(g.wait_time)}</dd>
+              ${g.format ? `<dt>${esc(T("glFormat"))}</dt><dd>${esc(g.format)}</dd>` : ""}
+              ${g.delivery ? `<dt>${esc(T("glDelivery"))}</dt><dd>${esc(T("del_" + g.delivery))}</dd>` : ""}
+              ${!dest && conf.flow ? `<dt>${esc(T("glChecked"))}</dt><dd>${esc(conf.flow.when)}</dd>` : ""}
             </dl>
           </div>
           ${related.length ? `<div class="side-card">
-            <h4>${dest ? "Other destinations" : "Other services"}</h4>
+            <h4>${esc(T(dest ? "otherDests" : "otherServices"))}</h4>
             <ul class="side-links">
               ${related.map((r) => sideLink(r)).join("\n              ")}
             </ul>
@@ -900,7 +1130,7 @@ function guidePage(g, all, dests, lang, alt) {
  * on the right where numbers go. */
 function card(g, href, kind) {
   const badge = g.difficulty
-    ? `<span class="badge ${esc(g.difficulty)}">${esc(g.difficulty)}</span>` : "";
+    ? `<span class="badge ${esc(g.difficulty)}">${esc(T("diff_" + g.difficulty))}</span>` : "";
   /* A destination's name is a phrase - "Ente (end-to-end encrypted)", "Any NAS
      (network folder)" - and it takes the whole first line, so its badge goes
      down to share the second row with the wait. A service is one word and
@@ -971,6 +1201,430 @@ const FAQ = [
   ["What do I get back at the end?",
    "Ordinary folders of ordinary files, with the real dates and locations written into the photographs themselves, duplicates across services removed, and your messages, location history and account records readable. Nothing needs this site afterwards."],
 ];
+
+/* ---------- the four hand-written pages, now generated ---------- */
+
+/* These were four HTML files maintained by hand, which was fine while there
+ * was one language. A second language turns each of them into two copies of
+ * the same markup, and this repository has a documented history of two copies
+ * of one fact drifting apart - it is the reason claims.js exists. So the
+ * markup lives once, here, and the words live in the string tables.
+ *
+ * The bodies are still written as HTML rather than assembled from components,
+ * because they are four distinct pages rather than four instances of a
+ * template, and pretending otherwise would cost more than it saved.
+ */
+
+function notFoundPage(lang, alt, guideCount) {
+  const A = (f) => "/" + (lang === "nb" && hasNo(f) ? "no/" + f : f);
+  const body = `
+    <section class="open-head wrap">
+      <h1>${esc(T("nfTitle"))}</h1>
+      <p>${esc(T("nfLead"))}</p>
+    </section>
+
+    <section class="wrap nf-wrap">
+      <!-- The whole card is the link. A heading-sized target inside a card
+           that also responds to the pointer is a card that looks clickable
+           everywhere and is clickable in one place. -->
+      <div class="grid cards">
+        <a class="card nf-card" href="${A("app.html")}">
+          <h3>${esc(T("open"))}</h3>
+          <p class="muted">${esc(T("nfApp"))}</p>
+        </a>
+        <a class="card nf-card" href="${A("guides.html")}">
+          <h3>${esc(T("nfGuidesHead"))}</h3>
+          <p class="muted">${esc(T("nfGuides", { count: guideCount }))}</p>
+        </a>
+        <a class="card nf-card" href="${A("privacy.html")}">
+          <h3>${esc(T("nfPrivacyHead"))}</h3>
+          <p class="muted">${esc(T("nfPrivacy"))}</p>
+        </a>
+        <a class="card nf-card" href="https://github.com/SolusKossi/muletto/issues"
+           target="_blank" rel="noopener noreferrer">
+          <h3>${esc(T("nfBugHead"))}</h3>
+          <p class="muted">${esc(T("nfBug"))}</p>
+        </a>
+      </div>
+    </section>`;
+
+  return page({
+    depth: "root", lang, alt, noindex: true,
+    title: T("nfMetaTitle"),
+    description: T("nfMetaDesc"),
+    canonical: SITE + (lang === "nb" ? "/no/404.html" : "/404.html"),
+    body,
+  });
+}
+
+
+function privacyPage(lang, alt) {
+  /* Same rule as the chrome: climb out of /no/ first, then go to the
+     Norwegian page if there is one and the English page if there is not.
+     The first version forgot to climb, so a link to app.html from
+     /no/privacy.html asked for /no/app.html, which does not exist. */
+  const up = lang === "nb" ? "../" : "";
+  const at = (f) => up + (lang === "nb" && hasNo(f) ? "no/" + f : f);
+  const cardGrid = (keys) => `      <div class="grid cards">
+${keys.map((k) => `        <div class="card">
+          <h3>${esc(T(k + "H"))}</h3>
+          <p class="muted">${esc(T(k))}</p>
+        </div>`).join("\n")}
+      </div>`;
+
+  const body = `
+    <section class="page-head wrap">
+      <h1>${esc(T("pvTitle"))}</h1>
+      <p>${esc(T("pvLead"))}</p>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>${esc(T("pvUploadH"))}</h2>
+        <p>${T("pvUpload1", { link: `<a href="#count">${esc(T("pvDescribedBelow"))}</a>` })}</p>
+        <p>${T("pvUpload2", { csp: "<code>connect-src</code>", self: "<code>'self'</code>" })}</p>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>${esc(T("pvKeptH"))}</h2>
+        <p>${esc(T("pvKeptLead"))}</p>
+      </div>
+${cardGrid(["pvKept1", "pvKept2", "pvKept3", "pvKept4"])}
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>${esc(T("pvPortableH"))}</h2>
+        <p>${esc(T("pvPortable"))}</p>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>${esc(T("pvBackgroundH"))}</h2>
+        <p>${esc(T("pvBackground"))}</p>
+      </div>
+
+      <div class="section-head">
+        <h2 id="count">${esc(T("pvCountH"))}</h2>
+        <p>${esc(T("pvCountLead"))}</p>
+      </div>
+${cardGrid(["pvCount1", "pvCount2", "pvCount3", "pvCount4"])}
+      <p><a class="btn primary" href="${at("app.html")}">${esc(T("open"))} ${ARROW}</a></p>
+    </section>
+`;
+
+  return page({
+    /* One level down in Norwegian, because the page is at /no/privacy.html
+       and the stylesheet is not. */
+    depth: lang === "nb" ? 1 : 0, lang, alt,
+    title: T("pvMetaTitle"),
+    description: T("pvMetaDesc"),
+    canonical: SITE + (lang === "nb" ? "/no/privacy.html" : "/privacy.html"),
+    body,
+  });
+}
+
+
+/* The opener.
+ *
+ * Two things about this page are deliberate and easy to undo by accident.
+ *
+ * It loads no analytics. Every other page counts that it was read; this one
+ * does not, so "open the Network tab, use the whole app, see nothing" stays a
+ * clean demonstration rather than one with a footnote. That is why the script
+ * list is written out here instead of taking the default set.
+ *
+ * And the order of the scripts is not alphabetical or arbitrary - three of
+ * them have to load before something that calls them, and the comments saying
+ * so are part of the file rather than decoration.
+ */
+function appPage(lang, alt, sampleCount, readerCount) {
+  const up = lang === "nb" ? "../" : "";
+  const at = (f) => up + (lang === "nb" && hasNo(f) ? "no/" + f : f);
+
+  const body = `
+    <!-- One thing to do, made the biggest thing on the page.
+
+         This page used to make its privacy argument three times - a red alarm
+         box, the last line of the intro, and a numbered list of three long
+         paragraphs - while the drop zone, which is the entire point, was the
+         fourth element down and the weakest thing on screen. Five bordered
+         cards of equal weight is hierarchy for nothing. The order now follows
+         the decision somebody is actually making: what this is, do it, not
+         ready yet, and only then why you can believe any of it. -->
+    <section class="open-head wrap">
+      <h1>${esc(T("apTitle"))}</h1>
+      <p>${esc(T("apLead", { count: cap(spelledWord(readerCount)) }))}</p>
+    </section>
+
+    <section class="wrap open-wrap">
+      <div id="resume" hidden></div>
+      <!-- Offers to reopen what was kept. Nothing is read until it is clicked. -->
+      <div id="restore" hidden></div>
+      <!-- What is open now. Above the drop zone, because a result shown below
+           the thing that produced it reads as a second, competing offer. -->
+      <div id="import-result" class="import-result" hidden></div>
+
+      <div id="drop" class="drop">
+        <svg class="drop-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/>
+          <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>
+        </svg>
+        <p><strong>${esc(T("apDrop"))}</strong><span>${esc(T("apDropAlt"))}</span></p>
+        <input id="file" type="file" accept=".zip,.tgz,.tar.gz,.muletto,.json,.gz" multiple hidden />
+      </div>
+      <p class="drop-fine">${T("apFine", { link: `<a href="#check">${esc(T("apFineLink"))}</a>` })}</p>
+
+      <p class="open-alt">${esc(T("apSamplesLead"))}
+        <button class="linkish" id="try-samples">${esc(T("apSamples", { count: spelledWord(sampleCount) }))}</button> -
+        ${esc(T("apSamplesTail"))}</p>
+
+      <details class="open-check" id="check">
+        <summary>${esc(T("apCheckSummary"))}</summary>
+        <ol>
+          <li><strong>${esc(T("apCheck1H"))}</strong> ${esc(T("apCheck1"))}</li>
+          <li><strong>${esc(T("apCheck2H"))}</strong> ${esc(T("apCheck2"))}</li>
+          <li><strong>${esc(T("apCheck3H"))}</strong> ${T("apCheck3", { self: "<code>'self'</code>" })}</li>
+        </ol>
+        <p class="fine">${T("apCheckFine", {
+          link: `<a href="${at("privacy.html")}">${esc(T("apCheckFineLink"))}</a>` })}</p>
+      </details>
+    </section>
+`;
+
+  /* Order matters in three places and the comments say where. */
+  const scripts = [
+    "notify.js", "tips.js", "jobs.js", "store.js", "derived.js", "donate.js",
+    "zipcrypt.js", "zip.js",
+    ["tar.js", "Gzipped tar, because Google offers .tgz next to .zip."],
+    "zipout.js",
+    ["overlay.js", "Puts a Snapchat caption back on the memory it was drawn on."],
+    "exif.js", "heif.js", "video.js",
+    ["applehealth.js", "Apple Health export.xml, streamed. 161 MB in a real one, so it is\n       never held. Must load before parsers.js, which calls it."],
+    "mbox.js", "diagnose.js", "contribute.js", "mojibake.js", "parsers.js",
+    "catalog.js", "insights.js", "basemap.js", "rail.js",
+    ["charts.js", "Health charts, chosen by what the number means. Must load before\n       topics.js, which asks it to draw."],
+    "topics.js", "views.js", "export.js", "explorer.js",
+    ["disclose.js", "Every disclosure on the site opens and shuts rather than jumping."],
+    "app.js", "swreg.js",
+  ];
+  const bodyScripts = scripts.map((s) => {
+    const [file, note] = Array.isArray(s) ? s : [s, null];
+    return (note ? "  <!-- " + note + " -->\n" : "") +
+      `  <script src="${up}${file}"></script>`;
+  }).join("\n");
+
+  return page({
+    depth: lang === "nb" ? 1 : 0, lang, alt,
+    title: T("apMetaTitle"),
+    description: T("apMetaDesc"),
+    canonical: SITE + (lang === "nb" ? "/no/app.html" : "/app.html"),
+    body, bodyScripts,
+  });
+}
+
+
+/* The home page.
+ *
+ * The longest of the four and the one whose ordering is an argument rather
+ * than a layout: headline, what you get back, the photographs (which are
+ * where the real work is), then the seam, then the datasheet for anybody who
+ * wants to know exactly what happens to a file before pointing this at their
+ * own archive. Keep the order.
+ *
+ * The service table is data rather than markup, because it is the one part a
+ * translation has to reach into cell by cell.
+ */
+const HOME_TABLE = [
+  ["Apple", "tblApple", "tbl7days", "-", "tblAppleParsed"],
+  ["Google", "tblGoogle", "tblHoursDays", "tbl1week", "tblGoogleParsed"],
+  ["Snapchat", "tblSnap", "tbl30days", "-", "tblSnapParsed"],
+  ["Samsung", "tblSamsung", "tblFewDays", "-", "tblSamsungParsed"],
+  ["Instagram", "tblMeta", "tblHoursDays", "tbl4days", "tblInstaParsed"],
+  ["Facebook", "tblMeta", "tblHoursDays", "tbl4days", "tblFbParsed"],
+];
+
+const HOME_GETS = ["gTimeline", "gMessages", "gPlaces", "gPhotos", "gFiles"];
+const HOME_FLOW = ["fAsk", "fOpen", "fRead", "fThumbs", "fDupes", "fDates", "fWrite", "fForget"];
+
+function homePage(lang, alt, unmeasured) {
+  const up = lang === "nb" ? "../" : "";
+  const at = (f) => up + (lang === "nb" && hasNo(f) ? "no/" + f : f);
+
+  const gets = HOME_GETS.map((k) =>
+    `          <li><b>${esc(T(k + "H"))}</b><span>${esc(T(k))}</span></li>`).join("\n");
+
+  const flow = HOME_FLOW.map((k) => `          <li>
+            <h3>${esc(T(k + "H"))}</h3>
+            <p>${T(k)}</p>
+            <p class="g-why">${T(k + "Why")}</p>
+          </li>`).join("\n");
+
+  const rows = HOME_TABLE.map(([name, how, wait, valid, parsed]) =>
+    `              <tr><th scope="row">${esc(name)}</th>` +
+    `<td data-label="${esc(T("tblHow"))}" class="m">${esc(T(how))}</td>` +
+    `<td data-label="${esc(T("tblWait"))}" class="m">${esc(T(wait))}</td>` +
+    `<td data-label="${esc(T("tblValid"))}" class="m">${valid === "-" ? "-" : esc(T(valid))}</td>` +
+    `<td data-label="${esc(T("tblParsed"))}">${esc(T(parsed))}</td></tr>`).join("\n");
+
+  const body = `
+    <!-- Stays until it is dismissed, and stays dismissed after that. Not a
+         cookie banner: it asks for nothing and blocks nothing, it is only the
+         one fact a first-time reader most needs and least believes. -->
+    <aside class="g-vow" id="g-vow" hidden>
+      <p><b>${esc(T("vowBold"))}</b> ${esc(T("vow"))}
+        <a href="${at("privacy.html")}">${esc(T("vowLink"))}</a></p>
+      <button type="button" id="g-vow-x" aria-label="${esc(T("dismiss"))}">&times;</button>
+    </aside>
+
+    <!-- 1. Headline left, the explanation beside it. -->
+    <section class="g-top">
+      <div class="g-wide">
+        <h1>${esc(T("heroA"))} <em>${esc(T("heroB"))}</em></h1>
+
+        <div class="say">
+          <p class="lede">${esc(T("lede1"))}</p>
+          <p class="lede">${esc(T("lede2"))}</p>
+
+          <div class="cta">
+            <a class="g-btn" href="${at("app.html")}">${esc(T("open"))}</a>
+            <a class="g-btn line" href="${at("guides.html")}">${esc(T("ctaRequest"))}</a>
+            <span class="fine">${esc(T("ctaFine"))}</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. What comes back out. Plain list, no widget. -->
+    <section class="g-get">
+      <div class="g-wide">
+        <ul>
+${gets}
+          <li><b>${esc(T("gFreeH"))}</b><span>${T("gFree", {
+            link: `<a class="g-tip" href="https://buymeacoffee.com/muletto" rel="noopener">${esc(T("gFreeLink"))}</a>` })}</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. The photographs, which are where the real work is. -->
+    <section class="g-s-lg" style="border-top:1px solid var(--g-line); background:var(--g-paper-2)">
+      <div class="g-wide">
+        <h2 style="font-size:clamp(26px,3.4vw,40px); max-width:26ch">${esc(T("easyHalfH"))}</h2>
+        <p style="margin-top:18px; max-width:60ch; font-size:16.5px; line-height:1.6; color:var(--g-body)">
+          ${esc(T("easyHalf"))}</p>
+
+        <div class="g-uniques" style="margin-top:40px">
+          <div class="g-unique">
+            <h3>${esc(T("uDupesH"))}</h3>
+            <div>
+              <p>${esc(T("uDupes1"))}</p>
+              <p>${esc(T("uDupes2"))}</p>
+            </div>
+          </div>
+
+
+          <div class="g-unique">
+            <h3>${esc(T("uFilesH"))}</h3>
+            <div>
+              <p>${esc(T("uFiles1"))}</p>
+              <p>${esc(T("uFiles2"))}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- The seam. A step wedge: six flat tones walking from paper to the
+         datasheet's black, the way a printer's calibration strip does. It is
+         one idea, it has no texture to be noisy with, and it is not a fade. -->
+    <section class="g-seam">
+      <div class="g-wide">
+        <h2>${esc(T("seamH"))}</h2>
+        <p>${esc(T("seam"))}</p>
+      </div>
+      <div class="g-steps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </section>
+
+    <!-- 4. Datasheet. Dark and dense. -->
+    <section class="g-spec">
+      <div class="g-wide g-s-md">
+        <h2 style="max-width:22ch">${esc(T("specH"))}</h2>
+        <p class="g-lede">${esc(T("spec"))}</p>
+
+        <ol class="g-flow">
+${flow}
+        </ol>
+
+        <div class="g-tablewrap">
+          <table class="g-matrix">
+            <caption style="text-align:left; padding:40px 0 14px; font-size:18px; color:#fff">${esc(T("tblCaption"))}</caption>
+            <thead>
+              <tr>
+                <th scope="col">${esc(T("tblService"))}</th>
+                <th scope="col">${esc(T("tblHow"))}</th>
+                <th scope="col">${esc(T("tblWait"))}</th>
+                <th scope="col">${esc(T("tblValid"))}</th>
+                <th scope="col">${esc(T("tblParsed"))}</th>
+              </tr>
+            </thead>
+            <tbody>
+${rows}
+            </tbody>
+          </table>
+        </div>
+
+        <p class="g-caveat">${T("caveatReaders", {
+          list: esc(joinList(unmeasured)),
+          link: `<a href="${at("guides.html")}" style="text-decoration:underline">${esc(T("caveatReadersLink"))}</a>` })}</p>
+
+        <p class="g-caveat">${T("caveatLimits", {
+          picker: "<code>showDirectoryPicker</code>" })}</p>
+
+        <p style="margin-top:34px; font-size:14px">
+          <a href="${at("app.html")}" style="text-decoration:underline">${esc(T("open"))}</a> &nbsp;/&nbsp;
+          <a href="${at("privacy.html")}" style="text-decoration:underline">${esc(T("vowLink"))}</a>
+          &nbsp;/&nbsp;
+        </p>
+      </div>
+    </section>
+`;
+
+  return page({
+    depth: lang === "nb" ? 1 : 0, lang, alt,
+    title: T("hmMetaTitle"),
+    description: T("hmMetaDesc"),
+    canonical: SITE + (lang === "nb" ? "/no/index.html" : "/"),
+    body,
+    extraScript: "vow.js",
+    tagline: T("footTagline"),
+    /* Restored rather than reinvented: converting the page to the generator
+       dropped this block, which is the only structured data saying what the
+       thing actually is. The name and the feature list are the same in both
+       languages because they name features; the description is translated
+       because it is a sentence. */
+    jsonld: [{
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Muletto",
+      applicationCategory: "UtilitiesApplication",
+      applicationSubCategory: "GDPR data export viewer",
+      operatingSystem: "Any modern web browser",
+      url: SITE + (lang === "nb" ? "/no/index.html" : "/"),
+      inLanguage: lang,
+      description: T("hmMetaDesc"),
+      featureList: [1, 2, 3, 4, 5, 6].map((i) => T("feat" + i)),
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      isAccessibleForFree: true,
+      browserRequirements: T("browserReq"),
+    }],
+  });
+}
+
 
 function guidesIndex(all, dests, flows, problems) {
   const body = `    <section class="page-head wrap">
@@ -1449,6 +2103,44 @@ function main() {
     n++;
   }
   fs.writeFileSync(path.join(WEB, "guides.html"), guidesIndex(all, dests, flows, problems), "utf8");
+
+  /* The pages that used to be hand-written HTML. Each is emitted in English
+     always, and in Norwegian when its strings are there - which they are, so
+     the pair exists and can declare hreflang. The Norwegian tree gets a 404 of
+     its own because a wrong address under /no/ should not throw the reader
+     back into English on top of being lost. */
+  {
+    const NO = path.join(WEB, "no");
+    fs.mkdirSync(NO, { recursive: true });
+    /* Counted here rather than written into the copy, for the reason the whole
+       of claims.js exists: a number in a sentence is a fact that rots. */
+    const sampleCount = fs.readdirSync(path.join(WEB, "samples"))
+      .filter((f) => f.endsWith(".zip")).length;
+    const readerCount = [...all, ...dests]
+      .filter((g) => (g.muletto_support || {}).importable).length;
+    /* The services with a reader that no real export has ever been run
+       through, named on the home page. Taken from PROVIDERS.md, which is
+       where that distinction is kept, so the page cannot drift from it. */
+    const unmeasured = fs.readFileSync(path.join(ROOT_DIR, "PROVIDERS.md"), "utf8").split(/^## /m).slice(1)
+      .filter((sec) => /\*\*Not measured/.test(sec))
+      .map((sec) => sec.split(NL)[0].trim().replace(/ \(.*\)$/, "")
+        .replace(/ and Google Health$/, ""));
+    const pairs = [
+      ["404.html", (lang, alt) => notFoundPage(lang, alt, n)],
+      ["privacy.html", (lang, alt) => privacyPage(lang, alt)],
+      ["app.html", (lang, alt) => appPage(lang, alt, sampleCount, readerCount)],
+      ["index.html", (lang, alt) => homePage(lang, alt, unmeasured)],
+    ];
+    for (const [file, build] of pairs) {
+      const enAlt = { href: "/no/" + file, loc: `${SITE}/no/${file}`, lang: "nb" };
+      const nbAlt = { href: "/" + file, loc: `${SITE}/${file}`, lang: "en" };
+      LANG = "en";
+      fs.writeFileSync(path.join(WEB, file), build("en", enAlt), "utf8");
+      LANG = "nb";
+      fs.writeFileSync(path.join(NO, file), build("nb", nbAlt), "utf8");
+      LANG = "en";
+    }
+  }
 
   fs.writeFileSync(path.join(__dirname, "..", "GUIDE-STATUS.md"), statusReport(all, dests), "utf8");
 

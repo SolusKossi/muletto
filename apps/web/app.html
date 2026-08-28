@@ -5,20 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Open a GDPR data export - Muletto</title>
   <meta name="description" content="Open the GDPR data export from Apple, Google, Samsung, Snapchat, Facebook, Instagram and twelve more. Muletto reads the zip in your browser - no upload, no account - and shows you what is inside." />
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="og.png" />
   <link rel="canonical" href="https://muletto.app/app.html" />
-  <meta property="og:type" content="website" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/app.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/app.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/app.html" />
+  <meta property="og:type" content="article" />
   <meta property="og:title" content="Open a GDPR data export - Muletto" />
-  <meta property="og:description" content="Open your data export in your browser. Muletto reads it on your device - no upload, no account - and shows you what is inside." />
+  <meta property="og:description" content="Open the GDPR data export from Apple, Google, Samsung, Snapchat, Facebook, Instagram and twelve more. Muletto reads the zip in your browser - no upload, no account - and shows you what is inside." />
   <meta property="og:url" content="https://muletto.app/app.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="en_GB" />
+  <meta property="og:locale:alternate" content="nb_NO" />
   <meta property="og:image" content="https://muletto.app/og.png" />
   <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="og.png" />
   <link rel="stylesheet" href="styles.css?v=1b2cb6a8" />
-  <!-- Themes. In the head, and before the body renders, so a dark theme does
-       not begin life as a white flash. Adds its own <link> for the theme
-       stylesheet; with no theme chosen it adds nothing at all. -->
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
   <script src="theme.js?v=4ef9956d"></script>
+
 </head>
 <body>
   <nav class="nav">
@@ -31,12 +37,13 @@
         </div>
       </div>
       <div class="nav-right">
-        <a class="btn primary active" href="app.html">Open an export</a>
+        <a class="btn primary" href="app.html">Open an export</a>
       </div>
     </div>
   </nav>
 
   <main>
+
     <!-- One thing to do, made the biggest thing on the page.
 
          This page used to make its privacy argument three times - a red alarm
@@ -48,11 +55,7 @@
          ready yet, and only then why you can believe any of it. -->
     <section class="open-head wrap">
       <h1>Open your data export</h1>
-      <p>Drop in the GDPR export a service sent you. Eighteen services have a reader -
-        Apple, Google, Samsung, Snapchat, Facebook and Instagram among them - and an export
-        from anything else opens too, listed and read as far as its shape allows. It is read
-        here, in this browser, on this machine. Open several together and they become one
-        library, with the duplicates between them found automatically.</p>
+      <p>Drop in the GDPR export a service sent you. Eighteen services have a reader - Apple, Google, Samsung, Snapchat, Facebook and Instagram among them - and an export from anything else opens too, listed and read as far as its shape allows. It is read here, in this browser, on this machine. Open several together and they become one library, with the duplicates between them found automatically.</p>
     </section>
 
     <section class="wrap open-wrap">
@@ -72,10 +75,7 @@
         <p><strong>Drop your export files here</strong><span>or click to choose them</span></p>
         <input id="file" type="file" accept=".zip,.tgz,.tar.gz,.muletto,.json,.gz" multiple hidden />
       </div>
-      <p class="drop-fine">Zip archives from any service - a folder of them at once is fine,
-        and so is one that arrived in a dozen parts. A Muletto work file goes here too, to
-        bring back what was worked out last time. Nothing is uploaded, and you can
-        <a href="#check">check that yourself</a> in about four seconds.</p>
+      <p class="drop-fine">Zip archives from any service - a folder of them at once is fine, and so is one that arrived in a dozen parts. A Muletto work file goes here too, to bring back what was worked out last time. Nothing is uploaded, and you can <a href="#check">check that yourself</a> in about four seconds.</p>
 
       <p class="open-alt">Not ready to use your own?
         <button class="linkish" id="try-samples">Open six sample exports</button> -
@@ -84,26 +84,14 @@
       <details class="open-check" id="check">
         <summary>How to check that nothing is uploaded</summary>
         <ol>
-          <li><strong>Turn off your wifi.</strong> Then open an export and use everything -
-          search it, compare photos, write the tidied copy to your disk. It all still works,
-          because none of it ever needed the network. A page that was uploading your files
-          could not do that.</li>
-          <li><strong>Watch the network.</strong> Press F12, open the Network tab, then open
-          your export. You will see this page load and then nothing further. No request
-          carries your archive because no request is made.</li>
-          <li><strong>Read the rule the browser enforces.</strong> This page is served with a
-          Content-Security-Policy whose connect-src is <code>'self'</code> and nothing
-          else. There is no exception to it. It is not a promise in our words - your
-          browser blocks anything else, and it applies to the code actually running rather
-          than to a description of it.</li>
+          <li><strong>Turn off your wifi.</strong> Then open an export and use everything - search it, compare photos, write the tidied copy to your disk. It all still works, because none of it ever needed the network. A page that was uploading your files could not do that.</li>
+          <li><strong>Watch the network.</strong> Press F12, open the Network tab, then open your export. You will see this page load and then nothing further. No request carries your archive because no request is made.</li>
+          <li><strong>Read the rule the browser enforces.</strong> This page is served with a Content-Security-Policy whose connect-src is <code>'self'</code> and nothing else. There is no exception to it. It is not a promise in our words - your browser blocks anything else, and it applies to the code actually running rather than to a description of it.</li>
         </ol>
-        <p class="fine">There is also nothing here to breach: no account, no email address,
-        no password, no cookies, and no server that receives files. The one
-        thing that is stored is your own progress, in your own browser, so a large export
-        does not have to be read again from scratch - and one button clears it.
-        <a href="privacy.html">The privacy page spells that out</a>.</p>
+        <p class="fine">There is also nothing here to breach: no account, no email address, no password, no cookies, and no server that receives files. The one thing that is stored is your own progress, in your own browser, so a large export does not have to be read again from scratch - and one button clears it. <a href="privacy.html">The privacy page spells that out</a>.</p>
       </details>
     </section>
+
   </main>
 
   <footer class="site">
@@ -117,7 +105,7 @@
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           Read the source
         </a>
-        <a class="foot-commit" href="https://github.com/SolusKossi/muletto/commit/aaaa111" target="_blank" rel="noopener noreferrer" title="The commit this site was built from">build aaaa111</a>
+        <a class="foot-lang" href="/no/app.html" hreflang="nb" lang="nb">Norsk</a>
       </div>
     </div>
   </footer>
@@ -150,8 +138,6 @@
   <script src="insights.js?v=48350dd1"></script>
   <script src="basemap.js?v=cbb6dfca"></script>
   <script src="rail.js?v=b4bc5944"></script>
-  <!-- Sidebar entries that appear only when the export turns out to hold that
-       kind of data. Must load before explorer.js, which asks it what to show. -->
   <!-- Health charts, chosen by what the number means. Must load before
        topics.js, which asks it to draw. -->
   <script src="charts.js?v=e61fe580"></script>

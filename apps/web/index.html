@@ -4,24 +4,29 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Muletto - a GDPR data export viewer that runs in your browser</title>
-  <meta name="description" content="Muletto is a GDPR data export viewer that runs in your browser. Open the archive Apple, Google, Samsung, Snapchat, Reddit or Meta send you, merge them into one library, remove the duplicates and put the real dates back. Nothing is uploaded." />
+  <meta name="description" content="Open the GDPR export from Apple, Google, Samsung, Snapchat, Facebook and Instagram in one place. Duplicates found across services, dates and locations put back, everything written out as ordinary folders. Nothing is uploaded." />
   <link rel="canonical" href="https://muletto.app/" />
-  <meta property="og:type" content="website" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/index.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/" />
+  <meta property="og:type" content="article" />
   <meta property="og:title" content="Muletto - a GDPR data export viewer that runs in your browser" />
-  <meta property="og:description" content="Open the GDPR export Apple, Google, Samsung, Snapchat, Reddit or Meta send you, and actually read it. Nothing is uploaded." />
+  <meta property="og:description" content="Open the GDPR export from Apple, Google, Samsung, Snapchat, Facebook and Instagram in one place. Duplicates found across services, dates and locations put back, everything written out as ordinary folders. Nothing is uploaded." />
   <meta property="og:url" content="https://muletto.app/" />
   <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="en_GB" />
+  <meta property="og:locale:alternate" content="nb_NO" />
   <meta property="og:image" content="https://muletto.app/og.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="og.png" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Muletto","applicationCategory":"UtilitiesApplication","applicationSubCategory":"GDPR data export viewer","operatingSystem":"Any modern web browser","url":"https://muletto.app/","description":"A GDPR data export viewer that runs entirely in your browser. Open the export zip from Apple, Google, Samsung, Snapchat, Reddit, Facebook or Instagram, merge several into one library, find duplicates across them, repair the dates and locations the export stripped, and write the result back out as ordinary folders. Nothing is uploaded.","featureList":["Opens GDPR export archives without unzipping them","Merges exports from several services into one library","Finds duplicate photos across services","Repairs capture dates and locations","Reads messages, health data, location history and sign-in records","Writes a tidied copy back to your own disk"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true,"browserRequirements":"Requires JavaScript. No account, no installation."}</script>
   <link rel="stylesheet" href="styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
   <script src="theme.js?v=4ef9956d"></script>
-  <link rel="stylesheet" href="styles-v2.css?v=cd79cf79" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Muletto","applicationCategory":"UtilitiesApplication","applicationSubCategory":"GDPR data export viewer","operatingSystem":"Any modern web browser","url":"https://muletto.app/","inLanguage":"en","description":"Open the GDPR export from Apple, Google, Samsung, Snapchat, Facebook and Instagram in one place. Duplicates found across services, dates and locations put back, everything written out as ordinary folders. Nothing is uploaded.","featureList":["Opens GDPR export archives without unzipping them","Merges exports from several services into one library","Finds duplicate photos across services","Repairs capture dates and locations","Reads messages, health data, location history and sign-in records","Writes a tidied copy back to your own disk"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true,"browserRequirements":"Requires JavaScript. No account, no installation."}</script>
 </head>
-<body class="v2">
-
+<body>
   <nav class="nav">
     <div class="wrap">
       <div class="nav-left">
@@ -37,17 +42,16 @@
     </div>
   </nav>
 
-  <!-- Stays until it is dismissed, and stays dismissed after that. Not a
-       cookie banner: it asks for nothing and blocks nothing, it is only the
-       one fact a first-time reader most needs and least believes. -->
-  <aside class="g-vow" id="g-vow" hidden>
-    <p><b>Your files never leave this device.</b> There is no upload, no account and no server
-      that could receive them - the browser is told to refuse it.
-      <a href="privacy.html">What is stored, and where</a></p>
-    <button type="button" id="g-vow-x" aria-label="Dismiss">&times;</button>
-  </aside>
-
   <main>
+
+    <!-- Stays until it is dismissed, and stays dismissed after that. Not a
+         cookie banner: it asks for nothing and blocks nothing, it is only the
+         one fact a first-time reader most needs and least believes. -->
+    <aside class="g-vow" id="g-vow" hidden>
+      <p><b>Your files never leave this device.</b> There is no upload, no account and no server that could receive them - the browser is told to refuse it.
+        <a href="privacy.html">What is stored, and where</a></p>
+      <button type="button" id="g-vow-x" aria-label="Dismiss">&times;</button>
+    </aside>
 
     <!-- 1. Headline left, the explanation beside it. -->
     <section class="g-top">
@@ -55,12 +59,8 @@
         <h1>They have to give you your data. <em>Nobody said it had to arrive readable.</em></h1>
 
         <div class="say">
-          <p class="lede">Ask Apple, Google, Meta or Snapchat for everything they hold on you and
-            a few zip files turn up. Inside: numbered folders, machine-written JSON, your messages
-            split across services, years of locations you did not know were kept, and the same
-            photograph four times over with the dates stripped out.</p>
-          <p class="lede">Muletto opens the lot in this tab and hands back one thing you can read,
-            search and keep.</p>
+          <p class="lede">Ask Apple, Google, Meta or Snapchat for everything they hold on you and a few zip files turn up. Inside: numbered folders, machine-written JSON, your messages split across services, years of locations you did not know were kept, and the same photograph four times over with the dates stripped out.</p>
+          <p class="lede">Muletto opens the lot in this tab and hands back one thing you can read, search and keep.</p>
 
           <div class="cta">
             <a class="g-btn" href="app.html">Open an export</a>
@@ -76,24 +76,12 @@
     <section class="g-get">
       <div class="g-wide">
         <ul>
-          <li><b>One timeline</b><span>Every archive on a single thread, in the order it
-            happened, rather than four folders that share no filenames and no dates.</span></li>
-          <li><b>Your messages, together</b><span>Conversations that ran across Snapchat,
-            Instagram and Messenger read as one conversation, with the person, not the
-            platform.</span></li>
-          <li><b>Everywhere you have been</b><span>The location logs each service kept, drawn on
-            your own machine. The coastline ships with the page, so drawing your movements
-            does not hand them to a map company as well.</span></li>
-          <li><b>Photos with their dates back</b><span>Duplicates across services removed, real
-            dates and places written into the files, ready for Photos, Immich, a NAS or a drive
-            in a drawer.</span></li>
-          <li><b>Files you own</b><span>Everything is written out as ordinary folders and
-            ordinary files. Nothing needs this site to keep working - export once through
-            Muletto, keep the organised files forever, and leave no trace behind.</span></li>
-          <li><b>Free, and staying that way</b><span>All of the above runs on your machine and
-            costs nothing. If it saved you an afternoon,
-            <a class="g-tip" href="https://buymeacoffee.com/muletto" rel="noopener">you can buy me a coffee</a> -
-            entirely optional, and nothing is held back if you do not.</span></li>
+          <li><b>One timeline</b><span>Every archive on a single thread, in the order it happened, rather than four folders that share no filenames and no dates.</span></li>
+          <li><b>Your messages, together</b><span>Conversations that ran across Snapchat, Instagram and Messenger read as one conversation, with the person, not the platform.</span></li>
+          <li><b>Everywhere you have been</b><span>The location logs each service kept, drawn on your own machine. The coastline ships with the page, so drawing your movements does not hand them to a map company as well.</span></li>
+          <li><b>Photos with their dates back</b><span>Duplicates across services removed, real dates and places written into the files, ready for Photos, Immich, a NAS or a drive in a drawer.</span></li>
+          <li><b>Files you own</b><span>Everything is written out as ordinary folders and ordinary files. Nothing needs this site to keep working - export once through Muletto, keep the organised files forever, and leave no trace behind.</span></li>
+          <li><b>Free, and staying that way</b><span>All of the above runs on your machine and costs nothing. If it saved you an afternoon, <a class="g-tip" href="https://buymeacoffee.com/muletto" rel="noopener">you can buy me a coffee</a> - entirely optional, and nothing is held back if you do not.</span></li>
         </ul>
       </div>
     </section>
@@ -101,24 +89,16 @@
     <!-- 3. The photographs, which are where the real work is. -->
     <section class="g-s-lg" style="border-top:1px solid var(--g-line); background:var(--g-paper-2)">
       <div class="g-wide">
-        <h2 style="font-size:clamp(26px,3.4vw,40px); max-width:26ch">Reading the export is the
-          easy half</h2>
+        <h2 style="font-size:clamp(26px,3.4vw,40px); max-width:26ch">Reading the export is the easy half</h2>
         <p style="margin-top:18px; max-width:60ch; font-size:16.5px; line-height:1.6; color:var(--g-body)">
-          Messages and records only have to be made legible. The pictures are a different job.
-          There are (usually) tens of thousands, spread across every archive, most with their dates gone and
-          plenty of them saved more than once.</p>
+          Messages and records only have to be made legible. The pictures are a different job. There are (usually) tens of thousands, spread across every archive, most with their dates gone and plenty of them saved more than once.</p>
 
         <div class="g-uniques" style="margin-top:40px">
           <div class="g-unique">
             <h3>Duplicates found across services</h3>
             <div>
-              <p>Any photo tool spots two copies in the same folder. The ones filling your disk sit
-                in four different archives under four filenames with four different dates, and
-                nothing else finds them because nothing else opens more than one export at a
-                time.</p>
-              <p>Muletto compares the contents, so the same picture from iCloud, Google, Snapchat
-                and a WhatsApp re-save is one picture. It catches the near-copies too: the burst,
-                the crop, the screenshot of the screenshot.</p>
+              <p>Any photo tool spots two copies in the same folder. The ones filling your disk sit in four different archives under four filenames with four different dates, and nothing else finds them because nothing else opens more than one export at a time.</p>
+              <p>Muletto compares the contents, so the same picture from iCloud, Google, Snapchat and a WhatsApp re-save is one picture. It catches the near-copies too: the burst, the crop, the screenshot of the screenshot.</p>
             </div>
           </div>
 
@@ -126,11 +106,8 @@
           <div class="g-unique">
             <h3>The work goes into the files, not an account</h3>
             <div>
-              <p>Dates and places are written into the photographs themselves, in the
-                fields every photo application already reads. Move the library to Apple Photos, to
-                Immich, to a NAS or to a drive in a drawer and it stays sorted and searchable.</p>
-              <p>Nothing is held here. There is no account to lose and no library that stops
-                working if this site does.</p>
+              <p>Dates and places are written into the photographs themselves, in the fields every photo application already reads. Move the library to Apple Photos, to Immich, to a NAS or to a drive in a drawer and it stays sorted and searchable.</p>
+              <p>Nothing is held here. There is no account to lose and no library that stops working if this site does.</p>
             </div>
           </div>
         </div>
@@ -143,8 +120,7 @@
     <section class="g-seam">
       <div class="g-wide">
         <h2>The rest is detail</h2>
-        <p>Worth reading if you want to know exactly what happens to a file before you point this
-          at your own archive. Same product, told properly.</p>
+        <p>Worth reading if you want to know exactly what happens to a file before you point this at your own archive. Same product, told properly.</p>
       </div>
       <div class="g-steps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
     </section>
@@ -153,84 +129,48 @@
     <section class="g-spec">
       <div class="g-wide g-s-md">
         <h2 style="max-width:22ch">What happens, in order, from asking to keeping</h2>
-        <p class="g-lede">One pass through the whole thing, from asking a service for your data
-          to clearing it away again. Each step says what happens and why it works that way.</p>
+        <p class="g-lede">One pass through the whole thing, from asking a service for your data to clearing it away again. Each step says what happens and why it works that way.</p>
 
         <ol class="g-flow">
           <li>
             <h3>You ask them for it</h3>
-            <p>Every service has to hand over what it holds on you, and every one of them has
-              buried the button somewhere different. The guides walk each request, screen by
-              screen, and say what the wait usually is.</p>
-            <p class="g-why">Muletto is not involved. You are asking them directly, with your own
-              account, and the archive arrives at your machine.</p>
+            <p>Every service has to hand over what it holds on you, and every one of them has buried the button somewhere different. The guides walk each request, screen by screen, and say what the wait usually is.</p>
+            <p class="g-why">Muletto is not involved. You are asking them directly, with your own account, and the archive arrives at your machine.</p>
           </li>
           <li>
             <h3>You open it here</h3>
-            <p>The zip's index is read from the end of the file, and entries are inflated one at a
-              time with <code>DecompressionStream</code> over <code>File.slice()</code>. The
-              archive is never held whole, so a 50 GB Takeout behaves like a small one. Archives
-              past 2 GB arrive in a different format again, and that is read here too.</p>
-            <p class="g-why">Nothing is sent anywhere, and the page is served with a
-              Content-Security-Policy whose <code>connect-src</code> lets the browser refuse it
-              on our behalf. Turn off your wifi and every step below still runs.</p>
+            <p>The zip's index is read from the end of the file, and entries are inflated one at a time with <code>DecompressionStream</code> over <code>File.slice()</code>. The archive is never held whole, so a 50 GB Takeout behaves like a small one. Archives past 2 GB arrive in a different format again, and that is read here too.</p>
+            <p class="g-why">Nothing is sent anywhere, and the page is served with a Content-Security-Policy whose <code>connect-src</code> lets the browser refuse it on our behalf. Turn off your wifi and every step below still runs.</p>
           </li>
           <li>
             <h3>It is read into one library</h3>
-            <p>Photographs, messages, location history, searches, watch history, payments and
-              account tables, out of whatever shape each service chose - Snapchat's JSON, Meta's
-              per-thread files, Google's per-product folders, Apple's and Samsung's CSVs - merged
-              onto one timeline by the timestamps they already carry.</p>
-            <p class="g-why">Two services that logged the same afternoon end up next to each
-              other, which you cannot see while they sit in separate folders.</p>
+            <p>Photographs, messages, location history, searches, watch history, payments and account tables, out of whatever shape each service chose - Snapchat's JSON, Meta's per-thread files, Google's per-product folders, Apple's and Samsung's CSVs - merged onto one timeline by the timestamps they already carry.</p>
+            <p class="g-why">Two services that logged the same afternoon end up next to each other, which you cannot see while they sit in separate folders.</p>
           </li>
           <li>
             <h3>Small copies are made, once</h3>
-            <p>Each picture is shrunk to a 320px copy and written to your browser's own storage,
-              on disk. Videos give up their first frame the same way.</p>
-            <p class="g-why">A wall of three thousand photographs cannot open the originals every
-              time you scroll - that is megabytes each. The copies are made once, in background
-              threads so the page stays alive, and are still there next visit and when the same
-              photograph turns up inside next year's export.</p>
+            <p>Each picture is shrunk to a 320px copy and written to your browser's own storage, on disk. Videos give up their first frame the same way.</p>
+            <p class="g-why">A wall of three thousand photographs cannot open the originals every time you scroll - that is megabytes each. The copies are made once, in background threads so the page stays alive, and are still there next visit and when the same photograph turns up inside next year's export.</p>
           </li>
           <li>
             <h3>Duplicates are found by content</h3>
-            <p>Every file is keyed by a SHA-256 of its bytes. The archive's own checksum and
-              length are a free first pass that only suggests a match; nothing is treated as the
-              same photograph until the hash agrees. Near-copies are caught separately with a
-              perceptual hash, with the flat images held back because a blank screenshot has no
-              fingerprint worth comparing.</p>
-            <p class="g-why">The copies wasting your disk are in four different archives under
-              four filenames with four dates. Only content finds those.</p>
+            <p>Every file is keyed by a SHA-256 of its bytes. The archive's own checksum and length are a free first pass that only suggests a match; nothing is treated as the same photograph until the hash agrees. Near-copies are caught separately with a perceptual hash, with the flat images held back because a blank screenshot has no fingerprint worth comparing.</p>
+            <p class="g-why">The copies wasting your disk are in four different archives under four filenames with four dates. Only content finds those.</p>
           </li>
           <li>
             <h3>Dates and places are put back</h3>
-            <p>Recovered from the sidecar JSON that Google and Meta ship beside each file, or from
-              the container for video, then written into the JPEG as EXIF
-              <code>DateTimeOriginal</code> and a GPS block - rebuilt whole rather than spliced,
-              because inserting a tag shifts every offset after it.</p>
-            <p class="g-why">A half-correct EXIF loses the date and moves the location, which is
-              worse than leaving it alone.</p>
+            <p>Recovered from the sidecar JSON that Google and Meta ship beside each file, or from the container for video, then written into the JPEG as EXIF <code>DateTimeOriginal</code> and a GPS block - rebuilt whole rather than spliced, because inserting a tag shifts every offset after it.</p>
+            <p class="g-why">A half-correct EXIF loses the date and moves the location, which is worse than leaving it alone.</p>
           </li>
           <li>
             <h3>You write it out and keep it</h3>
-            <p>Straight to a folder through the File System Access API where the browser has it,
-              or one streamed archive where it does not - compressed as it is written, so only
-              the index is held. Descriptions go in as XMP <code>dc:description</code>, which
-              Lightroom, digiKam, Immich, Bridge and Apple Photos all read.</p>
-            <p class="g-why">Ordinary folders and ordinary files. Move them to a NAS or a drive in
-              a drawer and they stay sorted and searchable with nothing of ours involved.</p>
+            <p>Straight to a folder through the File System Access API where the browser has it, or one streamed archive where it does not - compressed as it is written, so only the index is held. Descriptions go in as XMP <code>dc:description</code>, which Lightroom, digiKam, Immich, Bridge and Apple Photos all read.</p>
+            <p class="g-why">Ordinary folders and ordinary files. Move them to a NAS or a drive in a drawer and they stay sorted and searchable with nothing of ours involved.</p>
           </li>
           <li>
             <h3>You forget this ever happened</h3>
-            <p>We hold nothing to delete - there is no account, no server and no copy of your
-              data anywhere but your own machine. What is left after a session is a small pile of
-              working files in your own browser: the comparisons, the repaired dates and the
-              little thumbnail copies. Harmless, and yours.</p>
-            <p class="g-why">One button clears them, after saying what goes and offering to save
-              the work to a file first. Take that option and your exported folders are all that
-              remains; take the button and there is no trace left of any of this - not with us,
-              because there never was any, and not on your machine either.</p>
+            <p>We hold nothing to delete - there is no account, no server and no copy of your data anywhere but your own machine. What is left after a session is a small pile of working files in your own browser: the comparisons, the repaired dates and the little thumbnail copies. Harmless, and yours.</p>
+            <p class="g-why">One button clears them, after saying what goes and offering to save the work to a file first. Take that option and your exported folders are all that remains; take the button and there is no trace left of any of this - not with us, because there never was any, and not on your machine either.</p>
           </li>
         </ol>
 
@@ -257,19 +197,9 @@
           </table>
         </div>
 
-        <p class="g-caveat">Apple Health has been opened for real as well - 383,000 records
-          out of one 161 MB file - and is left out of the table only because it arrives from
-          the phone rather than from a website. Eleven further services are read: Reddit,
-          Spotify, X, Discord, Strava, TikTok, WhatsApp, Fitbit, LinkedIn, Microsoft and
-          Amazon. Those readers are written from what each service documents and none of
-          them has met a real export yet, which is a weaker thing and is said as such on
-          <a href="guides.html" style="text-decoration:underline">every one of their
-          guides</a>.</p>
+        <p class="g-caveat">Apple Health has been opened for real as well - 383,000 records out of one 161 MB file - and is left out of the table only because it arrives from the phone rather than from a website. These are read too: Reddit, Spotify, X, Discord, Strava, TikTok, WhatsApp, Fitbit, LinkedIn, Microsoft and Amazon. Those readers are written from what each service documents and none of them has met a real export yet, which is a weaker thing and is said as such on <a href="guides.html" style="text-decoration:underline">every one of their guides</a>.</p>
 
-        <p class="g-caveat">Two honest limits. Writing a date back needs JPEG - other formats are
-          copied untouched and reported, not silently skipped. And folder writing needs
-          <code>showDirectoryPicker</code>, which today means Chrome or Edge; Safari and Firefox
-          get one streamed archive instead.</p>
+        <p class="g-caveat">Two honest limits. Writing a date back needs JPEG - other formats are copied untouched and reported, not silently skipped. And folder writing needs <code>showDirectoryPicker</code>, which today means Chrome or Edge; Safari and Firefox get one streamed archive instead.</p>
 
         <p style="margin-top:34px; font-size:14px">
           <a href="app.html" style="text-decoration:underline">Open an export</a> &nbsp;/&nbsp;
@@ -278,28 +208,32 @@
         </p>
       </div>
     </section>
+
   </main>
 
-  <footer class="g-foot">
-    <div class="g-wide">
+  <footer class="site">
+    <div class="wrap">
       <a class="wordmark" href="index.html">muletto</a>
-      <a href="guides.html">Guides</a>
-      <a href="app.html">Open an export</a>
-      <a href="privacy.html">Privacy</a>
-      <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-        Read the source
-      </a>
-        <a class="foot-commit" href="https://github.com/SolusKossi/muletto/commit/aaaa111" target="_blank" rel="noopener noreferrer" title="The commit this site was built from">build aaaa111</a>
-      <span class="small">Built by one person. Everything runs in your browser, and the source is public.</span>
+      <div class="foot-links">
+        <a href="guides.html">Guides</a>
+        <a href="app.html">Open export</a>
+        <a href="privacy.html">Privacy</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Read the source
+        </a>
+        <a class="foot-lang" href="/no/index.html" hreflang="nb" lang="nb">Norsk</a>
+        <span class="small">Built by one person. Everything runs in your browser, and the source is public.</span>
+      </div>
     </div>
   </footer>
 
   <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="disclose.js?v=b24e640b"></script>
-  <!-- Counts that a page was read. Nothing stored on the device, nothing
-       about anybody, and never loaded on app.html. See privacy.html. -->
+  <!-- Counts that a guide was read. See privacy.html. -->
   <script src="analytics.js?v=e2665599"></script>
+  <script src="app.js?v=dd658390"></script>
   <script src="vow.js?v=b72dbc20"></script>
+
 </body>
 </html>

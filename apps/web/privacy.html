@@ -4,20 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Privacy: where your data actually goes | Muletto</title>
-  <meta name="description" content="Muletto is a GDPR export viewer that runs entirely in your browser and never uploads your archive. This page explains what stays on your device, the one optional exception, and how to clear everything." />
+  <meta name="description" content="Nothing is uploaded. What is kept, where, and how to check the claim yourself rather than take it on trust." />
   <link rel="canonical" href="https://muletto.app/privacy.html" />
-  <meta property="og:image" content="https://muletto.app/og.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta property="og:type" content="website" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/privacy.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/privacy.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/privacy.html" />
+  <meta property="og:type" content="article" />
   <meta property="og:title" content="Privacy: where your data actually goes | Muletto" />
-  <meta property="og:description" content="Muletto opens your data export in your browser and never uploads it. This page explains what stays on your device, the one optional exception, and how to clear everything." />
+  <meta property="og:description" content="Nothing is uploaded. What is kept, where, and how to check the claim yourself rather than take it on trust." />
   <meta property="og:url" content="https://muletto.app/privacy.html" />
   <meta property="og:site_name" content="Muletto" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:locale" content="en_GB" />
+  <meta property="og:locale:alternate" content="nb_NO" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="og.png" />
   <link rel="stylesheet" href="styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
   <script src="theme.js?v=4ef9956d"></script>
+
 </head>
 <body>
   <nav class="nav">
@@ -26,7 +33,7 @@
         <a class="wordmark" href="index.html">muletto</a>
         <div class="nav-links">
           <a href="guides.html">Guides</a>
-          <a href="privacy.html" class="active">Privacy</a>
+          <a href="privacy.html">Privacy</a>
         </div>
       </div>
       <div class="nav-right">
@@ -36,59 +43,41 @@
   </nav>
 
   <main>
+
     <section class="page-head wrap">
       <h1>Where your data actually goes</h1>
-      <p>Short version: nowhere. Everything happens in your browser, on your machine. This page is the long
-      version, because a promise you cannot check is not worth much.</p>
+      <p>Short version: nowhere. Everything happens in your browser, on your machine. This page is the long version, because a promise you cannot check is not worth much.</p>
     </section>
 
     <section class="wrap tight">
       <div class="section-head">
         <h2>Your export is never uploaded</h2>
-        <p>Your export is opened by the browser itself, the same way it would open a file you double-click.
-        Reading it, merging services, finding duplicates, repairing dates, searching and exporting all happen
-        on your machine. No part of the archive is sent anywhere. Open your browser's network tab on the
-        page where your export is open and you will see it load, and then nothing at all - not one
-        request, for as long as you use it. Do the same on this page and you will see a single count
-        go out, which is <a href="#count">described below</a> and is the only thing on this site that
-        ever does.</p>
-        <p>There is no exception, and the thing enforcing that is not a paragraph on this page.
-        <code>connect-src</code> in the site's headers is <code>'self'</code> and nothing else, so the
-        browser would refuse to send your archive anywhere even if a future change to this site tried
-        to. You can read that header in your own browser's network tab, and the file that sets it is
-        in the public source.</p>
+        <p>Your export is opened by the browser itself, the same way it would open a file you double-click. Reading it, merging services, finding duplicates, repairing dates, searching and exporting all happen on your machine. No part of the archive is sent anywhere. Open your browser's network tab on the page where your export is open and you will see it load, and then nothing at all - not one request, for as long as you use it. Do the same on this page and you will see a single count go out, which is <a href="#count">described below</a> and is the only thing on this site that ever does.</p>
+        <p>There is no exception, and the thing enforcing that is not a paragraph on this page. <code>connect-src</code> in the site's headers is <code>'self'</code> and nothing else, so the browser would refuse to send your archive anywhere even if a future change to this site tried to. You can read that header in your own browser's network tab, and the file that sets it is in the public source.</p>
       </div>
     </section>
 
     <section class="wrap tight">
       <div class="section-head">
         <h2>Some things are kept, on your device</h2>
-        <p>Reading a large export takes time, and working out which photos are near-duplicates takes longer.
-        Doing that again every visit would be a poor trade, so the results are kept - in your browser's own
-        storage, on your own disk.</p>
+        <p>Reading a large export takes time, and working out which photos are near-duplicates takes longer. Doing that again every visit would be a poor trade, so the results are kept - in your browser&#39;s own storage, on your own disk.</p>
       </div>
       <div class="grid cards">
         <div class="card">
           <h3>What is kept</h3>
-          <p class="muted">The list of what is inside your export, the dates and places read out of it, and
-          the results of any analysis. Plus a reference to each archive, so it can be reopened without asking
-          you to find it again.</p>
+          <p class="muted">The list of what is inside your export, the dates and places read out of it, and the results of any analysis. Plus a reference to each archive, so it can be reopened without asking you to find it again.</p>
         </div>
         <div class="card">
           <h3>What is not kept</h3>
-          <p class="muted">Copies of your photos, videos or messages. A reference to an archive is a pointer
-          to the file already on your disk, not a second copy of it. Move or delete the archive and Muletto
-          will tell you it is gone.</p>
+          <p class="muted">Copies of your photos, videos or messages. A reference to an archive is a pointer to the file already on your disk, not a second copy of it. Move or delete the archive and Muletto will tell you it is gone.</p>
         </div>
         <div class="card">
           <h3>Who can read it</h3>
-          <p class="muted">This browser, on this machine, for this site. Not us, not another site, not
-          another profile. It is the same storage a web app uses to remember your settings.</p>
+          <p class="muted">This browser, on this machine, for this site. Not us, not another site, not another profile. It is the same storage a web app uses to remember your settings.</p>
         </div>
         <div class="card">
           <h3>Getting rid of it</h3>
-          <p class="muted">One button. "Forget this library" in the sidebar clears everything Muletto has
-          kept, immediately. Clearing site data in your browser does the same.</p>
+          <p class="muted">One button. Forget this library, in the sidebar, clears everything Muletto has kept, immediately. Clearing site data in your browser does the same.</p>
         </div>
       </div>
     </section>
@@ -96,53 +85,39 @@
     <section class="wrap tight">
       <div class="section-head">
         <h2>Work you can take with you</h2>
-        <p>Browser storage belongs to the browser, and it can be cleared - by you, or by the browser needing
-        room. Anything that took real effort can be written out to a file you keep. It holds the results
-        only: no photos, no messages, not even file names. Feed it back next year alongside a fresh export
-        and everything that still applies is recognised, because results are filed against the contents of
-        each file rather than its name.</p>
+        <p>Browser storage belongs to the browser, and it can be cleared - by you, or by the browser needing room. Anything that took real effort can be written out to a file you keep. It holds the results only: no photos, no messages, not even file names. Feed it back next year alongside a fresh export and everything that still applies is recognised, because results are filed against the contents of each file rather than its name.</p>
       </div>
     </section>
 
     <section class="wrap tight">
       <div class="section-head">
         <h2>Nothing happens in the background</h2>
-        <p>There is no telemetry and no crash reporting. Nothing is sent while you are not looking. The
-        only request Muletto ever makes with your data in it is one you started, for photos you picked,
-        on a screen that told you the cost first.</p>
+        <p>There is no telemetry and no crash reporting. Nothing is sent while you are not looking. The app makes no network requests at all - not one, with your data or without it - which is a shorter claim than any list of exceptions could be, and an easier one to check.</p>
       </div>
 
       <div class="section-head">
         <h2 id="count">The one thing we do count</h2>
-        <p>The pages of this site - not the app - send a note that a page was read. It is worth being
-        exact about what that is, because most sites are not.</p>
+        <p>The pages of this site - not the app - send a note that a page was read. It is worth being exact about what that is, because most sites are not.</p>
       </div>
       <div class="grid cards">
         <div class="card">
           <h3>What is recorded</h3>
-          <p class="muted">Which page, which site you arrived from, which country the connection came from, a browser
-          family, and whether the screen is a phone. Added to a tally for that day and nothing else.</p>
+          <p class="muted">Which page, which site you arrived from, which country the connection came from, a browser family, and whether the screen is a phone. Added to a tally for that day and nothing else.</p>
         </div>
         <div class="card">
           <h3>What is not</h3>
-          <p class="muted">No cookie and nothing else stored on your device - which is the entire reason this site
-          has no consent banner, because a banner exists to ask permission for exactly that. No address
-          is kept, hashed, or turned into an identifier, so there is no such thing here as a visitor, a
-          session or a return visit. Only counts.</p>
+          <p class="muted">No cookie and nothing else stored on your device - which is the entire reason this site has no consent banner, because a banner exists to ask permission for exactly that. No address is kept, hashed, or turned into an identifier, so there is no such thing here as a visitor, a session or a return visit. Only counts.</p>
         </div>
         <div class="card">
           <h3>Never from the app</h3>
-          <p class="muted">The page where your export is open sends nothing at all. That is why you can open the
-          Network tab, use the whole app, and see no requests - a claim with an exception in it is not
-          worth making, so there is no exception.</p>
+          <p class="muted">The page where your export is open sends nothing at all. That is why you can open the Network tab, use the whole app, and see no requests - a claim with an exception in it is not worth making, so there is no exception.</p>
         </div>
         <div class="card">
           <h3>And it is refusable</h3>
-          <p class="muted">Do Not Track and Global Privacy Control are both honoured, though neither is required of a
-          site that stores nothing on your machine. Turn either on and even the tally stops.</p>
+          <p class="muted">Do Not Track and Global Privacy Control are both honoured, though neither is required of a site that stores nothing on your machine. Turn either on and even the tally stops.</p>
         </div>
       </div>
-      <p><a class="btn primary" href="app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      <p><a class="btn primary" href="app.html">Open an export <svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h16"/><path d="M12.5 1.5 17 6l-4.5 4.5"/></svg></a></p>
     </section>
 
   </main>
@@ -158,16 +133,16 @@
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           Read the source
         </a>
-        <a class="foot-commit" href="https://github.com/SolusKossi/muletto/commit/aaaa111" target="_blank" rel="noopener noreferrer" title="The commit this site was built from">build aaaa111</a>
+        <a class="foot-lang" href="/no/privacy.html" hreflang="nb" lang="nb">Norsk</a>
       </div>
     </div>
   </footer>
 
   <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="disclose.js?v=b24e640b"></script>
-  <!-- Counts that a page was read. Nothing stored on the device, nothing
-       about anybody, and never loaded on app.html. See privacy.html. -->
+  <!-- Counts that a guide was read. See privacy.html. -->
   <script src="analytics.js?v=e2665599"></script>
   <script src="app.js?v=dd658390"></script>
+
 </body>
 </html>

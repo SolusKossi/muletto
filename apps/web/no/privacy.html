@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personvern: hvor dataene dine faktisk tar veien | Muletto</title>
+  <meta name="description" content="Ingenting lastes opp. Hva som lagres, hvor, og hvordan du selv kan etterprøve det i stedet for å stole på oss." />
+  <link rel="canonical" href="https://muletto.app/no/privacy.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/privacy.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/privacy.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/privacy.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Personvern: hvor dataene dine faktisk tar veien | Muletto" />
+  <meta property="og:description" content="Ingenting lastes opp. Hva som lagres, hvor, og hvordan du selv kan etterprøve det i stedet for å stole på oss." />
+  <meta property="og:url" content="https://muletto.app/no/privacy.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../theme.js?v=4ef9956d"></script>
+
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html">Veiledninger</a>
+          <a href="../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="page-head wrap">
+      <h1>Hvor dataene dine faktisk tar veien</h1>
+      <p>Kortversjonen: ingen steder. Alt skjer i nettleseren din, på din egen maskin. Denne siden er langversjonen, for et løfte du ikke kan etterprøve er ikke verdt stort.</p>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>Eksporten din lastes aldri opp</h2>
+        <p>Eksporten åpnes av nettleseren selv, på samme måte som når du dobbeltklikker en fil. Å lese den, slå sammen tjenester, finne duplikater, reparere datoer, søke og eksportere skjer alt sammen på maskinen din. Ingen del av arkivet sendes noe sted. Åpne nettverksfanen i nettleseren på siden der eksporten ligger åpen, så ser du den laste - og deretter ingenting i det hele tatt, ikke én eneste forespørsel, så lenge du bruker den. Gjør det samme på denne siden, og du ser en enkelt telling gå ut. Den er <a href="#count">beskrevet lenger ned</a>, og den er det eneste på dette nettstedet som noen gang gjør det.</p>
+        <p>Det finnes ingen unntak, og det som håndhever det er ikke et avsnitt på denne siden. <code>connect-src</code> i headerne til nettstedet er <code>'self'</code> og ingenting annet, så nettleseren ville nektet å sende arkivet ditt noe sted selv om en framtidig endring prøvde på det. Du kan lese den headeren i din egen nettverksfane, og fila som setter den ligger åpent i kildekoden.</p>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>Noe lagres, på din egen enhet</h2>
+        <p>Det tar tid å lese en stor eksport, og lengre tid å regne ut hvilke bilder som nesten er like. Å gjøre det på nytt hver gang ville vært en dårlig handel, så resultatene blir liggende - i nettleserens eget lager, på din egen disk.</p>
+      </div>
+      <div class="grid cards">
+        <div class="card">
+          <h3>Hva som lagres</h3>
+          <p class="muted">Oversikten over hva som ligger i eksporten din, datoene og stedene som er lest ut av den, og resultatet av analysene. I tillegg en henvisning til hvert arkiv, så det kan åpnes igjen uten at du må finne det fram på nytt.</p>
+        </div>
+        <div class="card">
+          <h3>Hva som ikke lagres</h3>
+          <p class="muted">Kopier av bildene, videoene eller meldingene dine. En henvisning til et arkiv er en peker til fila som allerede ligger på disken din, ikke kopi nummer to. Flytter eller sletter du arkivet, sier Muletto fra om at det er borte.</p>
+        </div>
+        <div class="card">
+          <h3>Hvem som kan lese det</h3>
+          <p class="muted">Denne nettleseren, på denne maskinen, for dette nettstedet. Ikke vi, ikke et annet nettsted, ikke en annen profil. Det er det samme lageret enhver nettapp bruker for å huske innstillingene dine.</p>
+        </div>
+        <div class="card">
+          <h3>Slik blir du kvitt det</h3>
+          <p class="muted">Én knapp. Glem dette biblioteket, i sidemenyen, sletter alt Muletto har lagret, med en gang. Å slette nettstedsdata i nettleseren gjør det samme.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>Arbeid du kan ta med deg</h2>
+        <p>Nettleserlageret tilhører nettleseren, og det kan bli tømt - enten av deg, eller av nettleseren fordi den trenger plass. Alt som har kostet reelt arbeid kan skrives ut til en fil du selv beholder. Den inneholder bare resultatene: ingen bilder, ingen meldinger, ikke engang filnavn. Mat den inn igjen neste år sammen med en fersk eksport, så blir alt som fortsatt gjelder gjenkjent - for resultatene er arkivert mot innholdet i hver fil, ikke mot navnet.</p>
+      </div>
+    </section>
+
+    <section class="wrap tight">
+      <div class="section-head">
+        <h2>Ingenting skjer i bakgrunnen</h2>
+        <p>Det finnes ingen telemetri og ingen krasjrapportering. Ingenting sendes mens du ser en annen vei. Appen gjør ingen nettverkskall i det hele tatt - ikke ett, verken med dataene dine eller uten - og det er en kortere påstand enn noen liste over unntak kunne vært, og lettere å etterprøve.</p>
+      </div>
+
+      <div class="section-head">
+        <h2 id="count">Den ene tingen vi teller</h2>
+        <p>Sidene på dette nettstedet - ikke appen - sender en beskjed om at en side ble lest. Det er verdt å være presis på hva det innebærer, for de fleste nettsteder er ikke det.</p>
+      </div>
+      <div class="grid cards">
+        <div class="card">
+          <h3>Hva som registreres</h3>
+          <p class="muted">Hvilken side, hvilket nettsted du kom fra, hvilket land tilkoblingen kom fra, en nettleserfamilie, og om skjermen er en telefon. Lagt til en telling for den dagen, og ingenting mer.</p>
+        </div>
+        <div class="card">
+          <h3>Hva som ikke gjør det</h3>
+          <p class="muted">Ingen informasjonskapsel og ingenting annet lagret på enheten din - som er hele grunnen til at dette nettstedet ikke har noe samtykkebanner, for et banner finnes nettopp for å be om lov til akkurat det. Ingen adresse tas vare på, hashes eller gjøres om til en identifikator, så noe slikt som en besøkende, en økt eller et gjenbesøk finnes ikke her. Bare tellinger.</p>
+        </div>
+        <div class="card">
+          <h3>Aldri fra appen</h3>
+          <p class="muted">Siden der eksporten din ligger åpen sender ingenting i det hele tatt. Det er derfor du kan åpne nettverksfanen, bruke hele appen, og ikke se en eneste forespørsel - en påstand med et unntak i seg er ikke verdt å komme med, så det finnes ikke noe unntak.</p>
+        </div>
+        <div class="card">
+          <h3>Og den kan avvises</h3>
+          <p class="muted">Både Do Not Track og Global Privacy Control respekteres, selv om ingen av dem kreves av et nettsted som ikke lagrer noe på maskinen din. Skru på én av dem, så stopper selv tellingen.</p>
+        </div>
+      </div>
+      <p><a class="btn primary" href="../no/app.html">Åpne en eksport <svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h16"/><path d="M12.5 1.5 17 6l-4.5 4.5"/></svg></a></p>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../guides.html">Veiledninger</a>
+        <a href="../no/app.html">Åpne eksport</a>
+        <a href="../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="/privacy.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../analytics.js?v=e2665599"></script>
+  <script src="../app.js?v=dd658390"></script>
+
+</body>
+</html>

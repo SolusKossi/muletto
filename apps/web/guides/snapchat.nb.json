@@ -1,0 +1,75 @@
+{
+  "en_hash": "db1392459db3",
+
+  "wait_time": "timer til dager, og Snapchat sender deg en e-post når den er klar",
+  "format": ".zip med JSON- og HTML-filer",
+
+  "request": {
+    "label": "Snapchat-kontosiden"
+  },
+
+  "steps": [
+    {
+      "title": "Logg inn på accounts.snapchat.com",
+      "detail": "Bruk nettleser, ikke appen. Appen kan starte den samme forespørselen fra Profil, tannhjulet for Innstillinger og så Mine data, men nettleserversjonen viser deg hele listen over kategorier på én gang."
+    },
+    {
+      "title": "Åpne Mine data",
+      "detail": "Det er øverste punkt i menyen til venstre når du er logget inn. Siden går gjennom tre nummererte trinn: velg dataene dine, bekreft tidsrom og e-postadresse, og vent."
+    },
+    {
+      "title": "La Eksporter JSON-filer stå på",
+      "detail": "Dette er bryteren som betyr mest, og den er lett å skumme forbi: den ligger som nummer to i lista og har ingen annen forklaring enn 'For dataportabilitet'. Uten den får du et sett nettsider du kan lese, men ingenting et verktøy kan gjøre noe med. Muletto leser JSON-en for å bygge opp den søkbare oversikten over chatter, snaps, venner og steder - og det gjør enhver annen importør også."
+    },
+    {
+      "title": "Sjekk at de tre medieeksportene er på",
+      "detail": "Eksporter minnene dine, Eksporter delte historier og Eksporter chatmedier står oppført for seg, adskilt fra datakategoriene, og de er eneste vei til de faktiske bildene og videoene dine. Telleren oppe til høyre viser 10 / 10 valgt når datakategoriene er på, så det kan se komplett ut mens en mediebryter står av. Se spesifikt etter de tre."
+    },
+    {
+      "title": "Bekreft resten av kategoriene og trykk Neste",
+      "detail": "De øvrige kategoriene er Brukerinformasjon, Chathistorikk, Spotlight, Shopping, Supporthistorikk, Rangering og posisjon, Andre medier, Annet og My AI. Chathistorikk dekker snaps, chatter, samtaler og Communities. Rangering og posisjon dekker stedene dine på Snap Map og posisjonshistorikken. Det er ingen grunn til å utelate noen av dem fra en sikkerhetskopi."
+    },
+    {
+      "title": "Velg Hele tiden, og kontroller e-postadressen",
+      "detail": "Trinn 2 spør etter et tidsrom, og det er her folk stille mister historikken sin: det står ikke på alt fra før. Du må velge Hele tiden selv. Lar du det være, får du et utsnitt i stedet for et arkiv, og det er ikke det noen mener når de ber om dataene sine. Se deretter nøye på adressen som vises, for det er dit nedlastingslenken går, og det er adressen som står på kontoen - ikke en du velger her. Er det en gammel postkasse du ikke leser lenger, bytt den i kontoinnstillingene før du sender inn, ikke etter: forespørselen bruker den adressen som står på kontoen i det øyeblikket du lager den. Får du ikke byttet den, kan du fortsatt hente eksporten fra Mine data-siden uten e-posten, slik det står lenger ned. Trykk Send inn."
+    },
+    {
+      "title": "Vent på e-posten",
+      "detail": "Snapchat sier jobben kan ta timer eller dager, avhengig av hvor mye som skal samles inn. Siden viser forespørselen som Pågår med tidspunktet du opprettet den, og du kan lukke fanen - den trenger ikke stå åpen."
+    },
+    {
+      "title": "Regn med et varsel i appen du kan overse",
+      "detail": "Snapchat sender et varsel fra selve appen om at dataene dine er på vei. Det er kun til orientering og det er ingenting å gjøre med det - ingen lenke, ingen nedlasting, og det betyr ikke at eksporten er klar. Overse det og vent på e-posten."
+    },
+    {
+      "title": "Last ned hver del med en gang",
+      "detail": "Ikke vent på e-posten. Gå tilbake til accounts.snapchat.com, åpne Mine data og velg Se eksporter: hver forespørsel du har gjort står der med status og en nedlastingsknapp, så du kan hente filene uten at e-posten er innblandet i det hele tatt. Dette betyr mer enn det høres ut som. Lenken skal vare rundt sju dager, og adressen på kontoen er ofte en som ble satt opp for mange år siden og som du ikke leser lenger - det er slik folk ber om en eksport tre ganger på rad og går glipp av den tre ganger, hvor hvert forsøk stille går ut på dato i en innboks de aldri åpner. Sjekk siden et par timer etter at du har bedt om den, og deretter daglig. Store eksporter deles i flere deler, og du trenger alle sammen."
+    }
+  ],
+
+  "notes": [
+    "Eksporter JSON-filer er den ene bryteren det er verdt å dobbeltsjekke. HTML alene er lesbart, men lar seg ikke importere - verken i Muletto eller noe annet.",
+    "Den første e-posten kommer i løpet av minutter og bekrefter bare at forespørselen er mottatt. Nedlastingslenken kommer i en senere, egen e-post.",
+    "Minner, delte historier og chatmedier telles for seg, utenfor de ti datakategoriene, så et utvalg som ser fullstendig ut kan likevel mangle bildene dine.",
+    "Størrelsen avgjøres nesten utelukkende av Minner. Chatter, venner og posisjonshistorikk er noen få megabyte JSON, men år med lagrede snaps og videoer kan bli titalls gigabyte. Muletto leser arkivet stykkevis i stedet for å laste det inn samlet, så et stort arkiv åpnes på samme måte som et lite."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor ligger ikke Snapchat-minnene mine i nedlastingen?",
+      "a": "Med mindre du huket av for å ta dem med, inneholder eksporten lenker til minnene dine i stedet for filene - og de lenkene går ut på dato. Be om eksporten på nytt med Eksporter minnene dine valgt hvis du vil ha selve bildene og videoene."
+    },
+    {
+      "q": "Hvorfor finnes det ingen json-mappe i Snapchat-eksporten min?",
+      "a": "JSON-filene er et valg du huker av når du ber om eksporten. Uten det får du bare HTML-sidene, som er lesbare for øyet og atskillig vanskeligere for et verktøy å bruke. Be om den på nytt med Eksporter JSON-filer valgt."
+    },
+    {
+      "q": "Hvor langt tilbake går Snapchat-chathistorikken?",
+      "a": "Bare lagrede meldinger er med. Alt som ikke uttrykkelig ble lagret i samtalen, ble slettet fra Snapchats servere og kan ikke hentes tilbake av noen forespørsel."
+    },
+    {
+      "q": "Hvorfor har Snapchat-minnene mine feil dato?",
+      "a": "Opptaksdatoen og stedet ligger i eksportens JSON, ikke inni det nedlastede bildet, så alt som leser fila alene ser nedlastingsdatoen. Muletto leser JSON-en og skriver den ekte datoen og stedet tilbake inn i fila."
+    }
+  ]
+}

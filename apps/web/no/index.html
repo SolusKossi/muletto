@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Muletto - les GDPR-eksporten din i nettleseren</title>
+  <meta name="description" content="Åpne GDPR-eksporten fra Apple, Google, Samsung, Snapchat, Facebook og Instagram på ett sted. Duplikater funnet på tvers av tjenestene, datoer og steder satt tilbake, alt skrevet ut som vanlige mapper. Ingenting lastes opp." />
+  <link rel="canonical" href="https://muletto.app/no/index.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/index.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/index.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/index.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Muletto - les GDPR-eksporten din i nettleseren" />
+  <meta property="og:description" content="Åpne GDPR-eksporten fra Apple, Google, Samsung, Snapchat, Facebook og Instagram på ett sted. Duplikater funnet på tvers av tjenestene, datoer og steder satt tilbake, alt skrevet ut som vanlige mapper. Ingenting lastes opp." />
+  <meta property="og:url" content="https://muletto.app/no/index.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../og.png" />
+  <link rel="stylesheet" href="../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Muletto","applicationCategory":"UtilitiesApplication","applicationSubCategory":"GDPR data export viewer","operatingSystem":"Any modern web browser","url":"https://muletto.app/no/index.html","inLanguage":"nb","description":"Åpne GDPR-eksporten fra Apple, Google, Samsung, Snapchat, Facebook og Instagram på ett sted. Duplikater funnet på tvers av tjenestene, datoer og steder satt tilbake, alt skrevet ut som vanlige mapper. Ingenting lastes opp.","featureList":["Åpner GDPR-eksportarkiver uten å pakke dem ut","Slår sammen eksporter fra flere tjenester til ett bibliotek","Finner duplikatbilder på tvers av tjenester","Reparerer opptaksdatoer og steder","Leser meldinger, helsedata, posisjonshistorikk og innloggingslogger","Skriver en ryddet kopi tilbake til din egen disk"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true,"browserRequirements":"Krever JavaScript. Ingen konto, ingen installasjon."}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../guides.html">Veiledninger</a>
+          <a href="../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- Stays until it is dismissed, and stays dismissed after that. Not a
+         cookie banner: it asks for nothing and blocks nothing, it is only the
+         one fact a first-time reader most needs and least believes. -->
+    <aside class="g-vow" id="g-vow" hidden>
+      <p><b>Filene dine forlater aldri denne enheten.</b> Det finnes ingen opplasting, ingen konto og ingen server som kunne tatt imot dem - nettleseren har fått beskjed om å nekte.
+        <a href="../no/privacy.html">Hva som lagres, og hvor</a></p>
+      <button type="button" id="g-vow-x" aria-label="Lukk">&times;</button>
+    </aside>
+
+    <!-- 1. Headline left, the explanation beside it. -->
+    <section class="g-top">
+      <div class="g-wide">
+        <h1>De må gi deg dataene dine. <em>Ingen sa at de måtte være til å forstå.</em></h1>
+
+        <div class="say">
+          <p class="lede">Be Apple, Google, Meta eller Snapchat om alt de har om deg, og det dukker opp noen zip-filer. Inni: nummererte mapper, maskinskrevet JSON, meldingene dine spredd over flere tjenester, år med posisjoner du ikke visste ble lagret, og det samme bildet fire ganger med datoene fjernet.</p>
+          <p class="lede">Muletto åpner hele bunken i denne fanen og gir deg tilbake én ting du kan lese, søke i og beholde.</p>
+
+          <div class="cta">
+            <a class="g-btn" href="../no/app.html">Åpne en eksport</a>
+            <a class="g-btn line" href="../guides.html">Jeg må be om en</a>
+            <span class="fine">Ingen konto. Ingenting lastes opp.</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. What comes back out. Plain list, no widget. -->
+    <section class="g-get">
+      <div class="g-wide">
+        <ul>
+          <li><b>Én tidslinje</b><span>Hvert arkiv på én tråd, i den rekkefølgen det skjedde, i stedet for fire mapper som verken deler filnavn eller datoer.</span></li>
+          <li><b>Meldingene dine, samlet</b><span>Samtaler som gikk over Snapchat, Instagram og Messenger leses som én samtale, med personen, ikke plattformen.</span></li>
+          <li><b>Overalt du har vært</b><span>Posisjonsloggene hver tjeneste førte, tegnet opp på din egen maskin. Kystlinjen følger med siden, så det å tegne bevegelsene dine gir dem ikke bort til et kartselskap på kjøpet.</span></li>
+          <li><b>Bilder med datoene tilbake</b><span>Duplikater på tvers av tjenester fjernet, ekte datoer og steder skrevet inn i filene, klare for Bilder, Immich, en NAS eller en disk i en skuff.</span></li>
+          <li><b>Filer du eier</b><span>Alt skrives ut som vanlige mapper og vanlige filer. Ingenting er avhengig av at dette nettstedet fortsetter å finnes - eksporter én gang gjennom Muletto, behold de ordnede filene for alltid, og etterlat deg ingen spor.</span></li>
+          <li><b>Gratis, og det blir det værende</b><span>Alt over kjører på din egen maskin og koster ingenting. Sparte det deg for en ettermiddag, <a class="g-tip" href="https://buymeacoffee.com/muletto" rel="noopener">kan du spandere en kaffe</a> - helt frivillig, og ingenting holdes tilbake om du lar være.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. The photographs, which are where the real work is. -->
+    <section class="g-s-lg" style="border-top:1px solid var(--g-line); background:var(--g-paper-2)">
+      <div class="g-wide">
+        <h2 style="font-size:clamp(26px,3.4vw,40px); max-width:26ch">Å lese eksporten er den enkle halvdelen</h2>
+        <p style="margin-top:18px; max-width:60ch; font-size:16.5px; line-height:1.6; color:var(--g-body)">
+          Meldinger og oppføringer skal bare gjøres leselige. Bildene er en annen jobb. Det er (som regel) titusenvis av dem, spredd over hvert eneste arkiv, de fleste uten datoene sine og mange av dem lagret mer enn én gang.</p>
+
+        <div class="g-uniques" style="margin-top:40px">
+          <div class="g-unique">
+            <h3>Duplikater funnet på tvers av tjenester</h3>
+            <div>
+              <p>Ethvert bildeprogram ser to kopier i samme mappe. De som fyller opp disken din ligger i fire forskjellige arkiver under fire filnavn med fire forskjellige datoer, og ingenting annet finner dem, fordi ingenting annet åpner mer enn én eksport om gangen.</p>
+              <p>Muletto sammenligner innholdet, så det samme bildet fra iCloud, Google, Snapchat og en WhatsApp-lagring er ett bilde. Den fanger opp de nesten like også: serien, beskjæringen, skjermbildet av skjermbildet.</p>
+            </div>
+          </div>
+
+
+          <div class="g-unique">
+            <h3>Arbeidet havner i filene, ikke i en konto</h3>
+            <div>
+              <p>Datoer og steder skrives inn i selve bildene, i feltene alle bildeprogrammer allerede leser. Flytt biblioteket til Apple Bilder, til Immich, til en NAS eller til en disk i en skuff, og det er fortsatt sortert og søkbart.</p>
+              <p>Ingenting blir liggende her. Det finnes ingen konto å miste, og intet bibliotek som slutter å virke hvis dette nettstedet gjør det.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- The seam. A step wedge: six flat tones walking from paper to the
+         datasheet's black, the way a printer's calibration strip does. It is
+         one idea, it has no texture to be noisy with, and it is not a fade. -->
+    <section class="g-seam">
+      <div class="g-wide">
+        <h2>Resten er detaljer</h2>
+        <p>Verdt å lese hvis du vil vite nøyaktig hva som skjer med en fil før du slipper dette løs på ditt eget arkiv. Samme produkt, fortalt ordentlig.</p>
+      </div>
+      <div class="g-steps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </section>
+
+    <!-- 4. Datasheet. Dark and dense. -->
+    <section class="g-spec">
+      <div class="g-wide g-s-md">
+        <h2 style="max-width:22ch">Hva som skjer, i rekkefølge, fra du spør til du beholder</h2>
+        <p class="g-lede">Én gjennomgang av hele greia, fra du ber en tjeneste om dataene dine til du rydder dem bort igjen. Hvert steg sier hva som skjer og hvorfor det gjøres slik.</p>
+
+        <ol class="g-flow">
+          <li>
+            <h3>Du ber dem om den</h3>
+            <p>Hver tjeneste plikter å utlevere det de har om deg, og hver eneste av dem har gjemt knappen et nytt sted. Veiledningene går gjennom hver forespørsel, skjermbilde for skjermbilde, og sier hva ventetiden pleier å være.</p>
+            <p class="g-why">Muletto er ikke involvert. Du spør dem direkte, med din egen konto, og arkivet kommer til din maskin.</p>
+          </li>
+          <li>
+            <h3>Du åpner den her</h3>
+            <p>Zip-filas innholdsfortegnelse leses fra slutten av fila, og oppføringene pakkes ut én om gangen med <code>DecompressionStream</code> over <code>File.slice()</code>. Arkivet holdes aldri samlet, så en Takeout på 50 GB oppfører seg som en liten en. Arkiver over 2 GB kommer i et annet format igjen, og det leses også her.</p>
+            <p class="g-why">Ingenting sendes noe sted, og siden leveres med en Content-Security-Policy der <code>connect-src</code> lar nettleseren nekte på våre vegne. Skru av wifi, og hvert eneste steg under fungerer fortsatt.</p>
+          </li>
+          <li>
+            <h3>Den leses inn i ett bibliotek</h3>
+            <p>Bilder, meldinger, posisjonshistorikk, søk, sett-historikk, betalinger og kontotabeller, ut av hvilken form hver tjeneste nå valgte - Snapchats JSON, Metas filer per samtale, Googles mapper per produkt, Apples og Samsungs CSV-er - slått sammen på én tidslinje etter tidsstemplene de allerede bærer.</p>
+            <p class="g-why">To tjenester som loggførte samme ettermiddag havner ved siden av hverandre, og det ser du ikke så lenge de ligger i hver sin mappe.</p>
+          </li>
+          <li>
+            <h3>Små kopier lages, én gang</h3>
+            <p>Hvert bilde krympes til en kopi på 320 piksler og skrives til nettleserens eget lager, på disk. Videoer gir fra seg første bilderute på samme måte.</p>
+            <p class="g-why">En vegg av tre tusen bilder kan ikke åpne originalene hver gang du blar - det er megabyte per stykk. Kopiene lages én gang, i bakgrunnstråder så siden holder seg i live, og de er der fortsatt neste gang du kommer, og når det samme bildet dukker opp igjen i neste års eksport.</p>
+          </li>
+          <li>
+            <h3>Duplikater finnes ut fra innholdet</h3>
+            <p>Hver fil nøkles med en SHA-256 av bytene sine. Arkivets egen sjekksum og lengde er en gratis første runde som bare antyder et treff; ingenting behandles som samme bilde før hashen er enig. Nesten like fanges separat med en perseptuell hash, der de flate bildene holdes tilbake, for et blankt skjermbilde har ikke noe fingeravtrykk verdt å sammenligne.</p>
+            <p class="g-why">Kopiene som spiser opp disken din ligger i fire forskjellige arkiver under fire filnavn med fire datoer. Bare innholdet finner dem.</p>
+          </li>
+          <li>
+            <h3>Datoer og steder settes tilbake</h3>
+            <p>Hentet fra sidevogn-JSON-en Google og Meta sender ved siden av hver fil, eller fra beholderen for video, og deretter skrevet inn i JPEG-en som EXIF <code>DateTimeOriginal</code> og en GPS-blokk - bygd opp på nytt i sin helhet i stedet for spleiset inn, for å sette inn et felt forskyver hver eneste posisjon etter det.</p>
+            <p class="g-why">En halvveis riktig EXIF mister datoen og flytter posisjonen, og det er verre enn å la den være.</p>
+          </li>
+          <li>
+            <h3>Du skriver den ut og beholder den</h3>
+            <p>Rett til en mappe gjennom File System Access API der nettleseren har det, eller som ett strømmet arkiv der den ikke har det - komprimert mens det skrives, så bare innholdsfortegnelsen holdes. Beskrivelser går inn som XMP <code>dc:description</code>, som Lightroom, digiKam, Immich, Bridge og Apple Bilder alle leser.</p>
+            <p class="g-why">Vanlige mapper og vanlige filer. Flytt dem til en NAS eller en disk i en skuff, og de er fortsatt sortert og søkbare uten at noe av vårt er involvert.</p>
+          </li>
+          <li>
+            <h3>Du glemmer at dette skjedde</h3>
+            <p>Vi har ingenting å slette - det finnes ingen konto, ingen server og ingen kopi av dataene dine noe annet sted enn på din egen maskin. Det som er igjen etter en økt er en liten haug arbeidsfiler i din egen nettleser: sammenligningene, de reparerte datoene og de små miniatyrkopiene. Harmløst, og ditt.</p>
+            <p class="g-why">Én knapp sletter dem, etter å ha sagt hva som forsvinner og tilbudt å lagre arbeidet til en fil først. Tar du imot det, er de eksporterte mappene alt som står igjen; tar du knappen, finnes det ikke spor igjen av noe av dette - ikke hos oss, for det var aldri noe der, og ikke på maskinen din heller.</p>
+          </li>
+        </ol>
+
+        <div class="g-tablewrap">
+          <table class="g-matrix">
+            <caption style="text-align:left; padding:40px 0 14px; font-size:18px; color:#fff">Hva hver tjeneste sender, der en ekte eksport er åpnet</caption>
+            <thead>
+              <tr>
+                <th scope="col">Tjeneste</th>
+                <th scope="col">Kommer som</th>
+                <th scope="col">Vanlig ventetid</th>
+                <th scope="col">Lenken varer</th>
+                <th scope="col">Leses</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Apple</th><td data-label="Kommer som" class="m">.zip, ofte flere</td><td data-label="Vanlig ventetid" class="m">opptil 7 dager</td><td data-label="Lenken varer" class="m">-</td><td data-label="Leses">Bilder, video, kjøp, filer</td></tr>
+              <tr><th scope="row">Google</th><td data-label="Kommer som" class="m">.zip, opptil 50 GB hver</td><td data-label="Vanlig ventetid" class="m">timer til dager</td><td data-label="Lenken varer" class="m">1 uke</td><td data-label="Leses">Bilder, video, posisjonshistorikk, e-post, nettlesing, kjøp</td></tr>
+              <tr><th scope="row">Snapchat</th><td data-label="Kommer som" class="m">.zip, JSON + medier</td><td data-label="Vanlig ventetid" class="m">opptil 30 dager</td><td data-label="Lenken varer" class="m">-</td><td data-label="Leses">Minner, meldinger, posisjon, venner</td></tr>
+              <tr><th scope="row">Samsung</th><td data-label="Kommer som" class="m">.zip, ofte flere</td><td data-label="Vanlig ventetid" class="m">noen dager</td><td data-label="Lenken varer" class="m">-</td><td data-label="Leses">Bilder, video, helseoppføringer, filer</td></tr>
+              <tr><th scope="row">Instagram</th><td data-label="Kommer som" class="m">.zip, JSON eller HTML</td><td data-label="Vanlig ventetid" class="m">timer til dager</td><td data-label="Lenken varer" class="m">4 dager</td><td data-label="Leses">Bilder, video, meldinger, innlegg</td></tr>
+              <tr><th scope="row">Facebook</th><td data-label="Kommer som" class="m">.zip, JSON eller HTML</td><td data-label="Vanlig ventetid" class="m">timer til dager</td><td data-label="Lenken varer" class="m">4 dager</td><td data-label="Leses">Bilder, meldinger, innlegg</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="g-caveat">Apple Health er også åpnet for ekte - 383 000 oppføringer ut av én fil på 161 MB - og står utenfor tabellen bare fordi den kommer fra telefonen og ikke fra et nettsted. Disse leses også: Reddit, Spotify, X, Discord, Strava, TikTok, WhatsApp, Fitbit, LinkedIn, Microsoft og Amazon. De leserne er skrevet ut fra det hver tjeneste dokumenterer, og ingen av dem har møtt en ekte eksport ennå, hvilket er en svakere sak og sies rett ut på <a href="../guides.html" style="text-decoration:underline">hver eneste av veiledningene deres</a>.</p>
+
+        <p class="g-caveat">To ærlige begrensninger. Å skrive en dato tilbake krever JPEG - andre formater kopieres urørt og rapporteres, ikke forbigås i stillhet. Og det å skrive mapper krever <code>showDirectoryPicker</code>, som i dag betyr Chrome eller Edge; Safari og Firefox får ett strømmet arkiv i stedet.</p>
+
+        <p style="margin-top:34px; font-size:14px">
+          <a href="../no/app.html" style="text-decoration:underline">Åpne en eksport</a> &nbsp;/&nbsp;
+          <a href="../no/privacy.html" style="text-decoration:underline">Hva som lagres, og hvor</a>
+          &nbsp;/&nbsp;
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../guides.html">Veiledninger</a>
+        <a href="../no/app.html">Åpne eksport</a>
+        <a href="../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="/index.html" hreflang="en" lang="en">English</a>
+        <span class="small">Laget av én person. Alt kjører i nettleseren din, og kildekoden er åpen.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../analytics.js?v=e2665599"></script>
+  <script src="../app.js?v=dd658390"></script>
+  <script src="../vow.js?v=b72dbc20"></script>
+
+</body>
+</html>
