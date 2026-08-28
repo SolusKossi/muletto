@@ -465,22 +465,25 @@ intention matches a real archive.
 
 ## 8. TikTok
 
-Not supported. One enormous JSON file, and almost every key in it has been
-renamed at least once, so a parser written against one export fails on another.
+Read since 2026-08-28. One enormous JSON file, and almost every key in it has
+been renamed at least once, so a parser written against one export fails on
+another - which is why the reader matches normalised section names anywhere in
+the tree rather than addressing a path, and why there are three fixtures: one
+using the old names throughout, one using the new ones, and one TXT export.
 
 | What | State | Notes |
 |---|---|---|
-| `user_data_tiktok.json` | `-` | Older exports call it `user_data.json`. Both are in the wild; accept either |
-| TXT instead of JSON | `-` | Chosen at request time. Structure undocumented and reportedly holds less |
-| Root key renamed | `-` | `Activity` became `Your Activity`, and some exports put likes under a third root, `Likes and Favorites` |
-| Section renamed | `-` | `Video Browsing History` became `Watch History`; `Search History` became `Searches`; `Follower List` became `Follower` |
-| Casing inconsistent inside one file | `-` | `Link` and `link`, `Date` and `date`, camelCase in the profile, snake_case in the shop subtree |
-| Maps where a list is expected | `-` | `ChatHistory` is keyed by conversation partner; `WatchLiveMap` likewise |
-| Five date formats | `-` | Space-separated, ISO with T, ISO with Z, epoch seconds and epoch milliseconds. No timezone offset is carried, and whether it is UTC or local is undocumented |
-| Missing keys rather than empty ones | `-` | A feature not available in a region simply is not there |
-| No media at all | `-` | Videos, profile photo and message attachments are all URLs. Fetching them is a network call the policy forbids, so this needs saying rather than showing an empty library |
-| One file, tens of megabytes | `-` | Nothing can be streamed per category. Measure `JSON.parse` on a real one before assuming |
-| Watch history absent from a narrow request | `-` | Selecting only "Activity" instead of all data reportedly drops it. Worth a line in the guide |
+| `user_data_tiktok.json` | `S` | Older exports call it `user_data.json`. Both are in the wild; accept either |
+| TXT instead of JSON | `S` | Chosen at request time. Structure undocumented, so it is recognised and explained rather than read |
+| Root key renamed | `S` | `Activity` became `Your Activity`, and some exports put likes under a third root, `Likes and Favorites` |
+| Section renamed | `S` | `Video Browsing History` became `Watch History`; `Search History` became `Searches`; `Follower List` became `Follower` |
+| Casing inconsistent inside one file | `S` | `Link` and `link`, `Date` and `date`, camelCase in the profile, snake_case in the shop subtree |
+| Maps where a list is expected | `S` | `ChatHistory` is keyed by conversation partner; `WatchLiveMap` likewise |
+| Five date formats | `S` | Space-separated, ISO with T, ISO with Z, epoch seconds and epoch milliseconds. No timezone offset is carried, and whether it is UTC or local is undocumented |
+| Missing keys rather than empty ones | `S` | A feature not available in a region simply is not there |
+| No media at all | `S` | Videos, profile photo and message attachments are all URLs. Fetching them is a network call the policy forbids, so this needs saying rather than showing an empty library |
+| One file, tens of megabytes | `-` | Nothing can be streamed per category. Measure `JSON.parse` on a real one before assuming. The reader refuses a file over its limit and says so rather than returning an empty library, but the limit itself has never been met |
+| Watch history absent from a narrow request | `-` | Selecting only "Activity" instead of all data reportedly drops it. The reader says so when the section is missing; no fixture reproduces the narrow request |
 
 ## 9. Amazon
 

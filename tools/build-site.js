@@ -1241,28 +1241,54 @@ function main() {
    * and gets no lastmod, which is better than guessing at one. */
   const when = (() => {
     const seen = new Map();
-    try {
-      const log = require("child_process").execFileSync(
-        "git", ["log", "--pretty=format:%cs", "--name-only", "--", "apps/web"],
-        { cwd: path.join(__dirname, ".."), encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
-      let date = null;
-      for (const line of log.split("\n")) {
-        const s = line.trim();
-        if (!s) continue;
-        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) { date = s; continue; }
-        if (date && !seen.has(s)) seen.set(s, date);
-      }
-    } catch (e) { /* handled below, where the silence is made audible */ }
-    /* One page with no commit yet quietly gets no lastmod, which is right.
-       Every page at once is a different thing entirely, and it used to happen
-       silently: running this in a directory with no .git - a staging tree, a
-       downloaded archive - stripped the dates off the whole sitemap, and the
-       stripped file then got published. Losing every lastmod is a real
-       regression in what Google re-fetches, so it says so now. */
+    /* Asked up to three times. One `git log` decides every lastmod in the
+       file, so a single transient failure - git busy immediately after a
+       push, most likely - takes the dates off all forty-odd URLs at once.
+       That is not hypothetical: it is the failure this function already
+       carries a warning about, and it was seen again on 2026-08-28, where
+       check.js ran the build, got a stripped sitemap, reported it stale, and
+       had already written it to disk. The next run rebuilt it correctly and
+       the failure vanished, which is the worst way for a bug to behave. */
+    for (let attempt = 0; attempt < 3 && !seen.size; attempt++) {
+      try {
+        const log = require("child_process").execFileSync(
+          "git", ["log", "--pretty=format:%cs", "--name-only", "--", "apps/web"],
+          { cwd: path.join(__dirname, ".."), encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
+        let date = null;
+        for (const line of log.split("\n")) {
+          const s = line.trim();
+          if (!s) continue;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(s)) { date = s; continue; }
+          if (date && !seen.has(s)) seen.set(s, date);
+        }
+      } catch (e) { /* handled below, where the silence is made audible */ }
+    }
+
+    /* Nothing from git. Rather than write a sitemap with no dates in it, keep
+       the ones the sitemap already on disk is carrying.
+
+       This is right in both cases that reach here. In a tree with no history -
+       a staging copy, a downloaded archive - the committed sitemap beside it
+       holds dates computed by a build that could see the history, and those
+       are the correct answers. After a transient git failure they are the
+       correct answers too, minus at most the commit being made right now.
+       Either way, keeping them beats dropping forty of them. */
     if (!seen.size) {
-      console.warn("  WARNING: no git history here, so the sitemap has no lastmod " +
-                   "dates at all. Do not publish this sitemap - build it in a clone " +
-                   "that has its history.");
+      let kept = 0;
+      try {
+        const old = fs.readFileSync(path.join(__dirname, "..", "apps", "web", "sitemap.xml"), "utf8");
+        for (const m of old.matchAll(/<loc>([^<]*)<\/loc>\s*<lastmod>([^<]*)<\/lastmod>/g)) {
+          const rel = m[1].replace(/^https?:\/\/[^/]+\//, "");
+          seen.set("apps/web/" + (rel || "index.html"), m[2]);
+          kept++;
+        }
+      } catch (e) { /* no sitemap to fall back on either */ }
+      console.warn("  WARNING: git gave no history for apps/web after three tries, so " +
+        "the sitemap dates could not be recomputed. " +
+        (kept ? "Kept the " + kept + " already in the sitemap on disk - they are at most " +
+                "one commit out of date. "
+              : "There was no sitemap to fall back on, so it has no lastmod dates at all. ") +
+        "Do not publish from here without checking.");
     }
     return (rel) => seen.get("apps/web/" + rel) || null;
   })();

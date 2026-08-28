@@ -95,10 +95,29 @@ console.log("\nGenerated pages match the guide JSON");
     .concat([path.join(WEB, "guides.html"), path.join(WEB, "sitemap.xml")]);
   for (const f of gen) if (fs.existsSync(f)) before.set(f, fs.readFileSync(f, "utf8"));
 
-  try {
-    execFileSync(process.execPath, [path.join(ROOT, "tools", "build-site.js")], { stdio: "pipe" });
-  } catch (e) {
-    fail("build-site.js threw: " + String(e.message).split("\n")[0]);
+  /* `stdio: "pipe"` so the build's chatter does not drown this report - but a
+     warning is not chatter, and swallowing one hid a real failure. build-site
+     warns when git will not give it the sitemap dates; that warning went
+     nowhere, so the build wrote a sitemap with all forty-three lastmod values
+     missing, this check called the file stale without saying why, and the
+     damaged file was already on disk by then. Whatever the build warns about
+     is repeated here, where somebody is looking. */
+  /* spawnSync rather than execFileSync, for the one reason that matters here:
+     console.warn writes to stderr, and execFileSync hands back stdout alone
+     unless the child fails. The warning this exists to surface would have gone
+     missing a second time. */
+  {
+    const run = require("child_process").spawnSync(
+      process.execPath, [path.join(ROOT, "tools", "build-site.js")],
+      { cwd: ROOT, encoding: "utf8" });
+    if (run.error) fail("build-site.js would not run: " + run.error.message);
+    else if (run.status !== 0) {
+      fail("build-site.js exited " + run.status + ": " +
+        String(run.stderr || "").split("\n").filter(Boolean).slice(-1)[0]);
+    }
+    for (const line of String(run.stderr || "").split("\n")) {
+      if (/warning/i.test(line)) fail("build-site.js warned:" + line.replace(/^\s*WARNING:/i, ""));
+    }
   }
 
   /* The commit stamp is deployment metadata, not content. It is written by
@@ -223,6 +242,10 @@ console.log("\nClaims the documents make");
     .concat(fs.existsSync(path.join(ROOT, "DECISIONS"))
       ? fs.readdirSync(path.join(ROOT, "DECISIONS")).map((n) => "DECISIONS/" + n) : []);
   const dead = deadPaths(DOCS);
+  if (dead.unverified) {
+    console.log("  ..   could not ask git which of those paths are ignored, so the " +
+      "missing-path check did not run this time. Nothing failed; nothing was proved.");
+  }
   for (const [d, ref] of dead) { fail(d + " names `" + ref + "`, which does not exist"); bad++; }
 
   if (!bad) {

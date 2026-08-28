@@ -20,8 +20,9 @@ nothing about whether a real export from any of these four actually matches
 what the service documents - only somebody's real export can prove that, and
 the contribute flow in the app exists to collect exactly that.
 
-That gap is why every one of these four is recorded as `reported` in
-GUIDE-STATUS rather than `seen`.
+That gap is why all four sit at `S` in TESTPLAN section 7 and 7a - synthetic,
+the bottom rung - and why PROVIDERS says "not measured" for each of them in
+those words.
 
 What each fixture does deliberately exercise, because these are the places a
 reader written from documentation goes wrong:
@@ -47,6 +48,16 @@ reader written from documentation goes wrong:
             another, which is what Strava writes, and a GPX beside a .gpx.gz
             so the reader has to place one and report the other rather than
             quietly dropping it.
+
+  tiktok    the renames. TESTPLAN section 8 lists what TikTok has moved since
+            these exports started: the root key, four section names, the
+            casing of fields inside one file, and five date formats side by
+            side. The fixture uses the OLD name everywhere the reader is most
+            likely to have been written against the new one, because a reader
+            that only works on the export its author happened to have is the
+            failure being tested for. Messages are a map keyed by the other
+            person rather than a list, which is the shape that returns nothing
+            to a reader expecting an array.
 """
 
 import io
@@ -281,10 +292,105 @@ def gzip_bytes(text):
     return buf.getvalue()
 
 
+# ---------------------------------------------------------------- TikTok
+
+def tiktok():
+    # Every key here is the OLD name, and the casing is deliberately mixed the
+    # way a real file mixes it: Link beside link, Date beside date.
+    watch = [{"Date": "2026-03-1%d 20:14:07" % i,          # space separated
+              "Link": "https://www.tiktokv.com/share/video/%d/" % (7000 + i)}
+             for i in range(5)]
+    watch.append({"date": "2026-03-20T18:00:00Z",          # ISO with Z
+                  "link": "https://www.tiktokv.com/share/video/7999/"})
+    watch.append({"Date": "2026-03-21T19:30:00",           # ISO with T, no zone
+                  "Link": "https://www.tiktokv.com/share/video/8000/"})
+    watch.append({"create_time": 1774000000,               # epoch seconds
+                  "link": "https://www.tiktokv.com/share/video/8001/"})
+    watch.append({"Timestamp": 1774000000000,              # epoch milliseconds
+                  "Link": "https://www.tiktokv.com/share/video/8002/"})
+    watch.append({"Date": "last tuesday",                  # nothing can read it
+                  "Link": "https://www.tiktokv.com/share/video/8003/"})
+
+    return write("tiktok.zip", {
+        # The older of the two names.
+        "user_data.json": {
+            # The old root, not "Your Activity".
+            "Activity": {
+                # The old section name, not "Watch History".
+                "Video Browsing History": {"VideoList": watch},
+                # The old section name, not "Searches".
+                "Search History": {"SearchList": [
+                    {"Date": "2026-02-0%d 11:00:00" % (1 + i),
+                     "SearchTerm": "search %d" % i} for i in range(4)]},
+                # The old section name, not "Follower".
+                "Follower List": {"FansList": [
+                    {"Date": "2026-01-05 09:00:00", "UserName": "someone%d" % i}
+                    for i in range(3)]},
+                # A map keyed by the other person, not a list.
+                "Chat History": {
+                    "Chat History with someone1:": [
+                        {"Date": "2026-02-10 08:0%d:00" % i, "From": "someone1",
+                         "Content": "message %d" % i} for i in range(4)],
+                    "Chat History with someone2:": [
+                        {"Date": "2026-02-11 09:00:00", "From": "you",
+                         "Content": "hello"}],
+                },
+            },
+            # Likes under a third root entirely, which some exports do.
+            "Likes and Favorites": {
+                "Like List": {"ItemFavoriteList": [
+                    {"date": "2026-02-1%d 12:00:00" % i,
+                     "link": "https://www.tiktokv.com/share/video/%d/" % (6000 + i)}
+                    for i in range(6)]},
+            },
+            "Profile": {"Profile Information": {"ProfileMap": {
+                "userName": "fixture", "emailAddress": "f@example.invalid"}}},
+        },
+    })
+
+
+def tiktok_newer():
+    """The same account, exported later: new filename, new root, new section
+    names. A reader that works on one of these two and not the other is the
+    exact failure TESTPLAN section 8 warns about, so both are kept."""
+    write("tiktok-newer.zip", {
+        "user_data_tiktok.json": {
+            "Your Activity": {
+                "Watch History": {"VideoList": [
+                    {"Date": "2026-07-0%d 20:00:00" % (1 + i),
+                     "Link": "https://www.tiktokv.com/share/video/%d/" % (9000 + i)}
+                    for i in range(4)]},
+                "Searches": {"SearchList": [
+                    {"Date": "2026-07-10 11:00:00", "SearchTerm": "later search"}]},
+                "Follower": {"FansList": [
+                    {"Date": "2026-07-11 09:00:00", "UserName": "someone9"}]},
+            },
+            "Profile": {"Profile Information": {"ProfileMap": {
+                "userName": "fixture", "emailAddress": "f@example.invalid"}}},
+        },
+    })
+
+
+def tiktok_txt():
+    """The TXT request. A different shape nobody documents, which the reader
+    has to recognise and explain rather than open as nothing."""
+    eol = chr(10)
+    write("tiktok-txt.zip", {
+        "user_data.txt": eol.join([
+            "Date: 2026-07-01",
+            "Video Browsing History:",
+            "https://www.tiktokv.com/share/video/9000/",
+        ]) + eol,
+    })
+
+
 if __name__ == "__main__":
     print("Writing " + os.path.normpath(OUT))
     spotify()
     x_twitter()
     discord()
     strava()
+    tiktok()
+    tiktok_newer()
+    tiktok_txt()
     print("Run them with:  node tools/check-export.js tests/fixtures/social")

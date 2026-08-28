@@ -230,13 +230,40 @@ function deadPaths(docs) {
      path in the docs came back as a failure. */
   const ask = [];
   for (const [, r] of found) { ask.push(bare(r), bare(r) + "/"); }
-  let ignored = new Set();
-  try {
-    const res = require("child_process").spawnSync(
-      "git", ["check-ignore", "--stdin"],
-      { cwd: ROOT, input: ask.join("\n"), encoding: "utf8" });
+
+  /* `git check-ignore --stdin` exits 0 when it matched something and 1 when it
+     matched nothing, and both of those are answers. Anything else - 128 for a
+     busy index, a spawn failure, no git at all - is not an answer, and the
+     original code could not tell the two apart: it caught the throw, left the
+     ignored set empty, and reported every gitignored path as a missing one.
+
+     That turns an unrelated git hiccup into a failed build with wrong
+     findings, which is worse than not checking. It was seen once, immediately
+     after a push, and has not reproduced in twenty idle runs - which is
+     exactly the shape of a race worth removing rather than chasing.
+
+     So: ask up to three times, and if git never answers, skip the filter and
+     say the answer is unverified rather than asserting a list of failures
+     nobody can trust. */
+  let ignored = null;
+  for (let attempt = 0; attempt < 3 && ignored === null; attempt++) {
+    let res = null;
+    try {
+      res = require("child_process").spawnSync(
+        "git", ["check-ignore", "--stdin"],
+        { cwd: ROOT, input: ask.join("\n"), encoding: "utf8" });
+    } catch (e) { res = null; }
+    if (!res || res.error || (res.status !== 0 && res.status !== 1)) continue;
     ignored = new Set((res.stdout || "").split("\n").map((s) => bare(s.trim())).filter(Boolean));
-  } catch (e) { /* no git here; report everything and let a person judge */ }
+  }
+  if (ignored === null) {
+    /* An array, because the caller iterates it. Empty, because reporting
+       a list git could not vet is the failure this exists to prevent; the
+       flag is how check.js says the answer is missing rather than clean. */
+    const none = [];
+    none.unverified = true;
+    return none;
+  }
   return found.filter(([, r]) => !ignored.has(bare(r)));
 }
 

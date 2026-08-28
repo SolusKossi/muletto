@@ -318,6 +318,13 @@ const SIGNATURES = [
      Strava on them, which is exactly the kind of miscount that files an
      export under the wrong service. The numbered track files are not
      ambiguous, and a real export has hundreds of them. */
+  /* TikTok is one file with one of two names, and nothing else in the export
+     is distinctive at all. Both names are matched because both are in the
+     wild, and the .txt request is matched too so it can be explained rather
+     than opened as an unknown bag of files. */
+  { slug: "tiktok", label: "TikTok",
+    pats: ["user_data_tiktok.json", "user_data.json",
+           "user_data_tiktok.txt", "user_data.txt"] },
   { slug: "strava", label: "Strava",
     pats: ["activities.csv", "clubs.csv", "profile.csv", "followers.csv",
            "connected_apps.csv", "global_challenges.csv"],

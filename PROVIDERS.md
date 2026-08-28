@@ -341,6 +341,53 @@ One trap in Strava's own file: **the distance column mixes metres and
 kilometres**, under the same heading, in the same file. Muletto says so when
 it sees both rather than adding them up.
 
+## TikTok
+
+One enormous JSON file, and almost every key in it has been renamed at least
+once. The root went from `Activity` to `Your Activity`; `Video Browsing
+History` became `Watch History`; `Search History` became `Searches`; `Follower
+List` became `Follower`; likes sometimes sit under a third root of their own.
+Casing is inconsistent inside a single file - `Link` beside `link`, `Date`
+beside `date` - and a feature not offered in your region is simply absent
+rather than empty.
+
+So nothing here looks for a path. Sections are found by matching normalised
+names anywhere in the tree, which survives the next rename.
+
+**Not measured.** Written from what TikTok's exports are documented and
+reported to contain, and exercised against three fixtures: one using the old
+names throughout, one using the new ones, and one TXT export.
+
+| Area | What Muletto does |
+|---|---|
+| Watch history | **Read**. On the timeline |
+| Likes and favourites | **Read**. On the timeline |
+| Searches | **Read**. On the timeline |
+| Videos you posted | **Read**, when the export has them |
+| Direct messages | **Read**. As conversations |
+| Everything else | Listed |
+
+Three things to know before you spend the wait:
+
+- **There is no media in it at all.** Not the videos, not your profile
+  picture, not a single message attachment. Every one is a web address
+  pointing back at TikTok. Muletto will not fetch them, because it makes no
+  network requests whatsoever - so what you get is the record of the account
+  rather than its contents. If you want the videos, save them from the app.
+- **Choose JSON, not TXT.** The choice is made when you request it, the two
+  are not the same data, and the TXT shape is documented nowhere. Muletto
+  recognises a TXT export and says so rather than reading it as empty.
+- **Ask for everything, not for one category.** Requesting only "Activity" is
+  reported to drop the watch history, which is usually the part people wanted.
+
+Dates are the other trap, and it is TikTok's: five formats appear in one file
+- space-separated, ISO with a T, ISO with a Z, epoch seconds and epoch
+milliseconds - and none of them carries a timezone offset. All five are read.
+Whether they are UTC or local is undocumented, so nothing is shifted to
+correct for it: a date out by your own offset is still the right day, and
+guessing would be worse than the error it fixed. A row whose date is in none
+of the five stays in its table and off the timeline, and is counted.
+
 ## Anything else
 
 An export from a service with no reader still opens. Files are listed, tables

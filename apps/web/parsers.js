@@ -2290,6 +2290,249 @@ const MParse = (function () {
     return lib;
   }
 
+  /* ---------- TikTok ---------- */
+
+  /* One enormous JSON file, and almost every key in it has been renamed at
+     least once. TESTPLAN section 8 lists what has moved: the root went from
+     `Activity` to `Your Activity` and likes sometimes sit under a third root
+     again; `Video Browsing History` became `Watch History`; `Search History`
+     became `Searches`; `Follower List` became `Follower`. Casing is
+     inconsistent inside a single file - `Link` beside `link`, `Date` beside
+     `date` - and a feature not available in a region is absent rather than
+     empty.
+
+     A reader written against one export therefore fails on the next one, and
+     that is not a hypothesis, it is what that section was written from. So
+     nothing here addresses a path. Every section is found by walking the tree
+     and matching normalised names, which costs one pass over an object that
+     is already in memory and survives the next rename. */
+
+  const tkNorm = (s) => String(s).toLowerCase().replace(/[^a-z]/g, "");
+
+  /* Depth-first for the first object or array whose key normalises to one of
+     these. Names are tried in order, so the current name wins over the old
+     one when an export somehow carries both. */
+  /* `claimed` is not tidiness, it is the fix for a real collision. TikTok's
+     watch history is wrapped in a key called `VideoList`, and the section
+     holding videos you posted has been called `Video List` - which normalises
+     to exactly the same thing. Without this, the watch history was found
+     twice and reported a second time as "Videos posted": ten videos the
+     account never made, with the right dates on them, which is the most
+     convincing kind of wrong. A section that has already been taken cannot be
+     taken again. */
+  function tkFind(root, names, claimed) {
+    const want = names.map(tkNorm);
+    let best = null, bestRank = Infinity;
+    const walk = (node, depth) => {
+      if (!node || typeof node !== "object" || depth > 6) return;
+      for (const k of Object.keys(node)) {
+        const v = node[k];
+        const rank = want.indexOf(tkNorm(k));
+        if (rank >= 0 && rank < bestRank && v && typeof v === "object" &&
+            !(claimed && claimed.has(v))) {
+          best = v; bestRank = rank;
+        }
+        walk(v, depth + 1);
+      }
+    };
+    walk(root, 0);
+    if (best && claimed) claimed.add(best);
+    return best;
+  }
+
+  /* The list inside a section, whatever TikTok called it this time. A section
+     is usually { "VideoList": [...] } or { "ChatHistory": { ... } }, and the
+     wrapper key has been renamed as often as the section has - so the first
+     array found inside is taken rather than the one at a known name. */
+  function tkList(section) {
+    if (!section) return [];
+    if (Array.isArray(section)) return section;
+    for (const k of Object.keys(section)) {
+      if (Array.isArray(section[k])) return section[k];
+    }
+    return [];
+  }
+
+  /* Five date formats in one export, per TESTPLAN: space-separated, ISO with
+     T, ISO with Z, epoch seconds and epoch milliseconds. None carries an
+     offset and TikTok does not document whether they are UTC or local, so
+     nothing here pretends to correct for a timezone - a date that is out by
+     the reader's offset is still the right day, and inventing a correction
+     would be worse than the error it fixes.
+
+     Epoch seconds and milliseconds are told apart by magnitude, which is safe
+     for any date this century: seconds are ten digits until 2286. */
+  function tkDate(v) {
+    if (v === null || v === undefined || v === "") return null;
+    if (typeof v === "number" || /^\d{9,14}$/.test(String(v).trim())) {
+      const n = Number(v);
+      if (!isFinite(n) || n <= 0) return null;
+      const at = new Date(n > 1e11 ? n : n * 1000);
+      return isNaN(at) ? null : at;
+    }
+    const s = String(v).trim();
+    /* "2024-03-11 20:14:07" - space separated and no zone. Handed to Date as
+       written it is parsed as local time by some engines and rejected by
+       others, so the parts are pulled out and read as UTC deliberately. */
+    const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/.exec(s);
+    if (m) {
+      const at = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)));
+      return isNaN(at) ? null : at;
+    }
+    const d = parseDate(s);
+    return d && !isNaN(d) ? d : null;
+  }
+
+  /* A row's date, whatever the key is called. `Date`, `date`, `create_time`
+     and `Timestamp` have all been seen for the same field. */
+  const tkRowDate = (o) => tkDate(field(o, "Date", "date", "createtime", "create_time",
+                                        "Timestamp", "timestamp", "time"));
+
+  const TK_SECTIONS = [
+    { key: "watch", kind: "watched",
+      names: ["Watch History", "Video Browsing History", "VideoBrowsingHistory"],
+      label: "Videos watched",
+      text: (o) => field(o, "Link", "link", "VideoLink", "video_link") || "A video" },
+    { key: "like", kind: "liked",
+      names: ["Like List", "Liked List", "Favorite Videos", "ItemFavoriteList"],
+      label: "Videos liked",
+      text: (o) => field(o, "Link", "link") || "A video" },
+    { key: "search", kind: "search",
+      names: ["Searches", "Search History", "SearchHistory"],
+      label: "Searches",
+      text: (o) => field(o, "SearchTerm", "search_term", "Term", "Keyword") || "A search" },
+    { key: "post", kind: "post",
+      names: ["Videos", "Video List", "PostList", "Posts"],
+      label: "Videos posted",
+      text: (o) => field(o, "Title", "title", "Link", "link") || "A post" },
+    { key: "login", kind: "login",
+      names: ["Login History", "LoginHistoryList"],
+      label: "Logins",
+      text: (o) => (field(o, "DeviceModel", "device_model") || "A device") +
+                   (field(o, "NetworkType", "network_type") ? ", " +
+                    field(o, "NetworkType", "network_type") : "") },
+  ];
+
+  async function tiktok(file, entries) {
+    const lib = emptyLib("tiktok", "TikTok");
+
+    /* Either name is in the wild. The .txt export is a different request
+       answered with a different, undocumented shape - recognised so it can be
+       explained rather than silently read as nothing. */
+    const big = entries.filter((e) => /user_data(_tiktok)?\.json$/i.test(base(e.name)))
+      .sort((a, b) => b.size - a.size)[0];
+    const asText = entries.filter((e) => /user_data(_tiktok)?\.txt$/i.test(base(e.name)));
+
+    if (!big) {
+      if (asText.length) {
+        lib.notes.push("This is the TXT export. TikTok offers TXT or JSON at the moment " +
+          "you request it, the two are not the same data, and the TXT one is not " +
+          "documented anywhere. Request it again and choose JSON - the files here are " +
+          "listed but not read.");
+      }
+      await classifyFiles(lib, entries, file);
+      return lib;
+    }
+
+    /* readJsonSafe refuses anything over its limit, which for every other
+       service means one file skipped out of hundreds. Here it is the entire
+       export, so the refusal is reported instead of leaving an empty library
+       that looks like a parser failure. */
+    const data = await readJsonSafe(file, big);
+    if (!data) {
+      lib.notes.push("The whole export is one file, and this one is " +
+        Math.round(big.size / (1024 * 1024)) + " MB - too large to read in a browser tab " +
+        "without risking the tab. Nothing in it has been lost; it could not be opened " +
+        "here.");
+      await classifyFiles(lib, entries, file);
+      return lib;
+    }
+
+    const found = [];
+    const claimed = new Set();
+    for (const sec of TK_SECTIONS) {
+      const section = tkFind(data, sec.names, claimed);
+      /* The list inside it is claimed as well, so a later section cannot
+         match the wrapper key of one already taken. */
+      const rows = tkList(section);
+      if (rows.length) claimed.add(rows);
+      if (!rows.length) continue;
+      let dated = 0;
+      const table = [];
+      for (const o of rows.slice(0, 8000)) {
+        if (!o || typeof o !== "object") continue;
+        const at = tkRowDate(o);
+        const what = String(sec.text(o) || "");
+        if (at) { lib.events.push({ at, kind: sec.kind, label: what.slice(0, 140) }); dated++; }
+        table.push([at ? at.toISOString().replace("T", " ").slice(0, 19) : "", what]);
+      }
+      if (!table.length) continue;
+      lib.tables.push({ name: sec.label, path: big.name,
+        columns: ["When", "What"], rows: table.reverse() });
+      lib.insights.push({ n: rows.length.toLocaleString(), label: sec.label,
+        accent: sec.key === "watch" });
+      found.push(sec.key);
+      if (dated < rows.length) {
+        lib.notes.push(plural(rows.length - dated, "row in", "rows in") + " " +
+          sec.label.toLowerCase() + " carried a date in a shape nothing could read, so " +
+          (rows.length - dated === 1 ? "it is" : "they are") + " in the table and not on " +
+          "the timeline.");
+      }
+    }
+
+    /* Messages are a map keyed by the other person, not a list. Reading it as
+       a list finds nothing, which is the failure this shape causes. */
+    const chat = tkFind(data, ["Chat History", "ChatHistory", "Direct Messages", "Direct Message"], claimed);
+    if (chat && !Array.isArray(chat)) {
+      let total = 0;
+      for (const key of Object.keys(chat)) {
+        const msgs = tkList(chat[key]).length ? tkList(chat[key])
+                   : (Array.isArray(chat[key]) ? chat[key] : []);
+        if (!msgs.length) continue;
+        const messages = [];
+        for (const m of msgs.slice(0, 3000)) {
+          if (!m || typeof m !== "object") continue;
+          messages.push({
+            from: String(field(m, "From", "from") || "Unknown"),
+            direction: null,
+            text: String(field(m, "Content", "content", "Text", "text") || ""),
+            type: "TEXT", at: tkRowDate(m),
+          });
+        }
+        if (!messages.length) continue;
+        messages.sort((a, b) => (a.at || 0) - (b.at || 0));
+        total += messages.length;
+        lib.conversations.push({
+          title: String(key).replace(/^Chat History with\s*/i, "").replace(/:\s*$/, ""),
+          messages,
+        });
+      }
+      if (total) {
+        lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
+        lib.insights.push({ n: total.toLocaleString(), label: "Messages",
+          note: "across " + lib.conversations.length.toLocaleString() + " conversations",
+          accent: true });
+      }
+    }
+
+    /* The thing worth saying before anything else, and the reason a TikTok
+       export disappoints people who wanted their videos back. */
+    lib.notes.push("A TikTok export contains no video, no picture and no message " +
+      "attachment - every one of them is a web address pointing back at TikTok. " +
+      "Muletto does not fetch them, because it does not make network requests at all, " +
+      "so what you have here is the record of your account rather than its contents.");
+
+    if (!found.includes("watch")) {
+      lib.notes.push("There is no watch history in this export. Requesting only some " +
+        "categories rather than all of your data is reported to drop it, so if you " +
+        "wanted it, request everything.");
+    }
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+
   /* ---------- Strava ---------- */
 
   /* activities.csv is the index and the GPS files are the data. The csv has
@@ -2440,6 +2683,7 @@ const MParse = (function () {
     if (slug === "x-twitter") return finish(xTwitter(file, entries));
     if (slug === "discord") return finish(discord(file, entries));
     if (slug === "strava") return finish(strava(file, entries));
+    if (slug === "tiktok") return finish(tiktok(file, entries));
     if (slug === "facebook" || slug === "instagram") {
       return finish(meta(file, entries, slug, detected.label));
     }

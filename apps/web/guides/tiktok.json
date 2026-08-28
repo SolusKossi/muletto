@@ -47,9 +47,9 @@
     "Everything is in one file. For a heavy account that is tens of megabytes of JSON in a single document."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "tiktok",
+    "status": "finds each section by name wherever TikTok moved it this year, reads watch history, likes, searches and messages, and handles all five of its date formats. Built from the documented and reported shapes; no real TikTok export has been opened yet"
   },
   "faq": [
     {
