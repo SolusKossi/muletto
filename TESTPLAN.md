@@ -463,6 +463,28 @@ intention matches a real archive.
 | Strava: `.gpx.gz` and `.fit.gz` | `-` | Counted and kept whole, not read. Needs `DecompressionStream` and a FIT reader |
 | Strava: activity dates | `S` | `Apr 11, 2026, 6:02:11 AM`. A row whose date will not parse stays off the timeline and is counted |
 
+## 7b. WhatsApp
+
+Read since 2026-08-28. A WhatsApp export is a transcript written for a person
+to read - no manifest, no JSON, no schema - and its shape follows the phone
+and the phone's locale. Exercised against a fixture holding all three forms.
+
+| What | State | Notes |
+|---|---|---|
+| iOS `[06/08/2026, 14:32:11]` | `S` | Square brackets, seconds present |
+| Android `06/08/2026, 14:32 - ` | `S` | No brackets, dash separator, no seconds |
+| ISO locale `[2026-08-06, ...]` | `S` | Four-digit first field settles the order outright |
+| Invisible left-to-right marks | `S` | iOS writes U+200E into the line. Not visible in any editor, and fatal to a pattern written by eye |
+| **Date order undecidable** | `S` | `03/04` is the third of April or the fourth of March. Settled from any day past the twelfth in the same chat; in a chat with none, nothing can settle it, and day-first is assumed and said out loud |
+| Multi-line messages | `S` | A line with no stamp belongs to the message above it |
+| System lines with no sender | `S` | "Messages are end-to-end encrypted" belongs to nobody |
+| `<attached: NAME>` and `NAME (file attached)` | `S` | iOS and Android write attachments differently |
+| `<Media omitted>` | `S` | Localised into every language WhatsApp ships, so matched by its brackets rather than its words |
+| The chat name | `S` | The transcript never says who it is with, only who spoke, so the title comes from the filename |
+| 12-hour clock with AM/PM | `-` | Parsed, but no fixture carries one. A US-locale export would |
+| Non-Latin names and text | `-` | The transcript is UTF-8; nothing here has tested it |
+| The account report beside the chats | `-` | A different request entirely, and it holds no messages |
+
 ## 8. TikTok
 
 Read since 2026-08-28. One enormous JSON file, and almost every key in it has

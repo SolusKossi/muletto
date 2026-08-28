@@ -388,6 +388,55 @@ correct for it: a date out by your own offset is still the right day, and
 guessing would be worse than the error it fixed. A row whose date is in none
 of the five stays in its table and off the timeline, and is counted.
 
+## WhatsApp
+
+Two different things share the name, and asking for the wrong one is the
+usual disappointment. The **account report** - Settings, Account, Request
+account info - is your profile and settings and takes about three days. It
+does not contain a single message. Your conversations only come out one at a
+time, from inside each chat, and that export is instant.
+
+So a WhatsApp export is not a database. It is a transcript written for a
+person to read, plus the pictures if you chose to include them, and it has no
+manifest, no JSON and no schema.
+
+**Not measured.** Written from the documented and reported transcript shapes
+and exercised against a fixture holding all three of them. No real WhatsApp
+export has been opened.
+
+| Area | What Muletto does |
+|---|---|
+| Chat transcripts | **Read**. As conversations, one per exported chat |
+| Multi-line messages | **Read**. Joined back onto the message they belong to |
+| Attached pictures and video | **Read**, when the chat was exported With media |
+| The account report | Listed |
+
+Three shapes are in the wild and all three are read:
+
+```
+[06/08/2026, 14:32:11] Alice: hello      iOS, square brackets
+06/08/2026, 14:32 - Alice: hello         Android, dash
+[2026-08-06, 14:32:11] Alice: hello      an ISO locale, either phone
+```
+
+iOS also writes invisible left-to-right marks into the line. They do not show
+up in any editor and they break a pattern written by eye against a transcript
+that looks perfectly normal, so they are stripped before anything reads it.
+
+**The date order is the real problem, and it is not always solvable.**
+WhatsApp writes the date in the phone's locale and never records which one
+that was, so `03/04` is the third of April or the fourth of March and the file
+does not say. Across a whole chat it can usually be worked out: any day past
+the twelfth settles it. In a chat short enough that every date falls in the
+first twelve days of a month, nothing can settle it, and a reader that quietly
+picks one spreads a fortnight across a year while every date it shows looks
+entirely plausible. Muletto picks day-first, which is the more common form
+worldwide, and says that it had to.
+
+If a message says its picture was left out, that is the Without media option
+at the moment the chat was exported. It cannot be recovered from the file -
+export the chat again.
+
 ## Anything else
 
 An export from a service with no reader still opens. Files are listed, tables

@@ -2290,6 +2290,207 @@ const MParse = (function () {
     return lib;
   }
 
+  /* ---------- WhatsApp ---------- */
+
+  /* A per-chat export: one `_chat.txt` and, if the right option was chosen,
+     the pictures beside it. Unlike every other service here there is no
+     manifest, no JSON and no schema - the archive is a transcript written for
+     a person to read, and the format changes with the phone and with the
+     phone's locale.
+
+     Three shapes are in the wild:
+
+       [06/08/2026, 14:32:11] Alice: hello        iOS, square brackets
+       06/08/2026, 14:32 - Alice: hello           Android, dash
+       [2026-08-06, 14:32:11] Alice: hello        an ISO locale, either phone
+
+     iOS also sprinkles left-to-right marks through the line, which are
+     invisible, are not ASCII, and break a regex written by eye against a
+     transcript that looks fine on screen. They are stripped by code point
+     before anything else looks at the line. */
+
+  /* U+200E and U+200F, by code point rather than as literal characters: this
+     file is ASCII and the build fails on anything above 126. */
+  const WA_MARKS = new RegExp("[" + String.fromCharCode(0x200e, 0x200f) +
+                              String.fromCharCode(0xfeff) + "]", "g");
+
+  /* Day, month and year in whichever order, then the time. The two numeric
+     fields are captured without deciding which is which - that cannot be done
+     from one line and is settled across the whole file below. */
+  const WA_LINE = new RegExp(
+    "^\\[?(\\d{1,4})[./-](\\d{1,2})[./-](\\d{2,4}),?\\s+" +   // date
+    "(\\d{1,2}):(\\d{2})(?::(\\d{2}))?\\s*" +                  // time
+    "([AaPp]\\.?[Mm]\\.?)?\\]?" +                              // am/pm, if any
+    "(?:\\s*-)?\\s*" +                                         // Android's dash
+    "(.*)$");
+
+  /* iOS writes `<attached: NAME>`; Android writes `NAME (file attached)`.
+     `<Media omitted>` is the third case and is localised into every language
+     WhatsApp ships, so it is recognised by its brackets rather than by its
+     words - matching the English would report a Norwegian export as having no
+     pictures mentioned at all. */
+  const WA_ATTACHED = /<[^:<>]*:\s*([^<>]+)>|([\w-]+\.\w{2,4})\s*\((?:file attached|fil vedlagt)\)/i;
+  const WA_OMITTED = /^<[^<>]{1,40}>$/;
+
+  function waSplitLines(text) {
+    const out = [];
+    for (const raw of text.replace(WA_MARKS, "").split(/\r?\n/)) {
+      const m = WA_LINE.exec(raw);
+      if (!m) {
+        /* A line with no stamp is the rest of the message above it. Dropping
+           these loses every paragraph of every long message.
+
+           The file's own trailing newline is not one of them. Appended
+           blindly it hangs a blank line off the last message of every chat,
+           which is invisible in a terminal and shows up as a gap on screen. */
+        if (out.length && raw !== "") out[out.length - 1].body += "\n" + raw;
+        continue;
+      }
+      out.push({
+        a: +m[1], b: +m[2], y: m[3], hh: +m[4], mm: +m[5], ss: +(m[6] || 0),
+        ampm: (m[7] || "").toLowerCase().replace(/\./g, ""),
+        body: m[8] || "",
+      });
+    }
+    return out;
+  }
+
+  /* Which of the two numbers is the day.
+   *
+   * This cannot be decided from a single line, and guessing is how a March
+   * conversation becomes a set of messages spread across twelve months. Across
+   * a whole file it usually can be: any value above twelve in the first
+   * position proves the first is the day, and above twelve in the second
+   * proves the second is.
+   *
+   * When neither ever exceeds twelve the file is genuinely ambiguous - a short
+   * chat inside one fortnight will do it - and there is no answer to find. The
+   * reader says so rather than picking, because a wrong pick is invisible: the
+   * dates all look plausible and are all wrong.
+   */
+  function waDayFirst(rows) {
+    let first = 0, second = 0;
+    for (const r of rows) {
+      if (r.a > 12) first++;
+      if (r.b > 12) second++;
+    }
+    if (first && !second) return { dayFirst: true, certain: true };
+    if (second && !first) return { dayFirst: false, certain: true };
+    if (first && second) return { dayFirst: true, certain: false, conflict: true };
+    /* Nothing above twelve anywhere. Day-first is the more common form
+       worldwide, and the note says the choice was made rather than found. */
+    return { dayFirst: true, certain: false };
+  }
+
+  function waDate(r, dayFirst) {
+    /* A four-digit first field is a year: the ISO form, where the order is not
+       in question at all. */
+    let y, mo, d;
+    if (String(r.a).length === 4) { y = r.a; mo = r.b; d = +r.y; }
+    else {
+      d = dayFirst ? r.a : r.b;
+      mo = dayFirst ? r.b : r.a;
+      y = +r.y;
+      if (y < 100) y += y < 70 ? 2000 : 1900;
+    }
+    let h = r.hh;
+    if (r.ampm === "pm" && h < 12) h += 12;
+    if (r.ampm === "am" && h === 12) h = 0;
+    const at = new Date(Date.UTC(y, mo - 1, d, h, r.mm, r.ss));
+    if (isNaN(at) || at.getUTCMonth() !== mo - 1 || at.getUTCDate() !== d) return null;
+    return at;
+  }
+
+  async function whatsapp(file, entries) {
+    const lib = emptyLib("whatsapp", "WhatsApp");
+    /* Android names the file after the chat and the separator has not been
+       stable: "WhatsApp Chat with Bob.txt" and "WhatsApp Chat - Bob.txt" are
+       both real. Anything after the words is accepted rather than a list of
+       the separators seen so far - a fixture using the dash form was silently
+       skipped by a pattern that insisted on "with". */
+    const chats = entries.filter((e) =>
+      /(^|\/)(_chat|whatsapp chat\b.*)\.txt$/i.test(e.name));
+
+    let ambiguous = 0, conflicting = 0, attached = 0, omitted = 0, total = 0;
+
+    for (const e of chats) {
+      let text = null;
+      try { text = await MZip.extractText(file, e); } catch { continue; }
+      const rows = waSplitLines(text);
+      if (!rows.length) continue;
+
+      const order = waDayFirst(rows);
+      if (!order.certain) { ambiguous++; if (order.conflict) conflicting++; }
+
+      const messages = [];
+      for (const r of rows) {
+        const at = waDate(r, order.dayFirst);
+        /* "Alice: hello" against a system line, which has no colon before the
+           first space and belongs to nobody. */
+        const cut = r.body.indexOf(": ");
+        const isSystem = cut < 0 || cut > 60;
+        const from = isSystem ? "" : r.body.slice(0, cut);
+        const body = isSystem ? r.body : r.body.slice(cut + 2);
+
+        const att = WA_ATTACHED.exec(body);
+        if (att) attached++;
+        else if (WA_OMITTED.test(body.trim())) omitted++;
+
+        messages.push({
+          from: from || "System",
+          direction: null,
+          text: body,
+          type: att ? "MEDIA" : "TEXT",
+          at,
+        });
+      }
+      if (!messages.length) continue;
+      total += messages.length;
+
+      /* The chat is named after the file, because the transcript never says
+         who it is with - only who spoke. */
+      const title = base(e.name).replace(/\.txt$/i, "")
+        .replace(/^_chat$/i, e.name.split("/").slice(-2)[0] || "Chat")
+        .replace(/^WhatsApp Chat\s*(?:with|-)?\s*/i, "").trim() || "Chat";
+      lib.conversations.push({ title, messages });
+    }
+
+    if (total) {
+      lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
+      lib.insights.push({ n: total.toLocaleString(), label: "Messages",
+        note: "across " + lib.conversations.length.toLocaleString() +
+              plural(lib.conversations.length, " chat", " chats").replace(/^\d+\s*/, " "),
+        accent: true });
+    }
+
+    /* The two notes that matter, and they are about what cannot be known
+       rather than about what went wrong. */
+    if (conflicting) {
+      lib.notes.push(plural(conflicting, "chat has", "chats have") + " dates that " +
+        "contradict each other - some lines can only be day-first and others can only " +
+        "be month-first, in one file. Day-first was used. Check any date that matters.");
+    } else if (ambiguous) {
+      lib.notes.push(plural(ambiguous, "chat is", "chats are") + " short enough that " +
+        "no date in " + (ambiguous === 1 ? "it" : "them") + " has a day above the " +
+        "twelfth, so whether WhatsApp wrote day-first or month-first cannot be told " +
+        "from the file. Day-first was assumed, which is the more common form. If these " +
+        "should be a single month rather than spread across the year, that is why.");
+    }
+    if (omitted) {
+      lib.notes.push(plural(omitted, "message says", "messages say") + " its picture " +
+        "was left out. That is the Without media option at the moment the chat was " +
+        "exported, and the pictures cannot be recovered from this file - export the " +
+        "chat again and choose With media.");
+    }
+
+    await classifyFiles(lib, entries, file);
+    if (attached) {
+      lib.insights.push({ n: attached.toLocaleString(), label: "Messages with an attachment" });
+    }
+    return lib;
+  }
+
+
   /* ---------- TikTok ---------- */
 
   /* One enormous JSON file, and almost every key in it has been renamed at
@@ -2684,6 +2885,7 @@ const MParse = (function () {
     if (slug === "discord") return finish(discord(file, entries));
     if (slug === "strava") return finish(strava(file, entries));
     if (slug === "tiktok") return finish(tiktok(file, entries));
+    if (slug === "whatsapp") return finish(whatsapp(file, entries));
     if (slug === "facebook" || slug === "instagram") {
       return finish(meta(file, entries, slug, detected.label));
     }

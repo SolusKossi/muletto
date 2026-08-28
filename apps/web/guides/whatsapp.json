@@ -45,9 +45,9 @@
     "A chat with Advanced Chat Privacy switched on cannot be exported at all."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "whatsapp",
+    "status": "reads the chat transcripts - iOS, Android and ISO locales - as conversations, joins multi-line messages back together, and says so when the date order cannot be told from the file. Built from the documented shapes; no real WhatsApp export has been opened yet"
   },
   "faq": [
     {

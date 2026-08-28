@@ -384,6 +384,65 @@ def tiktok_txt():
     })
 
 
+# ---------------------------------------------------------------- WhatsApp
+
+def whatsapp():
+    """Four transcripts, because a WhatsApp export is written for a person to
+    read and its shape depends on the phone and the phone's locale.
+
+    The fourth one is the interesting one. Every date in it is on or before
+    the twelfth, so day-first and month-first are both consistent with every
+    line and no amount of parsing can tell them apart. A reader that silently
+    picks one spreads a fortnight of messages across a year and every date it
+    prints looks plausible. It has to say so instead."""
+    lrm = chr(0x200e)   # iOS sprinkles these through the line, invisibly
+    eol = chr(10)
+
+    ios = eol.join([
+        "[" + lrm + "06/08/2026, 14:32:11] Alice: hello there",
+        "[06/08/2026, 14:32:40] Bob: hi - this message",
+        "carries on over two lines",
+        "[13/08/2026, 09:05:00] Alice: " + lrm + "<attached: 00000042-PHOTO-2026-08-13.jpg>",
+        "[24/12/2026, 18:00:00] Bob: happy christmas",
+    ]) + eol
+
+    android = eol.join([
+        "06/08/2026, 14:32 - Messages are end-to-end encrypted.",
+        "06/08/2026, 14:33 - Alice: morning",
+        "31/08/2026, 20:10 - Bob: IMG-20260831-WA0001.jpg (file attached)",
+        "31/08/2026, 20:11 - Bob: <Media omitted>",
+    ]) + eol
+
+    iso = eol.join([
+        "[2026-08-06, 14:32:11] Alice: iso locale",
+        "[2026-11-30, 08:00:00] Bob: still iso",
+    ]) + eol
+
+    # Nothing above the twelfth anywhere: genuinely undecidable.
+    short = eol.join([
+        "[03/04/2026, 10:00:00] Alice: is this March or April",
+        "[05/04/2026, 10:01:00] Bob: nobody can tell",
+        "[07/04/2026, 10:02:00] Alice: not from this file",
+    ]) + eol
+
+    write("whatsapp.zip", {
+        "WhatsApp Chat with Alice/_chat.txt": ios,
+        "WhatsApp Chat with Alice/00000042-PHOTO-2026-08-13.jpg": png_bytes(),
+        "WhatsApp Chat - Bob.txt": android,
+        "WhatsApp Chat with Carol/_chat.txt": iso,
+        "WhatsApp Chat with Dave/_chat.txt": short,
+    })
+
+
+def png_bytes():
+    """The smallest valid PNG, so the media path has a real file to classify
+    rather than a text file wearing a .jpg name."""
+    import base64
+    return base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+        "YPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==")
+
+
 if __name__ == "__main__":
     print("Writing " + os.path.normpath(OUT))
     spotify()
@@ -393,4 +452,5 @@ if __name__ == "__main__":
     tiktok()
     tiktok_newer()
     tiktok_txt()
+    whatsapp()
     print("Run them with:  node tools/check-export.js tests/fixtures/social")

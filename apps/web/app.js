@@ -322,6 +322,11 @@ const SIGNATURES = [
      is distinctive at all. Both names are matched because both are in the
      wild, and the .txt request is matched too so it can be explained rather
      than opened as an unknown bag of files. */
+  /* A WhatsApp export is one transcript and whatever pictures went with it.
+     iOS names it _chat.txt; Android names it after the other person. */
+  { slug: "whatsapp", label: "WhatsApp",
+    pats: ["_chat.txt", "whatsapp chat with", "whatsapp chat -"],
+    shape: /(^|\/)whatsapp chat\b.*\.txt$/i },
   { slug: "tiktok", label: "TikTok",
     pats: ["user_data_tiktok.json", "user_data.json",
            "user_data_tiktok.txt", "user_data.txt"] },
