@@ -60,7 +60,9 @@ function walk(dir, test, out = []) {
 }
 
 const WORDS = { 1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
-  7: "seven", 8: "eight", 9: "nine", 10: "ten", 18: "eighteen", 20: "twenty",
+  7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve",
+  13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixteen", 17: "seventeen",
+  18: "eighteen", 19: "nineteen", 20: "twenty",
   25: "twenty-five", 38: "thirty-eight", 39: "thirty-nine", 44: "forty-four" };
 const spelled = (n) => WORDS[n] || String(n);
 
@@ -111,6 +113,16 @@ function facts() {
     .find((l) => l.trim().startsWith("Content-Security-Policy:")) || "";
   const connectSrc = ((/connect-src ([^;]*)/.exec(policy) || [])[1] || "").trim();
 
+  /* How much of PROVIDERS is claimed from a real export and how much from
+     documentation. This is the distinction the whole project turns on, and it
+     is the one most likely to be quietly overstated in a summary written
+     somewhere else - so it is counted from the sections themselves rather
+     than remembered. A section that has met a real export does not carry the
+     words "Not measured"; every other one does, by house rule. */
+  const provSections = read("PROVIDERS.md").split(/^## /m).slice(1)
+    .filter((sec) => sec.split(String.fromCharCode(10))[0].trim() !== "Anything else");
+  const notMeasured = provSections.filter((sec) => /\*\*Not measured/.test(sec)).length;
+
   return {
     guidePages: pages.length,
     serviceGuides: pages
@@ -119,6 +131,9 @@ function facts() {
     talkers,
     sitemapUrls: sitemap,
     readable: readable.sort(),
+    providerSections: provSections.length,
+    notMeasured,
+    measured: provSections.length - notMeasured,
     samples: fs.readdirSync(path.join(WEB, "samples")).filter((f) => f.endsWith(".zip")).length,
     donateLink,
     connectSrc,
@@ -144,6 +159,59 @@ function claims(f) {
     { doc: "README.md", say: spelled(f.talkers.length) + " files do",
       why: "files matching the network grep the README prints" },
   ];
+
+  /* The two counts a visitor actually sees on the page they use. The sample
+     button says how many samples it opens and the opener says how many
+     services have a reader; both were written by hand and both are countable. */
+  list.push(
+    { doc: "apps/web/app.html", say: "Open " + spelled(f.samples) + " sample exports",
+      why: "sample archives in apps/web/samples" },
+    { doc: "apps/web/app.html", say: spelled(f.readable.length) + " services have a reader",
+      why: "guides whose muletto_support says a reader exists" });
+
+  /* The home page names the unverified readers one by one, which is the most
+     visible place this claim appears and the only one a visitor reads. A name
+     added to that list without a reader behind it, or a reader that quietly
+     graduates to measured and stays on the list, is the failure to catch. */
+  const provText = read("PROVIDERS.md").split(/^## /m).slice(1);
+  for (const sec of provText) {
+    const name = sec.split(String.fromCharCode(10))[0].trim();
+    if (name === "Anything else" || !/\*\*Not measured/.test(sec)) continue;
+    /* The home page uses the short name, the way a sentence would. */
+    const short = name.replace(/ \(.*\)$/, "").replace(/ and Google Health$/, "");
+    list.push({ doc: "apps/web/index.html", say: short,
+      why: "PROVIDERS says this reader has never met a real export" });
+  }
+
+  /* RELEASE is the file somebody opens to decide what to do next, so a
+     rounded number there sends real work at the wrong thing. Both halves
+     again, and the heading carries one of them. */
+  list.push(
+    { doc: "RELEASE.md", say: spelled(f.notMeasured) + " readers that have never met a real export",
+      why: "PROVIDERS sections carrying the words Not measured" },
+    { doc: "RELEASE.md", say: "only " + spelled(f.measured) + " have been checked",
+      why: "PROVIDERS sections that do not" },
+    { doc: "RELEASE.md", never: "every core provider has now had a real export opened",
+      why: "true of six of eighteen, which is not what that sentence says any more" });
+
+  /* TODO says the same count in prose, and it is the number that decides
+     what somebody does next - so it is checked in both places rather than
+     kept in step by hand. */
+  list.push({ doc: "TODO.md",
+    say: spelled(f.notMeasured) + " of the " + spelled(f.readable.length) + " readers",
+    why: "readers with no real export behind them" });
+
+  /* The split between what has met a real export and what has not. Six and
+     eleven today. It is the claim a summary is most likely to round in the
+     flattering direction, so both halves are counted from PROVIDERS itself. */
+  list.push(
+    { doc: "README.md", say: spelled(f.readable.length) + " services have a reader",
+      why: "guides whose muletto_support says a reader exists" },
+    { doc: "README.md", say: spelled(f.measured) + " measured against a real export, " +
+        spelled(f.notMeasured) + " not",
+      why: "PROVIDERS sections carrying the words Not measured" },
+    { doc: "README.md", say: spelled(f.notMeasured) + " of the",
+      why: "the testing paragraph states the same count a second time" });
 
   for (const name of f.readable) {
     list.push({ doc: "PROVIDERS.md", say: name,

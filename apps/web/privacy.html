@@ -47,13 +47,16 @@
         <h2>Your export is never uploaded</h2>
         <p>Your export is opened by the browser itself, the same way it would open a file you double-click.
         Reading it, merging services, finding duplicates, repairing dates, searching and exporting all happen
-        on your machine. No part of the archive is sent anywhere. Open your browser's network tab while you
-        use it and you will see the page load, and then nothing.</p>
-        <p>There is no exception any more. There used to be one - an optional AI tagging feature that
-        sent a picture off to be described - and it has been withdrawn. The policy that enforces this is
-        not a promise in a paragraph: <code>connect-src</code> in the site's headers is now <code>'self'</code>
-        and nothing else, so a browser would refuse to send your archive anywhere even if a future change
-        tried to.</p>
+        on your machine. No part of the archive is sent anywhere. Open your browser's network tab on the
+        page where your export is open and you will see it load, and then nothing at all - not one
+        request, for as long as you use it. Do the same on this page and you will see a single count
+        go out, which is <a href="#count">described below</a> and is the only thing on this site that
+        ever does.</p>
+        <p>There is no exception, and the thing enforcing that is not a paragraph on this page.
+        <code>connect-src</code> in the site's headers is <code>'self'</code> and nothing else, so the
+        browser would refuse to send your archive anywhere even if a future change to this site tried
+        to. You can read that header in your own browser's network tab, and the file that sets it is
+        in the public source.</p>
       </div>
     </section>
 
@@ -110,7 +113,7 @@
       </div>
 
       <div class="section-head">
-        <h2>The one thing we do count</h2>
+        <h2 id="count">The one thing we do count</h2>
         <p>The pages of this site - not the app - send a note that a page was read. It is worth being
         exact about what that is, because most sites are not.</p>
       </div>

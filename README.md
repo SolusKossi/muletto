@@ -35,19 +35,45 @@ same page if you would rather not use your own yet.
 
 ### Which exports it reads
 
+Eighteen services have a reader written for them, and the split below matters
+more than the total.
+
+**Opened from a real export, and the results checked:**
+
 | Service | What is read |
 |---|---|
 | Google (Takeout) | Photos, videos, location history, messages, mail, activity |
 | Apple | Notes, contacts, calendar, audio, purchases, device records |
+| Apple Health | 383,000 records across sixteen types, streamed rather than parsed whole |
 | Samsung | Health, account and service records, including encrypted archives |
 | Snapchat | Memories, chat history, split captions merged back on |
+| Instagram and Facebook | Messages, posts, account records, mangled accents repaired |
+
+**Written from what the service documents, and never yet opened from a real
+export:**
+
+| Service | What is read |
+|---|---|
 | Reddit | Posts, comments, votes, saved items, private messages |
-| Instagram and Facebook | Messages, posts, account records |
+| Spotify | Both streaming histories, plays separated from skips |
+| X (Twitter) | Posts, direct messages, likes, media |
+| Discord | Messages, from both the old CSV and the newer JSON |
+| Strava | Activities on the timeline, GPX tracks on the map |
+| TikTok | Watch history, likes, searches, messages |
+| WhatsApp | Chat transcripts, in all three formats the phones write |
+| Fitbit and Google Health | Daily figures, dated from inside each record |
+| LinkedIn | Connections, posts, and messages rebuilt into conversations |
+| Microsoft | Searches, browsing, locations, app use |
+| Amazon | Orders across however many archives the request fanned out into |
 | Anything else | Opened, listed, and read where the shape is recognisable |
 
+Six measured against a real export, eleven not. That second group is written
+from each service's own documentation and exercised against a fixture built to
+it, which proves the reader does what was intended and nothing about whether a
+real export matches the documentation.
+
 [PROVIDERS.md](PROVIDERS.md) says exactly what is read from each, what is not,
-and which claims have been measured against a real export rather than inferred
-from documentation.
+and which of those claims have been measured.
 
 ### Guides
 
@@ -130,8 +156,8 @@ tools/              site builder, checks, sample-data generator
 `TESTPLAN.md` lists everything that has to work and marks how far each item
 has been proved: against generated data, against an archive rebuilt from a
 real person's structure report, or against a real export. It also lists what
-has not been proved. Safari and Firefox have never been run, and several
-services are read partially or not at all.
+has not been proved. Safari and Firefox have never been run, and eleven of the
+eighteen readers have never met a real export.
 
 `GUIDE-STATUS.md` records which request guides have been walked by hand, which
 is a stricter bar than being written from documentation.
