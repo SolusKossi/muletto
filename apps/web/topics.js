@@ -332,7 +332,12 @@ const MTopics = (function () {
    * A table now has to sit somewhere that says health as well as matching a
    * kind. Samsung writes com.samsung.shealth.*, Google writes Takeout/Fit/,
    * Apple writes Health. A friends list in Game Center matches none of them. */
-  const HEALTH_CONTEXT = /health|shealth|\bfit\b|fitness|wellness|activity metrics/i;
+  /* `\bfit\b` does not match "Fitbit" - there is no word boundary between the
+     two halves of it - so a Fitbit export failed this gate outright and lost
+     every loose kind it had: steps, distance, floors. Heart rate came through
+     anyway, because it is specific enough to stand on its own, and that is
+     what made the gap read as a partial import rather than a missing rule. */
+  const HEALTH_CONTEXT = /health|shealth|\bfit\b|fitbit|fitness|wellness|activity metrics/i;
 
   /* Which matchers can stand on their own.
    *

@@ -493,6 +493,139 @@ def amazon():
     })
 
 
+# ---------------------------------------------------------------- Fitbit
+
+def fitbit():
+    """Three traps, all the same trap: the filename lies.
+
+    sleep-2026-01-05.json holds about a month of nights in reverse order and
+    the date in its name is only where the block starts. The two folders come
+    from the migration to Google, and hold the same metrics in different
+    shapes - counted per file that doubles everything. And the minute-level
+    files date themselves US-first with a two-digit year while the sleep files
+    use ISO, in one export.
+
+    So the fixture puts a day in two folders at once and dates one night far
+    from the name of the file it sits in. A reader that trusts either filename
+    gets a different, plausible, wrong answer."""
+    # 01/05/26 is the fifth of January, not the first of May. Fitbit does not
+    # follow the reader's locale, so this order is known rather than guessed.
+    hr = [{"dateTime": "01/05/26 %02d:00:00" % h,
+           "value": {"bpm": 60 + h, "confidence": 2}} for h in range(6)]
+    steps = [{"dateTime": "01/05/26 %02d:00:00" % h, "value": str(100 * h)}
+             for h in range(6)]
+    # The same day again, in the other folder and the other shape.
+    steps_google = [{"dateTime": "01/05/26 %02d:00:00" % h, "value": str(100 * h)}
+                    for h in range(6)]
+
+    # Named the fifth of January; the nights inside are in March, reversed.
+    sleep = [
+        {"logId": 3, "dateOfSleep": "2026-03-03", "minutesAsleep": 401,
+         "startTime": "2026-03-02T23:10:00.000"},
+        {"logId": 2, "dateOfSleep": "2026-03-02", "minutesAsleep": 388,
+         "startTime": "2026-03-01T23:40:00.000"},
+        {"logId": 1, "dateOfSleep": "2026-03-01", "minutesAsleep": 377,
+         "startTime": "2026-02-28T23:05:00.000"},
+    ]
+
+    write("fitbit.zip", {
+        "Fitbit/Global Export Data/heart_rate-2026-01-05.json": hr,
+        "Fitbit/Global Export Data/steps-2026-01-05.json": steps,
+        "Fitbit/Global Export Data/sleep-2026-01-05.json": sleep,
+        # The second folder the Google migration leaves behind.
+        "Takeout/Fitbit/Activity/steps-2026-01-05.json": steps_google,
+        # Numbered, not dated, and holding no timestamps this reader can use.
+        "Fitbit/Global Export Data/exercise-100.json": [
+            {"activityName": "Run", "logType": "auto_detected"}],
+    })
+
+
+# ---------------------------------------------------------------- LinkedIn
+
+def linkedin():
+    """Connections.csv does not start with its header.
+
+    It starts with a line saying Notes:, then a paragraph explaining that some
+    email addresses are missing, then a blank line, and only then the real
+    columns. Read straight the whole file becomes one column of that
+    paragraph. It is also translated, so a reader that looks for the English
+    word works on one account and not the next - the fixture keeps it in
+    English because that is what an English account produces, and the reader
+    has to recognise it by its shape rather than its words.
+
+    messages.csv is flat, with a conversation id on every row, so the
+    conversations have to be rebuilt from it. Two of the three here share an
+    id and neither has a title, which is the ordinary case: grouping by title
+    would merge them into one."""
+    eol = chr(10)
+
+    connections = eol.join([
+        "Notes:",
+        '"When exporting your connection data, you may notice that some of the '
+        'email addresses are missing. Members can choose whether or not to '
+        'share their email address."',
+        "",
+        "First Name,Last Name,Email Address,Company,Position,Connected On",
+        "Ada,Lovelace,ada@example.invalid,Analytical Engines,Engineer,04 Jan 2026",
+        "Grace,Hopper,,Navy,Rear Admiral,11 Feb 2026",
+        "Alan,Turing,,NPL,Mathematician,02 Mar 2026",
+    ]) + eol
+
+    messages = eol.join([
+        "CONVERSATION ID,CONVERSATION TITLE,FROM,TO,DATE,SUBJECT,CONTENT,FOLDER",
+        "conv-1,,Ada Lovelace,You,2026-01-05 09:00:00,,Hello there,INBOX",
+        "conv-1,,You,Ada Lovelace,2026-01-05 09:04:00,,Hello back,INBOX",
+        "conv-2,,Grace Hopper,You,2026-02-12 14:00:00,,About the role,INBOX",
+    ]) + eol
+
+    shares = eol.join([
+        "Date,ShareLink,ShareCommentary,SharedUrl,MediaUrl,Visibility",
+        "2026-01-20 08:00:00,https://example.invalid/1,A post about something,,,MEMBER_NETWORK",
+        "2026-04-02 08:00:00,https://example.invalid/2,Another post,,,MEMBER_NETWORK",
+    ]) + eol
+
+    write("linkedin.zip", {
+        "Connections.csv": connections,
+        "messages.csv": messages,
+        "Shares.csv": shares,
+        "Registration.csv": "Registered At,Registration Ip\n2011-06-01 10:00:00,203.0.113.9\n",
+    })
+
+
+# ---------------------------------------------------------------- Microsoft
+
+def microsoft():
+    """The privacy dashboard archive: activity records in a mixture of CSV and
+    JSON, in one download. What it is not is the point - your files and your
+    email are separate downloads from separate places, and this reader says so
+    because that is what people open it expecting to find."""
+    eol = chr(10)
+    search = eol.join([
+        "Date (UTC),Search Terms,Device",
+        "2026-05-01 08:00:00,how to export my data,Windows",
+        "2026-05-02 09:30:00,gdpr subject access request,Windows",
+    ]) + eol
+    location = eol.join([
+        "Date (UTC),Latitude,Longitude,Accuracy",
+        "2026-05-03 12:00:00,59.913868,10.752245,40",
+        "2026-05-04 12:00:00,60.391262,5.322054,55",
+    ]) + eol
+    return write("microsoft.zip", {
+        "Search history.csv": search,
+        "Location history.csv": location,
+        # The JSON half of the same archive.
+        "Browse history.json": {"BrowseHistory": [
+            {"Date": "2026-05-05T10:00:00Z", "Url": "https://example.invalid/a",
+             "Title": "A page"},
+            {"Date": "2026-05-06T10:00:00Z", "Url": "https://example.invalid/b",
+             "Title": "Another page"},
+        ]},
+        "App and service usage.json": {"Usage": [
+            {"Date": "2026-05-07T10:00:00Z", "Name": "Edge", "Type": "launch"},
+        ]},
+    })
+
+
 if __name__ == "__main__":
     print("Writing " + os.path.normpath(OUT))
     spotify()
@@ -504,4 +637,7 @@ if __name__ == "__main__":
     tiktok_txt()
     whatsapp()
     amazon()
+    fitbit()
+    linkedin()
+    microsoft()
     print("Run them with:  node tools/check-export.js tests/fixtures/social")

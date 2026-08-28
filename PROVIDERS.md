@@ -437,6 +437,97 @@ If a message says its picture was left out, that is the Without media option
 at the moment the chat was exported. It cannot be recovered from the file -
 export the chat again.
 
+## Fitbit and Google Health
+
+Thousands of small JSON files, and three traps that are all the same trap:
+the filename lies.
+
+`sleep-2026-01-05.json` is not the fifth of January. It holds about a month of
+nights, in reverse order, and the date in the name is only where that block
+starts. The exercise files are numbered in blocks of a hundred and not dated
+at all. And since the move to Google an export can carry two folders holding
+the same metrics in different shapes, so anything counted per file is counted
+twice.
+
+One rule covers all three: **no date is ever read from a filename here.** Every
+record carries its own timestamp, days are built from those, and the same
+reading arriving twice is counted once.
+
+**Not measured.** Written from the documented layout and exercised against a
+fixture that puts one day in two folders and dates a night three months away
+from the file it sits in.
+
+| Area | What Muletto does |
+|---|---|
+| Heart rate, steps, distance, calories, floors | **Read**. A row per day |
+| Sleep | **Read**. Per night, from the night's own date |
+| SpO2, HRV, stress, weight | **Read**, where present |
+| Exercise sessions | Listed. Numbered rather than dated, so nothing can place them |
+
+Fitbit writes the minute-level files in US order with a two-digit year -
+`01/05/26` is the fifth of January - and the sleep files in ISO, in one
+export. Unlike WhatsApp there is nothing to work out: Fitbit does not follow
+your phone's locale, so the order is known rather than guessed.
+
+## LinkedIn
+
+A flat bag of CSVs. The one everybody opens first has a trap in it:
+`Connections.csv` does not begin with its header. It begins with a line saying
+Notes, a paragraph about missing email addresses, then a blank line, and only
+then the columns. Read straight, the whole file becomes one column holding
+that paragraph.
+
+**Not measured.** Written from the documented files and exercised against a
+fixture carrying the preamble and an untitled conversation.
+
+| Area | What Muletto does |
+|---|---|
+| Connections | **Read**. On the timeline, by the date you connected |
+| Messages | **Read**. Rebuilt into conversations from the flat file |
+| Posts (`Shares.csv`) | **Read**. On the timeline |
+| Invitations, reactions, comments, searches, ads | Listed |
+| Articles and rich media | Listed |
+
+Two things worth knowing:
+
+- **The connections file holds a name, a company, a job title and a date, and
+  close to nothing else.** No profile address, no headline, no skills, no
+  endorsements. That is what LinkedIn puts in it. An email address is there
+  only where that person chose to share it, and mostly they have not - Muletto
+  counts how many are blank rather than leaving you to notice.
+- Messages arrive as one flat file with a conversation id on every row, and
+  most conversations have no title. LinkedIn writes full names in the From and
+  To columns and never marks which one is you, so an untitled conversation
+  named after its To column comes out called by your own name. The name
+  appearing in the most conversations is taken to be yours, because you are in
+  all of them and nobody else is in more than their own.
+
+## Microsoft
+
+The privacy dashboard archive is a record of what you did: searches, pages
+browsed, apps opened, places the device was. **It is not your files and not
+your email.** OneDrive and Outlook are separate downloads from separate
+places, and nothing from either is in here - which is worth knowing before you
+wait up to thirty days for it.
+
+**Not measured.** Written from the documented archive and exercised against a
+fixture holding both formats it ships in.
+
+| Area | What Muletto does |
+|---|---|
+| Search history | **Read**. On the timeline |
+| Browse history | **Read**. On the timeline |
+| Location history | **Read**. On the timeline and the map |
+| App and service usage | **Read** |
+| Voice, media, Xbox | **Read**, where present |
+| Everything else | Listed |
+
+One detail that matters more than it sounds: Microsoft heads a column `Date
+(UTC)` and then writes the value with no zone marker on it. Read plainly that
+becomes the reader's local time, so the same export shows different times to
+two people in different countries. The header says which zone it is, so
+Muletto believes the header.
+
 ## Anything else
 
 An export from a service with no reader still opens. Files are listed, tables

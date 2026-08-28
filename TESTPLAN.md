@@ -485,6 +485,27 @@ and the phone's locale. Exercised against a fixture holding all three forms.
 | Non-Latin names and text | `-` | The transcript is UTF-8; nothing here has tested it |
 | The account report beside the chats | `-` | A different request entirely, and it holds no messages |
 
+## 7c. Fitbit, LinkedIn and Microsoft
+
+Read since 2026-08-28, each against a fixture built to what the service
+documents. `S` throughout: none of the three has been opened from a real
+export here.
+
+| What | State | Notes |
+|---|---|---|
+| Fitbit: the filename is never the date | `S` | `sleep-2026-01-05.json` holds about a month of nights in reverse order; the exercise files are numbered rather than dated. Every date comes from inside the record |
+| Fitbit: two folders of the same metrics | `S` | What the move to Google left behind. Deduplicated by measurement and instant - without it a 1,500-step day reported 3,000 |
+| Fitbit: US dates and ISO dates in one export | `S` | `01/05/26` in the minute files, ISO in the sleep files. Fitbit does not follow the reader's locale, so the order is known rather than guessed |
+| Fitbit: `{value:{bpm}}` beside `{value:"312"}` | `S` | One folder, two wrappings. Assuming either yields nothing for the other |
+| Fitbit: thousands of files | `-` | Capped at 1,200 with the remainder reported. The cap has never been reached against a real export |
+| LinkedIn: preamble above the header | `S` | `Connections.csv` opens with a paragraph, not columns. Recognised by shape, since LinkedIn translates it |
+| LinkedIn: flat messages file | `S` | One conversation id per row; conversations rebuilt from it |
+| LinkedIn: no title, and no marker for you | `S` | Full names in From and To with nothing saying which is the account holder. The name in the most conversations is taken to be yours |
+| LinkedIn: missing email addresses | `S` | Only present where that person shared them. Counted rather than asserted |
+| Microsoft: CSV and JSON in one archive | `S` | Both halves read into the same shape |
+| Microsoft: `Date (UTC)` with no zone on the value | `S` | Read plainly it becomes the reader's local time, so one export shows different times in different countries. The header is believed |
+| Microsoft: not your files, not your email | `S` | OneDrive and Outlook are separate downloads. Said, because it is what people open this expecting |
+
 ## 8. TikTok
 
 Read since 2026-08-28. One enormous JSON file, and almost every key in it has

@@ -25,9 +25,9 @@
     "A work or school account is not the same thing. Those requests go through whoever administers the tenant, and the dashboard will show far less or nothing at all."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "microsoft",
+    "status": "reads the activity records - searches, browsing, locations, app use - from both the CSV and JSON halves, and says plainly that your files and email are not in this archive. Built from the documented archive; no real Microsoft export has been opened yet"
   },
   "steps": [
     {

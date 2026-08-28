@@ -45,9 +45,9 @@
     "Exercise files are numbered in blocks of a hundred rather than dated, so there is no way to tell what is in one without opening it."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "fitbit",
+    "status": "reads the per-day JSON into daily figures, taking every date from inside the record because the filenames lie - a sleep file holds a month of nights. Built from the documented layout; no real Fitbit export has been opened yet"
   },
   "faq": [
     {

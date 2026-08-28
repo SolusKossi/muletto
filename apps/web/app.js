@@ -324,6 +324,26 @@ const SIGNATURES = [
      than opened as an unknown bag of files. */
   /* A WhatsApp export is one transcript and whatever pictures went with it.
      iOS names it _chat.txt; Android names it after the other person. */
+  /* Fitbit's own export and the Fitbit half of a Takeout both put everything
+     under a folder that names itself, which is just as well: the files inside
+     are called steps- and sleep- and nothing about those says whose they are.
+     Placed before Google so a Takeout that is only Fitbit lands here; a
+     Takeout with Photos in it scores far higher on Google and still wins. */
+  /* LinkedIn is a flat bag of CSVs with no folder and no manifest, so it has
+     to be recognised by the set of names rather than by any one of them -
+     Connections.csv alone is far too ordinary to trust. */
+  /* The privacy dashboard writes one file per kind of record and names them
+     in prose, with spaces. The set is what identifies it. */
+  { slug: "microsoft", label: "Microsoft",
+    pats: ["search history", "browse history", "location history",
+           "app and service usage", "app and service performance",
+           "product and service usage", "voice history", "microsoft"] },
+  { slug: "linkedin", label: "LinkedIn",
+    pats: ["connections.csv", "invitations.csv", "shares.csv",
+           "rich_media.csv", "reactions.csv", "ad_targeting.csv",
+           "registration.csv", "profile.csv"] },
+  { slug: "fitbit", label: "Fitbit",
+    pats: ["fitbit/", "global export data/", "fitbit_data", "physical activity/"] },
   { slug: "whatsapp", label: "WhatsApp",
     pats: ["_chat.txt", "whatsapp chat with", "whatsapp chat -"],
     shape: /(^|\/)whatsapp chat\b.*\.txt$/i },

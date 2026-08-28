@@ -43,9 +43,9 @@
     "Dates in that file use English month names regardless of your language setting."
   ],
   "muletto_support": {
-    "importable": false,
-    "adapter": null,
-    "status": "none"
+    "importable": true,
+    "adapter": "linkedin",
+    "status": "reads connections, posts and the flat messages file rebuilt into conversations, and skips the paragraph LinkedIn writes above the columns. Built from the documented files; no real LinkedIn export has been opened yet"
   },
   "faq": [
     {

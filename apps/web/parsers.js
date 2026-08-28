@@ -2324,6 +2324,563 @@ const MParse = (function () {
     return lib;
   }
 
+  /* ---------- Microsoft ---------- */
+
+  /* The privacy dashboard archive is activity and usage records: what was
+     searched for, what was browsed, which apps were opened, where the device
+     was. It is not your files and not your email - OneDrive and Outlook are
+     separate downloads from separate places - and that is the single most
+     useful thing this reader can say, because it is what people are expecting
+     when they open it.
+
+     The records themselves are ordinary tables with a date column and a
+     description column, under names Microsoft has not kept still. So the
+     columns are found by pattern and the timeline is built from whatever
+     matched, rather than from a list of file names that will be wrong by next
+     year. What is not recognised stays a table, which is what the generic
+     reader would have done with all of it. */
+
+  const MS_KINDS = [
+    { re: /search/i, kind: "search", label: "Searches" },
+    { re: /browse|browsing/i, kind: "browsed", label: "Pages browsed" },
+    { re: /location/i, kind: "place", label: "Locations" },
+    { re: /voice|speech|cortana/i, kind: "voice", label: "Voice recordings" },
+    { re: /app.*(usage|service)|service.*usage/i, kind: "app", label: "App and service use" },
+    { re: /media|xbox|game/i, kind: "media", label: "Media and games" },
+  ];
+
+  const msCol = (cols, re) => cols.findIndex((c) => re.test(String(c).trim()));
+
+  async function microsoft(file, entries) {
+    const lib = emptyLib("microsoft", "Microsoft");
+    const wanted = withinBudget(entries.filter((e) => /\.(csv|json)$/i.test(e.name)));
+    noteDropped(lib, wanted.dropped, "record tables");
+
+    const counts = new Map();
+    let placed = 0;
+
+    /* Both formats arrive in one archive, so both are turned into the same
+       rows-and-columns shape before anything looks at them. */
+    async function sectionsOf(e) {
+      if (/\.csv$/i.test(e.name)) {
+        let text = null;
+        try { text = await MZip.extractText(file, e); } catch { return []; }
+        return csvSections(text);
+      }
+      const data = await readJsonSafe(file, e);
+      if (!data || typeof data !== "object") return [];
+      const lists = Array.isArray(data) ? [{ key: "", list: data }] : pickArrays(data, /./);
+      const out = [];
+      for (const { key, list } of lists) {
+        if (!list.length || typeof list[0] !== "object") continue;
+        const cols = Object.keys(list[0]).filter((c) => typeof list[0][c] !== "object");
+        if (!cols.length) continue;
+        out.push({ title: key, columns: cols,
+          rows: list.slice(0, 5000).map((o) => cols.map((c) =>
+            String(o[c] === undefined || o[c] === null ? "" : o[c]))) });
+      }
+      return out;
+    }
+
+    for (const e of wanted.taken) {
+      const stem = base(e.name).replace(/\.(csv|json)$/i, "");
+      const kind = MS_KINDS.find((k) => k.re.test(stem + " " + e.name));
+
+      for (const sec of await sectionsOf(e)) {
+        const cols = sec.columns || [];
+        const rows = sec.rows || [];
+        if (!cols.length || !rows.length) continue;
+
+        lib.tables.push({
+          name: (kind ? kind.label : niceColumn(stem)) + (sec.title ? " - " + sec.title : ""),
+          path: e.name, columns: cols.map(niceColumn), rows,
+        });
+
+        const iAt = msCol(cols, /^(date|date ?\(utc\)|datetime|time|timestamp|created)/i);
+        if (iAt < 0) continue;
+        const iWhat = msCol(cols, /^(search terms?|query|url|title|name|activity|description|text)/i);
+        const iLat = msCol(cols, /^lat(itude)?$/i);
+        const iLon = msCol(cols, /^(lon|lng|longitude)$/i);
+
+        /* Microsoft heads the column "Date (UTC)" and then writes the value
+           with no zone marker on it. Handed to Date that is read as the
+           reader's own local time, so the same export shows different times
+           to two people opening it in different countries - two hours out in
+           Oslo. The header already says which zone it is, so it is believed:
+           a value with no zone of its own, in a column that says UTC, is UTC.
+           Values that carry a zone are left exactly as they are. */
+        const colSaysUtc = /\butc\b|\bgmt\b/i.test(String(cols[iAt] || ""));
+        const readAt = (v) => {
+          const s = String(v == null ? "" : v).trim();
+          if (colSaysUtc && s && !/(z|utc|gmt|[+-]\d{2}:?\d{2})$/i.test(s)) {
+            return parseDate(s + " UTC");
+          }
+          return parseDate(s);
+        };
+
+        for (const r of rows) {
+          const at = readAt(r[iAt]);
+          if (!at) continue;
+          if (iLat >= 0 && iLon >= 0) {
+            const lat = parseFloat(r[iLat]), lon = parseFloat(r[iLon]);
+            if (!isNaN(lat) && !isNaN(lon)) { lib.places.push({ at, lat, lon }); placed++; }
+          }
+          const what = iWhat >= 0 ? String(r[iWhat] || "") : "";
+          if (!kind && !what) continue;
+          lib.events.push({
+            at, kind: kind ? kind.kind : "record",
+            label: (what || (kind ? kind.label : "Activity")).slice(0, 140),
+          });
+          const key = kind ? kind.label : "Other records";
+          counts.set(key, (counts.get(key) || 0) + 1);
+        }
+      }
+    }
+
+    let first = true;
+    for (const [label, n] of [...counts.entries()].sort((a, b) => b[1] - a[1])) {
+      lib.insights.push({ n: n.toLocaleString(), label, accent: first });
+      first = false;
+    }
+    if (placed) {
+      lib.insights.push({ n: placed.toLocaleString(), label: "Locations on the map" });
+    }
+
+    /* The one that saves somebody an afternoon. */
+    lib.notes.push("This archive is the record of what you did - searches, pages, apps, " +
+      "places - and not the things you made. Your files are a separate download from " +
+      "OneDrive and your email a separate one from Outlook, and neither of them is in " +
+      "here. Nothing has gone missing; they were never part of this request.");
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+
+  /* ---------- LinkedIn ---------- */
+
+  /* A flat bag of CSVs, and the one that everybody opens first is the one
+     with a trap in it. `Connections.csv` does not begin with its header: it
+     begins with a "Notes:" line and a paragraph explaining that some email
+     addresses are missing, then a blank line, and only then the real columns.
+     Read straight it produces a one-column table of that paragraph and
+     nothing else. csvSections already splits on the blank line, so both
+     halves arrive - and the preamble half is dropped here rather than shown
+     as a table called Connections with one row of prose in it. */
+
+  const LI_FILES = [
+    [/^connections/i, "Connections"],
+    [/^messages/i, "Messages"],
+    [/^shares/i, "Posts"],
+    [/^invitations/i, "Invitations"],
+    [/^profile/i, "Profile"],
+    [/^(reactions|votes)/i, "Reactions"],
+    [/^comments/i, "Comments"],
+    [/^(company follows|organization)/i, "Companies followed"],
+    [/^(search queries|searches)/i, "Searches"],
+    [/^(ad_targeting|ads)/i, "Advertising"],
+  ];
+
+  /* The preamble, recognised by shape rather than by its English. LinkedIn
+     translates it, so matching the word "Notes" works on one account and not
+     on the next: a section of one column whose only row is a sentence is the
+     thing to drop. */
+  const liIsPreamble = (sec) =>
+    (sec.columns || []).length <= 1 &&
+    (sec.rows || []).length <= 2 &&
+    (sec.rows || []).some((r) => String(r[0] || "").length > 60);
+
+  const liCol = (cols, re) => cols.findIndex((c) => re.test(String(c).trim()));
+
+  async function linkedin(file, entries) {
+    const lib = emptyLib("linkedin", "LinkedIn");
+    const csvs = withinBudget(entries.filter((e) => /\.csv$/i.test(e.name)));
+    noteDropped(lib, csvs.dropped, "record tables");
+
+    let connections = 0, posts = 0, messages = 0, droppedPreamble = 0;
+    let noEmail = 0;
+
+    for (const e of csvs.taken) {
+      let text = null;
+      try { text = await MZip.extractText(file, e); } catch { continue; }
+      const stem = base(e.name).replace(/\.csv$/i, "");
+      const hit = LI_FILES.find(([re]) => re.test(stem));
+      const label = hit ? hit[1] : niceColumn(stem);
+
+      for (const sec of csvSections(text)) {
+        const cols = sec.columns || [];
+        const rows = sec.rows || [];
+        if (!cols.length || !rows.length) continue;
+        if (liIsPreamble(sec)) { droppedPreamble++; continue; }
+
+        lib.tables.push({ name: label, path: e.name,
+          columns: cols.map(niceColumn), rows });
+
+        if (/^connections/i.test(stem)) {
+          connections += rows.length;
+          /* The thing the file is missing, counted rather than asserted. An
+             address is only in here if that person chose to share it, and
+             most have not - which is the whole disappointment of this export
+             and is better as a number than as a warning. */
+          const iMail = liCol(cols, /^e-?mail/i);
+          if (iMail >= 0) noEmail += rows.filter((r) => !String(r[iMail] || "").trim()).length;
+          for (const r of rows) {
+            const iOn = liCol(cols, /^connected on$/i);
+            const at = iOn >= 0 ? parseDate(r[iOn]) : null;
+            if (!at) continue;
+            const iFirst = liCol(cols, /^first name$/i);
+            const iLast = liCol(cols, /^last name$/i);
+            const who = [iFirst >= 0 ? r[iFirst] : "", iLast >= 0 ? r[iLast] : ""]
+              .filter(Boolean).join(" ");
+            lib.events.push({ at, kind: "connection",
+              label: "Connected with " + (who || "someone") });
+          }
+        }
+
+        if (/^shares/i.test(stem)) {
+          const iDate = liCol(cols, /^date$/i);
+          const iText = liCol(cols, /^sharecommentary$/i);
+          for (const r of rows) {
+            const at = iDate >= 0 ? parseDate(r[iDate]) : null;
+            if (!at) continue;
+            posts++;
+            lib.events.push({ at, kind: "post",
+              label: String((iText >= 0 && r[iText]) || "A post").slice(0, 140) });
+          }
+        }
+
+        /* Messages are one flat file with a conversation id on every row, so
+           the conversations have to be rebuilt from it. Grouping by the title
+           instead would merge every conversation LinkedIn left untitled, which
+           is most of them. */
+        if (/^messages/i.test(stem)) {
+          const iId = liCol(cols, /^conversation id$/i);
+          const iTitle = liCol(cols, /^conversation title$/i);
+          const iFrom = liCol(cols, /^from$/i);
+          const iTo = liCol(cols, /^to$/i);
+          const iAt = liCol(cols, /^date$/i);
+          const iBody = liCol(cols, /^content$/i);
+          const iSubj = liCol(cols, /^subject$/i);
+          /* Who this export belongs to, worked out rather than asked for.
+             LinkedIn writes full names in FROM and TO and never marks which
+             one is you, so an untitled conversation named after its TO column
+             comes out called by your own name - and so does the next one, and
+             the one after that. The name appearing in the most conversations
+             is the account holder, because you are in all of them and nobody
+             else is in more than their own. */
+          const inConv = new Map();
+          for (const r of rows) {
+            const id = iId >= 0 ? String(r[iId] || "") : "";
+            for (const i of [iFrom, iTo]) {
+              const who = i >= 0 ? String(r[i] || "").trim() : "";
+              if (!who) continue;
+              if (!inConv.has(who)) inConv.set(who, new Set());
+              inConv.get(who).add(id);
+            }
+          }
+          let me = "", mostConvs = 0;
+          for (const [who, ids] of inConv) {
+            if (ids.size > mostConvs) { mostConvs = ids.size; me = who; }
+          }
+          /* One conversation proves nothing about who is who, so the guess is
+             only made when it had something to compare. */
+          if (mostConvs < 2) me = "";
+
+          const byId = new Map();
+          for (const r of rows) {
+            const id = iId >= 0 ? String(r[iId] || "") : String(byId.size);
+            if (!byId.has(id)) {
+              byId.set(id, { title: (iTitle >= 0 && r[iTitle]) ? String(r[iTitle]) : "",
+                             who: new Set(), messages: [] });
+            }
+            for (const i of [iFrom, iTo]) {
+              const w = i >= 0 ? String(r[i] || "").trim() : "";
+              if (w && w !== me) byId.get(id).who.add(w);
+            }
+            byId.get(id).messages.push({
+              from: iFrom >= 0 ? String(r[iFrom] || "") : "",
+              direction: null,
+              text: String((iBody >= 0 && r[iBody]) || (iSubj >= 0 && r[iSubj]) || ""),
+              type: "TEXT",
+              at: iAt >= 0 ? parseDate(r[iAt]) : null,
+            });
+            messages++;
+          }
+          for (const c of byId.values()) {
+            c.messages.sort((a, b) => (a.at || 0) - (b.at || 0));
+            if (!c.title) {
+              const who = [...c.who];
+              c.title = who.length ? who.slice(0, 3).join(", ") : "Conversation";
+            }
+            delete c.who;
+            lib.conversations.push(c);
+          }
+        }
+      }
+    }
+
+    if (connections) {
+      lib.insights.push({ n: connections.toLocaleString(), label: "Connections", accent: true });
+      if (noEmail) {
+        lib.insights.push({ n: noEmail.toLocaleString(), label: "Connections with no address",
+          note: "an address is only here if that person chose to share it" });
+      }
+    }
+    if (messages) {
+      lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
+      lib.insights.push({ n: messages.toLocaleString(), label: "Messages",
+        note: "across " + lib.conversations.length.toLocaleString() + " conversations",
+        accent: true });
+    }
+    if (posts) lib.insights.push({ n: posts.toLocaleString(), label: "Posts" });
+
+    if (droppedPreamble) {
+      lib.notes.push("LinkedIn writes a paragraph of explanation above the columns in " +
+        plural(droppedPreamble, "file", "files") + ", before the header rather than " +
+        "after it. That paragraph is not data and is not shown as a table.");
+    }
+    /* Said whether or not a connections file turned up, because it is the
+       reason this export disappoints people. */
+    if (connections) {
+      lib.notes.push("The connections file holds a name, a company, a job title and the " +
+        "date - and close to nothing else. No profile address, no headline, no skills. " +
+        "That is what LinkedIn puts in it, not what was lost on the way in.");
+    }
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+
+  /* ---------- Fitbit and Google Health ---------- */
+
+  /* Thousands of small JSON files, and three traps that all have the same
+     shape: the filename lies.
+
+     `sleep-2026-01-05.json` is not the fifth of January. It holds about a
+     month of nights, in reverse order, and the date in the name is only where
+     that block happens to start. `exercise-100.json` is not dated at all -
+     the exercise files are numbered in blocks of a hundred. And after the
+     migration to Google an export can carry two folders holding the same
+     metrics in different formats, so anything counted per file gets counted
+     twice.
+
+     One rule handles all three: never read a date from a filename here. Every
+     record in these files carries its own timestamp, days are built from
+     those, and a day seen twice is one day rather than two. */
+
+  /* Fitbit writes the minute-level files in US order with a two-digit year -
+     "01/05/26 00:00:00" is the fifth of January - and the sleep files in ISO.
+     Both appear in one export. Unlike WhatsApp there is nothing to work out:
+     Fitbit does not follow the reader's locale, so the order is known. */
+  function fbDate(v) {
+    if (!v) return null;
+    const s = String(v).trim();
+    const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(s);
+    if (m) {
+      let y = +m[3];
+      if (y < 100) y += y < 70 ? 2000 : 1900;
+      const at = new Date(Date.UTC(y, +m[1] - 1, +m[2], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)));
+      return isNaN(at) ? null : at;
+    }
+    const d = parseDate(s);
+    return d && !isNaN(d) ? d : null;
+  }
+
+  const fbDay = (at) => at.toISOString().slice(0, 10);
+
+  /* What the stem of a filename means, and how a day's worth of it combines.
+     Steps in a minute are added up to make a day; a heart rate is averaged,
+     because a day's heart rate is not the sum of its minutes. */
+  const FB_METRICS = [
+    { re: /^heart[_ -]?rate/i, name: "Heart rate", how: "mean" },
+    { re: /^steps/i, name: "Steps", how: "sum" },
+    { re: /^distance/i, name: "Distance", how: "sum" },
+    { re: /^calories/i, name: "Calories", how: "sum" },
+    { re: /^floors/i, name: "Floors", how: "sum" },
+    { re: /^altitude/i, name: "Altitude", how: "mean" },
+    { re: /^(very|moderately|lightly)[_ -]?active[_ -]?minutes/i, name: "Active minutes", how: "sum" },
+    { re: /^sedentary[_ -]?minutes/i, name: "Sedentary minutes", how: "sum" },
+    { re: /^resting[_ -]?heart[_ -]?rate/i, name: "Resting heart rate", how: "mean" },
+    { re: /^(spo2|oxygen)/i, name: "Blood oxygen", how: "mean" },
+    { re: /^(hrv|heart[_ -]?rate[_ -]?variability)/i, name: "Heart rate variability", how: "mean" },
+    { re: /^(stress|stress[_ -]?score)/i, name: "Stress", how: "mean" },
+    { re: /^weight/i, name: "Weight", how: "mean" },
+  ];
+
+  /* A record's value, whichever way Fitbit wrapped it. Heart rate arrives as
+     { value: { bpm, confidence } } and steps as { value: "312" }, in the same
+     folder, and a reader that assumes either one silently produces nothing
+     for the other. */
+  function fbValue(rec) {
+    const v = rec && rec.value;
+    if (v === null || v === undefined) return null;
+    if (typeof v === "object") {
+      const inner = v.bpm !== undefined ? v.bpm
+                  : v.value !== undefined ? v.value
+                  : v.avg !== undefined ? v.avg : null;
+      const n = Number(inner);
+      return isFinite(n) ? n : null;
+    }
+    const n = Number(v);
+    return isFinite(n) ? n : null;
+  }
+
+  async function fitbit(file, entries) {
+    const lib = emptyLib("fitbit", "Fitbit");
+    const FILE_CAP = 1200;
+
+    const json = entries.filter((e) => /\.json$/i.test(e.name) &&
+      /(^|\/)(fitbit|global export data|physical activity|takeout)\b/i.test(e.name));
+    const taken = json.slice(0, FILE_CAP);
+
+    /* Two folders holding the same metrics is what the migration to Google
+       left behind. Counted per file it doubles everything; days are keyed by
+       date, so the same day arriving twice merges instead - but it is still
+       worth saying, because a reader who knows they have both should be told
+       the totals are not doubled. */
+    const folders = new Set(taken.map((e) => e.name.split("/").slice(0, -1).join("/")));
+    const roots = new Set([...folders].map((f) => f.split("/")[0].toLowerCase()));
+
+    /* day -> metric -> array of numbers */
+    const days = new Map();
+    let records = 0, undatedFiles = 0, duplicates = 0;
+    const sleeps = [];
+
+    /* Every reading already seen, as metric plus the exact instant it was
+       taken. The migration to Google left some exports carrying two folders
+       of the same metrics, and keying days by date is not enough to handle
+       that: both copies land on the same day and are added together, so a
+       day of 1,500 steps reports 3,000. Two readings of one metric at one
+       instant are one reading written down twice. */
+    const seenAt = new Set();
+    const seenSleep = new Set();
+
+    for (const e of taken) {
+      const stem = base(e.name).replace(/\.json$/i, "").replace(/[-_]?\d[\d-]*$/, "");
+      const rows = await readJsonSafe(file, e);
+      if (!Array.isArray(rows) || !rows.length) continue;
+
+      if (/^sleep/i.test(stem)) {
+        /* Named after one date and holding about a month of nights, in reverse
+           order. Every night's own dateOfSleep is used and the filename is
+           ignored entirely. */
+        for (const r of rows) {
+          const at = fbDate(r && (r.dateOfSleep || r.startTime));
+          if (!at) continue;
+          /* By the night's own id where there is one, and by the night it
+             covers where there is not. The same night in two folders is one
+             night, and sleep is the metric where doubling is most obvious. */
+          const key = String((r && r.logId) || "") + "|" + fbDay(at);
+          if (seenSleep.has(key)) { duplicates++; continue; }
+          seenSleep.add(key);
+          const mins = Number(r.minutesAsleep);
+          sleeps.push([fbDay(at), isFinite(mins) ? mins : null]);
+          records++;
+        }
+        continue;
+      }
+
+      const metric = FB_METRICS.find((m) => m.re.test(stem));
+      if (!metric) continue;
+      let dated = 0;
+      for (const r of rows) {
+        const at = fbDate(r && (r.dateTime || r.timestamp || r.date));
+        const val = fbValue(r);
+        if (!at || val === null) continue;
+        const stamp = metric.name + "|" + at.getTime();
+        if (seenAt.has(stamp)) { duplicates++; continue; }
+        seenAt.add(stamp);
+        const key = fbDay(at);
+        if (!days.has(key)) days.set(key, new Map());
+        const d = days.get(key);
+        if (!d.has(metric.name)) d.set(metric.name, []);
+        d.get(metric.name).push(val);
+        dated++; records++;
+      }
+      if (!dated) undatedFiles++;
+    }
+
+    /* One table per metric, a row per day. The path keeps the real file it
+       came from, because the health page will not believe a loose kind like
+       floors or distance unless its source has already proved itself health
+       data - and a made-up path would also break the count of files read. */
+    const anyPath = taken.length ? taken[0].name : "";
+    const byMetric = new Map();
+    for (const [day, metrics] of days) {
+      for (const [name, vals] of metrics) {
+        if (!vals.length) continue;
+        const how = (FB_METRICS.find((m) => m.name === name) || {}).how;
+        const n = how === "mean"
+          ? vals.reduce((s, v) => s + v, 0) / vals.length
+          : vals.reduce((s, v) => s + v, 0);
+        if (!byMetric.has(name)) byMetric.set(name, []);
+        byMetric.get(name).push([day, String(Math.round(n * 100) / 100)]);
+      }
+    }
+    for (const [name, rows] of byMetric) {
+      rows.sort((a, b) => (a[0] < b[0] ? -1 : 1));
+      lib.tables.push({ name, path: anyPath, columns: ["Date", "Value"], rows });
+    }
+    if (sleeps.length) {
+      const perDay = new Map();
+      for (const [day, mins] of sleeps) {
+        if (mins === null) continue;
+        perDay.set(day, (perDay.get(day) || 0) + mins);
+      }
+      const rows = [...perDay.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))
+        .map(([d, m]) => [d, String(Math.round(m))]);
+      if (rows.length) {
+        lib.tables.push({ name: "Sleep", path: anyPath,
+          columns: ["Date", "Value"], rows });
+      }
+    }
+
+    if (days.size || sleeps.length) {
+      lib.insights.push({ n: records.toLocaleString(), label: "Health readings",
+        accent: true });
+      lib.insights.push({ n: String(byMetric.size + (sleeps.length ? 1 : 0)),
+        label: "Measurements recorded" });
+      const all = [...days.keys()].sort();
+      if (all.length) {
+        lib.insights.push({ n: all.length.toLocaleString(), label: "Days covered",
+          note: all[0] + " to " + all[all.length - 1] });
+      }
+    }
+
+    if (duplicates) {
+      lib.notes.push(plural(duplicates, "reading was", "readings were") + " the same " +
+        "measurement at the same moment written down twice - what the move to Google " +
+        "left behind, where an export carries two folders of the same metrics. " +
+        (duplicates === 1 ? "It has" : "They have") + " been counted once. Added up " +
+        "straight from the files, those days would read double.");
+    } else if (roots.size > 1) {
+      lib.notes.push("This export has more than one folder that could hold the same " +
+        "metrics, which is what the move to Google left behind. Nothing in them " +
+        "overlapped, so nothing was dropped.");
+    }
+    if (json.length > FILE_CAP) {
+      lib.notes.push("Read " + FILE_CAP.toLocaleString() + " of " +
+        json.length.toLocaleString() + " data files. Fitbit writes one per day per " +
+        "measurement, so a long history runs to thousands; the rest are listed and " +
+        "not summarised.");
+    }
+    if (undatedFiles) {
+      lib.notes.push(plural(undatedFiles, "file", "files") + " held no readable " +
+        "timestamps and " + (undatedFiles === 1 ? "was" : "were") + " left out of the " +
+        "daily figures. The " + (undatedFiles === 1 ? "file is" : "files are") +
+        " still in the export.");
+    }
+    lib.notes.push("Dates come from inside each record, never from the filename. " +
+      "A file called sleep-2026-01-05 holds about a month of nights in reverse order, " +
+      "and the exercise files are numbered rather than dated, so the name is not " +
+      "evidence of what is inside.");
+
+    await classifyFiles(lib, entries, file);
+    return lib;
+  }
+
+
   /* ---------- WhatsApp ---------- */
 
   /* A per-chat export: one `_chat.txt` and, if the right option was chosen,
@@ -2920,6 +3477,9 @@ const MParse = (function () {
     if (slug === "strava") return finish(strava(file, entries));
     if (slug === "tiktok") return finish(tiktok(file, entries));
     if (slug === "whatsapp") return finish(whatsapp(file, entries));
+    if (slug === "fitbit") return finish(fitbit(file, entries));
+    if (slug === "linkedin") return finish(linkedin(file, entries));
+    if (slug === "microsoft") return finish(microsoft(file, entries));
     if (slug === "facebook" || slug === "instagram") {
       return finish(meta(file, entries, slug, detected.label));
     }
