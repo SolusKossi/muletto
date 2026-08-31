@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hvorfor har Google Foto-bildene mine feil dato? | Muletto</title>
+  <meta name="description" content="Du lastet ned år med bilder fra Google Takeout, og hvert eneste av dem sier at det ble tatt den dagen du lastet det ned. Ti år med bilder havner i bildeappen din som én eneste enorm dag." />
+  <link rel="canonical" href="https://muletto.app/no/guides/why-google-photos-wrong-date.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/why-google-photos-wrong-date.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/why-google-photos-wrong-date.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/why-google-photos-wrong-date.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Hvorfor har Google Foto-bildene mine feil dato? | Muletto" />
+  <meta property="og:description" content="Du lastet ned år med bilder fra Google Takeout, og hvert eneste av dem sier at det ble tatt den dagen du lastet det ned. Ti år med bilder havner i bildeappen din som én eneste enorm dag." />
+  <meta property="og:url" content="https://muletto.app/no/guides/why-google-photos-wrong-date.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Hvorfor har Google Foto-bildene mine feil dato?","description":"Du lastet ned år med bilder fra Google Takeout, og hvert eneste av dem sier at det ble tatt den dagen du lastet det ned. Ti år med bilder havner i bildeappen din som én eneste enorm dag.","mainEntityOfPage":"https://muletto.app/no/guides/why-google-photos-wrong-date.html","author":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"},"publisher":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Hvorfor har Google Foto-bildene mine feil dato?","item":"https://muletto.app/no/guides/why-google-photos-wrong-date.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a><span>/</span>
+        <a href="../../guides.html">Veiledninger</a><span>/</span>
+        <span aria-current="page">Hvorfor har Google Foto-bildene mine feil dato?</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Hvorfor har Google Foto-bildene mine feil dato?</h1>
+        <p class="art-intro">Du lastet ned år med bilder fra Google Takeout, og hvert eneste av dem sier at det ble tatt den dagen du lastet det ned. Ti år med bilder havner i bildeappen din som én eneste enorm dag.</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Kan du få det tilbake?</h2>
+        <p>Nesten helt sikkert. Talt opp i én ekte Takeout med over to tusen bilder: omtrent halvparten bærer fortsatt opptaksdatoen inni fila, og for den andre halvparten ligger den i en liten JSON-fil ved siden av bildet. Færre enn ett av hundre hadde ingen dato noe sted. Så den ligger nesten alltid allerede i mappen du lastet ned - men for rundt halve biblioteket er den JSON-fila eneste kopi som finnes, og det gjør det å slette dem til den ene feilen her du ikke kan gjøre om.</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>Hva som faktisk skjedde</h2>
+        <p>To forskjellige ting går galt her, og de blandes sammen. Den første skjer med alle: fila som lander på disken din har et endringstidspunkt fra det øyeblikket Google pakket den, og de fleste bildeprogrammer sorterer etter nettopp det. Så bildene kommer som én enorm dag stemplet med datoen du trykket last ned, uansett hva annet som er sant om dem.</p>
+        <p>Den andre er den som er verdt å måle. Det sies vidt og bredt at Takeout stripper opptaksdatoen ut av hvert eneste bilde. Talt opp over mer enn to tusen bilder i en ekte eksport bar omtrent halvparten den fortsatt, og omtrent halvparten gjorde det ikke. For den halvparten har JSON-fila ved siden av bildet eneste kopi av datoen som finnes noe sted, og når den først er borte kan intet verktøy regne datoen ut igjen.</p>
+      </section>
+
+      <div class="note prob-gotcha">
+        <strong>Den halvparten som er i orden er nettopp det som gjør dette så forvirrende</strong>
+        <p>Fordi delingen er omtrent jevn, kan to personer se på samme slags eksport og gå derfra sikre på hver sin motsatte konklusjon. Den som sjekker et bilde fra halvparten som beholdt datoen, konkluderer med at Takeout er i orden og at problemet er bildeappen. Den som sjekker et fra den andre halvparten, konkluderer med at Takeout stripper alt. Begge har halvveis rett, og det er derfor rådene på nett motsier hverandre. Den praktiske følgen er at et verktøy som går ut fra at datoen alltid ligger i fila, skriver ingenting for halve biblioteket ditt og melder om suksess. Der et bilde bar en dato begge steder, var de to enige hver eneste gang, over mer enn tusen av dem, så sidevognfila kan stoles på for den halvparten som trenger den.</p>
+      </div>
+
+      <section class="prob-fix">
+        <h2>Slik retter du det</h2>
+        <p>Du trenger ikke oss til dette. To veier, begge gratis.</p>
+        <dl><dt>exiftool, hvis du er komfortabel i et terminalvindu</dt><dd>Sjekk hva sidevognfilene dine faktisk heter før du kjører noe som helst. I eksporten som ble målt her het hver eneste av dem IMG_1234.jpg.supplemental-metadata.json, og enlinjeren som kopieres overalt og ender på .json treffer ingen av dem - den kjører, melder ingen feil, og skriver ingenting. Slik treffer du navnet som faktisk er der: exiftool -r -d %s -tagsfromfile &quot;%d%f.%e.supplemental-metadata.json&quot; &quot;-DateTimeOriginal&lt;PhotoTakenTimeTimestamp&quot; -overwrite_original -ext jpg . Google skal også kutte den lange endelsen midt av når hele filnavnet blir langt, hvilket gir navn som .supplemental-me.json. Et fast mønster hopper over hver eneste av dem også, og exiftool sier ikke fra om hvor mange den hoppet over.</dd><dt>Google Photos Takeout Helper, hvis du heller vil slippe</dt><dd>Et kommandolinjeverktøy med åpen kildekode laget for akkurat denne jobben, og det håndterer navnevariantene. Er alt du vil ha at Google-bildene dine blir riktig datert og skrevet inn i mapper, gjør det den jobben godt, og det er det riktige svaret for en engangsjobb.</dd></dl>
+      </section>
+
+      <section class="prob-ours">
+        <h2>Slik gjør Muletto det</h2>
+        <p>Muletto kobler sidevognfiler etter forstavelse i stedet for etter en fast endelse, så et avkortet navn finnes like lett som det fullstendige, og den leser datoen ut av selve bildet der den fortsatt er der. Den melder fra om hvor mange bilder den ikke fant noen dato for noe sted, i stedet for å gå stille videre. Datoen, og der Google tok vare på det, stedet, skrives inn i fila, så det du importerer inn i etterpå leser dem uten å trenge JSON-en lenger. Det kjører i nettleseren, og arkivet lastes aldri opp.</p>
+        <p><a class="btn primary" href="../../no/app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>
+
+      <section class="prob-prevent">
+        <h2>Slik unngår du det neste gang</h2>
+        <p>Behold JSON-filene til datoene er skrevet inn i bildene. De ser ut som rot, og for omtrent halve biblioteket ditt er de eneste kopi av opptaksdatoen. Når datoene først ligger i bildene selv, kan sidevognfilene ryke.</p>
+      </section>
+
+      <p class="confirmed-line">Målt mot én ekte Takeout med over to tusen bilder. Omtrent halvparten bar en innebygd opptaksdato og omtrent halvparten gjorde det ikke; for omtrent halve biblioteket hadde sidevognfila eneste kopi, og færre enn én prosent hadde ingen dato noen av stedene. Hver eneste sidevognfil brukte den samme endelsen .supplemental-metadata.json, og omtrent én mediefil av ni hadde ingen sidevognfil i det hele tatt. Der begge fantes, var de to datoene like i hvert eneste tilfelle, av over tusen. Det er én eksport og ikke en undersøkelse, så andelene er en pekepinn og ikke en regel - det de derimot avgjør, er at den flate påstanden om at Takeout stripper datoen fra alt sammen, ikke stemmer.</p>
+
+      <section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list"><li><a href="google.html">The Google guide</a></li><li><a href="../../guides/why-tgz-will-not-open.html">why tgz will not open</a></li><li><a href="../../guides/why-google-location-history-empty.html">why google location history empty</a></li></ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/why-google-photos-wrong-date.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

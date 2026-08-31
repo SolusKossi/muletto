@@ -1,0 +1,98 @@
+{
+  "en_hash": "bd6fca84f555",
+
+  "flows": [
+    {
+      "slug": "flow-icloud-to-nas",
+      "title": "Flytt iCloud-bildene dine til en NAS",
+      "why": "iCloud-lagring er leid, og regningen går bare én vei. En NAS kjøper du én gang, og bildene forblir dine enten du fortsetter å betale noen eller ikke.",
+      "outcome": "Hvert bilde og hver video Apple sitter på, på en disk hjemme hos deg selv, i daterte mapper, med de ekte opptaksdatoene skrevet tilbake inn og duplikatene borte.",
+      "watch_out": "Apple deler store eksporter i flere arkiver. Du trenger alle sammen før biblioteket er komplett, og hver nedlastingslenke går ut på dato.",
+      "effort": "en time med oppmerksomhet, fordelt over de dagene Apple bruker",
+      "done": "Åpne noen bilder fra forskjellige år på NAS-en og sjekk at datoene er de datoene de ble tatt, ikke dagen du kopierte dem. Sett så opp den sikkerhetskopieringen NAS-en tilbyr, for én NAS er fortsatt én kopi i én bygning.",
+      "stumbles": [
+        {
+          "title": "Apple sender HEIC, og NAS-en viser det kanskje ikke",
+          "detail": "Bilder fra iPhone kommer tilbake i sitt opprinnelige format. Enkelte bildeapper på en NAS viser HEIC uten videre, og enkelte viser grå firkanter i all evighet. Sjekk med en håndfull før du kopierer hele biblioteket, og takler ikke din det, eksporter som JPEG fra Muletto i stedet for å konvertere etterpå."
+        },
+        {
+          "title": "De sju dagene er det som tar tid",
+          "detail": "Apple bruker opptil en uke og viser ingen framdrift. Be om eksporten først, og sett opp den delte mappen på NAS-en mens du venter, i stedet for å gjøre det i rekkefølge."
+        },
+        {
+          "title": "Å kopiere over wifi tar hele natta",
+          "detail": "Et stort bibliotek over wifi måles i timer. Sett maskinen på kabel til den første kopieringen; alt etter det er smått i sammenligning."
+        }
+      ]
+    },
+    {
+      "slug": "flow-google-to-immich",
+      "title": "Flytt Google Foto inn i Immich",
+      "why": "Immich gir deg de delene av Google Foto som er verdt å ha - søk, album, sikkerhetskopi fra telefonen - uten kontoen, uten skanningen og uten abonnementet.",
+      "outcome": "Hele Google Foto-biblioteket ditt kjørende på din egen tjener, med datoene Google la i sidevognfiler skrevet inn i selve bildene, slik at Immich sorterer dem riktig.",
+      "watch_out": "Takeout legger den ekte opptaksdatoen i en JSON-fil ved siden av hvert bilde i stedet for inni det. Importerer du bildene uten å håndtere det, er hele biblioteket ditt datert den dagen du lastet det ned.",
+      "effort": "en kveld, mesteparten av den ventende",
+      "done": "Bla flere år tilbake i Immich-tidslinjen. Ligger alt sammen på dagen du importerte, kom ikke datoene med, og det er verdt å reparere dem på nytt før du sletter noe fra Google.",
+      "stumbles": [
+        {
+          "title": "Åpne alle Takeout-delene samtidig, ikke én om gangen",
+          "detail": "Google deler opp eksporten og holder ikke et bilde og opplysningsfila dens i samme zip. Åpner du del tre alene, mister de bildene dato og sted, fordi JSON-en som beskriver dem ligger i del sju."
+        },
+        {
+          "title": "Immichs importsti er containerens sti",
+          "detail": "Stien du oppgir til et eksternt bibliotek må være den Immich ser inne i containeren sin, ikke den du bruker på verten. En gjennomgang som kjører uten problemer og ikke finner noe, er nesten alltid dette."
+        },
+        {
+          "title": "Takeout er større enn biblioteket ditt, og det er som forventet",
+          "detail": "Et bilde som ligger i et album og i årsmappen sin eksporteres én gang for hver. De er byte for byte like, så duplikatsøket slår dem sammen - men ikke få panikk av nedlastingsstørrelsen."
+        }
+      ]
+    },
+    {
+      "slug": "flow-everything-to-drive",
+      "title": "Legg alt sammen på én ekstern disk",
+      "why": "Den enkleste ordningen som overlever at du mister interessen. Ingen tjener å vedlikeholde, intet abonnement å glemme, ingen konto å bli utestengt fra.",
+      "outcome": "Hver tjeneste du bruker, slått sammen til ett datert bibliotek på en disk du kan holde i hånden, med duplikater på tvers av tjenester fjernet og en oversikt over hva som ligger der.",
+      "watch_out": "Én disk er én disk. Det er en kopi av dataene dine, ikke en sikkerhetskopi av dem, før det finnes to på forskjellige steder.",
+      "effort": "en helg hvis du ber om alt på én gang",
+      "done": "Sammenlign antall filer og samlet størrelse på disken mot det Muletto eksporterte. Lag så kopi nummer to og sett den et annet sted - én disk i én skuff er én oversvømmelse unna ingenting.",
+      "stumbles": [
+        {
+          "title": "Be om alt sammen på samme dag",
+          "detail": "Ventetidene løper parallelt, og de er vilt forskjellige - Meta er ofte minutter, Google timer, Apple opptil en uke, Snapchat opptil en måned. Spør alle sammen nå, så er det den tregeste som setter tidsplanen din, og ikke summen av dem."
+        },
+        {
+          "title": "Lenker går ut mens du venter på de andre",
+          "detail": "Meta gir deg noen dager, Google omtrent en uke. Last ned hvert arkiv etter hvert som det kommer, i stedet for å vente på å samle hele settet, ellers må du be om noen av dem to ganger."
+        },
+        {
+          "title": "Formater disken før du begynner å kopiere",
+          "detail": "Å formatere på nytt betyr å slette, så bestem deg på forhånd: NTFS for bare Windows, APFS for bare Mac, exFAT hvis disken må virke med begge."
+        }
+      ]
+    },
+    {
+      "slug": "flow-snapchat-memories",
+      "title": "Redd Snapchat-minnene dine før de går ut på dato",
+      "why": "Minner er den delen av Snapchat folk bryr seg om mange år senere, og den delen som lettest går tapt. De leveres som tidsbegrensede lenker og ikke som filer.",
+      "outcome": "Bildene og videoene bak år med Minner, lagret som vanlige filer du kan åpne hvor som helst, i stedet for lenker som slutter å virke.",
+      "watch_out": "Nedlastingslenkene går ut på dato. Å la e-posten ligge over helgen er den klart vanligste måten folk mister Snapchat-mediene sine for godt.",
+      "effort": "under en time, men det har en frist",
+      "done": "Sjekk at minnene er datert da de ble tatt og ikke da Snapchat leverte dem fra seg, og sett så disken et sted som ikke er skrivebordsskuffen din.",
+      "stumbles": [
+        {
+          "title": "Snapchat er den tregeste av dem",
+          "detail": "Eksporten kan ta opptil 30 dager, og det finnes ingen køplass å følge med på. Be om den den dagen du bestemmer deg for å gjøre dette, ikke den dagen du har tid."
+        },
+        {
+          "title": "Minnene er den delen som er verdt å ha",
+          "detail": "Snaps du lagret til Minner kommer tilbake som ekte filer med ekte datoer. Resten av eksporten er stort sett JSON - chathistorikk, posisjonshistorikk, venner - som er interessant, men ikke det du kom for."
+        },
+        {
+          "title": "De samme bildene ligger antakelig i kamerarullen også",
+          "detail": "Alt du lagret på telefonen i tillegg til Minner, ligger allerede i en Google- eller Apple-eksport. Åpne dem samtidig, så oppdager duplikatsøket det i stedet for å etterlate deg to kopier."
+        }
+      ]
+    }
+  ]
+}

@@ -359,6 +359,34 @@ const EN_STRINGS = {
   confPartial: "Every screenshot below is from {provider}'s own pages on {when}.",
   confStale: "{noun} was walked on {walked} and the export opened in Muletto on {opened}. That is more than {months} months ago, so {provider} may have changed the page since. If what you see does not match, trust the screenshots least.",
   confFull: "{noun} was walked on {walked}, and the real export was opened in Muletto on {opened} to check it does what this guide says. Every screenshot below is from those runs.",
+  flWrong: "What actually goes wrong",
+  flStep1From: "Ask {provider} for your data",
+  flStep1All: "Ask each service for your data",
+  flStep1FromBody: "Free, and required by law - but it takes {wait}, so start it now and come back. The full guide has the steps and the traps.",
+  flStep1AllBody: "Every service you use, all at once. They run independently and most take days, so the sooner they are all requested the sooner you can do the rest in one sitting.",
+  flStep2: "Open it in your browser",
+  flStep2Body: "Drop the archive into Muletto. It is read on your own machine - nothing is uploaded - and you get a timeline, your pictures, your conversations and a map of where you have been. Open several exports together and they merge into one library.",
+  flStep2Small: "Large archives are fine. They are read in pieces rather than loaded whole, so size is not the limit it usually is in a browser.",
+  flStep3: "Clean it up before you move it",
+  flStep3Body: "This is the step worth not skipping, because it is far easier now than once the files are spread across a disk.",
+  flDupesH: "Duplicates across services.",
+  flDupes: "The same photo backed up to two places is one photo. Muletto finds byte-identical copies and near-copies - a burst, a crop, a re-save - and you choose what a tidied library keeps.",
+  flDatesH: "Dates that got lost.",
+  flDates: "Exports routinely strip the capture date, so everything looks like it was taken the day you downloaded it. Muletto reads the real date back out and writes it into the file itself.",
+  flPlacesH: "Places.",
+  flPlaces: "Where the coordinates survived, they are written back in too, so whatever you import into can put things on a map.",
+  flStep4: "Put it somewhere you control",
+  flStep4To: "Put it on {provider}",
+  flStep4Body: "Muletto writes the tidied library straight out - into dated folders on a drive or a network share, or as a single archive. You choose the arrangement, and it writes an index of everything it wrote.",
+  flStep4Dest: "The destination guide covers the part that happens at the other end.",
+  flDone: "When it is done",
+  flCheck: "Check it worked.",
+  flKeep: "Keep the work file Muletto offers at the end. Export again next year and it recognises everything that carried over, so none of this has to be done twice.",
+  prBack: "Can you get it back?",
+  prHappened: "What actually happened",
+  prFix: "How to fix it",
+  prMuletto: "How Muletto does it",
+  prPrevent: "Stopping it happening again",
   footTagline: "Built by one person. Everything runs in your browser, and the source is public.",
   feat1: "Opens GDPR export archives without unzipping them",
   feat2: "Merges exports from several services into one library",
@@ -1228,6 +1256,86 @@ const FAQ = [
    "Ordinary folders of ordinary files, with the real dates and locations written into the photographs themselves, duplicates across services removed, and your messages, location history and account records readable. Nothing needs this site afterwards."],
 ];
 
+/* The collection files - flows.json and problems.json - hold several pages in
+ * one document rather than one page per file, so they need their own overlay.
+ *
+ * Same two rules as a guide translation and for the same reasons: the hash of
+ * the whole English file has to match, and every prose field of every item has
+ * to be covered. What differs is the granularity of the failure. A guide that
+ * is not fully translated is one page missing from /no/; a collection that is
+ * not fully translated would be four or seven, so it is worth saying which
+ * items are short rather than only that the file is.
+ *
+ * Merging is by slug and not by position, because a page added to the middle
+ * of the English list would otherwise silently shift every translation after
+ * it onto the wrong page - which is the kind of error that produces plausible
+ * text under the wrong heading, and is worse than a missing page.
+ */
+/* Taken from the files rather than from memory. The first version had
+   `done[]` for a field that is a string, which walked it one character at a
+   time and produced two hundred and twenty-nine "missing fields" - and
+   `stumbles[].what` for a key called `title`. Both are the same mistake:
+   describing a shape instead of reading it. `related` and `from`/`to` are
+   slugs and stay out; `aka` and `cause` are arrays of plain strings. */
+const COLLECTION_PROSE = {
+  flows: ["title", "why", "outcome", "watch_out", "effort", "done",
+          "stumbles[].title", "stumbles[].detail"],
+  problems: ["title", "symptom", "recoverable", "gotcha_title", "gotcha",
+             "manual_intro", "muletto", "prevent", "evidence",
+             "aka", "cause", "manual[].title", "manual[].detail"],
+};
+
+function collectionProse(item, specs) {
+  const map = new Map();
+  for (const spec of specs) {
+    for (const [where, text] of fieldsAt(item, spec)) map.set(where, text);
+  }
+  return map;
+}
+
+/* Returns { ok: true, items } or { ok: false, why }. Never a partial. */
+function translateCollection(name, key, items, dir, lang) {
+  const file = path.join(dir, name + "." + lang + ".json");
+  if (!fs.existsSync(file)) return { ok: false, why: "no translation yet" };
+
+  let t;
+  try { t = readJson(file); }
+  catch (e) { return { ok: false, why: "the file does not parse: " + e.message }; }
+
+  const source = readJson(path.join(dir, name + ".json"));
+  const want = enHash(source);
+  if (t.en_hash !== want) {
+    return { ok: false, why: t.en_hash
+      ? "the English has changed since this was translated (" + t.en_hash +
+        " -> " + want + "); retranslate it and update en_hash"
+      : "it has no en_hash, so nothing can tell whether it is current" };
+  }
+
+  const specs = COLLECTION_PROSE[name] || [];
+  const byslug = new Map((t[key] || []).map((x) => [x.slug, x]));
+  const out = [];
+  const short = [];
+  for (const item of items) {
+    const nb = byslug.get(item.slug);
+    if (!nb) { short.push(item.slug + " (absent)"); continue; }
+    const need = collectionProse(item, specs);
+    const have = collectionProse(nb, specs);
+    const missing = [...need.keys()].filter((k) => !have.has(k));
+    if (missing.length) {
+      short.push(item.slug + " (" + missing.length + " field" +
+        (missing.length === 1 ? "" : "s") + ": " + missing.slice(0, 3).join(", ") + ")");
+      continue;
+    }
+    out.push({ ...item, ...nb });
+  }
+  if (short.length) {
+    return { ok: false, why: short.length + " of " + items.length +
+      " not translated: " + short.join("; ") };
+  }
+  return { ok: true, items: out };
+}
+
+
 /* ---------- the four hand-written pages, now generated ---------- */
 
 /* These were four HTML files maintained by hand, which was fine while there
@@ -1749,10 +1857,10 @@ ${FAQ.map(([q, a]) => `        <details class="faq-item"><summary>${esc(q)}</sum
 
    A flow references the export and destination guides rather than repeating
    them, so a provider that changes its mind is fixed in one place. */
-function flowPage(f, all, dests) {
+function flowPage(f, all, dests, lang, alt) {
   const from = f.from ? all.find((g) => g.slug === f.from) : null;
   const to = dests.find((g) => g.slug === f.to);
-  const canonical = `${SITE}/guides/${f.slug}.html`;
+  const canonical = SITE + (lang === "nb" ? "/no/guides/" : "/guides/") + f.slug + ".html";
   const conf = confirmation(f);
 
   const howto = {
@@ -1811,67 +1919,52 @@ function flowPage(f, all, dests) {
         ${esc(f.watch_out)}</div>` : ""}
 
       ${f.stumbles && f.stumbles.length ? `<section class="flow-stumbles">
-        <h3>What actually goes wrong</h3>
+        <h3>${esc(T("flWrong"))}</h3>
         <dl>${f.stumbles.map((s) => `<dt>${esc(s.title)}</dt><dd>${esc(s.detail)}</dd>`).join("")}</dl>
       </section>` : ""}
 
       ${conf.line ? `<p class="confirmed-line">${esc(conf.line)}</p>` : ""}
 
       ${step(1,
-        from ? `Ask ${from.provider} for your data` : "Ask each service for your data",
+        from ? T("flStep1From", { provider: from.provider }) : T("flStep1All"),
         from
-          ? `<p>Free, and required by law - but it takes ${esc(from.wait_time)}, so start it now and
-             come back. The full guide has the steps and the traps.</p>`
-          : `<p>Every service you use, all at once. They run independently and most take days, so
-             the sooner they are all requested the sooner you can do the rest in one sitting.</p>`,
+          ? `<p>${esc(T("flStep1FromBody", { wait: from.wait_time }))}</p>`
+          : `<p>${esc(T("flStep1AllBody"))}</p>`,
         from ? { href: sib(from.slug), label: `The ${from.provider} guide` }
              : { href: topHref("guides.html"), label: T("everyGuide") })}
 
-      ${step(2, "Open it in your browser",
-        `<p>Drop the archive into Muletto. It is read on your own machine - nothing is uploaded -
-         and you get a timeline, your pictures, your conversations and a map of where you have
-         been. Open several exports together and they merge into one library.</p>
-         <p class="muted small">Large archives are fine. They are read in pieces rather than
-         loaded whole, so size is not the limit it usually is in a browser.</p>`,
+      ${step(2, T("flStep2"),
+        `<p>${esc(T("flStep2Body"))}</p>
+         <p class="muted small">${esc(T("flStep2Small"))}</p>`,
         { href: topHref("app.html"), label: T("open") })}
 
-      ${step(3, "Clean it up before you move it",
-        `<p>This is the step worth not skipping, because it is far easier now than once the files
-         are spread across a disk.</p>
+      ${step(3, T("flStep3"),
+        `<p>${esc(T("flStep3Body"))}</p>
          <ul class="flow-list">
-           <li><strong>Duplicates across services.</strong> The same photo backed up to two places
-             is one photo. Muletto finds byte-identical copies and near-copies - a burst, a crop, a
-             re-save - and you choose what a tidied library keeps.</li>
-           <li><strong>Dates that got lost.</strong> Exports routinely strip the capture date, so
-             everything looks like it was taken the day you downloaded it. Muletto reads the real
-             date back out and writes it into the file itself.</li>
-           <li><strong>Places.</strong> Where the coordinates survived, they are written back in
-             too, so whatever you import into can put things on a map.</li>
+           <li><strong>${esc(T("flDupesH"))}</strong> ${esc(T("flDupes"))}</li>
+           <li><strong>${esc(T("flDatesH"))}</strong> ${esc(T("flDates"))}</li>
+           <li><strong>${esc(T("flPlacesH"))}</strong> ${esc(T("flPlaces"))}</li>
          </ul>`,
         null)}
 
-      ${step(4, to ? `Put it on ${to.provider}` : "Put it somewhere you control",
-        `<p>Muletto writes the tidied library straight out - into dated folders on a drive or a
-         network share, or as a single archive. You choose the arrangement, and it writes an index
-         of everything it wrote.</p>
-         ${to ? `<p>The destination guide covers the part that happens at the other end.</p>` : ""}`,
+      ${step(4, to ? T("flStep4To", { provider: to.provider }) : T("flStep4"),
+        `<p>${esc(T("flStep4Body"))}</p>
+         ${to ? `<p>${esc(T("flStep4Dest"))}</p>` : ""}`,
         to ? { href: sib(to.slug), label: `The ${to.provider} guide` } : null)}
 
       <div class="flow-end">
-        <h3>When it is done</h3>
+        <h3>${esc(T("flDone"))}</h3>
         <p>${esc(f.outcome)}</p>
-        ${f.done ? `<p><strong>Check it worked.</strong> ${esc(f.done)}</p>` : ""}
-        <p class="muted small">Keep the work file Muletto offers at the end. Export again next
-        year and it recognises everything that carried over, so none of this has to be done
-        twice.</p>
+        ${f.done ? `<p><strong>${esc(T("flCheck"))}</strong> ${esc(f.done)}</p>` : ""}
+        <p class="muted small">${esc(T("flKeep"))}</p>
       </div>
     </article>`;
 
   return page({
-    depth: 1,
+    depth: lang === "nb" ? 2 : 1,
     title: `${f.title} | Muletto`,
     description: f.outcome,
-    canonical,
+    canonical, lang, alt,
     body,
     jsonld: [howto, crumbs],
     active: "guides",
@@ -1889,8 +1982,8 @@ function flowPage(f, all, dests) {
  * are the better answer. A page that solves the problem outright is the one
  * that gets linked to and the one that ranks; a page that only says to use us
  * does neither, and would be worse at the job these pages exist to do. */
-function problemPage(p, all) {
-  const canonical = `${SITE}/guides/${p.slug}.html`;
+function problemPage(p, all, lang, alt) {
+  const canonical = SITE + (lang === "nb" ? "/no/guides/" : "/guides/") + p.slug + ".html";
   const paras = (v) => (Array.isArray(v) ? v : [v]).map((s) => `<p>${esc(s)}</p>`).join("\n        ");
 
   const article = {
@@ -1930,12 +2023,12 @@ function problemPage(p, all) {
       </header>
 
       <div class="prob-verdict">
-        <h2>Can you get it back?</h2>
+        <h2>${esc(T("prBack"))}</h2>
         <p>${esc(p.recoverable)}</p>
       </div>
 
       <section class="prob-cause">
-        <h2>What actually happened</h2>
+        <h2>${esc(T("prHappened"))}</h2>
         ${paras(p.cause)}
       </section>
 
@@ -1945,20 +2038,20 @@ function problemPage(p, all) {
       </div>` : ""}
 
       <section class="prob-fix">
-        <h2>How to fix it</h2>
+        <h2>${esc(T("prFix"))}</h2>
         ${p.manual_intro ? `<p>${esc(p.manual_intro)}</p>` : ""}
         <dl>${(p.manual || []).map((m) =>
           `<dt>${esc(m.title)}</dt><dd>${esc(m.detail)}</dd>`).join("")}</dl>
       </section>
 
       ${p.muletto ? `<section class="prob-ours">
-        <h2>How Muletto does it</h2>
+        <h2>${esc(T("prMuletto"))}</h2>
         <p>${esc(p.muletto)}</p>
         <p><a class="btn primary" href="${topHref('app.html')}">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
       </section>` : ""}
 
       ${p.prevent ? `<section class="prob-prevent">
-        <h2>Stopping it happening again</h2>
+        <h2>${esc(T("prPrevent"))}</h2>
         <p>${esc(p.prevent)}</p>
       </section>` : ""}
 
@@ -1975,10 +2068,10 @@ function problemPage(p, all) {
     </article>`;
 
   return page({
-    depth: 1,
+    depth: lang === "nb" ? 2 : 1,
     title: `${p.title} | Muletto`,
     description: p.symptom.length > 300 ? p.symptom.slice(0, 297) + "..." : p.symptom,
-    canonical,
+    canonical, lang, alt,
     body,
     jsonld: [article, crumbs],
     active: "guides",
@@ -2086,6 +2179,19 @@ function main() {
     console.warn("  NOTE: no/guides/" + slug + ".html not built - " + why);
   }
 
+  /* The collection pages. Each file is all-or-nothing: a flows.nb.json that
+     covers three of the four leaves the fourth English under a Norwegian URL,
+     which is the half-and-half state everything here exists to prevent. */
+  const nbFlows = translateCollection("flows", "flows", flows, GUIDES, "nb");
+  const nbProblems = translateCollection("problems", "problems", problems, GUIDES, "nb");
+  for (const [what, res] of [["flows", nbFlows], ["problems", nbProblems]]) {
+    if (!res.ok && res.why !== "no translation yet") {
+      console.warn("  NOTE: no/guides/ " + what + " not built - " + res.why);
+    }
+  }
+  const nbFlowSet = new Set(nbFlows.ok ? nbFlows.items.map((f) => f.slug) : []);
+  const nbProbSet = new Set(nbProblems.ok ? nbProblems.items.map((p) => p.slug) : []);
+
   /* Anything left in the Norwegian tree from a previous build whose
      translation has since gone or gone stale. Left alone it would keep being
      served, and keep being linked from a sitemap, long after the thing it
@@ -2093,15 +2199,20 @@ function main() {
   if (fs.existsSync(NO_GUIDES)) {
     for (const f of fs.readdirSync(NO_GUIDES)) {
       if (!f.endsWith(".html")) continue;
-      if (translated.has(f.replace(/\.html$/, ""))) continue;
+      /* All three sets, not just the guides. Sweeping before the flow and
+         problem pages were written meant they were deleted and rebuilt on
+         every run, and the log said "removed" about four pages that were
+         about to reappear - noise that would eventually be believed. */
+      const slug = f.replace(/\.html$/, "");
+      if (translated.has(slug) || nbFlowSet.has(slug) || nbProbSet.has(slug)) continue;
       fs.unlinkSync(path.join(NO_GUIDES, f));
       console.warn("  NOTE: removed no/guides/" + f + " - it has no current translation");
     }
   }
 
-  const altEn = (slug) => translated.has(slug)
-    ? { href: "../no/guides/" + slug + ".html",
-        loc: `${SITE}/no/guides/${slug}.html`, lang: "nb" } : null;
+  const altEn = (slug) => ({ href: "../no/guides/" + slug + ".html",
+        loc: `${SITE}/no/guides/${slug}.html`, lang: "nb" });
+  const altEnGuide = (slug) => translated.has(slug) ? altEn(slug) : null;
   const altNb = (slug) => ({ href: "../../guides/" + slug + ".html",
         loc: `${SITE}/guides/${slug}.html`, lang: "en" });
 
@@ -2109,7 +2220,7 @@ function main() {
   let n = 0, nNo = 0;
   for (const g of [...all, ...dests]) {
     fs.writeFileSync(path.join(GUIDES, g.slug + ".html"),
-      guidePage(g, all, dests, "en", altEn(g.slug)), "utf8");
+      guidePage(g, all, dests, "en", altEnGuide(g.slug)), "utf8");
     n++;
     const t = translated.get(g.slug);
     if (t) {
@@ -2121,13 +2232,30 @@ function main() {
     }
   }
   for (const f of flows) {
-    fs.writeFileSync(path.join(GUIDES, f.slug + ".html"), flowPage(f, all, dests), "utf8");
+    const has = nbFlowSet.has(f.slug);
+    fs.writeFileSync(path.join(GUIDES, f.slug + ".html"),
+      flowPage(f, all, dests, "en", has ? altEn(f.slug) : null), "utf8");
     n++;
   }
   for (const p of problems) {
-    fs.writeFileSync(path.join(GUIDES, p.slug + ".html"), problemPage(p, all), "utf8");
+    const has = nbProbSet.has(p.slug);
+    fs.writeFileSync(path.join(GUIDES, p.slug + ".html"),
+      problemPage(p, all, "en", has ? altEn(p.slug) : null), "utf8");
     n++;
   }
+  if (nbFlows.ok || nbProblems.ok) fs.mkdirSync(NO_GUIDES, { recursive: true });
+  LANG = "nb";
+  for (const f of (nbFlows.ok ? nbFlows.items : [])) {
+    fs.writeFileSync(path.join(NO_GUIDES, f.slug + ".html"),
+      flowPage(f, all, dests, "nb", altNb(f.slug)), "utf8");
+    nNo++;
+  }
+  for (const p of (nbProblems.ok ? nbProblems.items : [])) {
+    fs.writeFileSync(path.join(NO_GUIDES, p.slug + ".html"),
+      problemPage(p, all, "nb", altNb(p.slug)), "utf8");
+    nNo++;
+  }
+  LANG = "en";
   fs.writeFileSync(path.join(WEB, "guides.html"), guidesIndex(all, dests, flows, problems), "utf8");
 
   /* The pages that used to be hand-written HTML. Each is emitted in English
@@ -2443,7 +2571,7 @@ function main() {
      links to yet, so a translation missing from here may simply never be
      found. Both directions are listed: hreflang in a sitemap has the same
      reciprocity rule as hreflang in a head, and a one-sided claim is ignored. */
-  for (const slug of translated.keys()) {
+  for (const slug of [...translated.keys(), ...nbFlowSet, ...nbProbSet]) {
     urls.push({ loc: `${SITE}/no/guides/${slug}.html`, pri: "0.8",
                 file: "no/guides/" + slug + ".html",
                 alt: { en: `${SITE}/guides/${slug}.html`,
@@ -2451,7 +2579,8 @@ function main() {
   }
   for (const u of urls) {
     const m = /\/guides\/([a-z0-9-]+)\.html$/.exec(u.loc);
-    if (m && !u.alt && !u.loc.includes("/no/") && translated.has(m[1])) {
+    const inNo = translated.has(m && m[1]) || nbFlowSet.has(m && m[1]) || nbProbSet.has(m && m[1]);
+    if (m && !u.alt && !u.loc.includes("/no/") && inNo) {
       u.alt = { en: u.loc, nb: `${SITE}/no/guides/${m[1]}.html` };
     }
   }

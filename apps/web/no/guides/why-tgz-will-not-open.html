@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Takeout ga meg en .tgz-fil og ingenting vil åpne den | Muletto</title>
+  <meta name="description" content="Du valgte .tgz på Takeout-skjermen, eller det var allerede valgt, og nå skjer det ingenting når du dobbeltklikker fila i Windows. Den er ikke ødelagt, og det er ikke en mislykket nedlasting." />
+  <link rel="canonical" href="https://muletto.app/no/guides/why-tgz-will-not-open.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/why-tgz-will-not-open.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/why-tgz-will-not-open.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/why-tgz-will-not-open.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Takeout ga meg en .tgz-fil og ingenting vil åpne den | Muletto" />
+  <meta property="og:description" content="Du valgte .tgz på Takeout-skjermen, eller det var allerede valgt, og nå skjer det ingenting når du dobbeltklikker fila i Windows. Den er ikke ødelagt, og det er ikke en mislykket nedlasting." />
+  <meta property="og:url" content="https://muletto.app/no/guides/why-tgz-will-not-open.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Takeout ga meg en .tgz-fil og ingenting vil åpne den","description":"Du valgte .tgz på Takeout-skjermen, eller det var allerede valgt, og nå skjer det ingenting når du dobbeltklikker fila i Windows. Den er ikke ødelagt, og det er ikke en mislykket nedlasting.","mainEntityOfPage":"https://muletto.app/no/guides/why-tgz-will-not-open.html","author":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"},"publisher":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Takeout ga meg en .tgz-fil og ingenting vil åpne den","item":"https://muletto.app/no/guides/why-tgz-will-not-open.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a><span>/</span>
+        <a href="../../guides.html">Veiledninger</a><span>/</span>
+        <span aria-current="page">Takeout ga meg en .tgz-fil og ingenting vil åpne den</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Takeout ga meg en .tgz-fil og ingenting vil åpne den</h1>
+        <p class="art-intro">Du valgte .tgz på Takeout-skjermen, eller det var allerede valgt, og nå skjer det ingenting når du dobbeltklikker fila i Windows. Den er ikke ødelagt, og det er ikke en mislykket nedlasting.</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Kan du få det tilbake?</h2>
+        <p>Ja. Det er et helt vanlig arkiv i et format Windows ikke har noen håndtering for. Ett gratis verktøy åpner det.</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>Hva som faktisk skjedde</h2>
+        <p>Google tilbyr .tgz ved siden av .zip på den samme skjermen, og forskjellen forklares ikke. En .tgz er to formater lagt inni hverandre: et tar-arkiv med filene dine, komprimert med gzip. Windows forstår ingen av dem på egen hånd, så et dobbeltklikk gjør ingenting.</p>
+        <p>Det er også derfor det å pakke den ut føles som om det tar to forsøk. Å pakke ut gzip-laget etterlater deg med en .tar, som så må pakkes ut i sin tur. Enkelte verktøy gjør begge deler i ett steg og enkelte gjør det ikke, og det er der mesteparten av forvirringen kommer fra.</p>
+      </section>
+
+      <div class="note prob-gotcha">
+        <strong>For en svært stor Takeout, be om .zip i stedet</strong>
+        <p>Dette er ikke en smakssak. En zip bærer en innholdsfortegnelse på slutten, så et verktøy kan hoppe rett til hvilken som helst fil inni uten å røre resten. En gzip-strøm kan ikke leses i uorden i det hele tatt, så alt som leser en .tgz må arbeide seg gjennom den fra begynnelsen. For en liten eksport betyr forskjellen ingenting. For en Takeout målt i titalls gigabyte er det forskjellen på å åpne den og å måtte pakke ut alt sammen først, og du må doble den ledige diskplassen din for å pakke den ut.</p>
+      </div>
+
+      <section class="prob-fix">
+        <h2>Slik retter du det</h2>
+        <p>Ett verktøy, og på Windows kan det ta to runder.</p>
+        <dl><dt>7-Zip på Windows</dt><dd>Høyreklikk fila, 7-Zip, Pakk ut her. Det gir deg en .tar. Høyreklikk den og pakk ut den også, så ligger filene dine der. Gratis, og det er grunnen til at folk flest installerer 7-Zip i utgangspunktet.</dd><dt>macOS og Linux</dt><dd>Et dobbeltklikk virker på macOS. I et terminalvindu på begge gjør tar -xzf takeout.tgz begge lagene i én omgang.</dd></dl>
+      </section>
+
+      <section class="prob-ours">
+        <h2>Slik gjør Muletto det</h2>
+        <p>Muletto leser .tgz direkte, uten et utpakkingssteg og uten å trenge den ledige plassen en full utpakking ville krevd. Fordi en gzip-strøm ikke kan leses i uorden, pakkes den ut i én omgang etter hvert som den leses, i stedet for å leses etter behov slik en zip gjør.</p>
+        <p><a class="btn primary" href="../../no/app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>
+
+      <section class="prob-prevent">
+        <h2>Slik unngår du det neste gang</h2>
+        <p>På Takeout-skjermen setter du filtypen til .zip før du sender inn. Det er en nedtrekksliste ved siden av leveringsmåten, og den er lett å bla forbi.</p>
+      </section>
+
+      <p class="confirmed-line">Leseren for .tgz ble kontrollert i nettleseren mot en gzippet tar bygget etter spesifikasjonen, der hver medlemsstørrelse ble sjekket og et medlem på 3 MB lest tilbake byte for byte.</p>
+
+      <section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list"><li><a href="google.html">The Google guide</a></li><li><a href="../../guides/why-google-photos-wrong-date.html">why google photos wrong date</a></li></ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/why-tgz-will-not-open.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

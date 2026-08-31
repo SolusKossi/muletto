@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hvorfor er Google-posisjonshistorikken min tom? | Muletto</title>
+  <meta name="description" content="Du ba Takeout om posisjonshistorikk, ventet deg år med den, og fikk et arkiv med så godt som ingenting i - ofte bare en kort melding om at du har krypterte Tidslinje-sikkerhetskopier lagret på Googles servere." />
+  <link rel="canonical" href="https://muletto.app/no/guides/why-google-location-history-empty.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/why-google-location-history-empty.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/why-google-location-history-empty.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/why-google-location-history-empty.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Hvorfor er Google-posisjonshistorikken min tom? | Muletto" />
+  <meta property="og:description" content="Du ba Takeout om posisjonshistorikk, ventet deg år med den, og fikk et arkiv med så godt som ingenting i - ofte bare en kort melding om at du har krypterte Tidslinje-sikkerhetskopier lagret på Googles servere." />
+  <meta property="og:url" content="https://muletto.app/no/guides/why-google-location-history-empty.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Hvorfor er Google-posisjonshistorikken min tom?","description":"Du ba Takeout om posisjonshistorikk, ventet deg år med den, og fikk et arkiv med så godt som ingenting i - ofte bare en kort melding om at du har krypterte Tidslinje-sikkerhetskopier lagret på Googles servere.","mainEntityOfPage":"https://muletto.app/no/guides/why-google-location-history-empty.html","author":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"},"publisher":{"@type":"Organization","name":"Muletto","url":"https://muletto.app/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Hvorfor er Google-posisjonshistorikken min tom?","item":"https://muletto.app/no/guides/why-google-location-history-empty.html"}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article problem">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a><span>/</span>
+        <a href="../../guides.html">Veiledninger</a><span>/</span>
+        <span aria-current="page">Hvorfor er Google-posisjonshistorikken min tom?</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Hvorfor er Google-posisjonshistorikken min tom?</h1>
+        <p class="art-intro">Du ba Takeout om posisjonshistorikk, ventet deg år med den, og fikk et arkiv med så godt som ingenting i - ofte bare en kort melding om at du har krypterte Tidslinje-sikkerhetskopier lagret på Googles servere.</p>
+      </header>
+
+      <div class="prob-verdict">
+        <h2>Kan du få det tilbake?</h2>
+        <p>Delvis, og bare fra telefonen din. Meldingen er riktig og ikke en feil: Tidslinjen din ligger faktisk ikke på Googles servere i en form noen kan eksportere. Krypterte sikkerhetskopier finnes for at en ny telefon skal kunne gjenopprette, og det finnes ingen vei derfra til en fil du kan lese. Det telefonen din fortsatt har, kan du fortsatt få.</p>
+      </div>
+
+      <section class="prob-cause">
+        <h2>Hva som faktisk skjedde</h2>
+        <p>Google flyttet Tidslinje bort fra serverne sine og over på enheten. Overgangen begynte rundt desember 2024, og Tidslinjen i skyen ble slått av 9. juni 2025. Takeout eksporterer data på kontonivå, og etter den endringen er posisjonshistorikken din ikke lenger data på kontonivå.</p>
+        <p>Eldre eksporter er en annen sak. Har du en Takeout fra før endringen, inneholder den Records.json med rå punkter, og en mappe kalt Semantic Location History med én fil per måned. De er fortsatt lesbare og fortsatt verdt å ta vare på.</p>
+      </section>
+
+      <div class="note prob-gotcha">
+        <strong>Det som kommer av telefonen er ikke det gamle formatet</strong>
+        <p>Eksporten fra enheten er et annet skjema og ikke en ny versjon av det gamle. Koordinater kommer som tekst med et gradtegn i stedet for heltallsformen de gamle eksportene brukte, og tidsstempler bærer en lokal UTC-forskyvning, så et verktøy som kaster forskyvningen flytter hver eneste hendelse med timer. Det er også verdt å vite hva mer som ligger der: ved siden av stedene du besøkte bærer fila rå signaloppføringer, inkludert MAC-adressene til wifi-nettverk telefonen din så. Det er det mest avslørende i eksporten, og nesten ingen som ber om den er klar over at det er med.</p>
+      </div>
+
+      <section class="prob-fix">
+        <h2>Slik retter du det</h2>
+        <p>Eksporten bor på telefonen din nå, så den må hentes av telefonen. Beretningene spriker om hvor knappen er, og det ser ut til å avhenge av Maps-versjonen din, så prøv begge.</p>
+        <dl><dt>Fra Maps-appen, på begge plattformer</dt><dd>Åpne Google Maps, trykk på profilbildet ditt, så Innstillinger, så Personlig innhold, og se etter Eksporter tidslinjedata. På iPhone går fila gjennom delingsmenyen, så velg Lagre i Filer og velg et sted du finner den igjen. Den lagres som location-history.json.</dd><dt>Fra Android-systeminnstillingene, hvis Maps ikke tilbyr det</dt><dd>Innstillinger, så Posisjon, så Posisjonstjenester, så Tidslinje, så Eksporter tidslinje. Fila havner i nedlastingsmappen din.</dd><dt>Er du i EU kan du få en CSV</dt><dd>Meldt, ikke bekreftet: enkelte europeiske kontoer får CSV i stedet for JSON. Får din det, inneholder den de samme besøkene i en enklere form.</dd></dl>
+      </section>
+
+      <section class="prob-ours">
+        <h2>Slik gjør Muletto det</h2>
+        <p>Muletto leser det gamle Records.json-formatet og setter punktene på et kart ved siden av resten av eksporten din. Formatet fra enheten leses ikke ennå - det er et annet skjema, og det arbeides med det i stedet for å være stille halvveis støttet.</p>
+        <p><a class="btn primary" href="../../no/app.html">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+      </section>
+
+      <section class="prob-prevent">
+        <h2>Slik unngår du det neste gang</h2>
+        <p>Eksporter fra telefonen nå og ikke når du trenger det. Tidslinjen på enheten beholder et begrenset tidsvindu, så det å vente koster deg den eldste delen av den, og det finnes ikke lenger noen kopi på en server å falle tilbake på.</p>
+      </section>
+
+      <p class="confirmed-line">Datoene og dagens Takeout-oppførsel er fra Googles egen dokumentasjon og fra beretninger i brukerfora, sjekket 10. august 2026. Det gamle Records.json-formatet leses her og ble kontrollert mot en ekte eksport.</p>
+
+      <section class="prob-related">
+        <h3>Related</h3>
+        <ul class="flow-list"><li><a href="google.html">The Google guide</a></li><li><a href="../../guides/why-google-photos-wrong-date.html">why google photos wrong date</a></li></ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/why-google-location-history-empty.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

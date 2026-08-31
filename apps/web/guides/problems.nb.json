@@ -1,0 +1,249 @@
+{
+  "en_hash": "bc8e5dbf12d3",
+
+  "problems": [
+    {
+      "slug": "why-google-photos-wrong-date",
+      "title": "Hvorfor har Google Foto-bildene mine feil dato?",
+      "symptom": "Du lastet ned år med bilder fra Google Takeout, og hvert eneste av dem sier at det ble tatt den dagen du lastet det ned. Ti år med bilder havner i bildeappen din som én eneste enorm dag.",
+      "recoverable": "Nesten helt sikkert. Talt opp i én ekte Takeout med over to tusen bilder: omtrent halvparten bærer fortsatt opptaksdatoen inni fila, og for den andre halvparten ligger den i en liten JSON-fil ved siden av bildet. Færre enn ett av hundre hadde ingen dato noe sted. Så den ligger nesten alltid allerede i mappen du lastet ned - men for rundt halve biblioteket er den JSON-fila eneste kopi som finnes, og det gjør det å slette dem til den ene feilen her du ikke kan gjøre om.",
+      "gotcha_title": "Den halvparten som er i orden er nettopp det som gjør dette så forvirrende",
+      "gotcha": "Fordi delingen er omtrent jevn, kan to personer se på samme slags eksport og gå derfra sikre på hver sin motsatte konklusjon. Den som sjekker et bilde fra halvparten som beholdt datoen, konkluderer med at Takeout er i orden og at problemet er bildeappen. Den som sjekker et fra den andre halvparten, konkluderer med at Takeout stripper alt. Begge har halvveis rett, og det er derfor rådene på nett motsier hverandre. Den praktiske følgen er at et verktøy som går ut fra at datoen alltid ligger i fila, skriver ingenting for halve biblioteket ditt og melder om suksess. Der et bilde bar en dato begge steder, var de to enige hver eneste gang, over mer enn tusen av dem, så sidevognfila kan stoles på for den halvparten som trenger den.",
+      "manual_intro": "Du trenger ikke oss til dette. To veier, begge gratis.",
+      "muletto": "Muletto kobler sidevognfiler etter forstavelse i stedet for etter en fast endelse, så et avkortet navn finnes like lett som det fullstendige, og den leser datoen ut av selve bildet der den fortsatt er der. Den melder fra om hvor mange bilder den ikke fant noen dato for noe sted, i stedet for å gå stille videre. Datoen, og der Google tok vare på det, stedet, skrives inn i fila, så det du importerer inn i etterpå leser dem uten å trenge JSON-en lenger. Det kjører i nettleseren, og arkivet lastes aldri opp.",
+      "prevent": "Behold JSON-filene til datoene er skrevet inn i bildene. De ser ut som rot, og for omtrent halve biblioteket ditt er de eneste kopi av opptaksdatoen. Når datoene først ligger i bildene selv, kan sidevognfilene ryke.",
+      "evidence": "Målt mot én ekte Takeout med over to tusen bilder. Omtrent halvparten bar en innebygd opptaksdato og omtrent halvparten gjorde det ikke; for omtrent halve biblioteket hadde sidevognfila eneste kopi, og færre enn én prosent hadde ingen dato noen av stedene. Hver eneste sidevognfil brukte den samme endelsen .supplemental-metadata.json, og omtrent én mediefil av ni hadde ingen sidevognfil i det hele tatt. Der begge fantes, var de to datoene like i hvert eneste tilfelle, av over tusen. Det er én eksport og ikke en undersøkelse, så andelene er en pekepinn og ikke en regel - det de derimot avgjør, er at den flate påstanden om at Takeout stripper datoen fra alt sammen, ikke stemmer.",
+      "aka": [
+        "google takeout feil dato",
+        "takeout bilder datert i dag",
+        "google foto eksport mistet datoen"
+      ],
+      "cause": [
+        "To forskjellige ting går galt her, og de blandes sammen. Den første skjer med alle: fila som lander på disken din har et endringstidspunkt fra det øyeblikket Google pakket den, og de fleste bildeprogrammer sorterer etter nettopp det. Så bildene kommer som én enorm dag stemplet med datoen du trykket last ned, uansett hva annet som er sant om dem.",
+        "Den andre er den som er verdt å måle. Det sies vidt og bredt at Takeout stripper opptaksdatoen ut av hvert eneste bilde. Talt opp over mer enn to tusen bilder i en ekte eksport bar omtrent halvparten den fortsatt, og omtrent halvparten gjorde det ikke. For den halvparten har JSON-fila ved siden av bildet eneste kopi av datoen som finnes noe sted, og når den først er borte kan intet verktøy regne datoen ut igjen."
+      ],
+      "manual": [
+        {
+          "title": "exiftool, hvis du er komfortabel i et terminalvindu",
+          "detail": "Sjekk hva sidevognfilene dine faktisk heter før du kjører noe som helst. I eksporten som ble målt her het hver eneste av dem IMG_1234.jpg.supplemental-metadata.json, og enlinjeren som kopieres overalt og ender på .json treffer ingen av dem - den kjører, melder ingen feil, og skriver ingenting. Slik treffer du navnet som faktisk er der: exiftool -r -d %s -tagsfromfile \"%d%f.%e.supplemental-metadata.json\" \"-DateTimeOriginal<PhotoTakenTimeTimestamp\" -overwrite_original -ext jpg . Google skal også kutte den lange endelsen midt av når hele filnavnet blir langt, hvilket gir navn som .supplemental-me.json. Et fast mønster hopper over hver eneste av dem også, og exiftool sier ikke fra om hvor mange den hoppet over."
+        },
+        {
+          "title": "Google Photos Takeout Helper, hvis du heller vil slippe",
+          "detail": "Et kommandolinjeverktøy med åpen kildekode laget for akkurat denne jobben, og det håndterer navnevariantene. Er alt du vil ha at Google-bildene dine blir riktig datert og skrevet inn i mapper, gjør det den jobben godt, og det er det riktige svaret for en engangsjobb."
+        }
+      ]
+    },
+    {
+      "slug": "why-are-my-photos-in-the-sea-off-africa",
+      "title": "Hvorfor ligger bildene mine på kartet i havet utenfor Afrika?",
+      "symptom": "Du importerte en Google Takeout inn i et bildebibliotek, og en stor haug av bildene dine har landet på ett punkt i Atlanterhavet, noen hundre mil sør for Ghana. De ligger ikke spredd feilaktig utover. De ligger stablet på nøyaktig samme punkt i åpent hav.",
+      "recoverable": "Det er ingenting å hente tilbake, og det er den gode nyheten og ikke den dårlige. De bildene har aldri hatt et sted. De har ikke fått feil sted ved et uhell, og ingen reparasjon vil finne det riktige, for det ble aldri registrert noe. Det du kan gjøre noe med, er at de tegnes inn på kartet i det hele tatt.",
+      "gotcha_title": "Sidevognfila gir deg ikke et sted bildet ikke allerede har",
+      "gotcha": "Det er verdt å vite dette før du går på leting etter en løsning, for det sparer mye arbeid. Talt opp i den samme eksporten: omtrent en fjerdedel av bildene bar ekte koordinater, og hvert eneste av dem hadde dem allerede inni bildet. Antallet bilder der sidevognfila ga et sted fila ikke hadde, var null. Ikke en håndfull - ingen. Så for de tre fjerdedelene uten noe holder ikke Google tilbake et sted, og intet verktøy kan hente ut et. Det er skjermbilder, lagrede bilder, og alt som kom gjennom en meldingsapp, som stripper posisjon på veien. Datoer er det motsatte tilfellet, og det er lett å tro at de oppfører seg likt: for omtrent halve biblioteket er sidevognfila eneste kopi av datoen som finnes. Verdt å beholde JSON-filene av den grunn, bare ikke av denne.",
+      "manual_intro": "To framgangsmåter, avhengig av om bildene allerede ligger i biblioteket ditt.",
+      "muletto": "Muletto behandler et sted som er nøyaktig null som fraværende, for det er det det betyr. De bildene får ingen koordinater skrevet inn i seg og dukker ikke opp på kartet, mens de med ekte koordinater gjør det. Ingenting må stilles inn for det, og det er ingenting å gjøre om etterpå.",
+      "prevent": "Dette er en egenskap ved eksporten og ikke ved noe du gjorde, så det finnes ingen innstilling å endre hos Google. Det ene som hjelper er å sjekke et utvalg på et kart før du overlater et helt bibliotek til et nytt hjem.",
+      "evidence": "Målt mot én ekte Takeout med over to tusen bilder. Rundt sju av ti sidevognfiler bar et sted på nøyaktig null, omtrent en fjerdedel av bildene hadde ekte koordinater, og i intet tilfelle ga en sidevognfil et sted som ikke allerede lå i fila. Det er én eksport og ikke en undersøkelse, så ta andelene som en pekepinn.",
+      "aka": [
+        "bilder vises på 0,0 på kartet",
+        "null island bilder google takeout",
+        "importerte bilder feil sted guineabukta"
+      ],
+      "cause": [
+        "Breddegrad 0, lengdegrad 0 er et virkelig punkt på jorda. Det er der ekvator krysser nullmeridianen, i Guineabukta, og det er ikke noe der annet enn hav. Sjøfolk kaller det Null Island på spøk, fordi så mye ødelagt programvare ender opp med å peke dit.",
+        "Google skriver et sted for hvert eneste bilde i JSON-fila ved siden av det, også for dem den ikke har noe sted for. Har den ingen, utelater den ikke feltet - den fyller det med nuller. Et verktøy som leser tallet og tegner det inn, uten å spørre om null betyr Guineabukta eller betyr ingenting, sender hvert eneste av dem til den samme havflekken.",
+        "Det er vanlig fordi nullene er vanlige. I én ekte eksport bar rundt sju av ti sidevognfiler et sted på nøyaktig null."
+      ],
+      "manual": [
+        {
+          "title": "Fjern nullene før du importerer",
+          "detail": "Ble koordinatene skrevet inn i filene av en tidligere reparasjonsrunde, tar exiftool dem ut igjen der de er null og lar hvert ekte sted være i fred: exiftool -r -if \"$GPSLatitude eq '0' and $GPSLongitude eq '0'\" -gps:all= -overwrite_original . Kjør den på en kopi først. Det er -if-testen som hindrer den i å tørke ut den fjerdedelen av biblioteket ditt som har ekte koordinater."
+        },
+        {
+          "title": "Hvis de allerede er importert",
+          "detail": "De fleste bildebibliotek lar deg markere alt på ett kartpunkt og fjerne det. I Immich, PhotoPrism og Apple Bilder kan du søke eller filtrere på sted, markere hele Null Island-klyngen, og fjerne stedet fra utvalget. Det går som regel raskere enn å importere på nytt."
+        },
+        {
+          "title": "Sjekk før en stor import",
+          "detail": "Importer noen hundre bilder først og se på kartet. Et feil sted som lander på tjue tusen filer er atskillig mer tungvint å gjøre om enn ett du fanger opp på to hundre."
+        }
+      ]
+    },
+    {
+      "slug": "why-google-location-history-empty",
+      "title": "Hvorfor er Google-posisjonshistorikken min tom?",
+      "symptom": "Du ba Takeout om posisjonshistorikk, ventet deg år med den, og fikk et arkiv med så godt som ingenting i - ofte bare en kort melding om at du har krypterte Tidslinje-sikkerhetskopier lagret på Googles servere.",
+      "recoverable": "Delvis, og bare fra telefonen din. Meldingen er riktig og ikke en feil: Tidslinjen din ligger faktisk ikke på Googles servere i en form noen kan eksportere. Krypterte sikkerhetskopier finnes for at en ny telefon skal kunne gjenopprette, og det finnes ingen vei derfra til en fil du kan lese. Det telefonen din fortsatt har, kan du fortsatt få.",
+      "gotcha_title": "Det som kommer av telefonen er ikke det gamle formatet",
+      "gotcha": "Eksporten fra enheten er et annet skjema og ikke en ny versjon av det gamle. Koordinater kommer som tekst med et gradtegn i stedet for heltallsformen de gamle eksportene brukte, og tidsstempler bærer en lokal UTC-forskyvning, så et verktøy som kaster forskyvningen flytter hver eneste hendelse med timer. Det er også verdt å vite hva mer som ligger der: ved siden av stedene du besøkte bærer fila rå signaloppføringer, inkludert MAC-adressene til wifi-nettverk telefonen din så. Det er det mest avslørende i eksporten, og nesten ingen som ber om den er klar over at det er med.",
+      "manual_intro": "Eksporten bor på telefonen din nå, så den må hentes av telefonen. Beretningene spriker om hvor knappen er, og det ser ut til å avhenge av Maps-versjonen din, så prøv begge.",
+      "muletto": "Muletto leser det gamle Records.json-formatet og setter punktene på et kart ved siden av resten av eksporten din. Formatet fra enheten leses ikke ennå - det er et annet skjema, og det arbeides med det i stedet for å være stille halvveis støttet.",
+      "prevent": "Eksporter fra telefonen nå og ikke når du trenger det. Tidslinjen på enheten beholder et begrenset tidsvindu, så det å vente koster deg den eldste delen av den, og det finnes ikke lenger noen kopi på en server å falle tilbake på.",
+      "evidence": "Datoene og dagens Takeout-oppførsel er fra Googles egen dokumentasjon og fra beretninger i brukerfora, sjekket 10. august 2026. Det gamle Records.json-formatet leses her og ble kontrollert mot en ekte eksport.",
+      "aka": [
+        "takeout posisjonshistorikk tom",
+        "google tidslinje mangler i takeout",
+        "posisjonshistorikk ikke i google takeout"
+      ],
+      "cause": [
+        "Google flyttet Tidslinje bort fra serverne sine og over på enheten. Overgangen begynte rundt desember 2024, og Tidslinjen i skyen ble slått av 9. juni 2025. Takeout eksporterer data på kontonivå, og etter den endringen er posisjonshistorikken din ikke lenger data på kontonivå.",
+        "Eldre eksporter er en annen sak. Har du en Takeout fra før endringen, inneholder den Records.json med rå punkter, og en mappe kalt Semantic Location History med én fil per måned. De er fortsatt lesbare og fortsatt verdt å ta vare på."
+      ],
+      "manual": [
+        {
+          "title": "Fra Maps-appen, på begge plattformer",
+          "detail": "Åpne Google Maps, trykk på profilbildet ditt, så Innstillinger, så Personlig innhold, og se etter Eksporter tidslinjedata. På iPhone går fila gjennom delingsmenyen, så velg Lagre i Filer og velg et sted du finner den igjen. Den lagres som location-history.json."
+        },
+        {
+          "title": "Fra Android-systeminnstillingene, hvis Maps ikke tilbyr det",
+          "detail": "Innstillinger, så Posisjon, så Posisjonstjenester, så Tidslinje, så Eksporter tidslinje. Fila havner i nedlastingsmappen din."
+        },
+        {
+          "title": "Er du i EU kan du få en CSV",
+          "detail": "Meldt, ikke bekreftet: enkelte europeiske kontoer får CSV i stedet for JSON. Får din det, inneholder den de samme besøkene i en enklere form."
+        }
+      ]
+    },
+    {
+      "slug": "why-samsung-export-needs-a-password",
+      "title": "Hvorfor spør Samsung-eksporten min etter et passord?",
+      "symptom": "Samsung sendte dataene dine som et sett zip-filer, og ingenting vil åpne dem. Samsungs egen Mine filer-app nekter med en melding om at fila er passordbeskyttet, og den innebygde utpakkeren i Windows eller på en Mac spør enten etter et passord som ikke virker, eller feiler helt.",
+      "recoverable": "Ja, og ingenting er ødelagt. Eksporten din er komplett og hel. Den er kryptert, du har passordet et sted, og du trenger et verktøy som forstår den bestemte typen kryptering Samsung brukte.",
+      "gotcha_title": "En kort eksport er ikke nødvendigvis en ufullstendig en",
+      "gotcha": "En Samsung-tjeneste som ikke har noe om deg produserer ikke noe arkiv i det hele tatt, i stedet for et tomt et. Så en eksport med seks arkiver når du valgte tjue tjenester har ikke feilet, og det kommer ikke mer. Det er rett og slett ingenting i de fjorten andre. Dette er det aller mest forvirrende ved en Samsung-eksport, og Samsung nevner det ingen steder.",
+      "manual_intro": "En hvilken som helst utpakker som støtter AES-256 åpner disse. To gratis:",
+      "muletto": "Muletto åpner krypterte Samsung-arkiver direkte, både AES-256-arkivene og det gamle ZipCrypto-arkivet, og spør etter passordet når den møter den første låste oppføringen. Det finnes ikke noe utpakkingssteg. Den viser også hvilke tjenester som ga et arkiv og hvilke som ikke ga noe, så du kan se formen på det Samsung faktisk sendte.",
+      "prevent": "Lagre passordmeldingen et sted før du laster ned arkivene. Det er lett å ta vare på nedlastingslenken og miste e-posten med passordet i, og de to kommer hver for seg.",
+      "evidence": "Målt over en ekte eksport med ni arkiver og 57 oppføringer, hver eneste av dem kryptert. Alle 57 ble dekryptert og lest.",
+      "aka": [
+        "samsung dataeksport passord",
+        "samsung takeout zip vil ikke åpne",
+        "får ikke pakket ut samsung personvernportal zip"
+      ],
+      "cause": [
+        "Hver eneste oppføring i hvert eneste arkiv Samsung sender er kryptert, og passordet kommer atskilt fra nedlastingen og ikke sammen med den. De fleste arkivene bruker WinZip AES-256, som er et senere tillegg til zip-formatet og som ganske mange utpakkere fortsatt ikke støtter. Minst én tjeneste bruker fortsatt den eldre og svakere ZipCrypto.",
+        "Den kombinasjonen er grunnen til at feilmeldingene er så lite til hjelp. Et verktøy som ikke kan AES-256 klarer ofte ikke engang å fortelle deg at det er problemet, så det melder fila som ødelagt eller nekter rett og slett. Ingenting er ødelagt."
+      ],
+      "manual": [
+        {
+          "title": "7-Zip på Windows",
+          "detail": "Høyreklikk arkivet, velg 7-Zip, så Pakk ut her, og oppgi passordet når du blir spurt. 7-Zip har håndtert WinZip AES i årevis. Den innebygde zip-håndteringen i Windows gjør det ikke."
+        },
+        {
+          "title": "Keka på macOS",
+          "detail": "Finders eget Arkivverktøy kan ikke AES-256. Keka kan, det er gratis, og det spør etter passordet."
+        },
+        {
+          "title": "Finner du ikke passordet",
+          "detail": "Det ligger i en egen melding fra Samsung, sendt omtrent samtidig med nedlastingslenken og ikke i den samme e-posten. Søk i innboksen etter meldinger fra Samsung den dagen eksporten kom, søppelposten inkludert. Det kan ikke hentes fram eller nullstilles fra selve arkivet, så er det virkelig borte, er eneste vei å be om eksporten på nytt."
+        }
+      ]
+    },
+    {
+      "slug": "apple-export-missing-photos-and-health",
+      "title": "Hvorfor mangler bildene og helsedataene i Apple-eksporten min?",
+      "symptom": "Du ba Apple om alt og fikk et sett arkiver om kontoen, kjøpene, AppleCare, kontaktene, kalenderne, bokmerkene og notatene dine. Ingen bilder. Ingen helsedata. Ingen meldinger. Det ser ut som om det meste av livet ditt mangler, og det er rimelig å tro at eksporten feilet.",
+      "recoverable": "Den feilet ikke, og nesten alt sammen er fortsatt å få tak i - bare ikke fra den siden. Det Apple sender er de dataene Apple kan lese. Alt som mangler er enten ende-til-ende-kryptert, hvilket betyr at Apple sitter på det som en klump de ikke har nøkkelen til, eller det tilbys som en egen nedlasting du må be om for seg. Hver manglende bit har et annet sted å hentes fra, og de fleste av dem går raskere enn den forespørselen du allerede har sendt.",
+      "gotcha_title": "Avansert databeskyttelse gjør eksporten din mindre, ikke større",
+      "gotcha": "Denne tar dem som gjorde det personvernbevisste valget. Vanligvis er en håndfull kategorier ende-til-ende-krypterte. Skru på Avansert databeskyttelse, og det stiger til rundt tjuetre, hvilket tar med Bilder, Notater og iCloud-sikkerhetskopi blant andre - og hver kategori det dekker blir en kategori Apple ikke lenger kan utlevere. Så jo grundigere du beskytter iCloud-dataene dine, jo mindre av dem dukker opp i en dataforespørsel, og jo mer må du hente fra dine egne enheter i stedet. Dataene er ikke tapt og ingenting har gått galt; nøklene ligger på maskinvaren din, og det er hele poenget. Det er bare det motsatte av hva du ville ventet at personverninnstillingen gjorde med en personvernforespørsel. Beslektet: har du skrudd av nettilgang til iCloud-data, begrenser også det hva eksportverktøyet kan gi tilbake.",
+      "manual_intro": "Hvor hver manglende bit faktisk bor. Ingen av disse krever en supporthenvendelse.",
+      "muletto": "Muletto leser arkivene for data og personvern direkte, også dem som ligger inne i andre arkiver - i eksporten som ble undersøkt her inneholdt sju av atten flere arkiver med flere hundre oppføringer som er usynlige til de åpnes. Kontakter, kalendere, notater og kontotabellene kommer alle gjennom. Slipp den separate bildenedlastingen inn ved siden av dem, så behandles det som ett bibliotek og ikke to.",
+      "prevent": "Når du gjør forespørselen, gå gjennom kategorilista i stedet for å godta standardutvalget, og ta bildene som sin egen post. Skal du til å skru på Avansert databeskyttelse, ta eksporten først: det er lettere å spørre Apple én gang enn å samle det samme materialet fra fire enheter senere.",
+      "evidence": "Kategorilista er fra en ekte Apple-eksport for data og personvern på atten arkiver, undersøkt for denne siden. Hvilke kategorier som er ende-til-ende-krypterte, og at Avansert databeskyttelse utvider det settet til rundt tjuetre, er fra Apples egen sikkerhetsdokumentasjon, sjekket i august 2026. Eksportveiene for Helse, passord og bilder er fra Apples dokumentasjon og ikke gått gjennom her, så kontroller den nøyaktige ordlyden på din egen enhet.",
+      "aka": [
+        "apple data og personvern eksport ingen bilder",
+        "apple eksport mangler helsedata",
+        "icloud datanedlasting inneholder ikke meldinger"
+      ],
+      "cause": [
+        "Apples eksport for data og personvern kan bare inneholde det Apple er i stand til å dekryptere. Enkelte kategorier er ende-til-ende-krypterte for hver eneste konto, uten at noen innstilling er inne i bildet: Helse, og passordene i iCloud-nøkkelring. Apple kan ikke produsere dem, fordi de ikke kan lese dem. Det er ikke et hull i eksporten, det er krypteringen som gjør nøyaktig det den selges som å gjøre.",
+        "Bilder og iCloud Drive-filer er en annen sak. De er ikke hemmelige for Apple, de er rett og slett enorme, så de tilbys som sin egen nedlasting i stedet for å bakes inn i kontooppføringene. Huket du ikke av for dem, eller la du ikke merke til en leveranse nummer to, har du dem ikke.",
+        "En ekte eksport undersøkt for denne siden var atten arkiver som dekket konto- og enhetsinformasjon, Apple Media Services, Apple Store, AppleCare, bokmerker, kalendere og påminnelser, kontakter, notater, markedsføringshenvendelser, Wallet-aktivitet, Game Center og en kategori Apple rett og slett kaller Andre data. Det er en komplett eksport. Det er også ingenting i nærheten av alt."
+      ],
+      "manual": [
+        {
+          "title": "Helsedata - fra telefonen, omtrent ett minutt",
+          "detail": "Åpne Helse-appen, trykk på profilbildet ditt øverst til høyre, bla helt ned og velg Eksporter alle helsedata. Det gir en zip med export.xml i. Vær forberedt på at den er stor - år med klokkedata blir hundrevis av megabyte XML i én enkelt fil, og det er derfor ganske mange verktøy setter seg fast på den. Det finnes en fullstendig veiledning til dette på nettstedet under Apple Health, inkludert de to stedene eksporten stille feiler."
+        },
+        {
+          "title": "Bilder og video - en egen forespørsel eller en direkte nedlasting",
+          "detail": "På siden for data og personvern er iCloud-bilder sin egen post å velge, og ikke en del av kontoarkivene, og den kommer som sitt eget sett filer. Vil du helst slippe å vente, kan du laste ned album direkte fra iCloud.com, eller fra Bilder-appen på en Mac velge originalene og eksportere dem til en mappe. De direkte veiene går som regel raskere og gir deg de samme filene."
+        },
+        {
+          "title": "Passord - Innstillinger, ikke eksporten",
+          "detail": "iCloud-nøkkelring er ende-til-ende-kryptert og kommer aldri til å dukke opp i en dataforespørsel. Nyere versjoner av iOS og macOS kan eksportere de lagrede passordene dine til en CSV fra Passord-skjermen. Behandle den fila med omhu og slett den når du er ferdig - det er den ene virkelig farlige tingen på denne lista."
+        },
+        {
+          "title": "Meldinger - tilbys ikke i det hele tatt",
+          "detail": "Det finnes ingen vei til iMessage-historikk gjennom en dataforespørsel. Eneste kopi er den på enheten din, eller i en ukryptert lokal sikkerhetskopi tatt via en datamaskin. Er meldinger det du er ute etter, planlegg rundt det i stedet for å vente på en eksport som ikke kommer til å inneholde dem."
+        }
+      ]
+    },
+    {
+      "slug": "my-export-came-as-many-zip-files",
+      "title": "Eksporten min kom som et dusin separate zip-filer",
+      "symptom": "Du ba om dataene dine og fikk en haug nummererte arkiver i stedet for én fil. Apple merker dem Del 1 av 3 og lignende; Google nummererer dem bare. Det er ikke opplagt hvilken du skal åpne, om du trenger alle sammen, eller om de må settes sammen igjen først.",
+      "recoverable": "Ingenting er ødelagt og ingenting mangler. I nesten alle tilfeller er dette komplette arkiver som hvert åpner for seg, og du trenger ikke sette dem sammen. Å laste ned alle sammen betyr fortsatt noe, for filene dine er spredd over dem, men det er noe annet enn å slå dem sammen.",
+      "gotcha_title": "Du trenger nesten helt sikkert ikke å slå dem sammen",
+      "gotcha": "Det vanlige rådet på nett er å slå sammen delene med et sammenslåingsverktøy før du åpner noe som helst, og for én type oppdelt arkiv er det riktig og uunngåelig. For den typen disse eksportene faktisk gir er det feil, og det er dyrt: en veiledning til å gjøre det nevner at den trengte rundt 68 GB ledig plass for å slå sammen et stort sett, og så mer igjen for å pakke ut resultatet. Testen tar to sekunder, og det er filendelsene. Har du én .zip ved siden av filer som ender på .z01, .z02 og så videre, er det et ekte oppdelt arkiv, og delene er virkelig fragmenter - du trenger alle sammen til stede, og du må åpne .zip-fila, som drar inn resten. Ender hver eneste fil rett og slett på .zip, er de separate komplette arkiver, og hvert av dem åpner for seg. En ekte Apple-eksport sjekket her var 18 filer, hver med sin egen fungerende innholdsfortegnelse, 1 020 oppføringer mellom seg, og ikke én eneste oppdelt del.",
+      "manual_intro": "Når du først vet hvilken type du har, er det rett fram.",
+      "muletto": "Slipp alle sammen inn på én gang. Muletto leser dem som ett bibliotek, så et bilde i ett arkiv finner opplysningene sine i et annet, og duplikater mellom dem finnes i stedet for å importeres to ganger. Den åpner også arkiver som inneholder nye arkiver, hvilket Apple-eksporter gjør - i den som ble målt her inneholdt sju av atten flere zip-filer inni seg, og 394 oppføringer var usynlige til de ble åpnet.",
+      "prevent": "Når du gjør forespørselen, se etter innstillingen for maksimal filstørrelse og velg en større verdi hvis forbindelsen din takler det. Da får du færre og større filer. På en forbindelse som ryker er standardvalget det beste, og flere filer det minste problemet.",
+      "evidence": "Sjekket mot en ekte Apple-eksport på 18 arkiver: hvert eneste bar sin egen fungerende sentrale innholdsfortegnelse og åpnet uavhengig, 1 020 oppføringer til sammen, uten oppdelte deler noe sted i settet. Sju av de atten inneholdt arkiver inni seg med ytterligere 394 oppføringer.",
+      "aka": [
+        "apple dataeksport flere zip-filer del 1 av",
+        "hvordan slå sammen google takeout zip-filer",
+        "må jeg slå sammen eksport-zipene mine"
+      ],
+      "cause": [
+        "Du velger en maksimal filstørrelse når du ber om eksporten - både Apple og Google tilbyr det, og det er lett å godta standardvalget uten å legge merke til det. Alt som er større enn det skrives som flere arkiver i stedet for ett. Mindre filer lastes ned mer pålitelig på en dårlig forbindelse, og det er derfor det tilbys, og ofte derfor det er standard.",
+        "Apple sender også det samme arkivet to ganger hvis du gjør den samme forespørselen mer enn én gang, så du kan ende opp med en fil og en kopi av den som ender på (1). Det er et duplikat og ikke en manglende bit."
+      ],
+      "manual": [
+        {
+          "title": "Alle filer ender på .zip",
+          "detail": "Åpne hver av dem på vanlig måte. Ingenting trenger å slås sammen. Det er verdt å pakke dem ut i én felles mappe i stedet for én mappe per arkiv, slik at eksporten ender opp i den formen den hadde før den ble delt opp."
+        },
+        {
+          "title": "Du har .z01, .z02 og én .zip",
+          "detail": "Dette er et ekte oppdelt arkiv. Ha hver del i den samme mappen og åpne .zip-fila - 7-Zip på Windows og Keka på macOS drar inn de nummererte delene automatisk. Ikke prøv å åpne .z01 direkte. Du trenger ledig plass omtrent tilsvarende hele settet, to ganger."
+        },
+        {
+          "title": "To filer med samme navn, én som ender på (1)",
+          "detail": "Apple som sender det samme arkivet to ganger. Sammenlign filstørrelsene: er de like, behold hvilken som helst av dem. Ingenting går tapt ved å slette kopien."
+        }
+      ]
+    },
+    {
+      "slug": "why-tgz-will-not-open",
+      "title": "Takeout ga meg en .tgz-fil og ingenting vil åpne den",
+      "symptom": "Du valgte .tgz på Takeout-skjermen, eller det var allerede valgt, og nå skjer det ingenting når du dobbeltklikker fila i Windows. Den er ikke ødelagt, og det er ikke en mislykket nedlasting.",
+      "recoverable": "Ja. Det er et helt vanlig arkiv i et format Windows ikke har noen håndtering for. Ett gratis verktøy åpner det.",
+      "gotcha_title": "For en svært stor Takeout, be om .zip i stedet",
+      "gotcha": "Dette er ikke en smakssak. En zip bærer en innholdsfortegnelse på slutten, så et verktøy kan hoppe rett til hvilken som helst fil inni uten å røre resten. En gzip-strøm kan ikke leses i uorden i det hele tatt, så alt som leser en .tgz må arbeide seg gjennom den fra begynnelsen. For en liten eksport betyr forskjellen ingenting. For en Takeout målt i titalls gigabyte er det forskjellen på å åpne den og å måtte pakke ut alt sammen først, og du må doble den ledige diskplassen din for å pakke den ut.",
+      "manual_intro": "Ett verktøy, og på Windows kan det ta to runder.",
+      "muletto": "Muletto leser .tgz direkte, uten et utpakkingssteg og uten å trenge den ledige plassen en full utpakking ville krevd. Fordi en gzip-strøm ikke kan leses i uorden, pakkes den ut i én omgang etter hvert som den leses, i stedet for å leses etter behov slik en zip gjør.",
+      "prevent": "På Takeout-skjermen setter du filtypen til .zip før du sender inn. Det er en nedtrekksliste ved siden av leveringsmåten, og den er lett å bla forbi.",
+      "evidence": "Leseren for .tgz ble kontrollert i nettleseren mot en gzippet tar bygget etter spesifikasjonen, der hver medlemsstørrelse ble sjekket og et medlem på 3 MB lest tilbake byte for byte.",
+      "aka": [
+        "google takeout tgz windows",
+        "får ikke åpnet tgz-fil",
+        "takeout tar.gz vil ikke pakkes ut"
+      ],
+      "cause": [
+        "Google tilbyr .tgz ved siden av .zip på den samme skjermen, og forskjellen forklares ikke. En .tgz er to formater lagt inni hverandre: et tar-arkiv med filene dine, komprimert med gzip. Windows forstår ingen av dem på egen hånd, så et dobbeltklikk gjør ingenting.",
+        "Det er også derfor det å pakke den ut føles som om det tar to forsøk. Å pakke ut gzip-laget etterlater deg med en .tar, som så må pakkes ut i sin tur. Enkelte verktøy gjør begge deler i ett steg og enkelte gjør det ikke, og det er der mesteparten av forvirringen kommer fra."
+      ],
+      "manual": [
+        {
+          "title": "7-Zip på Windows",
+          "detail": "Høyreklikk fila, 7-Zip, Pakk ut her. Det gir deg en .tar. Høyreklikk den og pakk ut den også, så ligger filene dine der. Gratis, og det er grunnen til at folk flest installerer 7-Zip i utgangspunktet."
+        },
+        {
+          "title": "macOS og Linux",
+          "detail": "Et dobbeltklikk virker på macOS. I et terminalvindu på begge gjør tar -xzf takeout.tgz begge lagene i én omgang."
+        }
+      ]
+    }
+  ]
+}
