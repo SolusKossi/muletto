@@ -1,0 +1,38 @@
+{
+  "en_hash": "5f735d654cdd",
+
+  "wait_time": "minutter å importere, lengre før iCloud er synkronisert",
+  "format": "importert inn i Bilder-biblioteket",
+
+  "steps": [
+    {
+      "title": "Sjekk kopieringsinnstillingen før du importerer noe som helst",
+      "detail": "Åpne Bilder, Innstillinger, Generelt, og se på Kopier objekter til Bilder-biblioteket. Avhuket er det de fleste vil ha: biblioteket blir selvstendig, synkroniseres til iCloud og sikkerhetskopieres som én ting. Uten avhuking er et bevisst valg - det passer et bibliotek som er for stort til å dobles opp, forutsatt at du vet at iCloud da ikke får det."
+    },
+    {
+      "title": "Vit hva det vil koste i iCloud",
+      "detail": "Er innstillingen avhuket og iCloud-bilder på, lastes alt du importerer opp og teller mot iCloud-lagringen din. Sjekk hvor mye du har ledig mot størrelsen på mappen Muletto skrev før du begynner, i stedet for å oppdage det midt i opplastingen."
+    },
+    {
+      "title": "Importer mappen",
+      "detail": "I Bilder velger du Arkiv, Importer, velger mappen Muletto skrev, og importerer. Bilder leser datoen og stedet ut av hver fil underveis, så de havner på riktig sted i tidslinjen i stedet for alle sammen under i dag."
+    },
+    {
+      "title": "Sjekk datoene før du sletter noe",
+      "detail": "Dette er gevinsten av å reparere opplysningene først. Et Google- eller Apple-arkiv importert uten det steget kommer datert importdagen, og et tiår med historie klapper sammen til én ettermiddag. Bla noen år tilbake i biblioteket og bekreft før du fjerner kildemappen."
+    },
+    {
+      "title": "La iCloud bli ferdig, og se at den blir det",
+      "detail": "Å laste opp et stort bibliotek tar langt lengre tid enn å importere det. Bilder viser framdriften nederst i Bibliotek-visningen. La Macen stå våken og på strøm til den sier at alt er oppdatert - en bærbar som sovner halvveis stopper rett og slett, uten å si fra om det."
+    },
+    {
+      "title": "Har du hoppet over kopieringen, kan du samle det senere",
+      "detail": "Ombestemt deg om filer som bare henvises til? Marker dem i Bilder og velg Arkiv, Samle. Det kopierer dem inn i biblioteket, og fra da av tar iCloud dem, og en sikkerhetskopi av biblioteket dekker dem."
+    }
+  ],
+
+  "notes": [
+    "Filer det bare henvises til sikkerhetskopieres ikke sammen med bildebiblioteket. Bruker du dem, trenger den opprinnelige mappen sin egen sikkerhetskopi, og mister du den, mister du bildene.",
+    "iCloud-lagringen deles med sikkerhetskopier, Disk og E-post, så plassen Bilder kan bruke er det resten har til overs."
+  ]
+}

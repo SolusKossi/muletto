@@ -1,0 +1,42 @@
+{
+  "en_hash": "e674102872d3",
+
+  "wait_time": "minutter å kopiere, timer å indeksere",
+  "format": "en delt mappe, indeksert av Synology Photos",
+
+  "request": {
+    "label": "Synologys kunnskapsbase"
+  },
+
+  "steps": [
+    {
+      "title": "Skru på den halvdelen du vil ha",
+      "detail": "For Personlig område: åpne Kontrollpanel, Bruker og gruppe, Avansert, og slå på hjemmemappetjenesten - uten den finnes det ingen hjemmemappe å skrive til. For Delt område: åpne Synology Photos, Innstillinger, Delt område, og slå det på. Du kan ha begge deler; de viser bare hver sin mappe."
+    },
+    {
+      "title": "Pek Muletto mot riktig mappe",
+      "detail": "Koble NAS-en til som en nettverksstasjon først, og eksporter så fra Muletto rett inn i den. For Personlig område er målet home/Photos på din egen konto. For Delt område er det den delte mappen /photo. Skriver du til en hvilken som helst annen mappe, kommer Synology Photos aldri til å se etter der, og det er den vanlige grunnen til at et bibliotek ser ut til å forsvinne etter kopieringen."
+    },
+    {
+      "title": "Behold mappestrukturen din",
+      "detail": "Synology Photos har en mappevisning i tillegg til tidslinjen, så års- og månedsmappene Muletto skriver er fortsatt meningsfulle og lette å bla i. Du trenger ikke slå sammen noe eller gi nytt navn for å tilpasse deg."
+    },
+    {
+      "title": "Vent på indekseringen, og regn med at den tar tid",
+      "detail": "Når filene først ligger der, leser NAS-en hver enkelt av dem, henter ut dato og sted, og lager miniatyrbilder. På et stort bibliotek er dette timer og ikke minutter, og på en eldre eller svakere modell kan det gå over natta. En app som ser tom ut etter en time er helt normalt - se etter igjen senere før du konkluderer med at noe har gått galt."
+    },
+    {
+      "title": "Sjekk datoene, ikke bare antallet",
+      "detail": "Synology Photos bygger tidslinjen sin på datoen inni hver fil. Det er den Muletto reparerer før du eksporterer: uten det kommer et Google- eller Apple-arkiv datert den dagen du kopierte det, og tidslinjen blir én enorm dag. Åpne tidslinjen og bla noen år tilbake for å bekrefte før du sletter noe andre steder."
+    },
+    {
+      "title": "Sørg for at den faktisk er sikkerhetskopiert",
+      "detail": "En NAS er ikke en sikkerhetskopi i seg selv - den er én kopi, i én bygning, på disker som sannsynligvis ble kjøpt samtidig. RAID beskytter deg mot at en disk ryker, ikke mot brann, tyveri eller at du sletter feil mappe. Legg til Hyper Backup mot en ekstern disk eller et annet sted, og sjekk at en gjenoppretting virker før du stoler på den."
+    }
+  ],
+
+  "notes": [
+    "Å gi den delte mappen nytt navn eller flytte filer rundt under Synology Photos betyr at alt må indekseres på nytt fra bunnen av, så få strukturen på plass i Muletto først.",
+    "Personlig område viser bare den innloggede brukerens egen mappe. Skal flere se det samme biblioteket, må det være Delt område."
+  ]
+}

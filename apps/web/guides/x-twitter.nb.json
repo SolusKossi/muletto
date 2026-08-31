@@ -1,0 +1,62 @@
+{
+  "en_hash": "d7be67e60c18",
+
+  "wait_time": "som regel innen et døgn, iblant flere",
+  "format": ".zip med JavaScript-filer, ikke JSON",
+
+  "request": {
+    "label": "Last ned et arkiv med dataene dine"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Innstillinger, så Kontoen din",
+      "detail": "På nettet, ikke i appen. Innstillinger og personvern, Kontoen din, Last ned et arkiv med dataene dine."
+    },
+    {
+      "title": "Bekreft passordet ditt",
+      "detail": "Du blir bedt om å skrive det inn på nytt, og deretter om å bekrefte en kode sendt på e-post eller SMS."
+    },
+    {
+      "title": "Be om arkivet",
+      "detail": "Det er én knapp og ingen valg. Du kan ikke velge tidsrom eller et utvalg."
+    },
+    {
+      "title": "Vent på varselet",
+      "detail": "Det kommer i appen og på e-post. De fleste ser det innen et døgn; en stor konto kan bruke flere."
+    },
+    {
+      "title": "Last ned med en gang",
+      "detail": "Lenken går ut etter omtrent en uke, og da må hele forespørselen gjøres på nytt."
+    },
+    {
+      "title": "Åpne Your archive.html for å bla i det",
+      "detail": "Arkivet kommer med sin egen frakoblede leser. Merk mellomrommet i filnavnet - det er noe som velter en god del skript."
+    }
+  ],
+
+  "notes": [
+    "Bokmerker er ikke med. Likerklikk er med, men bare som en innleggs-id og teksten, uten forfatter og uten dato.",
+    "Lange innlegg lagres to ganger: en avkortet kopi i hovedfila og hele teksten i note-tweet.js. Alt som bare leser den første, mister stilltiende brødteksten i hvert eneste lange innlegg.",
+    "Mediene i arkivet er nedskalert, ikke originaler. Original-URL-ene ligger i dataene, men de virker bare så lenge innlegget fortsatt er oppe."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor er filene i X-arkivet mitt .js og ikke .json?",
+      "a": "Fordi arkivet kommer med en frakoblet leser som laster dem som skript. Hver fil er en JavaScript-tilordning - window.YTD.tweets.part0 = [ ... ] - lagt rundt ellers helt vanlig JSON. En JSON-leser feiler på hver eneste av dem inntil den første linja er fjernet."
+    },
+    {
+      "q": "Er direktemeldinger med i X-arkivet?",
+      "a": "Ja, i direct-messages.js for samtaler mellom to, og direct-messages-group.js for gruppesamtaler. De ligger i klartekst."
+    },
+    {
+      "q": "Hvorfor er de gamle innleggene mine avkortet i arkivet?",
+      "a": "Av to grunner. Retweets lagres som et sammendrag på 140 tegn som begynner med RT @, uten noen vei tilbake til originalen. Lange innlegg lagres avkortet i tweets.js med hele teksten i note-tweet.js, koblet sammen med id."
+    },
+    {
+      "q": "Er bokmerker med i X-dataarkivet?",
+      "a": "Nei. Likerklikk er med, bokmerker er ikke, og det finnes ingen måte å be om dem."
+    }
+  ]
+}

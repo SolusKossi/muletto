@@ -1,0 +1,55 @@
+{
+  "en_hash": "94d49627d05e",
+
+  "wait_time": "opptil tretti dager, som regel noen få",
+  "format": ".zip med CSV-filer",
+
+  "request": {
+    "label": "Be om Reddit-dataene dine"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne siden for dataforespørsel",
+      "detail": "Innstillinger, Personvern, og så Be om en kopi av dataene dine."
+    },
+    {
+      "title": "Velg type forespørsel",
+      "detail": "GDPR hvis du er i Europa, CCPA hvis du er i California. Velg den som gjelder for deg."
+    },
+    {
+      "title": "Velg et tidsrom, eller alt",
+      "detail": "La det stå på alt med mindre du har en grunn til noe annet."
+    },
+    {
+      "title": "Send inn og vent",
+      "detail": "Reddit sier opptil tretti dager, og bruker som regel noen få."
+    },
+    {
+      "title": "Last ned zip-fila",
+      "detail": "Alt inni er CSV, én fil per kategori."
+    }
+  ],
+
+  "notes": [
+    "Alt er CSV. Det finnes ikke noe JSON-valg og ingen medier av noe slag.",
+    "Kommentartekstene er rå markdown med linjeskift og komma inni, så en godtroende import i et regneark maler dem i stykker.",
+    "Privatmeldingene dine ligger i messages_archive.csv og ikke i messages.csv, hvilket er lett å overse.",
+    "Hvert eneste innlegg og hver eneste kommentar i denne eksporten bærer med seg internettadressen du satt tilkoblet fra da du skrev det. Det er ikke noe folk flest venter å finne i en kopi av sine egne ord, og det er verdt å vite før mappen havner noe sted andre kommer til."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvilket format kommer en Reddit-eksport i?",
+      "a": "CSV, én fil per kategori, og ingenting annet. Det finnes ikke noe JSON-valg og ingen bilder eller video."
+    },
+    {
+      "q": "Er slettede innlegg og kommentarer med i en Reddit-eksport?",
+      "a": "Innlegg og kommentarer du selv har slettet er stort sett ikke med. Det du fortsatt har liggende på kontoen, er med."
+    },
+    {
+      "q": "Hvor lang tid tar en Reddit-dataforespørsel?",
+      "a": "Reddit sier opptil tretti dager. De fleste melder om noen få."
+    }
+  ]
+}

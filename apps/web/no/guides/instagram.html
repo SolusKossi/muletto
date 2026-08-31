@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Last ned dataene dine fra Instagram: GDPR-eksport steg for steg | Muletto</title>
+  <meta name="description" content="Slik laster du ned GDPR-eksporten din fra Instagram - bilder, video, meldinger - og slik åpner du den og ser hva som ligger der. 6 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter til noen dager, avhengig av størrelsen)." />
+  <link rel="canonical" href="https://muletto.app/no/guides/instagram.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/instagram.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/instagram.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/instagram.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Last ned dataene dine fra Instagram: GDPR-eksport steg for steg | Muletto" />
+  <meta property="og:description" content="Slik laster du ned GDPR-eksporten din fra Instagram - bilder, video, meldinger - og slik åpner du den og ser hva som ligger der. 6 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter til noen dager, avhengig av størrelsen)." />
+  <meta property="og:url" content="https://muletto.app/no/guides/instagram.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik laster du ned GDPR-eksporten fra Instagram og åpner den","description":"Slik laster du ned GDPR-eksporten din fra Instagram - bilder, video, meldinger - og slik åpner du den og ser hva som ligger der. 6 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter til noen dager, avhengig av størrelsen).","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Åpne Last ned informasjonen din","text":"I Instagram-appen eller på nettet: gå til Kontosenter, så Informasjonen din og tillatelser, så Last ned informasjonen din."},{"@type":"HowToStep","position":2,"name":"Velg Instagram-profilen","text":"Velg Instagram-kontoen du vil eksportere dataene til."},{"@type":"HowToStep","position":3,"name":"Velg informasjon og tidsrom","text":"Velg hvilke kategorier som skal være med (innlegg, historier, meldinger og mer), og velg \"Hele tiden\" for alt sammen."},{"@type":"HowToStep","position":4,"name":"Velg format og kvalitet","text":"Velg JSON for maskinlesbare data (best for Muletto), og sett mediekvalitet til høy."},{"@type":"HowToStep","position":5,"name":"Opprett fila og vent","text":"Send inn forespørselen. Meta gjør nedlastingen klar og varsler deg når den er ferdig."},{"@type":"HowToStep","position":6,"name":"Last ned fila","text":"Last ned hver del før lenken går ut, og hold filene samlet."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Instagram","item":"https://muletto.app/no/guides/instagram.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"nb","mainEntity":[{"@type":"Question","name":"Hvorfor er emojiene i Instagram-eksporten min ødelagte?","acceptedAnswer":{"@type":"Answer","text":"Instagram koder JSON ved å skrive ut de rå bytene i hvert tegn, så emoji og bokstaver med tegn over kommer ut forvridd. Tre av de fire bytene i en emoji er usynlige kontrolltegn, og det er derfor et smilefjes ofte vises som én forvillet bokstav. Det lar seg rette opp, og Muletto retter det."}},{"@type":"Question","name":"Hvor er Instagram-bildene mine i nedlastingen?","acceptedAnswer":{"@type":"Answer","text":"Under en media-mappe, sortert i innlegg, historier, reels og profil, med datoene liggende i kategori-JSON-en i stedet for inni bildene. Nyere eksporter kan også ha en public-media-mappe som gjentar noe av det."}},{"@type":"Question","name":"Er direktemeldingene mine med i en Instagram-eksport?","acceptedAnswer":{"@type":"Answer","text":"Ja, under your_instagram_activity og deretter messages, med én mappe per samtale. Meldingene ligger med den nyeste først, og alt som er sendt i en samtale ligger ved siden av den i den mappen."}},{"@type":"Question","name":"Hvordan leser jeg en Instagram-eksport i JSON?","acceptedAnswer":{"@type":"Answer","text":"Åpne den med noe som forstår oppbygningen. Muletto leser arkivet i nettleseren din og viser innlegg, meldinger og likerklikk som en tidslinje, uten å laste opp noe."}}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a>
+        <span>/</span>
+        <a href="../../guides.html">Veiledninger</a>
+        <span>/</span>
+        <span aria-current="page">Instagram</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Slik laster du ned dataene dine fra Instagram</h1>
+        <p class="art-kicker">Slik ber du om eksporten, hva som kommer, og hvordan du åpner den.</p>
+        <div class="art-meta">
+          <span class="badge easy">enkelt</span>
+          <span class="muted">Wait: minutter til noen dager, avhengig av størrelsen</span>
+        </div>
+        <p class="art-intro">Instagram er pliktig til å gi deg en kopi av dataene de har om deg, blant annet bilder, video, meldinger og innlegg og aktivitet. Det koster ingenting å be om det, og du får .zip med JSON- eller HTML-filer og medier. Vanlig ventetid: minutter til noen dager, avhengig av størrelsen.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">Meta Kontosenter - Last ned informasjonen din <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          <aside class="explain"><h2>It is a Meta export, requested from the Accounts Centre</h2><p>Instagram&#39;s own settings hand you off to Meta&#39;s Accounts Centre, which is where downloads for every linked account live. This catches people out twice: the option is not where the app implies it is, and requesting a download there covers whichever accounts you tick, so Instagram and Facebook are separate requests even though they are made on the same screen.</p></aside>
+
+          <h2>Steg for steg</h2>
+          <p class="confirmed-line">Hvert skjermbilde under er fra Instagram sine egne sider, tatt 30. juli 2026.</p>
+          <ol class="steps-ol">
+            <li>
+              <h3>Åpne Last ned informasjonen din</h3>
+              <p>I Instagram-appen eller på nettet: gå til Kontosenter, så Informasjonen din og tillatelser, så Last ned informasjonen din.</p>
+              
+            </li>
+            <li>
+              <h3>Velg Instagram-profilen</h3>
+              <p>Velg Instagram-kontoen du vil eksportere dataene til.</p>
+              
+            </li>
+            <li>
+              <h3>Velg informasjon og tidsrom</h3>
+              <p>Velg hvilke kategorier som skal være med (innlegg, historier, meldinger og mer), og velg &quot;Hele tiden&quot; for alt sammen.</p>
+              
+            </li>
+            <li>
+              <h3>Velg format og kvalitet</h3>
+              <p>Velg JSON for maskinlesbare data (best for Muletto), og sett mediekvalitet til høy.</p>
+              
+            </li>
+            <li>
+              <h3>Opprett fila og vent</h3>
+              <p>Send inn forespørselen. Meta gjør nedlastingen klar og varsler deg når den er ferdig.</p>
+              
+            </li>
+            <li>
+              <h3>Last ned fila</h3>
+              <p>Last ned hver del før lenken går ut, og hold filene samlet.</p>
+              
+            </li>
+          </ol>
+
+          
+          <h2 id="open">Slik åpner du Instagram-eksporten</h2>
+          <p>Muletto leser en Instagram-eksport rett fra zip-fila, uten at du pakker den ut først, og finner bilder, video og meldinger inni.</p>
+          <p>Alt skjer i nettleseren: arkivet lastes aldri opp, du trenger ingen konto, og ingenting installeres. Åpne flere eksporter samtidig, så blir de ett bibliotek, og bildene som finnes i mer enn én av dem finner appen selv.</p>
+          <div class="note">Meta gir deg fire dager på å laste ned når eksporten først er klar, ikke uka Google gir. Bekreftelsesskjermen sier det, og varselet gjentar det ikke.</div>
+          <p><a class="btn primary" href="../../no/app.html">Åpne Instagram-eksporten din
+            <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+
+          <h2>Verdt å vite</h2>
+          <div class="note">Meta gir deg fire dager på å laste ned når eksporten først er klar, ikke uka Google gir. Bekreftelsesskjermen sier det, og varselet gjentar det ikke.</div>
+          <div class="note">Meta spør etter passordet ditt en gang til før forespørselen sendes. Det er Metas egen skjerm - Muletto ser den aldri og spør aldri etter et passord.</div>
+          <div class="note">Instagram og Facebook håndteres begge i Meta Kontosenter, så du kan be om dem samtidig.</div>
+          <div class="note">Bilder og video i full oppløsning er bare med hvis du setter mediekvalitet til høy før du sender inn.</div>
+          <div class="note">Velg JSON, ikke HTML - og merk at HTML er det boksen står på, så dette er en endring du må gjøre selv og ikke en preferanse du bekrefter. HTML er en framvisning av dataene dine som ingenting kan lese tilbake.</div>
+          <div class="note">Sett tidsrommet til Hele tiden. Et tidsrom som blir stående på et nylig standardvalg gir en eksport som ser komplett ut og mangler år.</div>
+          <div class="note">Meta deler store eksporter over flere filer, og mediene i en samtale kan ligge i en annen del enn meldingene. Åpne alle delene samtidig.</div>
+
+          <h2>Vanlige spørsmål</h2>
+          <div class="faq">
+            <details class="faq-q">
+              <summary>Hvorfor er emojiene i Instagram-eksporten min ødelagte?</summary>
+              <p>Instagram koder JSON ved å skrive ut de rå bytene i hvert tegn, så emoji og bokstaver med tegn over kommer ut forvridd. Tre av de fire bytene i en emoji er usynlige kontrolltegn, og det er derfor et smilefjes ofte vises som én forvillet bokstav. Det lar seg rette opp, og Muletto retter det.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvor er Instagram-bildene mine i nedlastingen?</summary>
+              <p>Under en media-mappe, sortert i innlegg, historier, reels og profil, med datoene liggende i kategori-JSON-en i stedet for inni bildene. Nyere eksporter kan også ha en public-media-mappe som gjentar noe av det.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Er direktemeldingene mine med i en Instagram-eksport?</summary>
+              <p>Ja, under your_instagram_activity og deretter messages, med én mappe per samtale. Meldingene ligger med den nyeste først, og alt som er sendt i en samtale ligger ved siden av den i den mappen.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvordan leser jeg en Instagram-eksport i JSON?</summary>
+              <p>Åpne den med noe som forstår oppbygningen. Muletto leser arkivet i nettleseren din og viser innlegg, meldinger og likerklikk som en tidslinje, uten å laste opp noe.</p>
+            </details>
+          </div>
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>Kort oppsummert</h4>
+            <dl>
+              <dt>Innsats</dt><dd>enkelt</dd>
+              <dt>Vanlig ventetid</dt><dd>minutter til noen dager, avhengig av størrelsen</dd>
+              <dt>Format</dt><dd>.zip med JSON- eller HTML-filer og medier</dd>
+              <dt>Levering</dt><dd>nedlasting</dd>
+              <dt>Sjekket</dt><dd>30. juli 2026</dd>
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Andre tjenester</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="apple-health.html"><span class="side-ic" data-icon="heart"></span>Apple Health</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="microsoft.html"><span class="side-ic" data-icon="cloudup"></span>Microsoft</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Hvor du kan lagre dataene</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/instagram.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

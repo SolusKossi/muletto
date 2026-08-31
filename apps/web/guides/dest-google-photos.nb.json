@@ -1,0 +1,42 @@
+{
+  "en_hash": "45dc72464566",
+
+  "wait_time": "timer å laste opp, avhengig av forbindelsen din",
+  "format": "lastet opp i Google-kontoen din",
+
+  "request": {
+    "label": "Google Foto"
+  },
+
+  "steps": [
+    {
+      "title": "Vær klar over hvorfor du laster det opp igjen",
+      "detail": "Dette er riktig sted hvis du vil ha Googles søk, deling og mobilapp, og er fornøyd med at Google sitter på biblioteket. Det er feil sted hvis poenget med eksporten var å slutte å være avhengig av dem. Det Muletto skriver ut virker uansett, så valget er ditt og ikke et teknisk spørsmål."
+    },
+    {
+      "title": "Sjekk hva det vil koste deg først",
+      "detail": "Se på lagringen din før du laster opp noe: kvoten deles mellom Gmail, Disk og Foto, og et reparert bibliotek er som regel like stort som arkivet du lastet ned. Sammenlign det med plassen du har igjen. Å oppdage det midtveis i en opplasting er verre enn å bestemme seg nå."
+    },
+    {
+      "title": "Velg kvalitet med vitende og vilje",
+      "detail": "Originalkvalitet beholder fila nøyaktig som den er og bruker den plassen den faktisk tar. Lagringssparing komprimerer på nytt til rundt 16 megapiksler og video til 1080p, hvilket strekker kvoten din og permanent kaster bort detaljer i den kopien Google sitter på. Er denne opplastingen arkivet ditt av rang, velg original; er den en bekvemmelighetskopi og du beholder den ekte et annet sted, er lagringssparing rimelig."
+    },
+    {
+      "title": "Last opp mappene",
+      "detail": "Dra mappene Muletto skrev inn i photos.google.com, eller pek Google Disk-skrivebordsappen mot dem og la den sikkerhetskopiere i bakgrunnen. Skrivebordsappen takler titusenvis av filer og en forbindelse som ryker langt bedre."
+    },
+    {
+      "title": "Sjekk datoene i stedet for å gå ut fra noe",
+      "detail": "Google Foto leser datoen inni hver fil. Det er nøyaktig det Muletto reparerer før eksport, og det betyr mest akkurat her: bilder lastet opp uten dato havner på dagen du lastet dem opp, og det begraver et tiår med historie under i dag. Ta stikkprøver på noen gamle når den første bunken er oppe."
+    },
+    {
+      "title": "Regn med noen duplikater, og vit hvorfor",
+      "detail": "Google hopper over en fil den kjenner igjen som allerede til stede, så å laste opp et urørt bibliotek på nytt faller stort sett tilbake i seg selv. Filer reparert av Muletto er ikke byte for byte like originalene - det er hele poenget med å reparere dem - så noen vil havne ved siden av den gamle kopien i stedet for å smelte sammen med den. Vil du ha ett rent sett, rydd ut det gamle biblioteket først."
+    }
+  ],
+
+  "notes": [
+    "Behold en kopi utenfor Google. En eksport du laster rett opp igjen og deretter sletter lokalt setter deg nøyaktig der du startet: ett selskap som sitter på eneste kopi.",
+    "Lagringssparing kan ikke gjøres om. Google beholder den komprimerte versjonen, så de opprinnelige detaljene overlever bare der du ellers har tatt vare på dem."
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "en_hash": "e9fd6f6d3773",
+
+  "wait_time": "minutter til noen dager, avhengig av størrelsen",
+  "format": ".zip med JSON- eller HTML-filer og medier",
+
+  "request": {
+    "label": "Meta Kontosenter - Last ned informasjonen din"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Last ned informasjonen din",
+      "detail": "Gå til Kontosenter, så Informasjonen din og tillatelser, så Last ned informasjonen din. Logg inn hvis du blir bedt om det."
+    },
+    {
+      "title": "Velg Facebook-profilen",
+      "detail": "Er kontoene dine koblet sammen, velger du Facebook-profilen som eier dataene du vil ha."
+    },
+    {
+      "title": "Velg informasjon og tidsrom",
+      "detail": "Sett tidsrommet til Hele tiden med mindre du har en grunn til å la være. Meta står på et nylig utsnitt på enkelte skjermer, og et tidsrom som stille blir stående på tolv måneder gir deg en eksport som ser komplett ut og mangler mesteparten av livet ditt. Huk av alt du bryr deg om; innlegg, bilder og meldinger er separate valg."
+    },
+    {
+      "title": "Velg format og kvalitet",
+      "detail": "Velg JSON som format - og dette er en endring du må gjøre selv, for HTML er det boksen står på. HTML gir deg et sett nettsider som leses helt fint og lar seg importere ingen steder, så det å la standardvalget stå er nettopp slik folk ender opp med en eksport ingen verktøy vil ta imot. For mediekvalitet: Høy beholder bildene dine i full størrelse og omtrent dobler arkivet - ofte over 12 GB for en konto du har hatt lenge - mens Middels er langt mindre og permanent dårligere. Skal denne eksporten være kopien du beholder, velg Høy: det er eneste sjanse til å få ut originalene."
+    },
+    {
+      "title": "Opprett fila og vent",
+      "detail": "Send inn forespørselen. Meta gjør nedlastingen klar og varsler deg når den er ferdig."
+    },
+    {
+      "title": "Last ned fila",
+      "detail": "Lenken kommer på e-post og går ut etter noen dager, så last ned med en gang. Lagre hver del hvis den kommer oppdelt, hold dem i én mappe, og ikke pakk ut - Muletto leser arkivene direkte."
+    }
+  ],
+
+  "notes": [
+    "Tre innstillinger på bestillingsskjermen avgjør hva eksporten ikke inneholder, og alle tre står imot deg fra før. Mediekvalitet Lav gir deg bildene permanent nedskalert - originalene er ikke i fila, og ingen senere handling henter dem tilbake. Tidsrommet står på et nylig utsnitt på enkelte skjermer i stedet for på alt. Og kategorilista er et sett avkrysningsbokser: alt du lar stå uavhuket er rett og slett borte, uten at noe i nedlastingen sier at det noen gang ble tilbudt. Tar du feil på én av dem, må du be om den på nytt og vente på nytt, så den siden er verdt å lese sakte.",
+    "Facebook og Instagram bor begge i Meta Kontosenter, så du kan be om dem fra samme sted.",
+    "Velg JSON hvis du har tenkt å søke i eller rydde i dataene - det er atskillig ryddigere å jobbe med enn HTML-versjonen.",
+    "Meta lager denne eksporten for Facebook og Instagram hver for seg, selv når kontoene er koblet sammen. Be om begge.",
+    "HTML-eksporter kan ikke leses tilbake, verken av Muletto eller av noe annet. Har du allerede en, be om JSON i tillegg - det koster en ny ventetid og ingenting mer.",
+    "Ventetiden er som regel minutter til timer og ikke dager, men Meta viser ingen framdrift, og e-posten er eneste signal."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor viser Facebook-eksporten min rare tegn i stedet for bokstaver?",
+      "a": "Facebook skriver JSON ved å kode de enkelte bytene i hvert tegn i stedet for selve tegnet, så alt utenom rent engelsk kommer fram ødelagt. Norsk, svensk, tysk og hver eneste emoji rammes. Teksten er ikke skadet, bare feilkodet, og det lar seg rette opp helt nøyaktig. Muletto gjør det automatisk."
+    },
+    {
+      "q": "Bør jeg velge JSON eller HTML for Facebook-nedlastingen?",
+      "a": "JSON hvis du har tenkt å åpne den med noe annet enn en nettleser, for det beholder strukturen. HTML er lettere å skumme for hånd og mye vanskeligere å lese maskinelt. Muletto leser JSON-en."
+    },
+    {
+      "q": "Hvor lang tid tar en Facebook-nedlasting?",
+      "a": "Alt fra minutter til flere dager, avhengig av hvor mye det er. Nedlastingslenken lever bare noen få dager etter at den kommer, så hent den med en gang."
+    },
+    {
+      "q": "Hvorfor er Facebook-eksporten min delt i flere filer?",
+      "a": "Meta deler store nedlastinger rundt fire gigabyte. Delene er utsnitt av ett mappetre og ikke kopier, så pakk alle sammen ut på samme sted før du åpner, ellers ser hele seksjoner ut til å mangle."
+    }
+  ]
+}

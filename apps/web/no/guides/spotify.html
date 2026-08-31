@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Last ned dataene dine fra Spotify: GDPR-eksport steg for steg | Muletto</title>
+  <meta name="description" content="Slik laster du ned GDPR-eksporten din fra Spotify - records - og slik åpner du den og ser hva som ligger der. 5 steg, hva som faktisk kommer, og hvor lang tid det tar (noen dager for kontodata, opptil tretti dager for hele historikken)." />
+  <link rel="canonical" href="https://muletto.app/no/guides/spotify.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/spotify.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/spotify.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/spotify.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Last ned dataene dine fra Spotify: GDPR-eksport steg for steg | Muletto" />
+  <meta property="og:description" content="Slik laster du ned GDPR-eksporten din fra Spotify - records - og slik åpner du den og ser hva som ligger der. 5 steg, hva som faktisk kommer, og hvor lang tid det tar (noen dager for kontodata, opptil tretti dager for hele historikken)." />
+  <meta property="og:url" content="https://muletto.app/no/guides/spotify.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik laster du ned GDPR-eksporten fra Spotify og åpner den","description":"Slik laster du ned GDPR-eksporten din fra Spotify - records - og slik åpner du den og ser hva som ligger der. 5 steg, hva som faktisk kommer, og hvor lang tid det tar (noen dager for kontodata, opptil tretti dager for hele historikken).","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Åpne Konto, så Personverninnstillinger","text":"Bla ned til Last ned dataene dine."},{"@type":"HowToStep","position":2,"name":"Huk av for utvidet lyttehistorikk, ikke bare kontodata","text":"Dette er det viktige steget. Kontodata dekker bare det siste året. Utvidet lyttehistorikk dekker hele kontoens levetid."},{"@type":"HowToStep","position":3,"name":"Bekreft fra e-posten","text":"Ingenting settes i gang før du klikker på lenken."},{"@type":"HowToStep","position":4,"name":"Vent","text":"Spotify oppgir tretti dager for begge. I praksis har den utvidede historikken ofte kommet raskere enn standardpakken."},{"@type":"HowToStep","position":5,"name":"Last ned og ta vare på zip-fila","text":"Spillelister, bibliotek, søkehistorikk og hver eneste avspilling du har gjort ligger inni."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Spotify","item":"https://muletto.app/no/guides/spotify.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"nb","mainEntity":[{"@type":"Question","name":"Hvordan får jeg hele lyttehistorikken min fra Spotify?","acceptedAnswer":{"@type":"Answer","text":"Huk av for utvidet lyttehistorikk når du ber om den. Standardpakken med kontodata dekker bare de siste tolv månedene; den utvidede dekker alt siden du opprettet kontoen."}},{"@type":"Question","name":"Hvor lang tid tar en dataforespørsel til Spotify?","acceptedAnswer":{"@type":"Answer","text":"Spotify sier opptil tretti dager. Meldingene varierer fra noen timer til rundt en uke, og den utvidede historikken har ofte kommet før standardpakken."}},{"@type":"Question","name":"Hva ligger i en utvidet lyttehistorikk fra Spotify?","acceptedAnswer":{"@type":"Answer","text":"Hvert spor du har spilt, med tidspunkt, hvor mange millisekunder du lyttet, hvilken plattform enheten var, og hvorfor avspillingen startet og stoppet."}}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a>
+        <span>/</span>
+        <a href="../../guides.html">Veiledninger</a>
+        <span>/</span>
+        <span aria-current="page">Spotify</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Slik laster du ned dataene dine fra Spotify</h1>
+        <p class="art-kicker">Slik ber du om eksporten, hva som kommer, og hvordan du åpner den.</p>
+        <div class="art-meta">
+          <span class="badge easy">enkelt</span>
+          <span class="muted">Wait: noen dager for kontodata, opptil tretti dager for hele historikken</span>
+        </div>
+        <p class="art-intro">Spotify er pliktig til å gi deg en kopi av dataene de har om deg, blant annet records. Det koster ingenting å be om det, og du får .zip med JSON. Vanlig ventetid: noen dager for kontodata, opptil tretti dager for hele historikken.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">Spotifys personverninnstillinger <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          
+
+          <h2>Steg for steg</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Åpne Konto, så Personverninnstillinger</h3>
+              <p>Bla ned til Last ned dataene dine.</p>
+              
+            </li>
+            <li>
+              <h3>Huk av for utvidet lyttehistorikk, ikke bare kontodata</h3>
+              <p>Dette er det viktige steget. Kontodata dekker bare det siste året. Utvidet lyttehistorikk dekker hele kontoens levetid.</p>
+              
+            </li>
+            <li>
+              <h3>Bekreft fra e-posten</h3>
+              <p>Ingenting settes i gang før du klikker på lenken.</p>
+              
+            </li>
+            <li>
+              <h3>Vent</h3>
+              <p>Spotify oppgir tretti dager for begge. I praksis har den utvidede historikken ofte kommet raskere enn standardpakken.</p>
+              
+            </li>
+            <li>
+              <h3>Last ned og ta vare på zip-fila</h3>
+              <p>Spillelister, bibliotek, søkehistorikk og hver eneste avspilling du har gjort ligger inni.</p>
+              
+            </li>
+          </ol>
+
+          
+          <h2 id="open">Slik åpner du Spotify-eksporten</h2>
+          <p>Muletto leser en Spotify-eksport rett fra zip-fila, uten at du pakker den ut først, og finner records inni.</p>
+          <p>Alt skjer i nettleseren: arkivet lastes aldri opp, du trenger ingen konto, og ingenting installeres. Åpne flere eksporter samtidig, så blir de ett bibliotek, og bildene som finnes i mer enn én av dem finner appen selv.</p>
+          <div class="note">Det standardforespørselen utelater, og det er mesteparten: den vanlige nedlastingen dekker omtrent det siste årets lytting. Alt før det ligger i Utvidet lyttehistorikk, som er en egen avkrysning på samme side og besvares på en helt annen tidsskala - dager for den vanlige, uker for den utvidede. Vil du ha lyttehistorikken din og ikke bare den ferske lyttingen, huk av for den, og regn med å vente. Spotify har også hatt perioder der den utvidede historikken kom tilbake med avspillinger som manglet identifikatorene som sier hvilket spor som ble spilt, og de radene er ubrukelige; ser din slik ut, be om den på nytt i stedet for å tro at det er alt som finnes.</div>
+          <p><a class="btn primary" href="../../no/app.html">Åpne Spotify-eksporten din
+            <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+
+          <h2>Verdt å vite</h2>
+          <div class="note">Det standardforespørselen utelater, og det er mesteparten: den vanlige nedlastingen dekker omtrent det siste årets lytting. Alt før det ligger i Utvidet lyttehistorikk, som er en egen avkrysning på samme side og besvares på en helt annen tidsskala - dager for den vanlige, uker for den utvidede. Vil du ha lyttehistorikken din og ikke bare den ferske lyttingen, huk av for den, og regn med å vente. Spotify har også hatt perioder der den utvidede historikken kom tilbake med avspillinger som manglet identifikatorene som sier hvilket spor som ble spilt, og de radene er ubrukelige; ser din slik ut, be om den på nytt i stedet for å tro at det er alt som finnes.</div>
+          <div class="note">De to pakkene bes om samtidig, men kommer hver for seg, iblant med dagers mellomrom. Det er lett å åpne den første og tro at det er alt.</div>
+          <div class="note">Filene er nummerert med en teller som aldri nullstilles, og sorterer du dem alfabetisk kommer del 10 før del 2.</div>
+          <div class="note">Et felt som noterer om et spor ble hoppet over, ble ikke fylt ut i det hele tatt mellom 2015 og slutten av 2022.</div>
+
+          <h2>Vanlige spørsmål</h2>
+          <div class="faq">
+            <details class="faq-q">
+              <summary>Hvordan får jeg hele lyttehistorikken min fra Spotify?</summary>
+              <p>Huk av for utvidet lyttehistorikk når du ber om den. Standardpakken med kontodata dekker bare de siste tolv månedene; den utvidede dekker alt siden du opprettet kontoen.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvor lang tid tar en dataforespørsel til Spotify?</summary>
+              <p>Spotify sier opptil tretti dager. Meldingene varierer fra noen timer til rundt en uke, og den utvidede historikken har ofte kommet før standardpakken.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hva ligger i en utvidet lyttehistorikk fra Spotify?</summary>
+              <p>Hvert spor du har spilt, med tidspunkt, hvor mange millisekunder du lyttet, hvilken plattform enheten var, og hvorfor avspillingen startet og stoppet.</p>
+            </details>
+          </div>
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>Kort oppsummert</h4>
+            <dl>
+              <dt>Innsats</dt><dd>enkelt</dd>
+              <dt>Vanlig ventetid</dt><dd>noen dager for kontodata, opptil tretti dager for hele historikken</dd>
+              <dt>Format</dt><dd>.zip med JSON</dd>
+              <dt>Levering</dt><dd>lenke på e-post</dd>
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Andre tjenester</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="apple-health.html"><span class="side-ic" data-icon="heart"></span>Apple Health</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="microsoft.html"><span class="side-ic" data-icon="cloudup"></span>Microsoft</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Hvor du kan lagre dataene</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/spotify.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

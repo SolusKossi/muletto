@@ -1,0 +1,67 @@
+{
+  "en_hash": "9b390fd85f46",
+
+  "wait_time": "noen minutter på telefonen, ingen venting på noen",
+  "format": ".zip med export.xml",
+
+  "request": {
+    "label": "Apple om å eksportere helsedata"
+  },
+
+  "steps": [
+    {
+      "title": "Gjør det på iPhonen, ikke på klokka eller en Mac",
+      "detail": "Eksporten ligger i Helse-appen på telefonen. Det finnes ingen vei fra en Mac, fra iCloud.com eller fra klokka, og ingen måte å be Apple om den. Har du ingen iPhone, har du ingen eksport."
+    },
+    {
+      "title": "Åpne Helse og trykk på ditt eget bilde",
+      "detail": "Knappen er profilbildet eller initialene dine øverst til høyre i Oversikt-fanen. Den er lett å overse fordi den ser ut som en kontoknapp og ikke en meny, og alt nedenfor ligger i en enkel liste uten søk."
+    },
+    {
+      "title": "Bla helt ned til Eksporter alle helsedata",
+      "detail": "Det er nederste punkt på den skjermen, under Personvern, Enheter og resten. Ingenting over det antyder at det finnes en eksport. Trykk på det, og bekreft på arket som dukker opp."
+    },
+    {
+      "title": "Vent mens den bygges, og ikke forlat appen",
+      "detail": "En snurrende ring dukker opp mens telefonen setter sammen fila. Med noen år med klokkedata kan det ta flere minutter, og legger du Helse-appen i bakgrunnen kan den bli forlatt uten en melding. La skjermen stå på og vent."
+    },
+    {
+      "title": "Send den et sted du faktisk kommer til",
+      "detail": "Delingsmenyen åpnes når den er ferdig. Lagre i Filer, eller i iCloud Drive, i stedet for å sende den til deg selv på e-post - den er rutinemessig for stor til et e-postvedlegg, og det feiler i stillhet. Skal du flytte den til en datamaskin, er Lagre i Filer og deretter kopiere over med kabel det sikreste."
+    },
+    {
+      "title": "Sjekk størrelsen før du stoler på den",
+      "detail": "Du skal få export.zip. Åpne den, og du skal se export.xml, som regel mye større enn zip-fila. En fil på noen få kilobyte betyr at eksporten ga nesten ingenting, hvilket skjer hvis Helse aldri har fått skrevet data til seg på denne telefonen - start den på nytt i stedet for å tro at det er alt som finnes."
+    }
+  ],
+
+  "notes": [
+    "Muletto leser denne fila. Målt på en ekte en: 161 MB XML, 385 000 målinger over fire år, åpnet på omtrent ett sekund uten at fila noen gang ble holdt i minnet.",
+    "Dette er ikke en del av Apples eksport for data og personvern, og kommer aldri til å bli det. Helse er ende-til-ende-kryptert i iCloud, så Apple sitter på det som en klump de ikke har nøkkelen til og ikke kan utlevere.",
+    "Alt ligger i én XML-fil. År med klokkedata blir gjerne flere hundre megabyte av den, og det er derfor så mange verktøy feiler på fila og ikke på dataene.",
+    "Det finnes en fil til, export_cda.xml, i et klinisk format. Den inneholder et utvalg, og de fleste verktøy overser den."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor er ikke Helse med i Apple-eksporten for data og personvern?",
+      "a": "Fordi Apple ikke kan lese det. Helse er ende-til-ende-kryptert i iCloud for hver eneste konto, uten noen innstilling å endre, så det Apple lagrer er en klump de ikke har nøkkelen til. En dataforespørsel kan bare gi tilbake det selskapet kan dekryptere. Dette er krypteringen som gjør jobben sin og ikke Apple som holder noe tilbake, og det er derfor eneste vei er telefonen."
+    },
+    {
+      "q": "Kan jeg få det fra iCloud.com eller fra en Mac?",
+      "a": "Nei. Helsedata tilbys ikke på iCloud.com, og Macen har ingen Helse-app. iPhonen er eneste sted eksporten finnes."
+    },
+    {
+      "q": "Hvorfor er fila så enorm?",
+      "a": "Alt skrives som ett XML-dokument med ett element per måling. En klokke registrerer puls, skritt, og ofte oksygenmetning og temperatur, hele dagen hver dag, så noen få år gir titalls millioner elementer. Zip-fila komprimerer det godt, og det er derfor fila inni er så mye større enn den du lastet ned."
+    },
+    {
+      "q": "Hva er export_cda.xml?",
+      "a": "En fil til, i formatet Clinical Document Architecture, ment for deling med helsepersonell. Den inneholder et utvalg av den samme informasjonen, og de fleste verktøy overser den til fordel for export.xml."
+    },
+    {
+      "q": "Kan Muletto åpne den?",
+      "a": "Ja. Slipp inn export.zip slik den kom fra telefonen - den trenger ikke pakkes ut. Fila leses som en strøm i stedet for å lastes inn, og det er det som gjør et XML-dokument på 161 MB praktisk i en nettleserfane. Hver måling slås sammen til én verdi per dag på veien forbi, for en graf med åtti tusen enkeltmålinger er en heldekkende blekkflate. Skritt, distanse, kalorier, etasjer, puls, vekt, ganghastighet, hodetelefonvolum og søvn får hver sin rute på helsesiden; resten blir liggende som tabeller. Der bare en telefon har registrert søvnen din, heter serien Tid i sengen og ikke Søvn, for en telefon vet når den ble lagt fra seg og ikke når du sovnet."
+    }
+  ]
+}

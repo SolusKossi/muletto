@@ -1,0 +1,57 @@
+{
+  "en_hash": "07a5eb587599",
+  "wait_time": "opptil 30 dager for arkivet, minutter for delene som betyr noe",
+  "format": ".zip med JSON og CSV, pluss separate nedlastinger",
+  "request": {
+    "label": "Microsofts personvernoversikt"
+  },
+  "steps": [
+    {
+      "title": "Start arkivet først, for det er den trege biten",
+      "detail": "Logg inn på account.microsoft.com/privacy, velg Last ned dataene dine, og deretter Opprett nytt arkiv. Huk av hver eneste kategori som tilbys i stedet for å godta standardutvalget - Bruk av apper og tjenester er den som bærer mest, men nettlesing, søk og posisjon er egne avkrysninger og er lette å la ligge."
+    },
+    {
+      "title": "Forstå hva det arkivet vil og ikke vil inneholde",
+      "detail": "Det inneholder oppføringer om hva du gjorde: søk, bruk av apper og tjenester, nettleserhistorikk, posisjonshistorikk, medieforbruk. Det inneholder ikke OneDrive-filene dine, og det inneholder ikke e-posten din. Stopper du her, får du et bilde av oppførselen din og ingenting av tingene dine."
+    },
+    {
+      "title": "Hent OneDrive for seg, og ikke bruk nettleseren til en stor en",
+      "detail": "Logg inn på onedrive.com, velg mappene på øverste nivå og velg Last ned; nettleseren pakker dem for deg. For noe stort er dette tregt og feiler i stillhet på en dårlig forbindelse. OneDrive-skrivebordsappen er mer pålitelig: la den synkronisere mappene du vil ha, og kopier dem så av. Filer merket som kun på nett trenger Behold alltid på denne enheten før de finnes lokalt."
+    },
+    {
+      "title": "Eksporter Outlook.com-posten fra dens egne innstillinger",
+      "detail": "I Outlook.com går du til Innstillinger, så Generelt, så Personvern og data, og bruker eksportvalget der. Kontakter og kalender eksporteres for seg, fra Personer og Kalender. Ingenting av dette dukker opp i arkivet fra personvernoversikten."
+    },
+    {
+      "title": "Hent Bing-søkehistorikken fra selve oversikten",
+      "detail": "Søkehistorikken kan ses og eksporteres direkte fra personvernoversikten, uten å vente på arkivet. Er det søkene du er ute etter, er dette den raske veien."
+    },
+    {
+      "title": "Kom tilbake til arkivet når e-posten kommer",
+      "detail": "Microsoft sender deg en e-post når det er klart, og nedlastingen ligger på account.microsoft.com/privacy/download-data. Sjekk den siden i stedet for å stole på e-posten - den lister opp arkivene du har bedt om og statusen deres, og det er den sikreste veien hvis adressen på kontoen er en du ikke lenger leser."
+    }
+  ],
+  "notes": [
+    "Det folk venter seg og ikke får: arkivet fra personvernoversikten inneholder oppføringer om aktivitet og bruk, ikke filene dine og ikke e-posten din. OneDrive og Outlook er separate nedlastinger fra separate steder, og begge går raskere enn å vente på arkivet.",
+    "Microsoft oppgir opptil 30 dager. De to nedlastingene som faktisk inneholder innholdet ditt tar minutter, så start arkivet og gå og hent de andre i stedet for å vente.",
+    "En jobb- eller skolekonto er ikke det samme. De forespørslene går gjennom den som administrerer leietakeren, og oversikten vil vise atskillig mindre, eller ingenting i det hele tatt."
+  ],
+  "faq": [
+    {
+      "q": "Hvorfor er ikke OneDrive med i nedlastingen?",
+      "a": "Fordi personvernoversikten eksporterer opplysninger om deg og ikke filene du har lagret. Dokumentene og bildene dine bor i OneDrive og kommer ut av OneDrive, på onedrive.com eller gjennom skrivebordsappen. Det samme gjelder e-post, som kommer ut av Outlook.coms egne innstillinger. Arkivet er en oppføring over aktivitet, og det er lett å lese ordene Last ned dataene dine som et løfte om mer enn det."
+    },
+    {
+      "q": "Hvor lang tid tar det egentlig?",
+      "a": "Microsoft sier opptil 30 dager, og det er ofte mye mindre, men det finnes ingen framdriftsvisning og ingen måte å skynde på. Det praktiske svaret er å be om det og så hente OneDrive og Outlook i mellomtiden, for det er de delene som inneholder noe du ville savnet."
+    },
+    {
+      "q": "Hva med en jobb- eller skolekonto?",
+      "a": "En Microsoft 365-konto som tilhører en arbeidsgiver eller et universitet administreres av dem, ikke av deg. Personvernoversikten for privatpersoner vil vise lite eller ingenting for den. De forespørslene går til den som driver leietakeren, og hva du får tilbake er opp til deres retningslinjer."
+    },
+    {
+      "q": "Kan Muletto åpne den?",
+      "a": "Ja. Aktivitetsoppføringene - søk, nettlesing, posisjoner, appbruk - leses fra både CSV- og JSON-halvdelen og havner på tidslinjen og kartet. Ingen ekte Microsoft-eksport er åpnet her ennå, så leseren er skrevet ut fra det arkivet er dokumentert å inneholde. Filer hentet ut av OneDrive er helt vanlige filer og kan slippes inn som en hvilken som helst annen mappe."
+    }
+  ]
+}

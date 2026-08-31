@@ -1,0 +1,71 @@
+{
+  "en_hash": "b75bcf7bd6c2",
+
+  "wait_time": "minutter til noen dager, avhengig av størrelsen",
+  "format": ".zip (anbefalt) eller .tgz, delt opp i biter på opptil 50 GB",
+
+  "request": {
+    "label": "Google Takeout"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Google Takeout",
+      "detail": "Logg inn med Google-kontoen du vil eksportere."
+    },
+    {
+      "title": "Fjern alt, og velg så det du trenger",
+      "detail": "Takeout har huket av alt på forhånd. Klikk \"Fjern alle\" og velg bare det du vil ha (for eksempel Google Foto, Gmail, YouTube)."
+    },
+    {
+      "title": "Velg .zip og en stor filstørrelse",
+      "detail": "Velg .zip - det er formatet alt kan åpne, og det Muletto leser. For størrelse: velg den største biten som tilbys. Færre og større filer betyr færre nedlastinger å passe på og færre sjanser for at én av dem feiler. Et bibliotek på 50 GB med standardvalget 2 GB kommer som rundt 25 separate zip-filer. Filer over 2 GB kommer i zip64-formatet, som Muletto leser og en del skrivebordsverktøy ikke gjør."
+    },
+    {
+      "title": "Velg en engangseksport",
+      "detail": "\"Eksporter én gang\" er riktig for de fleste. Trykk så \"Opprett eksport\"."
+    },
+    {
+      "title": "Vent på e-posten",
+      "detail": "Små eksporter er ferdige på minutter; store bildebibliotek kan ta et døgn eller mer. Google sender deg en nedlastingslenke på e-post."
+    },
+    {
+      "title": "Last ned alle delene",
+      "detail": "Last ned hver eneste nummererte del, og hold dem samlet i én mappe. Google gir deg sju dager og tillater at hvert arkiv lastes ned fem ganger, og begge grensene tar folk. Sju dager er kort tid for et bibliotek som kommer i et dusin deler, og fem-nedlastingsgrensen gjelder per arkiv - prøv en mislykket del på nytt noen ganger, og du kan ha brukt den opp. Går én av dem ut, må du be om hele eksporten på nytt og vente på nytt. Ikke pakk dem ut: Muletto leser arkivene direkte, hvilket går raskere og sparer deg for å bruke dobbelt så mye diskplass."
+    },
+    {
+      "title": "Åpne alle delene samtidig",
+      "detail": "Slipp alle zip-filene inn i Muletto på én gang. Den leser dem som én eksport, så et bilde i del 3 finner opplysningene sine i del 7, duplikatene Google lagde ved å eksportere albumkopier ved siden av årsmappene blir funnet og slått sammen, og datoene og stedene havner tilbake inni selve filene."
+    }
+  ],
+
+  "notes": [
+    "En Takeout er som regel større enn biblioteket ditt, fordi et bilde som ligger både i et album og i årsmappen sin eksporteres én gang for hver. De kopiene er byte for byte like, så duplikatsøket finner dem.",
+    "Google navngir opplysningsfilene ujevnt - supplemental-metadata.json, avkortede former av det, og nummererte varianter - så et verktøy som bare treffer den pene skrivemåten går glipp av noen. Muletto treffer alle sammen.",
+    "Ikke pakk ut før du åpner. Muletto leser inni arkivene, så utpakking koster bare tid og dobbelt så mye diskplass.",
+    "Foto og Disk er to forskjellige produkter i Takeout. Vil du ha begge, må du huke av for begge - en Foto-eksport inneholder ingen Disk-filer."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor er alle Google Foto-bildene mine datert i dag etter en Takeout?",
+      "a": "Takeout legger ikke opptaksdatoen inni selve bildet. Den skrives til en liten JSON-fil ved siden av hvert bilde, så alt som bare leser bildet ser dagen du lastet det ned. Muletto leser de sidevognfilene og kan skrive den ekte datoen og stedet tilbake inn i hvert bilde."
+    },
+    {
+      "q": "Hvorfor er posisjonshistorikken tom i Google Takeout?",
+      "a": "Google flyttet Tidslinje over på telefonen i løpet av 2024 og 2025 og slo av serverversjonen i juni 2025, så en Takeout har ingenting igjen å ta med. I en fersk eksport inneholder Tidslinje-mappen en innstillingsfil på rundt én kilobyte og ingen historikk i det hele tatt. Dataene ligger fortsatt på telefonen din. Åpne Google Maps-appen, trykk på profilbildet ditt, så Innstillinger, så Personlig innhold, og se etter Eksporter tidslinjedata - den veien virker både på Android og iPhone, og på iPhone lagres fila via delingsmenyen som location-history.json. Enkelte Android-versjoner har det samme under Innstillinger, så Posisjon, så Posisjonstjenester, så Tidslinje. Det som kommer av telefonen er et annet format enn den gamle Records.json, ikke en nyere versjon av den. Det finnes en egen veiledning på denne siden som heter Hvorfor er Google-posisjonshistorikken min tom, og den går gjennom det i sin helhet."
+    },
+    {
+      "q": "Hva er supplemental-metadata.json-filene i Takeout-en min?",
+      "a": "De inneholder datoen, stedet og beskrivelsen til hvert bilde. Google byttet navn på dem rundt oktober 2024 og forkorter navnet når hele filnavnet blir langt, så én eksport kan inneholde supplemental-metadata.json, supplemental-me.json og suppl.json for ulike bilder. Treffer du bare den fullstendige skrivemåten, mister du resten."
+    },
+    {
+      "q": "Hvordan åpner jeg en Google Takeout uten å laste den opp noe sted?",
+      "a": "Bruk noe som leser arkivet lokalt. Muletto gjør det: slipp inn zip-fila, så leses den på din egen maskin. Du kan skru av nettforbindelsen først, og det virker fortsatt."
+    },
+    {
+      "q": "Hvorfor er Google Takeout-en min delt i flere zip-filer?",
+      "a": "Du velger en maksimal arkivstørrelse når du ber om den, og alt som er større deles opp. Et bilde og sidevognfila si kan havne i hver sin del, så åpne alle sammen samtidig i stedet for én om gangen."
+    }
+  ]
+}

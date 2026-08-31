@@ -1,0 +1,38 @@
+{
+  "en_hash": "aedbbfc8105f",
+
+  "wait_time": "en kveld å sette opp, deretter en indekseringsrunde",
+  "format": "mapper på disk, indeksert der de ligger",
+
+  "steps": [
+    {
+      "title": "Installer det",
+      "detail": "PhotoPrism er en selvhostet bildetjener med søk, steder, ansikter og et nettgrensesnitt. Den kjører med Docker Compose på en NAS, en hjemmeserver eller en ledig PC. Start fra den offisielle docker-compose.yml, få den opp, og åpne så nettgrensesnittet og logg inn med administratorpassordet du satte i compose-fila."
+    },
+    {
+      "title": "Monter biblioteket ditt som originals",
+      "detail": "PhotoPrism leser alt under én mappe den kaller originals. Pek den mot mappen Muletto skrev ved å legge den inn som et volum i docker-compose.yml, med din sti på verten til venstre og /photoprism/originals til høyre. Har du flere adskilte mapper, monter heller hver av dem som en undermappe av originals - din sti til venstre, /photoprism/originals/ferier til høyre, og så videre."
+    },
+    {
+      "title": "Skru på skrivebeskyttelse hvis dette er arkivet ditt av rang",
+      "detail": "Setter du PHOTOPRISM_READONLY til true, hindrer det PhotoPrism i å skrive til originalene dine i det hele tatt. Indeksering virker fortsatt; importfunksjonen gjør det ikke, for import krever å skrive inn i den mappen. Er disse filene kopien du har tenkt å beholde for alltid, er den avveiningen verdt å ta."
+    },
+    {
+      "title": "Indekser, ikke importer",
+      "detail": "Åpne Bibliotek, så Indekser, og kjør den. PhotoPrism går gjennom mappen, leser hver fil der den ligger, og bygger databasen sin ut fra det den finner. Ingenting flyttes og ingenting får nytt navn. Import-fanen gjør noe annet - den kopierer filer inn og gir dem nye navn etter sitt eget system - så la den være med mindre det faktisk er det du vil."
+    },
+    {
+      "title": "Sjekk at datoene og stedene kom med",
+      "detail": "PhotoPrism leser dato og GPS inni hver fil, og det er nøyaktig det Muletto reparerer før du eksporterer. Åpne kalenderen og stedskartet og ta stikkprøver på noen gamle bilder. Har alt havnet på dagens dato, mistet originalene opplysningene sine et sted lenger oppe i kjeden, og det er verdt å reparere dem på nytt før du indekserer."
+    },
+    {
+      "title": "Legg til mer når du vil",
+      "detail": "Du kan slippe nye mapper inn i originals når som helst uten å stoppe tjeneren, og så kjøre indekseringen på nytt. Bare det som er nytt blir lest, så en ny runde over et stort bibliotek går fort."
+    }
+  ],
+
+  "notes": [
+    "Originals-mappen er den PhotoPrism bryr seg om. Alt annet den lagrer - miniatyrbilder, databasen, mellomlageret - bor i storage-mappen, og det er den delen du skal sikkerhetskopiere ved siden av bildene dine.",
+    "Indeksering endrer ikke filene dine, så mappestrukturen din blir stående nøyaktig slik Muletto skrev den, og alle andre verktøy kan fortsatt lese den."
+  ]
+}

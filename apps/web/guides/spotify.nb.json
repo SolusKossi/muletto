@@ -1,0 +1,55 @@
+{
+  "en_hash": "9cd04b20282b",
+
+  "wait_time": "noen dager for kontodata, opptil tretti dager for hele historikken",
+  "format": ".zip med JSON",
+
+  "request": {
+    "label": "Spotifys personverninnstillinger"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Konto, så Personverninnstillinger",
+      "detail": "Bla ned til Last ned dataene dine."
+    },
+    {
+      "title": "Huk av for utvidet lyttehistorikk, ikke bare kontodata",
+      "detail": "Dette er det viktige steget. Kontodata dekker bare det siste året. Utvidet lyttehistorikk dekker hele kontoens levetid."
+    },
+    {
+      "title": "Bekreft fra e-posten",
+      "detail": "Ingenting settes i gang før du klikker på lenken."
+    },
+    {
+      "title": "Vent",
+      "detail": "Spotify oppgir tretti dager for begge. I praksis har den utvidede historikken ofte kommet raskere enn standardpakken."
+    },
+    {
+      "title": "Last ned og ta vare på zip-fila",
+      "detail": "Spillelister, bibliotek, søkehistorikk og hver eneste avspilling du har gjort ligger inni."
+    }
+  ],
+
+  "notes": [
+    "Det standardforespørselen utelater, og det er mesteparten: den vanlige nedlastingen dekker omtrent det siste årets lytting. Alt før det ligger i Utvidet lyttehistorikk, som er en egen avkrysning på samme side og besvares på en helt annen tidsskala - dager for den vanlige, uker for den utvidede. Vil du ha lyttehistorikken din og ikke bare den ferske lyttingen, huk av for den, og regn med å vente. Spotify har også hatt perioder der den utvidede historikken kom tilbake med avspillinger som manglet identifikatorene som sier hvilket spor som ble spilt, og de radene er ubrukelige; ser din slik ut, be om den på nytt i stedet for å tro at det er alt som finnes.",
+    "De to pakkene bes om samtidig, men kommer hver for seg, iblant med dagers mellomrom. Det er lett å åpne den første og tro at det er alt.",
+    "Filene er nummerert med en teller som aldri nullstilles, og sorterer du dem alfabetisk kommer del 10 før del 2.",
+    "Et felt som noterer om et spor ble hoppet over, ble ikke fylt ut i det hele tatt mellom 2015 og slutten av 2022."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvordan får jeg hele lyttehistorikken min fra Spotify?",
+      "a": "Huk av for utvidet lyttehistorikk når du ber om den. Standardpakken med kontodata dekker bare de siste tolv månedene; den utvidede dekker alt siden du opprettet kontoen."
+    },
+    {
+      "q": "Hvor lang tid tar en dataforespørsel til Spotify?",
+      "a": "Spotify sier opptil tretti dager. Meldingene varierer fra noen timer til rundt en uke, og den utvidede historikken har ofte kommet før standardpakken."
+    },
+    {
+      "q": "Hva ligger i en utvidet lyttehistorikk fra Spotify?",
+      "a": "Hvert spor du har spilt, med tidspunkt, hvor mange millisekunder du lyttet, hvilken plattform enheten var, og hvorfor avspillingen startet og stoppet."
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "en_hash": "b5e5b5212ea2",
+
+  "wait_time": "en kveld å sette opp, deretter minutter per import",
+  "format": "mapper på disk, lest der de ligger eller lastet opp",
+
+  "request": {
+    "label": "Immich"
+  },
+
+  "steps": [
+    {
+      "title": "Bestem deg for hvilken av de to måtene du vil ha",
+      "detail": "Immich kan enten ta en kopi av biblioteket ditt inn i sitt eget lager, eller lese mappen du allerede har og la filene ligge nøyaktig der de er. Det siste heter et eksternt bibliotek, og for et bibliotek Muletto nettopp har skrevet ut er det som regel det riktige: mappene beholder strukturen du valgte, og ingenting dobles opp på disken. Å laste opp passer bedre hvis du vil at Immich skal være eneste kopi og styre filene selv."
+    },
+    {
+      "title": "Installer det",
+      "detail": "Immich er en selvhostet bilde- og videotjener med mobilapp, tidslinje, søk og ansiktsgjenkjenning. Den kjører med Docker Compose på en NAS, en hjemmeserver eller en hvilken som helst ledig PC. Følg den offisielle installasjonen, start den, åpne nettgrensesnittet og opprett den første kontoen - den kontoen er administrator, og den finnes bare på din egen maskin."
+    },
+    {
+      "title": "Monter mappen din så containeren kan se den",
+      "detail": "Dette er steget folk gjør feil. Immich kjører inne i en container, som har sitt eget syn på filsystemet, så legg bibliotekmappen din inn i docker-compose.yml som et volum - for eksempel stien på verten til venstre og en containersti som /mnt/media/photos til høyre. Legg til :ro på slutten for å montere den skrivebeskyttet hvis du vil at Immich aldri skal kunne endre eller slette originalene dine. Start stakken på nytt etterpå."
+    },
+    {
+      "title": "Legg det til som et eksternt bibliotek",
+      "detail": "I nettgrensesnittet går du til Administrasjon, Eksterne bibliotek, og oppretter ett for brukeren din. Sett importstien til den stien containeren ser - /mnt/media/photos i eksempelet over - og ikke stien verten din bruker. En sti som er riktig på verten og feil inne i containeren er den vanlige grunnen til at en gjennomgang ikke finner noe. Utelatelsesmønstre bruker glob-syntaks hvis du vil holde undermapper utenfor."
+    },
+    {
+      "title": "Kjør gjennomgangen, og la den gjenta seg selv",
+      "detail": "Kjør den første gjennomgangen fra den samme skjermen. Immich leser hver fil der den ligger og bygger tidslinjen, kartet og søkeindeksen ut fra den - filene kopieres ikke. Deretter plukker en nattlig jobb opp alt nytt, og du kan sette i gang en ny gjennomgang for hånd når du har lagt noe i mappen. Nyere versjoner gjorde gjennomgangen dramatisk raskere, så et stort bibliotek er ikke lenger en nattjobb."
+    },
+    {
+      "title": "Sjekk at datoene kom med",
+      "detail": "Immich sorterer etter datoen inni hver fil, ikke etter filens tidsstempel på disken. Det er nøyaktig det Muletto reparerer før du eksporterer: et Google- eller Apple-arkiv importert uten det steget kommer datert den dagen du importerte det, og et tiår med bilder klapper sammen til én ettermiddag. Ta stikkprøver på noen gamle i tidslinjen før du stoler på hele biblioteket."
+    },
+    {
+      "title": "Sikkerhetskopier de delene som betyr noe",
+      "detail": "Med et eksternt bibliotek ligger originalene dine der du la dem, så de dekkes av det som allerede sikkerhetskopierer den mappen. Det som ikke dekkes er Immichs database, som inneholder albumene, ansiktene og alt du har redigert inne i Immich - inkludert opplysninger du la til der, som ikke skrives tilbake til eksterne filer. Ta sikkerhetskopi av databasen også, ellers er det arbeidet det du mister."
+    }
+  ],
+
+  "notes": [
+    "En ekstern fil du flytter eller gir nytt navn utenfor Immich behandles som en ny ressurs, og det Immich visste om den gamle er tapt. Bestem deg for mappestrukturen i Muletto først, og pek så Immich mot den.",
+    "Å slette en ekstern fil legger ressursen i papirkurven i 30 dager og fjerner den så, sammen med alt Immich hadde notert om den.",
+    "En skrivebeskyttet montering hindrer Immich i å endre eller slette originalene dine, og hindrer den også i å skrive opplysninger tilbake til dem. Det er en avveining og ikke en feil: velg den hvis mappen er arkivet ditt av rang.",
+    "Skal du laste opp i stedet for å lese der filene ligger, håndterer immich-go svært store mengder og Google Takeout-arkiver bedre enn standardverktøyet, og trenger ingen Node.js installert."
+  ]
+}

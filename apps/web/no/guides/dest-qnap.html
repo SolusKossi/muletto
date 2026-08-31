@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QNAP: her kan du lagre dataene dine | Muletto</title>
+  <meta name="description" content="Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til QNAP. 6 steg, skrevet for deg som vil ha din egen kopi." />
+  <link rel="canonical" href="https://muletto.app/no/guides/dest-qnap.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/dest-qnap.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/dest-qnap.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/dest-qnap.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="QNAP: her kan du lagre dataene dine | Muletto" />
+  <meta property="og:description" content="Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til QNAP. 6 steg, skrevet for deg som vil ha din egen kopi." />
+  <meta property="og:url" content="https://muletto.app/no/guides/dest-qnap.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik flytter du dataene dine til QNAP","description":"Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til QNAP. 6 steg, skrevet for deg som vil ha din egen kopi.","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Kopier biblioteket over på NAS-en","text":"Koble NAS-en til som en nettverksstasjon, og eksporter så fra Muletto rett inn i den. Multimedia-mappen er det åpenbare stedet hvis du ikke har noen sterk mening; en hvilken som helst delt mappe går, så lenge du melder den fra i neste steg."},{"@type":"HowToStep","position":2,"name":"Meld mappen som en innholdskilde","text":"Åpne Multimedia Console, gå til Innholdsbehandling, og velg QuMagie. Klikk Rediger under Innholdskilder, huk av mappen du nettopp skrev til, og bruk endringene. Det finnes en vei til gjennom Kontrollpanel, Programmer, Multimediebehandling, Mediemappe, som legger mapper rett inn i mediebiblioteket - begge går an, og den første er den det er verdt å huske."},{"@type":"HowToStep","position":3,"name":"La den indeksere, og se på statusen i stedet for å gjette","text":"Åpne Multimedia Console og gå til Indeksering. Feltet Indeks sier Indekserer mens den arbeider, og Fullført når den er ferdig. Et stort bibliotek tar lang tid, og appen ser halvtom ut hele veien, så les statusen i stedet for å oppdatere QuMagie og frykte det verste."},{"@type":"HowToStep","position":4,"name":"Indekser bare på nytt hvis du er nødt","text":"Det finnes en knapp for å indeksere på nytt under den samme skjermen, og det er standardsvaret når filer stivnakket nekter å dukke opp. Vit hva det koster først: den kaster miniatyrbilder, mediefiltagger og QuMagie-album, og bygger opp igjen fra bunnen. Bildene dine er urørt, men et album du bygde inne i QuMagie er det ikke."},{"@type":"HowToStep","position":5,"name":"Sjekk at datoene kom med","text":"QuMagie sorterer etter datoen inni hver fil, og det er den Muletto reparerer før du eksporterer. Uten det steget kommer et Google- eller Apple-arkiv datert den dagen du kopierte det. Bla noen år tilbake i tidslinjen før du sletter noe andre steder."},{"@type":"HowToStep","position":6,"name":"Sikkerhetskopier NAS-en et annet sted","text":"Én NAS er én kopi i én bygning på disker som ble kjøpt samtidig. RAID dekker at en disk ryker, ikke brann, tyveri eller en feilslettet mappe. Bruk Hybrid Backup Sync mot en ekstern disk eller et annet sted, og test en gjenoppretting før du stoler på den."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"QNAP","item":"https://muletto.app/no/guides/dest-qnap.html"}],"inLanguage":"nb"}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a>
+        <span>/</span>
+        <a href="../../guides.html">Veiledninger</a>
+        <span>/</span>
+        <span aria-current="page">QNAP</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Flytt dataene dine til QNAP</h1>
+        
+        <div class="art-meta">
+          <span class="badge easy">enkelt</span>
+          <span class="muted">Takes minutter å kopiere, timer å indeksere</span>
+        </div>
+        <p class="art-intro">Når du har fått dataene dine ut av de store tjenestene og ryddet i dem, må de bo et sted du selv styrer. Denne veiledningen handler om å flytte arkivet til QNAP.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">QNAP-support <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          <aside class="explain"><h2>A folder QNAP does not know about is a folder QuMagie cannot show</h2><p>On a QNAP, copying photographs onto the NAS is only half the job. QuMagie shows what the system has indexed, and the system only indexes folders that have been declared multimedia folders. Land your library somewhere undeclared and the files are safely on the disk and completely invisible in the app - which reads exactly like the transfer failed.</p></aside>
+
+          <h2>Steg for steg</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Kopier biblioteket over på NAS-en</h3>
+              <p>Koble NAS-en til som en nettverksstasjon, og eksporter så fra Muletto rett inn i den. Multimedia-mappen er det åpenbare stedet hvis du ikke har noen sterk mening; en hvilken som helst delt mappe går, så lenge du melder den fra i neste steg.</p>
+              
+            </li>
+            <li>
+              <h3>Meld mappen som en innholdskilde</h3>
+              <p>Åpne Multimedia Console, gå til Innholdsbehandling, og velg QuMagie. Klikk Rediger under Innholdskilder, huk av mappen du nettopp skrev til, og bruk endringene. Det finnes en vei til gjennom Kontrollpanel, Programmer, Multimediebehandling, Mediemappe, som legger mapper rett inn i mediebiblioteket - begge går an, og den første er den det er verdt å huske.</p>
+              
+            </li>
+            <li>
+              <h3>La den indeksere, og se på statusen i stedet for å gjette</h3>
+              <p>Åpne Multimedia Console og gå til Indeksering. Feltet Indeks sier Indekserer mens den arbeider, og Fullført når den er ferdig. Et stort bibliotek tar lang tid, og appen ser halvtom ut hele veien, så les statusen i stedet for å oppdatere QuMagie og frykte det verste.</p>
+              
+            </li>
+            <li>
+              <h3>Indekser bare på nytt hvis du er nødt</h3>
+              <p>Det finnes en knapp for å indeksere på nytt under den samme skjermen, og det er standardsvaret når filer stivnakket nekter å dukke opp. Vit hva det koster først: den kaster miniatyrbilder, mediefiltagger og QuMagie-album, og bygger opp igjen fra bunnen. Bildene dine er urørt, men et album du bygde inne i QuMagie er det ikke.</p>
+              
+            </li>
+            <li>
+              <h3>Sjekk at datoene kom med</h3>
+              <p>QuMagie sorterer etter datoen inni hver fil, og det er den Muletto reparerer før du eksporterer. Uten det steget kommer et Google- eller Apple-arkiv datert den dagen du kopierte det. Bla noen år tilbake i tidslinjen før du sletter noe andre steder.</p>
+              
+            </li>
+            <li>
+              <h3>Sikkerhetskopier NAS-en et annet sted</h3>
+              <p>Én NAS er én kopi i én bygning på disker som ble kjøpt samtidig. RAID dekker at en disk ryker, ikke brann, tyveri eller en feilslettet mappe. Bruk Hybrid Backup Sync mot en ekstern disk eller et annet sted, og test en gjenoppretting før du stoler på den.</p>
+              
+            </li>
+          </ol>
+
+          
+
+          <h2>Verdt å vite</h2>
+          <div class="note">Viser QuMagie ingenting i det hele tatt, er det første du skal sjekke om mappen er meldt inn som innholdskilde. Det er en langt vanligere årsak enn at kopieringen slo feil.</div>
+          <div class="note">Å indeksere på nytt sletter miniatyrbilder, tagger og QuMagie-album. Selve bildene røres aldri av det.</div>
+
+          
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>Kort oppsummert</h4>
+            <dl>
+              <dt>Innsats</dt><dd>enkelt</dd>
+              <dt>Tid</dt><dd>minutter å kopiere, timer å indeksere</dd>
+              <dt>Format</dt><dd>en multimediemappe, indeksert av QuMagie</dd>
+              
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Andre steder å lagre</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+              <li><a href="dest-immich.html"><span class="side-ic" data-icon="server"></span>Immich (self-hosted)</a></li>
+              <li><a href="dest-photoprism.html"><span class="side-ic" data-icon="server"></span>PhotoPrism (self-hosted)</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Eksportveiledninger</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="apple-health.html"><span class="side-ic" data-icon="heart"></span>Apple Health</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="microsoft.html"><span class="side-ic" data-icon="cloudup"></span>Microsoft</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/dest-qnap.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

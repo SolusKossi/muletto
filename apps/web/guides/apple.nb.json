@@ -1,0 +1,69 @@
+{
+  "en_hash": "e5e284450c92",
+
+  "wait_time": "opptil 7 dager (Apple sender deg en e-post når den er klar)",
+  "format": "én eller flere .zip-filer, delt i biter du velger selv (1-25 GB hver)",
+
+  "request": {
+    "label": "Apples portal for data og personvern"
+  },
+
+  "steps": [
+    {
+      "title": "Logg inn på privacy.apple.com",
+      "detail": "Bruk den samme Apple-ID-en som eier dataene du vil ha. Dette er den offisielle portalen for dataportabilitet etter GDPR, og den er noe annet enn iCloud."
+    },
+    {
+      "title": "Velg \"Få en kopi av dataene dine\"",
+      "detail": "Deretter \"Kom i gang\" under Få en kopi av dataene dine."
+    },
+    {
+      "title": "Velg hva som skal være med",
+      "detail": "Huk av kategoriene du vil ha. iCloud-bilder er den store, og den står oppført for seg, adskilt fra kontoopplysningene - innloggingene, kjøpene og apphistorikken din er egne oppføringer og er små i sammenligning. Vil du bare ha bildene, ta bare dem; skal dette være en kopi én gang for alle, ta alt, for ventetiden er den samme uansett."
+    },
+    {
+      "title": "Velg en maksimal filstørrelse",
+      "detail": "Apple deler eksporten i biter og lar deg velge hvor store de skal være, fra 1 GB til 25 GB. Velg det største disken og forbindelsen din tåler: et bibliotek på 20 GB kommer som fire filer med innstillingen 5 GB, og som tjue med 1 GB. Færre og større filer betyr færre nedlastinger å holde styr på og færre sjanser for at én av dem stopper halvveis."
+    },
+    {
+      "title": "Send inn og vent",
+      "detail": "Apple bekrefter forespørselen og gjør eksporten klar, og det tar opptil sju dager - den lengste ventetiden av alle de store tjenestene. Det finnes ingen framdrift å følge med på og ingen måte å skynde på. Be om den før du trenger den, ikke den kvelden du har satt av til å rydde i bildene dine."
+    },
+    {
+      "title": "Last ned hver eneste del",
+      "detail": "Last ned alle de nummererte delene og hold dem i én mappe. Lenkene går ut etter noen dager; lar du dem gå, starter hele sju dagers ventetid på nytt. Ikke pakk dem ut - Muletto leser arkivene direkte, og det sparer deg både tiden og den doble diskplassen."
+    },
+    {
+      "title": "Åpne delene sammen",
+      "detail": "Slipp hver del inn i Muletto på én gang. Den leser dem som én eksport, tyder HEIC uten å konvertere noe, setter datoene og stedene tilbake inn i selve filene, og finner bildene som også ligger i Google- eller Snapchat-arkivene dine. Vil du ha vanlige JPEG-er til slutt, er det en avkrysningsboks for det når du lagrer."
+    }
+  ],
+
+  "notes": [
+    "Det denne eksporten ikke inneholder, og som tar så godt som alle: ingen passord. De er ende-til-ende-krypterte i iCloud, så Apple sitter på dem som klumper de ikke har nøkkelen til. Helse er mindre entydig og verdt å kjenne til: Apples egne støttesider sier at helsedata kan følge med en dataforespørsel, men en ekte eksport på atten arkiver, bedt om i juli 2026, kom uten noe av det. Huk av for det hvis det tilbys, og hent det av telefonen i tillegg - det tar et minutt og virker helt sikkert. Helse hentes fra iPhonen i stedet, på omtrent ett minutt, og det finnes en egen Apple Health-veiledning her for det. Bilder er en annen sak: ikke hemmelige, bare store, så de er en egen ting å velge og ikke en del av kontoarkivene. Og har du Avansert databeskyttelse slått på, vokser det krypterte settet til rundt tjuetre kategorier, så eksporten din blir mindre og ikke større.",
+    "Denne eksporten gir deg originalene i full oppløsning, ikke de komprimerte forhåndsvisningene enkelte synkroniseringsverktøy etterlater seg.",
+    "Nedlastingslenkene går ut etter noen dager, så lagre hver del med en gang.",
+    "Et stort bibliotek kommer som flere filer på flere gigabyte. Hold dem samlet i én mappe og åpne dem samtidig.",
+    "Apple tilbyr også en egen tjeneste som overfører iCloud-bildesamlingen din direkte til en annen leverandør. Det er noe annet enn denne eksporten: den flytter biblioteket ditt til et annet selskap i stedet for å gi deg en kopi av ditt eget.",
+    "HEIC-filer virker fortsatt etter at Muletto har skrevet datoer og steder tilbake, og eksporteres slik de kom med mindre du ber om JPEG på veien ut - én avkrysningsboks på lagringsskjermen, konvertert her og ikke lastet opp noe sted, til omtrent dobbel filstørrelse."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor sendte Apple meg atten separate zip-filer?",
+      "a": "Apple sender ett arkiv per kategori, og deler opp alt som er større enn størrelsesgrensen du valgte da du ba om den. Flere av de arkivene inneholder nye zip-filer inni seg, så én enkelt kategori kan ligge to nivåer ned."
+    },
+    {
+      "q": "Hvor lang tid tar en Apple-dataforespørsel?",
+      "a": "Apple sier opptil sju dager, og det er ofte kortere. Når den først er klar, er nedlastingen tilgjengelig i omtrent to uker, og etter det må forespørselen gjøres på nytt."
+    },
+    {
+      "q": "Hvorfor er det ingen bilder i Apple-personverneksporten min?",
+      "a": "iCloud-bilder er en egen kategori og må velges når forespørselen gjøres. Var den med, kommer den som sitt eget sett arkiver, og for et stort bibliotek kan det bli svært omfangsrikt."
+    },
+    {
+      "q": "Hva ligger i Apple Media Services-arkivet?",
+      "a": "Kjøpshistorikk, App Store-aktivitet, lytting i Apple Music og Game Center-data. Det inneholder nye zip-filer i stedet for rene regneark, så alt som bare pakker ut ett nivå vil se ut til å finne nesten ingenting i det."
+    }
+  ]
+}

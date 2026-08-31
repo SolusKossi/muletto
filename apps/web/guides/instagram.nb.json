@@ -1,0 +1,66 @@
+{
+  "en_hash": "32129fbfb20a",
+
+  "wait_time": "minutter til noen dager, avhengig av størrelsen",
+  "format": ".zip med JSON- eller HTML-filer og medier",
+
+  "request": {
+    "label": "Meta Kontosenter - Last ned informasjonen din"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Last ned informasjonen din",
+      "detail": "I Instagram-appen eller på nettet: gå til Kontosenter, så Informasjonen din og tillatelser, så Last ned informasjonen din."
+    },
+    {
+      "title": "Velg Instagram-profilen",
+      "detail": "Velg Instagram-kontoen du vil eksportere dataene til."
+    },
+    {
+      "title": "Velg informasjon og tidsrom",
+      "detail": "Velg hvilke kategorier som skal være med (innlegg, historier, meldinger og mer), og velg \"Hele tiden\" for alt sammen."
+    },
+    {
+      "title": "Velg format og kvalitet",
+      "detail": "Velg JSON for maskinlesbare data (best for Muletto), og sett mediekvalitet til høy."
+    },
+    {
+      "title": "Opprett fila og vent",
+      "detail": "Send inn forespørselen. Meta gjør nedlastingen klar og varsler deg når den er ferdig."
+    },
+    {
+      "title": "Last ned fila",
+      "detail": "Last ned hver del før lenken går ut, og hold filene samlet."
+    }
+  ],
+
+  "notes": [
+    "Meta gir deg fire dager på å laste ned når eksporten først er klar, ikke uka Google gir. Bekreftelsesskjermen sier det, og varselet gjentar det ikke.",
+    "Meta spør etter passordet ditt en gang til før forespørselen sendes. Det er Metas egen skjerm - Muletto ser den aldri og spør aldri etter et passord.",
+    "Instagram og Facebook håndteres begge i Meta Kontosenter, så du kan be om dem samtidig.",
+    "Bilder og video i full oppløsning er bare med hvis du setter mediekvalitet til høy før du sender inn.",
+    "Velg JSON, ikke HTML - og merk at HTML er det boksen står på, så dette er en endring du må gjøre selv og ikke en preferanse du bekrefter. HTML er en framvisning av dataene dine som ingenting kan lese tilbake.",
+    "Sett tidsrommet til Hele tiden. Et tidsrom som blir stående på et nylig standardvalg gir en eksport som ser komplett ut og mangler år.",
+    "Meta deler store eksporter over flere filer, og mediene i en samtale kan ligge i en annen del enn meldingene. Åpne alle delene samtidig."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor er emojiene i Instagram-eksporten min ødelagte?",
+      "a": "Instagram koder JSON ved å skrive ut de rå bytene i hvert tegn, så emoji og bokstaver med tegn over kommer ut forvridd. Tre av de fire bytene i en emoji er usynlige kontrolltegn, og det er derfor et smilefjes ofte vises som én forvillet bokstav. Det lar seg rette opp, og Muletto retter det."
+    },
+    {
+      "q": "Hvor er Instagram-bildene mine i nedlastingen?",
+      "a": "Under en media-mappe, sortert i innlegg, historier, reels og profil, med datoene liggende i kategori-JSON-en i stedet for inni bildene. Nyere eksporter kan også ha en public-media-mappe som gjentar noe av det."
+    },
+    {
+      "q": "Er direktemeldingene mine med i en Instagram-eksport?",
+      "a": "Ja, under your_instagram_activity og deretter messages, med én mappe per samtale. Meldingene ligger med den nyeste først, og alt som er sendt i en samtale ligger ved siden av den i den mappen."
+    },
+    {
+      "q": "Hvordan leser jeg en Instagram-eksport i JSON?",
+      "a": "Åpne den med noe som forstår oppbygningen. Muletto leser arkivet i nettleseren din og viser innlegg, meldinger og likerklikk som en tidslinje, uten å laste opp noe."
+    }
+  ]
+}

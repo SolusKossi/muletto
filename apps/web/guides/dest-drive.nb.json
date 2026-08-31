@@ -1,0 +1,42 @@
+{
+  "en_hash": "3599bdb2f32b",
+
+  "wait_time": "en time å kopiere, og så en sjekk én gang i året",
+  "format": "vanlige mapper på en disk du eier",
+
+  "steps": [
+    {
+      "title": "Kjøp mer plass enn du trenger",
+      "detail": "Se hvor stor mappen Muletto skrev er, og kjøp minst det dobbelte. Arkiver vokser, og en disk som holdes nesten full er tregere og mer tungvint å kontrollere. En helt vanlig ekstern harddisk holder og er billigere per terabyte enn en SSD; en SSD er verdt det hvis disken skal bæres rundt, siden den ikke har noe inni seg som tar skade av støt."
+    },
+    {
+      "title": "Formater den for maskinene du faktisk bruker",
+      "detail": "Møter disken bare Windows, bruk NTFS. Bare Mac, bruk APFS. Begge deler, bruk exFAT - det er det ene formatet Windows og macOS begge kan lese og skrive uten ekstra programvare, og det takler store filer og store volumer. macOS kan lese NTFS, men ikke skrive til det uten programvare fra andre, og det er fellen bak det meste av frustrasjonen rundt disker som skal virke begge steder."
+    },
+    {
+      "title": "Kopier mappene over og la det bli ferdig",
+      "detail": "Dra mappene over, eller eksporter fra Muletto rett til disken. Det trengs ingenting spesielt: dette er vanlige mapper med vanlige filer, lesbare av enhver datamaskin uten dette nettstedet og uten noe program. Vent til kopieringen er ferdig og løs ut disken ordentlig - å dra ut en disk midt i en skriving er en god måte å miste innholdsfortegnelsen på."
+    },
+    {
+      "title": "Kontroller med antall og størrelse, ikke med øyet",
+      "detail": "Sammenlign antall filer og samlet størrelse på disken mot kilden. En kopiering som i stillhet mistet filer ser som regel helt fin ut i en mappevisning og er noen tusen unna i antall. Ta stikkprøver ved å åpne en håndfull bilder fra forskjellige år."
+    },
+    {
+      "title": "Ta kopi nummer to nå, ikke senere",
+      "detail": "Én disk er ett enkelt punkt som kan svikte, og dette er øyeblikket det er lettest å gjøre noe med. Kopier til en disk til, eller til en NAS, eller til en betalt tjeneste et annet sted. Å gjøre det nå koster en time; å gjøre det etter at den første disken har røket koster alt som lå på den."
+    },
+    {
+      "title": "Oppbevar kopiene hver for seg",
+      "detail": "To disker i samme skuff er én oversvømmelse, én brann og ett innbrudd unna null disker. Ha den andre et helt annet sted - en annen bygning, hos en slektning, i et skap på jobben."
+    },
+    {
+      "title": "Test den én gang i året, og legg det i kalenderen",
+      "detail": "Koble til hver disk, åpne flere bilder fra forskjellige år, og sjekk at antallet fortsatt stemmer. Disker svikter like gjerne mens de ligger i en skuff som mens de er i bruk, og de svikter i stillhet. En sikkerhetskopi som aldri er testet er et håp, ikke en sikkerhetskopi. Legg inn en påminnelse i kalenderen nå."
+    }
+  ],
+
+  "notes": [
+    "Bits råtner. Vanlige filsystemer kan ikke fortelle deg at en fil stille har forfalt, og det er derfor den årlige sjekken og kopi nummer to betyr mer enn valget av format.",
+    "Har du arkiver på Linux og vil ha vern mot stille korrupsjon, sjekksummerer ZFS og Btrfs alt sammen og kan reparere skade. Ingen av dem virker på Windows eller macOS uten en god del arbeid, så det er et valg for en NAS og ikke for en disk du bærer med deg."
+  ]
+}

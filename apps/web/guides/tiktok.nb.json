@@ -1,0 +1,59 @@
+{
+  "en_hash": "c29182b8850d",
+
+  "wait_time": "noen timer til fire dager",
+  "format": "én enkelt JSON- eller TXT-fil, valgt når du ber om den",
+
+  "request": {
+    "label": "Last ned dataene dine"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne profilen din, så Innstillinger og personvern",
+      "detail": "Konto, og deretter Last ned dataene dine."
+    },
+    {
+      "title": "Velg alle data, ikke et utvalg",
+      "detail": "Å velge bare noen kategorier er rapportert å fjerne sett-historikken fullstendig. Alle data unngår problemet."
+    },
+    {
+      "title": "Velg JSON, ikke TXT",
+      "detail": "JSON beholder strukturen. TXT-versjonen er lettere å lese med øyet og inneholder merkbart mindre."
+    },
+    {
+      "title": "Be om fila",
+      "detail": "Den gjøres klar i bakgrunnen; det er ingen e-postlenke å vente på."
+    },
+    {
+      "title": "Hent den fra fanen Last ned data",
+      "detail": "Du får varsel i appen når den er klar. Fila er tilgjengelig i fire dager og blir så slettet."
+    }
+  ],
+
+  "notes": [
+    "Eksporten inneholder ikke videoene dine. Den inneholder lenker til dem, liggende på TikToks servere, og en lenke er ikke en kopi - forsvinner kontoen, eller plattformen, forsvinner de også. Er videoene grunnen til at du eksporterer, lagre dem hver for seg i stedet for å lene deg på dette. To andre ting er verdt å vite før du ber om den: velg JSON og ikke TXT, for TXT er et lesbart sammendrag med strukturen kastet bort og lar seg ikke tolke tilbake til noe som helst, og nedlastingslenken skal bare vare rundt fire dager, og etter det er fila borte og eneste vei er å be om den på nytt og vente på nytt.",
+    "Ingen medier av noe slag er med. Dine egne videoer, profilbildet ditt og alt sendt i en melding er URL-er som peker tilbake til TikTok.",
+    "Det siste døgnet eller to av aktivitet mangler som regel, på grunn av hvor langt etter eksporten ligger.",
+    "Alt ligger i én fil. For en aktiv konto er det titalls megabyte JSON i ett enkelt dokument."
+  ],
+
+  "faq": [
+    {
+      "q": "Er TikTok-videoene mine med i datanedlastingen?",
+      "a": "Nei. Eksporten inneholder lenker til videoene dine, ikke filene. Det samme gjelder alt du har likt eller lagret, og medier i meldinger."
+    },
+    {
+      "q": "Bør jeg velge TXT eller JSON for en TikTok-eksport?",
+      "a": "JSON. TXT-versjonen er ment å leses av et menneske og er atskillig vanskeligere for et verktøy å bruke, og etter flere beretninger inneholder den mindre."
+    },
+    {
+      "q": "Hvorfor mangler sett-historikken min fra TikTok?",
+      "a": "Å be om bare noen kategorier i stedet for alle data er rapportert å utelate den. Be om alt, så kommer den tilbake."
+    },
+    {
+      "q": "Hvor lenge er nedlastingslenken fra TikTok gyldig?",
+      "a": "Fire dager fra den er klar. Etter det må forespørselen gjøres på nytt."
+    }
+  ]
+}

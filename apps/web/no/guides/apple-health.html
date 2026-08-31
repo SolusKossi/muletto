@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Last ned dataene dine fra Apple Health: GDPR-eksport steg for steg | Muletto</title>
+  <meta name="description" content="Slik laster du ned GDPR-eksporten din fra Apple Health - helsedata - og slik åpner du den og ser hva som ligger der. 6 steg, hva som faktisk kommer, og hvor lang tid det tar (noen minutter på telefonen, ingen venting på noen)." />
+  <link rel="canonical" href="https://muletto.app/no/guides/apple-health.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/apple-health.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/apple-health.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/apple-health.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Last ned dataene dine fra Apple Health: GDPR-eksport steg for steg | Muletto" />
+  <meta property="og:description" content="Slik laster du ned GDPR-eksporten din fra Apple Health - helsedata - og slik åpner du den og ser hva som ligger der. 6 steg, hva som faktisk kommer, og hvor lang tid det tar (noen minutter på telefonen, ingen venting på noen)." />
+  <meta property="og:url" content="https://muletto.app/no/guides/apple-health.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik laster du ned GDPR-eksporten fra Apple Health og åpner den","description":"Slik laster du ned GDPR-eksporten din fra Apple Health - helsedata - og slik åpner du den og ser hva som ligger der. 6 steg, hva som faktisk kommer, og hvor lang tid det tar (noen minutter på telefonen, ingen venting på noen).","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Gjør det på iPhonen, ikke på klokka eller en Mac","text":"Eksporten ligger i Helse-appen på telefonen. Det finnes ingen vei fra en Mac, fra iCloud.com eller fra klokka, og ingen måte å be Apple om den. Har du ingen iPhone, har du ingen eksport."},{"@type":"HowToStep","position":2,"name":"Åpne Helse og trykk på ditt eget bilde","text":"Knappen er profilbildet eller initialene dine øverst til høyre i Oversikt-fanen. Den er lett å overse fordi den ser ut som en kontoknapp og ikke en meny, og alt nedenfor ligger i en enkel liste uten søk."},{"@type":"HowToStep","position":3,"name":"Bla helt ned til Eksporter alle helsedata","text":"Det er nederste punkt på den skjermen, under Personvern, Enheter og resten. Ingenting over det antyder at det finnes en eksport. Trykk på det, og bekreft på arket som dukker opp."},{"@type":"HowToStep","position":4,"name":"Vent mens den bygges, og ikke forlat appen","text":"En snurrende ring dukker opp mens telefonen setter sammen fila. Med noen år med klokkedata kan det ta flere minutter, og legger du Helse-appen i bakgrunnen kan den bli forlatt uten en melding. La skjermen stå på og vent."},{"@type":"HowToStep","position":5,"name":"Send den et sted du faktisk kommer til","text":"Delingsmenyen åpnes når den er ferdig. Lagre i Filer, eller i iCloud Drive, i stedet for å sende den til deg selv på e-post - den er rutinemessig for stor til et e-postvedlegg, og det feiler i stillhet. Skal du flytte den til en datamaskin, er Lagre i Filer og deretter kopiere over med kabel det sikreste."},{"@type":"HowToStep","position":6,"name":"Sjekk størrelsen før du stoler på den","text":"Du skal få export.zip. Åpne den, og du skal se export.xml, som regel mye større enn zip-fila. En fil på noen få kilobyte betyr at eksporten ga nesten ingenting, hvilket skjer hvis Helse aldri har fått skrevet data til seg på denne telefonen - start den på nytt i stedet for å tro at det er alt som finnes."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Apple Health","item":"https://muletto.app/no/guides/apple-health.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"nb","mainEntity":[{"@type":"Question","name":"Hvorfor er ikke Helse med i Apple-eksporten for data og personvern?","acceptedAnswer":{"@type":"Answer","text":"Fordi Apple ikke kan lese det. Helse er ende-til-ende-kryptert i iCloud for hver eneste konto, uten noen innstilling å endre, så det Apple lagrer er en klump de ikke har nøkkelen til. En dataforespørsel kan bare gi tilbake det selskapet kan dekryptere. Dette er krypteringen som gjør jobben sin og ikke Apple som holder noe tilbake, og det er derfor eneste vei er telefonen."}},{"@type":"Question","name":"Kan jeg få det fra iCloud.com eller fra en Mac?","acceptedAnswer":{"@type":"Answer","text":"Nei. Helsedata tilbys ikke på iCloud.com, og Macen har ingen Helse-app. iPhonen er eneste sted eksporten finnes."}},{"@type":"Question","name":"Hvorfor er fila så enorm?","acceptedAnswer":{"@type":"Answer","text":"Alt skrives som ett XML-dokument med ett element per måling. En klokke registrerer puls, skritt, og ofte oksygenmetning og temperatur, hele dagen hver dag, så noen få år gir titalls millioner elementer. Zip-fila komprimerer det godt, og det er derfor fila inni er så mye større enn den du lastet ned."}},{"@type":"Question","name":"Hva er export_cda.xml?","acceptedAnswer":{"@type":"Answer","text":"En fil til, i formatet Clinical Document Architecture, ment for deling med helsepersonell. Den inneholder et utvalg av den samme informasjonen, og de fleste verktøy overser den til fordel for export.xml."}},{"@type":"Question","name":"Kan Muletto åpne den?","acceptedAnswer":{"@type":"Answer","text":"Ja. Slipp inn export.zip slik den kom fra telefonen - den trenger ikke pakkes ut. Fila leses som en strøm i stedet for å lastes inn, og det er det som gjør et XML-dokument på 161 MB praktisk i en nettleserfane. Hver måling slås sammen til én verdi per dag på veien forbi, for en graf med åtti tusen enkeltmålinger er en heldekkende blekkflate. Skritt, distanse, kalorier, etasjer, puls, vekt, ganghastighet, hodetelefonvolum og søvn får hver sin rute på helsesiden; resten blir liggende som tabeller. Der bare en telefon har registrert søvnen din, heter serien Tid i sengen og ikke Søvn, for en telefon vet når den ble lagt fra seg og ikke når du sovnet."}}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a>
+        <span>/</span>
+        <a href="../../guides.html">Veiledninger</a>
+        <span>/</span>
+        <span aria-current="page">Apple Health</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Slik laster du ned dataene dine fra Apple Health</h1>
+        <p class="art-kicker">Slik ber du om eksporten, hva som kommer, og hvordan du åpner den.</p>
+        <div class="art-meta">
+          <span class="badge easy">enkelt</span>
+          <span class="muted">Wait: noen minutter på telefonen, ingen venting på noen</span>
+        </div>
+        <p class="art-intro">Apple Health er pliktig til å gi deg en kopi av dataene de har om deg, blant annet helsedata. Det koster ingenting å be om det, og du får .zip med export.xml. Vanlig ventetid: noen minutter på telefonen, ingen venting på noen.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">Apple om å eksportere helsedata <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          
+
+          <h2>Steg for steg</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Gjør det på iPhonen, ikke på klokka eller en Mac</h3>
+              <p>Eksporten ligger i Helse-appen på telefonen. Det finnes ingen vei fra en Mac, fra iCloud.com eller fra klokka, og ingen måte å be Apple om den. Har du ingen iPhone, har du ingen eksport.</p>
+              
+            </li>
+            <li>
+              <h3>Åpne Helse og trykk på ditt eget bilde</h3>
+              <p>Knappen er profilbildet eller initialene dine øverst til høyre i Oversikt-fanen. Den er lett å overse fordi den ser ut som en kontoknapp og ikke en meny, og alt nedenfor ligger i en enkel liste uten søk.</p>
+              
+            </li>
+            <li>
+              <h3>Bla helt ned til Eksporter alle helsedata</h3>
+              <p>Det er nederste punkt på den skjermen, under Personvern, Enheter og resten. Ingenting over det antyder at det finnes en eksport. Trykk på det, og bekreft på arket som dukker opp.</p>
+              
+            </li>
+            <li>
+              <h3>Vent mens den bygges, og ikke forlat appen</h3>
+              <p>En snurrende ring dukker opp mens telefonen setter sammen fila. Med noen år med klokkedata kan det ta flere minutter, og legger du Helse-appen i bakgrunnen kan den bli forlatt uten en melding. La skjermen stå på og vent.</p>
+              
+            </li>
+            <li>
+              <h3>Send den et sted du faktisk kommer til</h3>
+              <p>Delingsmenyen åpnes når den er ferdig. Lagre i Filer, eller i iCloud Drive, i stedet for å sende den til deg selv på e-post - den er rutinemessig for stor til et e-postvedlegg, og det feiler i stillhet. Skal du flytte den til en datamaskin, er Lagre i Filer og deretter kopiere over med kabel det sikreste.</p>
+              
+            </li>
+            <li>
+              <h3>Sjekk størrelsen før du stoler på den</h3>
+              <p>Du skal få export.zip. Åpne den, og du skal se export.xml, som regel mye større enn zip-fila. En fil på noen få kilobyte betyr at eksporten ga nesten ingenting, hvilket skjer hvis Helse aldri har fått skrevet data til seg på denne telefonen - start den på nytt i stedet for å tro at det er alt som finnes.</p>
+              
+            </li>
+          </ol>
+
+          
+          <h2 id="open">Slik åpner du Apple Health-eksporten</h2>
+          <p>Muletto leser en Apple Health-eksport rett fra zip-fila, uten at du pakker den ut først, og finner helsedata inni.</p>
+          <p>Alt skjer i nettleseren: arkivet lastes aldri opp, du trenger ingen konto, og ingenting installeres. Åpne flere eksporter samtidig, så blir de ett bibliotek, og bildene som finnes i mer enn én av dem finner appen selv.</p>
+          <div class="note">Muletto leser denne fila. Målt på en ekte en: 161 MB XML, 385 000 målinger over fire år, åpnet på omtrent ett sekund uten at fila noen gang ble holdt i minnet.</div>
+          <p><a class="btn primary" href="../../no/app.html">Åpne Apple Health-eksporten din
+            <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+
+          <h2>Verdt å vite</h2>
+          <div class="note">Muletto leser denne fila. Målt på en ekte en: 161 MB XML, 385 000 målinger over fire år, åpnet på omtrent ett sekund uten at fila noen gang ble holdt i minnet.</div>
+          <div class="note">Dette er ikke en del av Apples eksport for data og personvern, og kommer aldri til å bli det. Helse er ende-til-ende-kryptert i iCloud, så Apple sitter på det som en klump de ikke har nøkkelen til og ikke kan utlevere.</div>
+          <div class="note">Alt ligger i én XML-fil. År med klokkedata blir gjerne flere hundre megabyte av den, og det er derfor så mange verktøy feiler på fila og ikke på dataene.</div>
+          <div class="note">Det finnes en fil til, export_cda.xml, i et klinisk format. Den inneholder et utvalg, og de fleste verktøy overser den.</div>
+
+          <h2>Vanlige spørsmål</h2>
+          <div class="faq">
+            <details class="faq-q">
+              <summary>Hvorfor er ikke Helse med i Apple-eksporten for data og personvern?</summary>
+              <p>Fordi Apple ikke kan lese det. Helse er ende-til-ende-kryptert i iCloud for hver eneste konto, uten noen innstilling å endre, så det Apple lagrer er en klump de ikke har nøkkelen til. En dataforespørsel kan bare gi tilbake det selskapet kan dekryptere. Dette er krypteringen som gjør jobben sin og ikke Apple som holder noe tilbake, og det er derfor eneste vei er telefonen.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Kan jeg få det fra iCloud.com eller fra en Mac?</summary>
+              <p>Nei. Helsedata tilbys ikke på iCloud.com, og Macen har ingen Helse-app. iPhonen er eneste sted eksporten finnes.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvorfor er fila så enorm?</summary>
+              <p>Alt skrives som ett XML-dokument med ett element per måling. En klokke registrerer puls, skritt, og ofte oksygenmetning og temperatur, hele dagen hver dag, så noen få år gir titalls millioner elementer. Zip-fila komprimerer det godt, og det er derfor fila inni er så mye større enn den du lastet ned.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hva er export_cda.xml?</summary>
+              <p>En fil til, i formatet Clinical Document Architecture, ment for deling med helsepersonell. Den inneholder et utvalg av den samme informasjonen, og de fleste verktøy overser den til fordel for export.xml.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Kan Muletto åpne den?</summary>
+              <p>Ja. Slipp inn export.zip slik den kom fra telefonen - den trenger ikke pakkes ut. Fila leses som en strøm i stedet for å lastes inn, og det er det som gjør et XML-dokument på 161 MB praktisk i en nettleserfane. Hver måling slås sammen til én verdi per dag på veien forbi, for en graf med åtti tusen enkeltmålinger er en heldekkende blekkflate. Skritt, distanse, kalorier, etasjer, puls, vekt, ganghastighet, hodetelefonvolum og søvn får hver sin rute på helsesiden; resten blir liggende som tabeller. Der bare en telefon har registrert søvnen din, heter serien Tid i sengen og ikke Søvn, for en telefon vet når den ble lagt fra seg og ikke når du sovnet.</p>
+            </details>
+          </div>
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>Kort oppsummert</h4>
+            <dl>
+              <dt>Innsats</dt><dd>enkelt</dd>
+              <dt>Vanlig ventetid</dt><dd>noen minutter på telefonen, ingen venting på noen</dd>
+              <dt>Format</dt><dd>.zip med export.xml</dd>
+              <dt>Levering</dt><dd>på enheten</dd>
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Andre tjenester</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="microsoft.html"><span class="side-ic" data-icon="cloudup"></span>Microsoft</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+              <li><a href="samsung.html"><span class="side-ic" data-icon="samsung"></span>Samsung</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Hvor du kan lagre dataene</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/apple-health.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

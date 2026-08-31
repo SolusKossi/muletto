@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Last ned dataene dine fra Google: GDPR-eksport steg for steg | Muletto</title>
+  <meta name="description" content="Slik laster du ned GDPR-eksporten din fra Google - bilder, video, posisjonshistorikk - og slik åpner du den og ser hva som ligger der. 7 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter til noen dager, avhengig av størrelsen)." />
+  <link rel="canonical" href="https://muletto.app/no/guides/google.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/google.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/google.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/google.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Last ned dataene dine fra Google: GDPR-eksport steg for steg | Muletto" />
+  <meta property="og:description" content="Slik laster du ned GDPR-eksporten din fra Google - bilder, video, posisjonshistorikk - og slik åpner du den og ser hva som ligger der. 7 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter til noen dager, avhengig av størrelsen)." />
+  <meta property="og:url" content="https://muletto.app/no/guides/google.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik laster du ned GDPR-eksporten fra Google og åpner den","description":"Slik laster du ned GDPR-eksporten din fra Google - bilder, video, posisjonshistorikk - og slik åpner du den og ser hva som ligger der. 7 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter til noen dager, avhengig av størrelsen).","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Åpne Google Takeout","text":"Logg inn med Google-kontoen du vil eksportere."},{"@type":"HowToStep","position":2,"name":"Fjern alt, og velg så det du trenger","text":"Takeout har huket av alt på forhånd. Klikk \"Fjern alle\" og velg bare det du vil ha (for eksempel Google Foto, Gmail, YouTube)."},{"@type":"HowToStep","position":3,"name":"Velg .zip og en stor filstørrelse","text":"Velg .zip - det er formatet alt kan åpne, og det Muletto leser. For størrelse: velg den største biten som tilbys. Færre og større filer betyr færre nedlastinger å passe på og færre sjanser for at én av dem feiler. Et bibliotek på 50 GB med standardvalget 2 GB kommer som rundt 25 separate zip-filer. Filer over 2 GB kommer i zip64-formatet, som Muletto leser og en del skrivebordsverktøy ikke gjør."},{"@type":"HowToStep","position":4,"name":"Velg en engangseksport","text":"\"Eksporter én gang\" er riktig for de fleste. Trykk så \"Opprett eksport\"."},{"@type":"HowToStep","position":5,"name":"Vent på e-posten","text":"Små eksporter er ferdige på minutter; store bildebibliotek kan ta et døgn eller mer. Google sender deg en nedlastingslenke på e-post."},{"@type":"HowToStep","position":6,"name":"Last ned alle delene","text":"Last ned hver eneste nummererte del, og hold dem samlet i én mappe. Google gir deg sju dager og tillater at hvert arkiv lastes ned fem ganger, og begge grensene tar folk. Sju dager er kort tid for et bibliotek som kommer i et dusin deler, og fem-nedlastingsgrensen gjelder per arkiv - prøv en mislykket del på nytt noen ganger, og du kan ha brukt den opp. Går én av dem ut, må du be om hele eksporten på nytt og vente på nytt. Ikke pakk dem ut: Muletto leser arkivene direkte, hvilket går raskere og sparer deg for å bruke dobbelt så mye diskplass."},{"@type":"HowToStep","position":7,"name":"Åpne alle delene samtidig","text":"Slipp alle zip-filene inn i Muletto på én gang. Den leser dem som én eksport, så et bilde i del 3 finner opplysningene sine i del 7, duplikatene Google lagde ved å eksportere albumkopier ved siden av årsmappene blir funnet og slått sammen, og datoene og stedene havner tilbake inni selve filene."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Google","item":"https://muletto.app/no/guides/google.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"nb","mainEntity":[{"@type":"Question","name":"Hvorfor er alle Google Foto-bildene mine datert i dag etter en Takeout?","acceptedAnswer":{"@type":"Answer","text":"Takeout legger ikke opptaksdatoen inni selve bildet. Den skrives til en liten JSON-fil ved siden av hvert bilde, så alt som bare leser bildet ser dagen du lastet det ned. Muletto leser de sidevognfilene og kan skrive den ekte datoen og stedet tilbake inn i hvert bilde."}},{"@type":"Question","name":"Hvorfor er posisjonshistorikken tom i Google Takeout?","acceptedAnswer":{"@type":"Answer","text":"Google flyttet Tidslinje over på telefonen i løpet av 2024 og 2025 og slo av serverversjonen i juni 2025, så en Takeout har ingenting igjen å ta med. I en fersk eksport inneholder Tidslinje-mappen en innstillingsfil på rundt én kilobyte og ingen historikk i det hele tatt. Dataene ligger fortsatt på telefonen din. Åpne Google Maps-appen, trykk på profilbildet ditt, så Innstillinger, så Personlig innhold, og se etter Eksporter tidslinjedata - den veien virker både på Android og iPhone, og på iPhone lagres fila via delingsmenyen som location-history.json. Enkelte Android-versjoner har det samme under Innstillinger, så Posisjon, så Posisjonstjenester, så Tidslinje. Det som kommer av telefonen er et annet format enn den gamle Records.json, ikke en nyere versjon av den. Det finnes en egen veiledning på denne siden som heter Hvorfor er Google-posisjonshistorikken min tom, og den går gjennom det i sin helhet."}},{"@type":"Question","name":"Hva er supplemental-metadata.json-filene i Takeout-en min?","acceptedAnswer":{"@type":"Answer","text":"De inneholder datoen, stedet og beskrivelsen til hvert bilde. Google byttet navn på dem rundt oktober 2024 og forkorter navnet når hele filnavnet blir langt, så én eksport kan inneholde supplemental-metadata.json, supplemental-me.json og suppl.json for ulike bilder. Treffer du bare den fullstendige skrivemåten, mister du resten."}},{"@type":"Question","name":"Hvordan åpner jeg en Google Takeout uten å laste den opp noe sted?","acceptedAnswer":{"@type":"Answer","text":"Bruk noe som leser arkivet lokalt. Muletto gjør det: slipp inn zip-fila, så leses den på din egen maskin. Du kan skru av nettforbindelsen først, og det virker fortsatt."}},{"@type":"Question","name":"Hvorfor er Google Takeout-en min delt i flere zip-filer?","acceptedAnswer":{"@type":"Answer","text":"Du velger en maksimal arkivstørrelse når du ber om den, og alt som er større deles opp. Et bilde og sidevognfila si kan havne i hver sin del, så åpne alle sammen samtidig i stedet for én om gangen."}}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a>
+        <span>/</span>
+        <a href="../../guides.html">Veiledninger</a>
+        <span>/</span>
+        <span aria-current="page">Google</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Slik laster du ned dataene dine fra Google</h1>
+        <p class="art-kicker">Slik ber du om eksporten, hva som kommer, og hvordan du åpner den.</p>
+        <div class="art-meta">
+          <span class="badge easy">enkelt</span>
+          <span class="muted">Wait: minutter til noen dager, avhengig av størrelsen</span>
+        </div>
+        <p class="art-intro">Google er pliktig til å gi deg en kopi av dataene de har om deg, blant annet bilder, video, posisjonshistorikk, e-post, nettleserhistorikk og kjøpshistorikk. Det koster ingenting å be om det, og du får .zip (anbefalt) eller .tgz, delt opp i biter på opptil 50 GB. Vanlig ventetid: minutter til noen dager, avhengig av størrelsen.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">Google Takeout <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          <aside class="explain"><h2>Open every part together, not one at a time</h2><p>Google splits a large export into numbered zips, and it does not keep a photograph and its metadata file in the same one. Open part 3 on its own and some of those photographs have no date and no place, because the JSON describing them is sitting in part 7. Hand Muletto all the parts at once and they are read as the single export they are. This is also why a Takeout looks bigger than your library: a photograph in an album and in its year folder is exported twice.</p></aside>
+
+          <h2>Steg for steg</h2>
+          <p class="confirmed-line">Hvert skjermbilde under er fra Google sine egne sider, tatt 30. juli 2026.</p>
+          <ol class="steps-ol">
+            <li>
+              <h3>Åpne Google Takeout</h3>
+              <p>Logg inn med Google-kontoen du vil eksportere.</p>
+              
+            </li>
+            <li>
+              <h3>Fjern alt, og velg så det du trenger</h3>
+              <p>Takeout har huket av alt på forhånd. Klikk &quot;Fjern alle&quot; og velg bare det du vil ha (for eksempel Google Foto, Gmail, YouTube).</p>
+              
+            </li>
+            <li>
+              <h3>Velg .zip og en stor filstørrelse</h3>
+              <p>Velg .zip - det er formatet alt kan åpne, og det Muletto leser. For størrelse: velg den største biten som tilbys. Færre og større filer betyr færre nedlastinger å passe på og færre sjanser for at én av dem feiler. Et bibliotek på 50 GB med standardvalget 2 GB kommer som rundt 25 separate zip-filer. Filer over 2 GB kommer i zip64-formatet, som Muletto leser og en del skrivebordsverktøy ikke gjør.</p>
+              
+            </li>
+            <li>
+              <h3>Velg en engangseksport</h3>
+              <p>&quot;Eksporter én gang&quot; er riktig for de fleste. Trykk så &quot;Opprett eksport&quot;.</p>
+              
+            </li>
+            <li>
+              <h3>Vent på e-posten</h3>
+              <p>Små eksporter er ferdige på minutter; store bildebibliotek kan ta et døgn eller mer. Google sender deg en nedlastingslenke på e-post.</p>
+              
+            </li>
+            <li>
+              <h3>Last ned alle delene</h3>
+              <p>Last ned hver eneste nummererte del, og hold dem samlet i én mappe. Google gir deg sju dager og tillater at hvert arkiv lastes ned fem ganger, og begge grensene tar folk. Sju dager er kort tid for et bibliotek som kommer i et dusin deler, og fem-nedlastingsgrensen gjelder per arkiv - prøv en mislykket del på nytt noen ganger, og du kan ha brukt den opp. Går én av dem ut, må du be om hele eksporten på nytt og vente på nytt. Ikke pakk dem ut: Muletto leser arkivene direkte, hvilket går raskere og sparer deg for å bruke dobbelt så mye diskplass.</p>
+              
+            </li>
+            <li>
+              <h3>Åpne alle delene samtidig</h3>
+              <p>Slipp alle zip-filene inn i Muletto på én gang. Den leser dem som én eksport, så et bilde i del 3 finner opplysningene sine i del 7, duplikatene Google lagde ved å eksportere albumkopier ved siden av årsmappene blir funnet og slått sammen, og datoene og stedene havner tilbake inni selve filene.</p>
+              
+            </li>
+          </ol>
+
+          
+          <h2 id="open">Slik åpner du Google-eksporten</h2>
+          <p>Muletto leser en Google-eksport rett fra zip-fila, uten at du pakker den ut først, og finner bilder, video og posisjonshistorikk inni.</p>
+          <p>Alt skjer i nettleseren: arkivet lastes aldri opp, du trenger ingen konto, og ingenting installeres. Åpne flere eksporter samtidig, så blir de ett bibliotek, og bildene som finnes i mer enn én av dem finner appen selv.</p>
+          <div class="note">En Takeout er som regel større enn biblioteket ditt, fordi et bilde som ligger både i et album og i årsmappen sin eksporteres én gang for hver. De kopiene er byte for byte like, så duplikatsøket finner dem.</div>
+          <p><a class="btn primary" href="../../no/app.html">Åpne Google-eksporten din
+            <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+
+          <h2>Verdt å vite</h2>
+          <div class="note">En Takeout er som regel større enn biblioteket ditt, fordi et bilde som ligger både i et album og i årsmappen sin eksporteres én gang for hver. De kopiene er byte for byte like, så duplikatsøket finner dem.</div>
+          <div class="note">Google navngir opplysningsfilene ujevnt - supplemental-metadata.json, avkortede former av det, og nummererte varianter - så et verktøy som bare treffer den pene skrivemåten går glipp av noen. Muletto treffer alle sammen.</div>
+          <div class="note">Ikke pakk ut før du åpner. Muletto leser inni arkivene, så utpakking koster bare tid og dobbelt så mye diskplass.</div>
+          <div class="note">Foto og Disk er to forskjellige produkter i Takeout. Vil du ha begge, må du huke av for begge - en Foto-eksport inneholder ingen Disk-filer.</div>
+
+          <h2>Vanlige spørsmål</h2>
+          <div class="faq">
+            <details class="faq-q">
+              <summary>Hvorfor er alle Google Foto-bildene mine datert i dag etter en Takeout?</summary>
+              <p>Takeout legger ikke opptaksdatoen inni selve bildet. Den skrives til en liten JSON-fil ved siden av hvert bilde, så alt som bare leser bildet ser dagen du lastet det ned. Muletto leser de sidevognfilene og kan skrive den ekte datoen og stedet tilbake inn i hvert bilde.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvorfor er posisjonshistorikken tom i Google Takeout?</summary>
+              <p>Google flyttet Tidslinje over på telefonen i løpet av 2024 og 2025 og slo av serverversjonen i juni 2025, så en Takeout har ingenting igjen å ta med. I en fersk eksport inneholder Tidslinje-mappen en innstillingsfil på rundt én kilobyte og ingen historikk i det hele tatt. Dataene ligger fortsatt på telefonen din. Åpne Google Maps-appen, trykk på profilbildet ditt, så Innstillinger, så Personlig innhold, og se etter Eksporter tidslinjedata - den veien virker både på Android og iPhone, og på iPhone lagres fila via delingsmenyen som location-history.json. Enkelte Android-versjoner har det samme under Innstillinger, så Posisjon, så Posisjonstjenester, så Tidslinje. Det som kommer av telefonen er et annet format enn den gamle Records.json, ikke en nyere versjon av den. Det finnes en egen veiledning på denne siden som heter Hvorfor er Google-posisjonshistorikken min tom, og den går gjennom det i sin helhet.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hva er supplemental-metadata.json-filene i Takeout-en min?</summary>
+              <p>De inneholder datoen, stedet og beskrivelsen til hvert bilde. Google byttet navn på dem rundt oktober 2024 og forkorter navnet når hele filnavnet blir langt, så én eksport kan inneholde supplemental-metadata.json, supplemental-me.json og suppl.json for ulike bilder. Treffer du bare den fullstendige skrivemåten, mister du resten.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvordan åpner jeg en Google Takeout uten å laste den opp noe sted?</summary>
+              <p>Bruk noe som leser arkivet lokalt. Muletto gjør det: slipp inn zip-fila, så leses den på din egen maskin. Du kan skru av nettforbindelsen først, og det virker fortsatt.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvorfor er Google Takeout-en min delt i flere zip-filer?</summary>
+              <p>Du velger en maksimal arkivstørrelse når du ber om den, og alt som er større deles opp. Et bilde og sidevognfila si kan havne i hver sin del, så åpne alle sammen samtidig i stedet for én om gangen.</p>
+            </details>
+          </div>
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>Kort oppsummert</h4>
+            <dl>
+              <dt>Innsats</dt><dd>enkelt</dd>
+              <dt>Vanlig ventetid</dt><dd>minutter til noen dager, avhengig av størrelsen</dd>
+              <dt>Format</dt><dd>.zip (anbefalt) eller .tgz, delt opp i biter på opptil 50 GB</dd>
+              <dt>Levering</dt><dd>lenke på e-post</dd>
+              <dt>Sjekket</dt><dd>30. juli 2026</dd>
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Andre tjenester</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="apple-health.html"><span class="side-ic" data-icon="heart"></span>Apple Health</a></li>
+              <li><a href="microsoft.html"><span class="side-ic" data-icon="cloudup"></span>Microsoft</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+              <li><a href="samsung.html"><span class="side-ic" data-icon="samsung"></span>Samsung</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Hvor du kan lagre dataene</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/google.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

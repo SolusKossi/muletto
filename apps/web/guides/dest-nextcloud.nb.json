@@ -1,0 +1,43 @@
+{
+  "en_hash": "e11fc5eb322f",
+
+  "wait_time": "en kveld å sette opp, deretter en gjennomgang og en indeksering",
+  "format": "filer i Nextcloud, eller en mappe montert inn i det",
+
+  "steps": [
+    {
+      "title": "Bestem om Nextcloud skal eie filene eller bare se dem",
+      "detail": "To valg. La Nextcloud lagre biblioteket selv, ved å laste opp gjennom nettgrensesnittet eller skrivebordsklienten - enklest, og da har den styringen på sin egen datamappe. Eller la biblioteket ligge der det er og legg det til som ekstern lagring, som monterer mappen inn i Nextcloud uten å flytte noe. Det siste passer et bibliotek som allerede bor på en NAS eller en stor disk."
+    },
+    {
+      "title": "Skal du laste opp, bruk skrivebordsklienten",
+      "detail": "Installer Nextcloud-skrivebordsklienten, koble den til tjeneren din, og pek den mot mappen Muletto skrev. Den takler titusenvis av filer, fortsetter der den slapp når forbindelsen ryker, og viser reell framdrift. Opplasting i nettleseren går greit for en håndfull filer og er elendig for et bibliotek."
+    },
+    {
+      "title": "Skal du montere, legg det til som ekstern lagring",
+      "detail": "I administratorinnstillingene åpner du Ekstern lagring, legger til en Lokal lagring, gir den et mappenavn slik det skal vises i Nextcloud, og setter stien til mappen på tjeneren. Kjører Nextcloud i en container, er den stien den containeren ser, ikke vertens. Sørg for at brukeren webtjeneren kjører som kan lese den, ellers dukker monteringen opp og blir stivnakket tom."
+    },
+    {
+      "title": "Fortell Nextcloud at filene er der",
+      "detail": "Dette er steget som betyr noe. På tjeneren kjører du occ files:scan for brukeren som eier mappen, eller med --all for alle. Den går gjennom filsystemet og skriver det den finner inn i databasen. Før den har kjørt, finnes filer kopiert inn utenfra rett og slett ikke, sett fra Nextcloud."
+    },
+    {
+      "title": "Installer Memories for en ordentlig bildetidslinje",
+      "detail": "Filer-appen lister opp mapper; den er ikke et bildebibliotek. Memories legger til en tidslinje, et kart, album og ansiktsgruppering. Etter at du har installert den, kjør occ memories:index for å lese datoene og stedene ut av filene og bygge tidslinjen. På ekstern lagring går dette tregere, fordi hver fil må leses gjennom monteringen."
+    },
+    {
+      "title": "Hold det oppdatert av seg selv",
+      "detail": "Alt som legges til utenfra Nextcloud krever en ny gjennomgang. En planlagt jobb som kjører occ files:scan --all med jevne mellomrom holder det ærlig; Memories indekserer så de nye filene gjennom sin egen bakgrunnsjobb. Legger du bare inn ting gjennom klienten eller nettgrensesnittet, trengs ingen av delene."
+    },
+    {
+      "title": "Sjekk at datoene kom med",
+      "detail": "Memories bygger tidslinjen sin på datoen inni hver fil, og det er nettopp det Muletto reparerer før du eksporterer. Uten det kommer et Google- eller Apple-arkiv datert den dagen du kopierte det. Bla noen år tilbake før du stoler på det."
+    }
+  ],
+
+  "notes": [
+    "occ må kjøres som brukeren webtjeneren bruker, typisk med sudo -u www-data php occ ... - kjører du den som root, etterlater du filer tjeneren ikke får lest etterpå.",
+    "Ekstern lagring betyr at Nextcloud ikke eier filene. Å fjerne monteringen sletter dem ikke, og alt andre verktøy skriver inn i den mappen dukker opp etter neste gjennomgang.",
+    "Memories er en annen app enn den innebygde Bilder-appen, og er den som er verdt å ha hvis det er en tidslinje, et kart og ansiktsgruppering du er ute etter."
+  ]
+}

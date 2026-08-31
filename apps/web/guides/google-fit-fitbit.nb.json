@@ -1,0 +1,54 @@
+{
+  "en_hash": "ef5216d6a38c",
+
+  "wait_time": "timer til dager, avhengig av hvilken vei du går",
+  "format": ".zip med JSON og CSV",
+
+  "request": {
+    "label": "Google Takeout"
+  },
+
+  "steps": [
+    {
+      "title": "Finn ut hvilken konto du har",
+      "detail": "Logger du inn på Fitbit med en Google-konto, kommer dataene dine gjennom Google Takeout. Har du fortsatt en Fitbit-konto, bruk fitbit.com."
+    },
+    {
+      "title": "Google-konto: åpne Takeout",
+      "detail": "Fjern alle, og finn så helseproduktet. Det står nå oppført under Google Health og ikke Fitbit, selv om mappene inni fortsatt sier Fitbit."
+    },
+    {
+      "title": "Fitbit-konto: fitbit.com, Innstillinger, Dataeksport",
+      "detail": "Der kan du velge tidsrom og filformat, hvilket Takeout ikke tilbyr."
+    },
+    {
+      "title": "Be om den og vent",
+      "detail": "Puls i full oppløsning er den desidert største delen og bruker lengst tid på å gjøres klar."
+    },
+    {
+      "title": "Regn med tusenvis av små filer",
+      "detail": "Puls er én fil per dag, og pulsvariasjon er en fil på to linjer per dag."
+    }
+  ],
+
+  "notes": [
+    "Overgangen til Google skapte en ny mappe med de samme målingene i et annet format, så én eksport kan inneholde begge deler.",
+    "Søvnfilene er navngitt etter en dato, men hver av dem inneholder omtrent en måned med netter, i omvendt rekkefølge.",
+    "Treningsfilene er nummerert i bolker på hundre i stedet for datert, så det finnes ingen måte å vite hva som ligger i en uten å åpne den."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvor er Fitbit i Google Takeout?",
+      "a": "Det står oppført som Google Health og ikke som Fitbit. Mappene inne i nedlastingen bruker fortsatt Fitbit-navnet, og det er derfor et søk etter det i produktlista ikke gir noe."
+    },
+    {
+      "q": "Hvorfor har Fitbit-eksporten min tusenvis av filer?",
+      "a": "Puls skrives som én fil per dag, og pulsvariasjon som én fil på to linjer per dag. Flere år med bruk gir flere tusen filer med svært lite i hver."
+    },
+    {
+      "q": "Kan jeg få Fitbit-dataene mine uten en Google-konto?",
+      "a": "Bare hvis du fortsatt har en Fitbit-innlogging. Når kontoen først er flyttet over, er Takeout veien."
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Last ned dataene dine fra LinkedIn: GDPR-eksport steg for steg | Muletto</title>
+  <meta name="description" content="Slik laster du ned GDPR-eksporten din fra LinkedIn - innlegg og aktivitet, records - og slik åpner du den og ser hva som ligger der. 4 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter for de små filene, opptil et døgn for resten)." />
+  <link rel="canonical" href="https://muletto.app/no/guides/linkedin.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/linkedin.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/linkedin.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/linkedin.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Last ned dataene dine fra LinkedIn: GDPR-eksport steg for steg | Muletto" />
+  <meta property="og:description" content="Slik laster du ned GDPR-eksporten din fra LinkedIn - innlegg og aktivitet, records - og slik åpner du den og ser hva som ligger der. 4 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter for de små filene, opptil et døgn for resten)." />
+  <meta property="og:url" content="https://muletto.app/no/guides/linkedin.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik laster du ned GDPR-eksporten fra LinkedIn og åpner den","description":"Slik laster du ned GDPR-eksporten din fra LinkedIn - innlegg og aktivitet, records - og slik åpner du den og ser hva som ligger der. 4 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter for de små filene, opptil et døgn for resten).","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Åpne Innstillinger, så Datapersonvern","text":"Få en kopi av dataene dine. Dette finnes ikke i mobilappen."},{"@type":"HowToStep","position":2,"name":"Velg det største alternativet","text":"Hurtigvalget gir deg en håndfull filer i løpet av minutter. Det fullstendige tar opptil et døgn og inneholder kontakter og meldinger."},{"@type":"HowToStep","position":3,"name":"Vent på begge e-postene","text":"De kommer hver for seg. Det raske settet først, det viktige settet senere."},{"@type":"HowToStep","position":4,"name":"Last ned innen syttito timer","text":"Lenken går ut etter tre dager, hvilket er kortere enn hos de fleste tjenester."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"LinkedIn","item":"https://muletto.app/no/guides/linkedin.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"nb","mainEntity":[{"@type":"Question","name":"Hvorfor mangler kontaktene mine i LinkedIn-eksporten?","acceptedAnswer":{"@type":"Answer","text":"De ligger i den andre og tregere nedlastingen. LinkedIn sender et lite sett filer i løpet av minutter, og resten - inkludert kontakter og meldinger - opptil et døgn senere, i en egen e-post."}},{"@type":"Question","name":"Hvorfor åpnes Connections.csv feil i Excel?","acceptedAnswer":{"@type":"Answer","text":"Det står tre-fire linjer med merknader over den egentlige overskriftsraden. Bla ned til linja som begynner med First Name, og importer derfra."}},{"@type":"Question","name":"Hvor lenge er en LinkedIn-nedlasting tilgjengelig?","acceptedAnswer":{"@type":"Answer","text":"Syttito timer, hvilket er kortere enn hos de fleste. Etter det må du be om den på nytt."}},{"@type":"Question","name":"Hvorfor er så mange e-postadresser tomme i Connections.csv?","acceptedAnswer":{"@type":"Answer","text":"Fordi hver av de personene har skrudd det av, eller aldri skrudd det på. LinkedIn tar bare med en kontakts e-postadresse hvis vedkommende har tillatt at den er synlig for kontaktene sine, så en kolonne som er halvtom er innstillingen som virker og ikke eksporten som svikter. Å be om den på nytt fyller den ikke inn, og ingen del av arkivet har de manglende adressene."}},{"@type":"Question","name":"Kan jeg få ut telefonnumre, eller fullstendige profiler?","acceptedAnswer":{"@type":"Answer","text":"Nei. Telefonnumre er ikke med i eksporten under noen innstilling. Det er heller ikke det som gjør en kontakt gjenkjennelig senere - tittellinje, ferdigheter, arbeidshistorikk, ikke engang profiladressen. Eksporterer du fordi du vil beholde nettverket ditt, er det verdt å vite at det du beholder er en liste med navn og arbeidsgivere slik de var den dagen du spurte."}}]}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a>
+        <span>/</span>
+        <a href="../../guides.html">Veiledninger</a>
+        <span>/</span>
+        <span aria-current="page">LinkedIn</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Slik laster du ned dataene dine fra LinkedIn</h1>
+        <p class="art-kicker">Slik ber du om eksporten, hva som kommer, og hvordan du åpner den.</p>
+        <div class="art-meta">
+          <span class="badge easy">enkelt</span>
+          <span class="muted">Wait: minutter for de små filene, opptil et døgn for resten</span>
+        </div>
+        <p class="art-intro">LinkedIn er pliktig til å gi deg en kopi av dataene de har om deg, blant annet innlegg og aktivitet og records. Det koster ingenting å be om det, og du får .zip med CSV. Vanlig ventetid: minutter for de små filene, opptil et døgn for resten.</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">Få en kopi av dataene dine <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+          
+
+          <h2>Steg for steg</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Åpne Innstillinger, så Datapersonvern</h3>
+              <p>Få en kopi av dataene dine. Dette finnes ikke i mobilappen.</p>
+              
+            </li>
+            <li>
+              <h3>Velg det største alternativet</h3>
+              <p>Hurtigvalget gir deg en håndfull filer i løpet av minutter. Det fullstendige tar opptil et døgn og inneholder kontakter og meldinger.</p>
+              
+            </li>
+            <li>
+              <h3>Vent på begge e-postene</h3>
+              <p>De kommer hver for seg. Det raske settet først, det viktige settet senere.</p>
+              
+            </li>
+            <li>
+              <h3>Last ned innen syttito timer</h3>
+              <p>Lenken går ut etter tre dager, hvilket er kortere enn hos de fleste tjenester.</p>
+              
+            </li>
+          </ol>
+
+          
+          <h2 id="open">Slik åpner du LinkedIn-eksporten</h2>
+          <p>Muletto leser en LinkedIn-eksport rett fra zip-fila, uten at du pakker den ut først, og finner innlegg og aktivitet og records inni.</p>
+          <p>Alt skjer i nettleseren: arkivet lastes aldri opp, du trenger ingen konto, og ingenting installeres. Åpne flere eksporter samtidig, så blir de ett bibliotek, og bildene som finnes i mer enn én av dem finner appen selv.</p>
+          <div class="note">Det kontaktfila ikke inneholder, og det er mesteparten av det folk venter seg. Den har et navn, et selskap og en stillingstittel, og det er omtrent alt: ingen profiladresse, ingen tittellinje, ingen ferdigheter, ingen anbefalinger, ingen arbeidshistorikk, ingen utdanning, ingen sted. Telefonnumre er aldri med i det hele tatt, og e-postadresser dukker bare opp for kontakter som selv har tillatt det - ofte er rundt halvparten tomme, og det er en personverninnstilling hos dem og ikke en feil i nedlastingen din. Ubesvarte invitasjoner er heller ikke med; bare kontakter som takket ja står oppført.</div>
+          <p><a class="btn primary" href="../../no/app.html">Åpne LinkedIn-eksporten din
+            <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+
+          <h2>Verdt å vite</h2>
+          <div class="note">Det kontaktfila ikke inneholder, og det er mesteparten av det folk venter seg. Den har et navn, et selskap og en stillingstittel, og det er omtrent alt: ingen profiladresse, ingen tittellinje, ingen ferdigheter, ingen anbefalinger, ingen arbeidshistorikk, ingen utdanning, ingen sted. Telefonnumre er aldri med i det hele tatt, og e-postadresser dukker bare opp for kontakter som selv har tillatt det - ofte er rundt halvparten tomme, og det er en personverninnstilling hos dem og ikke en feil i nedlastingen din. Ubesvarte invitasjoner er heller ikke med; bare kontakter som takket ja står oppført.</div>
+          <div class="note">Kontakter og meldinger, som er de to tingene folk flest faktisk vil ha, ligger i den trege bunken. Det er lett å laste ned den første e-posten og tro at det er alt.</div>
+          <div class="note">Connections.csv begynner med flere linjer forklarende tekst før overskriftsraden, så importerer du den rett inn i et regneark får hver eneste kolonne feil navn.</div>
+          <div class="note">Datoene i den fila bruker engelske månedsnavn uansett hvilket språk du har valgt.</div>
+
+          <h2>Vanlige spørsmål</h2>
+          <div class="faq">
+            <details class="faq-q">
+              <summary>Hvorfor mangler kontaktene mine i LinkedIn-eksporten?</summary>
+              <p>De ligger i den andre og tregere nedlastingen. LinkedIn sender et lite sett filer i løpet av minutter, og resten - inkludert kontakter og meldinger - opptil et døgn senere, i en egen e-post.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvorfor åpnes Connections.csv feil i Excel?</summary>
+              <p>Det står tre-fire linjer med merknader over den egentlige overskriftsraden. Bla ned til linja som begynner med First Name, og importer derfra.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvor lenge er en LinkedIn-nedlasting tilgjengelig?</summary>
+              <p>Syttito timer, hvilket er kortere enn hos de fleste. Etter det må du be om den på nytt.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Hvorfor er så mange e-postadresser tomme i Connections.csv?</summary>
+              <p>Fordi hver av de personene har skrudd det av, eller aldri skrudd det på. LinkedIn tar bare med en kontakts e-postadresse hvis vedkommende har tillatt at den er synlig for kontaktene sine, så en kolonne som er halvtom er innstillingen som virker og ikke eksporten som svikter. Å be om den på nytt fyller den ikke inn, og ingen del av arkivet har de manglende adressene.</p>
+            </details>
+            <details class="faq-q">
+              <summary>Kan jeg få ut telefonnumre, eller fullstendige profiler?</summary>
+              <p>Nei. Telefonnumre er ikke med i eksporten under noen innstilling. Det er heller ikke det som gjør en kontakt gjenkjennelig senere - tittellinje, ferdigheter, arbeidshistorikk, ikke engang profiladressen. Eksporterer du fordi du vil beholde nettverket ditt, er det verdt å vite at det du beholder er en liste med navn og arbeidsgivere slik de var den dagen du spurte.</p>
+            </details>
+          </div>
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>Kort oppsummert</h4>
+            <dl>
+              <dt>Innsats</dt><dd>enkelt</dd>
+              <dt>Vanlig ventetid</dt><dd>minutter for de små filene, opptil et døgn for resten</dd>
+              <dt>Format</dt><dd>.zip med CSV</dd>
+              <dt>Levering</dt><dd>nedlasting</dd>
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Andre tjenester</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="apple-health.html"><span class="side-ic" data-icon="heart"></span>Apple Health</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="microsoft.html"><span class="side-ic" data-icon="cloudup"></span>Microsoft</a></li>
+              <li><a href="snapchat.html"><span class="side-ic" data-icon="snapchat"></span>Snapchat</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Hvor du kan lagre dataene</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/linkedin.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

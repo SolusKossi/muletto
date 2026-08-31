@@ -1,0 +1,79 @@
+{
+  "en_hash": "b1efedf41742",
+
+  "wait_time": "noen dager",
+  "format": "én eller flere .zip-filer",
+
+  "request": {
+    "label": "Samsungs personvernportal"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Samsungs personvernportal",
+      "detail": "Gå til privacy.samsung.com og logg inn med Samsung-kontoen som eier dataene du vil ha."
+    },
+    {
+      "title": "Velg \"Last ned eller slett dataene dine\"",
+      "detail": "Velg alternativet for å be om en kopi av personopplysningene dine, og gå videre til skjemaet."
+    },
+    {
+      "title": "Velg hva som skal være med",
+      "detail": "Huk av kategoriene du vil ha. Samsung Health er verdt å ta med selv om du kom for noe annet - det er det vanskeligste å få tak i andre steder og det mest avslørende. Hva som tilbys varierer med land og med hvilke Samsung-tjenester kontoen din faktisk har brukt, så lista vil ikke være helt lik noen andres."
+    },
+    {
+      "title": "Send inn forespørselen",
+      "detail": "Bekreft e-postadressen nedlastingslenken skal sendes til, og send inn."
+    },
+    {
+      "title": "Vent på e-posten",
+      "detail": "Samsung gjør eksporten klar og sender en lenke på e-post. Det er ingen framdrift å følge med på. Kommer det ingenting, sjekk adressen som står på Samsung-kontoen, ikke den du går ut fra at den bruker - en gammel adresse på kontoen er den vanligste grunnen til at e-posten aldri dukker opp."
+    },
+    {
+      "title": "Last ned hver eneste del",
+      "detail": "Trykk Send meg filpassordet først, og vent på e-posten - sjekk søppelposten, den havner ofte der. Trykk deretter Last ned alle filer. Samsung sender ett arkiv per tjeneste, så regn med flere: Samsung Health, Samsung Cloud, Samsung Account, Galaxy Store og hva kontoen ellers har brukt. Hold dem samlet i én mappe. Nedlastingslenken går ut, så ikke la den ligge i fjorten dager."
+    },
+    {
+      "title": "Åpne den og se hva som faktisk ligger der",
+      "detail": "Slipp arkivene inn i Muletto. CSV-tabellene blir oppføringer du kan bla i i stedet for filnavn, eventuelle bilder havner på samme tidslinje som de andre eksportene dine, og oversikten Hva ligger her lister opp hver fil den fant og hvor mye av den som ble lest - hvilket for en så variert eksport er raskeste vei til å se hva Samsung faktisk sendte."
+    },
+    {
+      "title": "Åpne dem her og skriv inn passordet når du blir bedt om det",
+      "detail": "Samsung låser hvert eneste arkiv de sender, og sender passordet i en egen e-post - på nedlastingssiden er det Send meg filpassordet som sender det til deg. Muletto spør om det én gang og åpner alle ni, så du slipper å pakke ut noe for hånd. Passordet brukes i nettleseren og lagres eller sendes aldri noe sted. Vil du helst slippe å lime det inn, går det like bra å pakke ut arkivene selv og åpne mappen."
+    }
+  ],
+
+  "notes": [
+    "Samsungs bekreftelsesdialog sier at forespørselen ikke kan avbrytes når den først er sendt, og at enkelte apper og tjenester kan være tungvinte å bruke mens dataene gjøres klare. Velg tjenestene du vil ha før du sender inn.",
+    "Samsung Health og Samsung Cloud bes om fra den samme portalen - ta dem med hvis du vil ha skrittene, treningsøktene eller skysikkerhetskopiene dine.",
+    "Hva du får tilbake avhenger av hvilke Samsung-tjenester du faktisk bruker på telefonen.",
+    "Data som ikke er knyttet til en Samsung-konto bes om for seg, gjennom den samme personvernportalen.",
+    "Det er ingen galleribilder i denne eksporten, og for en moderne Galaxy kommer det ikke til å være det. Samsung la ned sin egen gallerisynkronisering i 2021 og overlot bildesikkerhetskopiering til Microsoft OneDrive, så bildene dine ligger på en OneDrive-konto og ikke i noe Samsung sender deg. Den ordningen tar slutt 30. september 2026, og etter det slutter Samsung å synkronisere dit i det hele tatt - har du lent deg på den, må du få bildene ut av OneDrive før den tid.",
+    "Samsung Health kommer ut på to helt forskjellige måter, og de ligner ikke på hverandre. Denne forespørselen gir deg det inne i ett av samsungcloud-arkivene, som mapper med engelske navn - Heart Rate, Weight, Sleep - med én CSV i hver. Den andre veien er inne i selve Samsung Health-appen, under Innstillinger og Last ned personlige data, som skriver filer med navn som com.samsung.shealth.tracker.pedometer_step_count til nedlastingsmappen din. Muletto leser begge deler. Bruker du klokke, har appveien pleid å inneholde mer historikk, så den er verdt å ta i tillegg.",
+    "Passord-e-posten og nedlastingen er to atskilte trinn, og nedlastingslenken går ut først. Skaff deg passordet før du trenger det.",
+    "Sier Muletto at filene er passordbeskyttet, er det dette som har skjedd - arkivene er låst, ikke ødelagt."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor er Samsung-dataeksporten min passordbeskyttet?",
+      "a": "Samsung krypterer hvert arkiv de sender, og legger aldri passordet i den samme e-posten. På nedlastingssiden finnes en egen lenke, Send meg filpassordet, som sender det til deg. Ett passord åpner hvert arkiv i forespørselen, og Muletto spør om det én gang og åpner alle sammen."
+    },
+    {
+      "q": "Hvor lang tid tar en Samsung-dataeksport?",
+      "a": "Samsung sier opptil en måned, og i praksis er det som regel noen dager. E-posten kommer når den er klar, og nedlastingslenken går ut, så hent alt så snart det lander."
+    },
+    {
+      "q": "Hvorfor fikk jeg ni separate filer fra Samsung?",
+      "a": "Samsung sender ett arkiv per tjeneste i stedet for én fil for alt. En tjeneste som ikke har noe på deg gir ikke noe arkiv i det hele tatt, så antallet du får avhenger av hva du har brukt. Åpne dem samtidig, så slås de sammen til ett bibliotek."
+    },
+    {
+      "q": "Samsung-eksporten min har ingen bilder. Hvor er de?",
+      "a": "Det er ingen galleribilder i en Samsung-personverneksport, og for en moderne Galaxy kommer det ikke til å være det. Samsung la ned sin egen gallerisynkronisering i 2021 og overlot bildesikkerhetskopiering til Microsoft OneDrive, så bildene dine ligger på en OneDrive-konto og ikke i noe Samsung sender. Den ordningen tar slutt 30. september 2026."
+    },
+    {
+      "q": "Hvor er Samsung Health-dataene i eksporten?",
+      "a": "De kommer inne i ett av samsungcloud-arkivene, som mapper med engelske navn som Heart Rate og Weight, med én CSV i hver. Det finnes en helt annen vei i tillegg: Samsung Health-appen har et valg som heter Last ned personlige data under Innstillinger, og det skriver filer med navn som com.samsung.shealth og inneholder ofte mer historikk. Muletto leser begge deler."
+    }
+  ]
+}

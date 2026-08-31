@@ -1,0 +1,56 @@
+{
+  "en_hash": "220d62e922d9",
+
+  "wait_time": "noen timer, opptil ti dager for en stor konto",
+  "format": ".zip med CSV pluss de opprinnelige aktivitetsfilene dine",
+
+  "request": {
+    "label": "Strava: Last ned eller slett kontoen din"
+  },
+
+  "steps": [
+    {
+      "title": "Bytt kontospråket til engelsk først",
+      "detail": "Kolonneoverskriftene i CSV-en skrives på kontospråket ditt, og nesten alle verktøy som leser dem forventer engelsk."
+    },
+    {
+      "title": "Åpne Innstillinger, så Min konto",
+      "detail": "Last ned eller slett kontoen din, og deretter Be om arkivet ditt. Ikke gå videre derfra og inn i sletting."
+    },
+    {
+      "title": "Be om arkivet",
+      "detail": "Du får en e-post når det er klart."
+    },
+    {
+      "title": "Vent",
+      "detail": "Noen timer er vanlig. Et tiår med aktiviteter kan ta opptil ti dager."
+    },
+    {
+      "title": "Åpne activities.csv først",
+      "detail": "Den er innholdsfortegnelsen. Hver rad peker på originalfila du lastet opp, i det formatet du lastet den opp i."
+    }
+  ],
+
+  "notes": [
+    "Forespørselen ligger på siden som heter Last ned eller slett kontoen din, så knappen over lander deg et sted som tilbyr å slette alt. Det er Stravas egen oppbygning og ikke en feil her. Velg Be om arkivet ditt, og ikke gå videre forbi det.",
+    "Bildene er ikke med i masseeksporten. Aktivitetsdataene er det - én fil per aktivitet pluss en activities.csv som oppsummerer hver eneste av dem med dato, type, distanse, bevegelsestid, stigning, puls, kalorier og utstyr - men bildene du la ved de aktivitetene er ikke med, og det finnes ingen innstilling som legger dem til. Filene per aktivitet kommer tilbake i det formatet aktiviteten opprinnelig ble tatt opp i, GPX eller FIT eller TCX, og du kan ikke be om ett format for hele bunken; en løpetur fra en klokke og en sykkeltur fra en telefon kan komme som to forskjellige filtyper i samme nedlasting.",
+    "Aktivitetsfilene kommer tilbake nøyaktig slik de gikk inn, så én mappe kan inneholde .fit-, .gpx- og .tcx-filer og gzippede versjoner av alle tre.",
+    "Aktiviteter som er lagt inn for hånd har ingen fil i det hele tatt, og en tom kolonne der filnavnet skulle stått.",
+    "Arkivet inneholder bildene og de private notatene dine i tillegg til sporene."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvordan laster jeg ned alle Strava-aktivitetene mine på én gang?",
+      "a": "Be om massearkivet fra Innstillinger, Min konto, Last ned eller slett kontoen din. Det inneholder hver aktivitetsfil i sitt opprinnelige format pluss en CSV som fungerer som innholdsfortegnelse."
+    },
+    {
+      "q": "Hvorfor er kolonnene i Strava-eksporten min på norsk?",
+      "a": "Strava skriver CSV-overskriftene på det språket kontoen din er satt til. Bytt til engelsk før du ber om den hvis du har tenkt å bruke noe verktøy på den."
+    },
+    {
+      "q": "Hvilket format har Strava-aktivitetsfilene?",
+      "a": "Det du lastet opp. Ett og samme arkiv inneholder ofte .fit-, .gpx- og .tcx-filer side om side, noen av dem gzippet."
+    }
+  ]
+}

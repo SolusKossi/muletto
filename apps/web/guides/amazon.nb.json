@@ -1,0 +1,62 @@
+{
+  "en_hash": "8cfc4bafc857",
+
+  "wait_time": "seks timer til en måned, og genuint uforutsigbart",
+  "format": "flere .zip-filer, stort sett CSV med noe PDF og lyd",
+
+  "request": {
+    "label": "Be om dataene mine"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Be om dataene mine",
+      "detail": "Det ligger under Konto, så Datapersonvern. Bruk nettstedet for landet kontoen din hører til."
+    },
+    {
+      "title": "Velg én kategori fra nedtrekkslista",
+      "detail": "Dette er den tungvinte biten: lista lar deg bare velge én om gangen. Be om alle dataene dine er nederste valg, og det er det du skal ta med mindre du er ute etter noe bestemt."
+    },
+    {
+      "title": "Send inn og bekreft på e-post",
+      "detail": "Ingenting gjøres klart før du klikker lenken i bekreftelses-e-posten."
+    },
+    {
+      "title": "Vent, uten å regne med et mønster",
+      "detail": "Én forespørsel har kommet tilbake på seks timer, og en annen fra den samme kontoen brukte nitten dager."
+    },
+    {
+      "title": "Last ned alt før det går ut",
+      "detail": "Filene er tilgjengelige i nitti dager, og hver enkelt har sin egen utløpsdato."
+    },
+    {
+      "title": "Hold arkivene fra hverandre",
+      "detail": "Det samme filnavnet dukker opp i mer enn ett arkiv med forskjellig innhold. Pakk dem ut i hver sin mappe, ellers overskriver det ene det andre."
+    }
+  ],
+
+  "notes": [
+    "Fordi nedtrekkslista bare tar én kategori om gangen, ender de fleste opp med å sende flere forespørsler med ukers mellomrom. Formatet ble endret i februar 2026, så én mappe kan inneholde to uforenlige versjoner av den samme fila.",
+    "Alexa-lydopptak utgjør brorparten av en stor eksport. Bestillingshistorikk, selv over tjue år, holder seg på ensifret antall megabyte.",
+    "Bilder i Amazon Photos er ikke med. Eksporten beskriver biblioteket uten å inneholde det."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvor lang tid tar en dataforespørsel til Amazon?",
+      "a": "Amazon sier opptil en måned. I praksis har det variert fra seks timer til nitten dager for den samme kontoen, så det finnes ikke noe pålitelig tall å planlegge etter."
+    },
+    {
+      "q": "Hvorfor kan jeg bare velge én kategori om gangen hos Amazon?",
+      "a": "Skjemaet er en nedtrekksliste som bare tar ett valg. Be om alle dataene dine er nederste oppføring og er som regel det du vil ha; ellers må du sende én forespørsel per kategori, og de kommer til ulik tid."
+    },
+    {
+      "q": "Hvorfor kom Amazon-bestillingshistorikken min som JSON i stedet for CSV?",
+      "a": "Amazon sender enten den ene eller den andre, tilsynelatende tilfeldig - den samme personen har bedt om den to ganger med dagers mellomrom og fått én av hver. JSON-versjonen har dessuten færre felter enn CSV-en."
+    },
+    {
+      "q": "Er Alexa-opptak med i Amazon-dataeksporten?",
+      "a": "Ja, som .wav-filer, hvis du har en Echo. For en husholdning som har brukt en i noen år er dette det aller meste av nedlastingen målt i størrelse."
+    }
+  ]
+}

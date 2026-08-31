@@ -638,9 +638,35 @@ const TRANSLATABLE = [
   "notes[]", "faq[].q", "faq[].a",
 ];
 
+/* A canonical form of the guide, so the hash changes when any of it does.
+ *
+ * The first version was `JSON.stringify(obj, Object.keys(obj).sort())`, which
+ * reads as "stringify with the keys sorted" and is not what that argument
+ * means. An array in the second position is a *property filter*, applied at
+ * every level of the object - so only the top-level key names survived, and
+ * every nested one was stripped. `steps` came out as `[{}]`.
+ *
+ * The consequence was the opposite of the guarantee: editing a step's title,
+ * a step's detail, a FAQ question or a FAQ answer - between them most of the
+ * words in a guide - left the hash unchanged, so the translation went on
+ * being served against English it no longer matched. A guard that reports
+ * success while not looking is worse than no guard, because it is trusted.
+ *
+ * Sorting is done properly here, recursively, so two objects with the same
+ * content hash the same however their keys happen to be ordered on disk. */
+function canonical(v) {
+  if (Array.isArray(v)) return v.map(canonical);
+  if (v && typeof v === "object") {
+    const out = {};
+    for (const k of Object.keys(v).sort()) out[k] = canonical(v[k]);
+    return out;
+  }
+  return v;
+}
+
 const enHash = (obj) =>
   crypto.createHash("sha256")
-    .update(JSON.stringify(obj, Object.keys(obj).sort()))
+    .update(JSON.stringify(canonical(obj)))
     .digest("hex").slice(0, 12);
 
 /* Walk one of the paths above and return every value it names, with the

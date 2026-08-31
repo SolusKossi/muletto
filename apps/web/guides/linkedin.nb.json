@@ -1,0 +1,59 @@
+{
+  "en_hash": "cbeb6a9b98ed",
+
+  "wait_time": "minutter for de små filene, opptil et døgn for resten",
+  "format": ".zip med CSV",
+
+  "request": {
+    "label": "Få en kopi av dataene dine"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Innstillinger, så Datapersonvern",
+      "detail": "Få en kopi av dataene dine. Dette finnes ikke i mobilappen."
+    },
+    {
+      "title": "Velg det største alternativet",
+      "detail": "Hurtigvalget gir deg en håndfull filer i løpet av minutter. Det fullstendige tar opptil et døgn og inneholder kontakter og meldinger."
+    },
+    {
+      "title": "Vent på begge e-postene",
+      "detail": "De kommer hver for seg. Det raske settet først, det viktige settet senere."
+    },
+    {
+      "title": "Last ned innen syttito timer",
+      "detail": "Lenken går ut etter tre dager, hvilket er kortere enn hos de fleste tjenester."
+    }
+  ],
+
+  "notes": [
+    "Det kontaktfila ikke inneholder, og det er mesteparten av det folk venter seg. Den har et navn, et selskap og en stillingstittel, og det er omtrent alt: ingen profiladresse, ingen tittellinje, ingen ferdigheter, ingen anbefalinger, ingen arbeidshistorikk, ingen utdanning, ingen sted. Telefonnumre er aldri med i det hele tatt, og e-postadresser dukker bare opp for kontakter som selv har tillatt det - ofte er rundt halvparten tomme, og det er en personverninnstilling hos dem og ikke en feil i nedlastingen din. Ubesvarte invitasjoner er heller ikke med; bare kontakter som takket ja står oppført.",
+    "Kontakter og meldinger, som er de to tingene folk flest faktisk vil ha, ligger i den trege bunken. Det er lett å laste ned den første e-posten og tro at det er alt.",
+    "Connections.csv begynner med flere linjer forklarende tekst før overskriftsraden, så importerer du den rett inn i et regneark får hver eneste kolonne feil navn.",
+    "Datoene i den fila bruker engelske månedsnavn uansett hvilket språk du har valgt."
+  ],
+
+  "faq": [
+    {
+      "q": "Hvorfor mangler kontaktene mine i LinkedIn-eksporten?",
+      "a": "De ligger i den andre og tregere nedlastingen. LinkedIn sender et lite sett filer i løpet av minutter, og resten - inkludert kontakter og meldinger - opptil et døgn senere, i en egen e-post."
+    },
+    {
+      "q": "Hvorfor åpnes Connections.csv feil i Excel?",
+      "a": "Det står tre-fire linjer med merknader over den egentlige overskriftsraden. Bla ned til linja som begynner med First Name, og importer derfra."
+    },
+    {
+      "q": "Hvor lenge er en LinkedIn-nedlasting tilgjengelig?",
+      "a": "Syttito timer, hvilket er kortere enn hos de fleste. Etter det må du be om den på nytt."
+    },
+    {
+      "q": "Hvorfor er så mange e-postadresser tomme i Connections.csv?",
+      "a": "Fordi hver av de personene har skrudd det av, eller aldri skrudd det på. LinkedIn tar bare med en kontakts e-postadresse hvis vedkommende har tillatt at den er synlig for kontaktene sine, så en kolonne som er halvtom er innstillingen som virker og ikke eksporten som svikter. Å be om den på nytt fyller den ikke inn, og ingen del av arkivet har de manglende adressene."
+    },
+    {
+      "q": "Kan jeg få ut telefonnumre, eller fullstendige profiler?",
+      "a": "Nei. Telefonnumre er ikke med i eksporten under noen innstilling. Det er heller ikke det som gjør en kontakt gjenkjennelig senere - tittellinje, ferdigheter, arbeidshistorikk, ikke engang profiladressen. Eksporterer du fordi du vil beholde nettverket ditt, er det verdt å vite at det du beholder er en liste med navn og arbeidsgivere slik de var den dagen du spurte."
+    }
+  ]
+}

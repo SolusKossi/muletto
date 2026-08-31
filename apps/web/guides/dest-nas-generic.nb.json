@@ -1,0 +1,38 @@
+{
+  "en_hash": "24376edc366b",
+
+  "wait_time": "minutter å koble til, en time eller mer å kopiere",
+  "format": "en nettverksmappe, lesbar av hva som helst",
+
+  "steps": [
+    {
+      "title": "Lag en mappe til det",
+      "detail": "Opprett en delt mappe på NAS-en til biblioteket - bilder, eller arkiv, eller hva du fortsatt kommer til å forstå om fem år. Gi din egen konto skrivetilgang til den. Har NAS-en sin egen bildeapp, sjekk hvor den appen forventer at filene ligger før du velger, for feil mappe betyr at appen aldri ser dem."
+    },
+    {
+      "title": "Koble den til som en stasjon",
+      "detail": "Følg merknaden over, så dukker den delte mappen opp som en helt vanlig mappe på maskinen din. Huk av for å koble til på nytt ved innlogging i Windows hvis du skal bruke den jevnlig. Bruk helst kabel til den første kopieringen - et stort bibliotek over wifi måles i timer."
+    },
+    {
+      "title": "Skriv biblioteket rett til den",
+      "detail": "Eksporter fra Muletto rett til den tilkoblede stasjonen, eller kopier mappene over etterpå. Dette er vanlige mapper med vanlige filer, så ingenting på NAS-en trenger å forstå Muletto for at det skal virke."
+    },
+    {
+      "title": "Kontroller med antall og størrelse",
+      "detail": "Sammenlign antall filer og samlet størrelse mot kilden. Nettverkskopiering feiler annerledes enn lokal: en forbindelse som ryker kan etterlate en mappe som ser komplett ut og mangler hundrevis av filer. Åpne noen bilder fra forskjellige år som en fornuftssjekk."
+    },
+    {
+      "title": "La NAS-en indeksere det, hvis den har en app",
+      "detail": "De fleste bildeapper på en NAS må lese hver eneste fil før de viser noe som helst, og på et stort bibliotek går det i timevis. En app som ser tom ut kort tid etter kopieringen er som regel fortsatt i arbeid. Finn statusen for indekseringen i stedet for å gjette."
+    },
+    {
+      "title": "Husk at en NAS ikke er en sikkerhetskopi",
+      "detail": "Den er én kopi, i én bygning, på disker som sannsynligvis ble kjøpt samtidig. RAID holder deg i gang når en disk ryker; det gjør ingenting med brann, tyveri, løsepengevirus eller at du sletter feil mappe. Bruk det sikkerhetskopiverktøyet NAS-en kommer med til å kopiere til en ekstern disk eller et annet sted, og test en gjenoppretting før du stoler på den."
+    }
+  ],
+
+  "notes": [
+    "SMB er protokollen både Windows og macOS snakker. Tilbyr NAS-en AFP i tillegg, overse det - Apple har lagt det dødt, og SMB er den som fortsetter å virke.",
+    "Har NAS-en en bildeapp, er indekseringen dens noe annet enn kopieringen. At filene er der og at appen viser dem er to forskjellige ting."
+  ]
+}

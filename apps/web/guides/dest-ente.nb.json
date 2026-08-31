@@ -1,0 +1,38 @@
+{
+  "en_hash": "aae013121553",
+
+  "wait_time": "en opplasting, på din egen maskin",
+  "format": "kryptert på maskinen din, og så lastet opp",
+
+  "steps": [
+    {
+      "title": "Vurder om avveiningen passer deg",
+      "detail": "Ente er en betalt tjeneste som driftes for deg, på linje med iCloud eller Google Foto, med den forskjellen at de ikke kan lese det du lagrer. Du får mobilappen, deling og søk; du gir fra deg muligheten til å få noe tilbake hvis du mister gjenopprettingsnøkkelen, for ingen hos Ente kan nullstille den for deg. Det er også åpen kildekode og kan driftes av deg selv om du heller vil det."
+    },
+    {
+      "title": "Installer skrivebordsappen",
+      "detail": "Skaff skrivebordsappen i stedet for å bruke nettleseren. Det er den støttede veien for å importere fra en lokal disk, den takler store mengder, og det er den som gjør krypteringen. Kommandolinjeverktøyet er verdt å kjenne til, men er laget for å eksportere biblioteket ditt ut igjen, ikke for masseimport."
+    },
+    {
+      "title": "Skriv ned gjenopprettingsnøkkelen",
+      "detail": "Gjør dette før du laster opp noe som helst. Ende-til-ende-kryptering betyr at nøkkelen er eneste vei inn - mister du den, er bildene umulige å hente tilbake for hvem som helst, Ente inkludert. Oppbevar den et sted som overlever at maskinen din forsvinner: en passordbehandler, eller papir på et trygt sted."
+    },
+    {
+      "title": "Importer mappen Muletto skrev",
+      "detail": "I skrivebordsappen velger du å legge til filer fra en mappe, og peker den mot det ordnede biblioteket ditt. Ente leser datoen og stedet ut av hver fil, så tidslinjen havner riktig - hvilket er nøyaktig det å reparere opplysningene først er til for. Mappestrukturen kan bli til album, så års- og månedsmappene betyr fortsatt noe."
+    },
+    {
+      "title": "La den bli ferdig, og følg med på lagringen",
+      "detail": "Å kryptere og laste opp et stort bibliotek går tregere enn en vanlig kopiering, fordi maskinen din driver med kryptografi på hver eneste fil. La den stå og gå på strøm. Hold et øye med lagringen i abonnementet ditt underveis, siden et fullt reparert bibliotek som regel er omtrent like stort som arkivet du lastet ned."
+    },
+    {
+      "title": "Behold en kopi som ikke er avhengig av dem",
+      "detail": "Kryptert og driftet av andre er fortsatt driftet av andre. Ente gjør det lett å dra - kommandolinjeverktøyet finnes nettopp for at du skal kunne ta løpende eksporter uten å være avhengig av dem - så sett opp det, eller behold mappen Muletto skrev på en disk du eier selv."
+    }
+  ],
+
+  "notes": [
+    "Det finnes ingen migreringsverktøy som kjører på Entes side, og det er en følge av krypteringen og ikke et hull. Alt som skal lese biblioteket ditt må kjøre på din egen maskin.",
+    "Kommandolinjeverktøyet henter fra Ente til lokal lagring; endringer i de lokale filene synkroniseres ikke tilbake. Se på det som et eksportverktøy, for det er det det er til."
+  ]
+}

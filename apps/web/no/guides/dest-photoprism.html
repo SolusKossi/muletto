@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PhotoPrism (self-hosted): her kan du lagre dataene dine | Muletto</title>
+  <meta name="description" content="Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til PhotoPrism (self-hosted). 6 steg, skrevet for deg som vil ha din egen kopi." />
+  <link rel="canonical" href="https://muletto.app/no/guides/dest-photoprism.html" />
+  <link rel="alternate" hreflang="nb" href="https://muletto.app/no/guides/dest-photoprism.html" />
+  <link rel="alternate" hreflang="en" href="https://muletto.app/guides/dest-photoprism.html" />
+  <link rel="alternate" hreflang="x-default" href="https://muletto.app/guides/dest-photoprism.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="PhotoPrism (self-hosted): her kan du lagre dataene dine | Muletto" />
+  <meta property="og:description" content="Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til PhotoPrism (self-hosted). 6 steg, skrevet for deg som vil ha din egen kopi." />
+  <meta property="og:url" content="https://muletto.app/no/guides/dest-photoprism.html" />
+  <meta property="og:site_name" content="Muletto" />
+  <meta property="og:locale" content="nb_NO" />
+  <meta property="og:locale:alternate" content="en_GB" />
+  <meta property="og:image" content="https://muletto.app/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../../og.png" />
+  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <!-- Themes. In the head so a dark theme does not start as a white flash,
+       and on every page so the choice follows the reader around. -->
+  <script src="../../theme.js?v=4ef9956d"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik flytter du dataene dine til PhotoPrism (self-hosted)","description":"Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til PhotoPrism (self-hosted). 6 steg, skrevet for deg som vil ha din egen kopi.","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Installer det","text":"PhotoPrism er en selvhostet bildetjener med søk, steder, ansikter og et nettgrensesnitt. Den kjører med Docker Compose på en NAS, en hjemmeserver eller en ledig PC. Start fra den offisielle docker-compose.yml, få den opp, og åpne så nettgrensesnittet og logg inn med administratorpassordet du satte i compose-fila."},{"@type":"HowToStep","position":2,"name":"Monter biblioteket ditt som originals","text":"PhotoPrism leser alt under én mappe den kaller originals. Pek den mot mappen Muletto skrev ved å legge den inn som et volum i docker-compose.yml, med din sti på verten til venstre og /photoprism/originals til høyre. Har du flere adskilte mapper, monter heller hver av dem som en undermappe av originals - din sti til venstre, /photoprism/originals/ferier til høyre, og så videre."},{"@type":"HowToStep","position":3,"name":"Skru på skrivebeskyttelse hvis dette er arkivet ditt av rang","text":"Setter du PHOTOPRISM_READONLY til true, hindrer det PhotoPrism i å skrive til originalene dine i det hele tatt. Indeksering virker fortsatt; importfunksjonen gjør det ikke, for import krever å skrive inn i den mappen. Er disse filene kopien du har tenkt å beholde for alltid, er den avveiningen verdt å ta."},{"@type":"HowToStep","position":4,"name":"Indekser, ikke importer","text":"Åpne Bibliotek, så Indekser, og kjør den. PhotoPrism går gjennom mappen, leser hver fil der den ligger, og bygger databasen sin ut fra det den finner. Ingenting flyttes og ingenting får nytt navn. Import-fanen gjør noe annet - den kopierer filer inn og gir dem nye navn etter sitt eget system - så la den være med mindre det faktisk er det du vil."},{"@type":"HowToStep","position":5,"name":"Sjekk at datoene og stedene kom med","text":"PhotoPrism leser dato og GPS inni hver fil, og det er nøyaktig det Muletto reparerer før du eksporterer. Åpne kalenderen og stedskartet og ta stikkprøver på noen gamle bilder. Har alt havnet på dagens dato, mistet originalene opplysningene sine et sted lenger oppe i kjeden, og det er verdt å reparere dem på nytt før du indekserer."},{"@type":"HowToStep","position":6,"name":"Legg til mer når du vil","text":"Du kan slippe nye mapper inn i originals når som helst uten å stoppe tjeneren, og så kjøre indekseringen på nytt. Bare det som er nytt blir lest, så en ny runde over et stort bibliotek går fort."}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"PhotoPrism (self-hosted)","item":"https://muletto.app/no/guides/dest-photoprism.html"}],"inLanguage":"nb"}</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <div class="nav-left">
+        <a class="wordmark" href="../../no/index.html">muletto</a>
+        <div class="nav-links">
+          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/privacy.html">Personvern</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a class="btn primary" href="../../no/app.html">Åpne en eksport</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <article class="wrap article">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="../../no/index.html">Hjem</a>
+        <span>/</span>
+        <a href="../../guides.html">Veiledninger</a>
+        <span>/</span>
+        <span aria-current="page">PhotoPrism (self-hosted)</span>
+      </nav>
+
+      <header class="art-head">
+        <h1>Flytt dataene dine til PhotoPrism (self-hosted)</h1>
+        
+        <div class="art-meta">
+          <span class="badge medium">middels</span>
+          <span class="muted">Takes en kveld å sette opp, deretter en indekseringsrunde</span>
+        </div>
+        <p class="art-intro">Når du har fått dataene dine ut av de store tjenestene og ryddet i dem, må de bo et sted du selv styrer. Denne veiledningen handler om å flytte arkivet til PhotoPrism (self-hosted).</p>
+      </header>
+
+      <div class="art-grid">
+        <div class="art-main">
+          
+          <aside class="explain"><h2>Indexing is not importing</h2><p>PhotoPrism uses those two words for different things. Indexing reads the folder you already have and leaves every file and folder name alone. Importing copies files into PhotoPrism&#39;s own originals folder and renames them into its own structure. For a library Muletto has just organised, indexing is almost always what you want - you chose the folder names for a reason.</p></aside>
+
+          <h2>Steg for steg</h2>
+          
+          <ol class="steps-ol">
+            <li>
+              <h3>Installer det</h3>
+              <p>PhotoPrism er en selvhostet bildetjener med søk, steder, ansikter og et nettgrensesnitt. Den kjører med Docker Compose på en NAS, en hjemmeserver eller en ledig PC. Start fra den offisielle docker-compose.yml, få den opp, og åpne så nettgrensesnittet og logg inn med administratorpassordet du satte i compose-fila.</p>
+              
+            </li>
+            <li>
+              <h3>Monter biblioteket ditt som originals</h3>
+              <p>PhotoPrism leser alt under én mappe den kaller originals. Pek den mot mappen Muletto skrev ved å legge den inn som et volum i docker-compose.yml, med din sti på verten til venstre og /photoprism/originals til høyre. Har du flere adskilte mapper, monter heller hver av dem som en undermappe av originals - din sti til venstre, /photoprism/originals/ferier til høyre, og så videre.</p>
+              
+            </li>
+            <li>
+              <h3>Skru på skrivebeskyttelse hvis dette er arkivet ditt av rang</h3>
+              <p>Setter du PHOTOPRISM_READONLY til true, hindrer det PhotoPrism i å skrive til originalene dine i det hele tatt. Indeksering virker fortsatt; importfunksjonen gjør det ikke, for import krever å skrive inn i den mappen. Er disse filene kopien du har tenkt å beholde for alltid, er den avveiningen verdt å ta.</p>
+              
+            </li>
+            <li>
+              <h3>Indekser, ikke importer</h3>
+              <p>Åpne Bibliotek, så Indekser, og kjør den. PhotoPrism går gjennom mappen, leser hver fil der den ligger, og bygger databasen sin ut fra det den finner. Ingenting flyttes og ingenting får nytt navn. Import-fanen gjør noe annet - den kopierer filer inn og gir dem nye navn etter sitt eget system - så la den være med mindre det faktisk er det du vil.</p>
+              
+            </li>
+            <li>
+              <h3>Sjekk at datoene og stedene kom med</h3>
+              <p>PhotoPrism leser dato og GPS inni hver fil, og det er nøyaktig det Muletto reparerer før du eksporterer. Åpne kalenderen og stedskartet og ta stikkprøver på noen gamle bilder. Har alt havnet på dagens dato, mistet originalene opplysningene sine et sted lenger oppe i kjeden, og det er verdt å reparere dem på nytt før du indekserer.</p>
+              
+            </li>
+            <li>
+              <h3>Legg til mer når du vil</h3>
+              <p>Du kan slippe nye mapper inn i originals når som helst uten å stoppe tjeneren, og så kjøre indekseringen på nytt. Bare det som er nytt blir lest, så en ny runde over et stort bibliotek går fort.</p>
+              
+            </li>
+          </ol>
+
+          
+
+          <h2>Verdt å vite</h2>
+          <div class="note">Originals-mappen er den PhotoPrism bryr seg om. Alt annet den lagrer - miniatyrbilder, databasen, mellomlageret - bor i storage-mappen, og det er den delen du skal sikkerhetskopiere ved siden av bildene dine.</div>
+          <div class="note">Indeksering endrer ikke filene dine, så mappestrukturen din blir stående nøyaktig slik Muletto skrev den, og alle andre verktøy kan fortsatt lese den.</div>
+
+          
+
+          
+        </div>
+
+        <aside class="art-side">
+          <div class="side-card">
+            <h4>Kort oppsummert</h4>
+            <dl>
+              <dt>Innsats</dt><dd>middels</dd>
+              <dt>Tid</dt><dd>en kveld å sette opp, deretter en indekseringsrunde</dd>
+              <dt>Format</dt><dd>mapper på disk, indeksert der de ligger</dd>
+              
+              
+            </dl>
+          </div>
+          <div class="side-card">
+            <h4>Andre steder å lagre</h4>
+            <ul class="side-links">
+              <li><a href="dest-nas-generic.html"><span class="side-ic" data-icon="server"></span>Any NAS (network folder)</a></li>
+              <li><a href="dest-synology.html"><span class="side-ic" data-icon="server"></span>Synology</a></li>
+              <li><a href="dest-qnap.html"><span class="side-ic" data-icon="server"></span>QNAP</a></li>
+              <li><a href="dest-drive.html"><span class="side-ic" data-icon="drive"></span>External drive</a></li>
+              <li><a href="dest-immich.html"><span class="side-ic" data-icon="server"></span>Immich (self-hosted)</a></li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Eksportveiledninger</h4>
+            <ul class="side-links">
+              <li><a href="apple.html"><span class="side-ic" data-icon="apple"></span>Apple</a></li>
+              <li><a href="apple-health.html"><span class="side-ic" data-icon="heart"></span>Apple Health</a></li>
+              <li><a href="google.html"><span class="side-ic" data-icon="google"></span>Google</a></li>
+              <li><a href="microsoft.html"><span class="side-ic" data-icon="cloudup"></span>Microsoft</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <a class="wordmark" href="../../no/index.html">muletto</a>
+      <div class="foot-links">
+        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/app.html">Åpne eksport</a>
+        <a href="../../no/privacy.html">Personvern</a>
+        <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Les kildekoden
+        </a>
+        <a class="foot-lang" href="../../guides/dest-photoprism.html" hreflang="en" lang="en">English</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
+  <script src="../../disclose.js?v=b24e640b"></script>
+  <!-- Counts that a guide was read. See privacy.html. -->
+  <script src="../../analytics.js?v=e2665599"></script>
+  <script src="../../app.js?v=dd658390"></script>
+
+</body>
+</html>

@@ -70,7 +70,7 @@
     },
     {
       "q": "Can Muletto open it?",
-      "a": "Not yet. The archive is JSON and CSV, which is a shape it already reads elsewhere, but no Microsoft export has been opened here so nothing has been written for it. It is on the list. Files pulled out of OneDrive are ordinary files and can be dropped in like any other folder."
+      "a": "Yes. The activity records - searches, browsing, locations, app use - are read from both the CSV and the JSON halves and land on the timeline and the map. No real Microsoft export has been opened here yet, so the reader is written from what the archive is documented to contain rather than from one that turned up. Files pulled out of OneDrive are ordinary files and can be dropped in like any other folder."
     }
   ]
 }

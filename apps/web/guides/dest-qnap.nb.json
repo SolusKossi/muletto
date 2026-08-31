@@ -1,0 +1,42 @@
+{
+  "en_hash": "0ca4cf1c59e8",
+
+  "wait_time": "minutter å kopiere, timer å indeksere",
+  "format": "en multimediemappe, indeksert av QuMagie",
+
+  "request": {
+    "label": "QNAP-support"
+  },
+
+  "steps": [
+    {
+      "title": "Kopier biblioteket over på NAS-en",
+      "detail": "Koble NAS-en til som en nettverksstasjon, og eksporter så fra Muletto rett inn i den. Multimedia-mappen er det åpenbare stedet hvis du ikke har noen sterk mening; en hvilken som helst delt mappe går, så lenge du melder den fra i neste steg."
+    },
+    {
+      "title": "Meld mappen som en innholdskilde",
+      "detail": "Åpne Multimedia Console, gå til Innholdsbehandling, og velg QuMagie. Klikk Rediger under Innholdskilder, huk av mappen du nettopp skrev til, og bruk endringene. Det finnes en vei til gjennom Kontrollpanel, Programmer, Multimediebehandling, Mediemappe, som legger mapper rett inn i mediebiblioteket - begge går an, og den første er den det er verdt å huske."
+    },
+    {
+      "title": "La den indeksere, og se på statusen i stedet for å gjette",
+      "detail": "Åpne Multimedia Console og gå til Indeksering. Feltet Indeks sier Indekserer mens den arbeider, og Fullført når den er ferdig. Et stort bibliotek tar lang tid, og appen ser halvtom ut hele veien, så les statusen i stedet for å oppdatere QuMagie og frykte det verste."
+    },
+    {
+      "title": "Indekser bare på nytt hvis du er nødt",
+      "detail": "Det finnes en knapp for å indeksere på nytt under den samme skjermen, og det er standardsvaret når filer stivnakket nekter å dukke opp. Vit hva det koster først: den kaster miniatyrbilder, mediefiltagger og QuMagie-album, og bygger opp igjen fra bunnen. Bildene dine er urørt, men et album du bygde inne i QuMagie er det ikke."
+    },
+    {
+      "title": "Sjekk at datoene kom med",
+      "detail": "QuMagie sorterer etter datoen inni hver fil, og det er den Muletto reparerer før du eksporterer. Uten det steget kommer et Google- eller Apple-arkiv datert den dagen du kopierte det. Bla noen år tilbake i tidslinjen før du sletter noe andre steder."
+    },
+    {
+      "title": "Sikkerhetskopier NAS-en et annet sted",
+      "detail": "Én NAS er én kopi i én bygning på disker som ble kjøpt samtidig. RAID dekker at en disk ryker, ikke brann, tyveri eller en feilslettet mappe. Bruk Hybrid Backup Sync mot en ekstern disk eller et annet sted, og test en gjenoppretting før du stoler på den."
+    }
+  ],
+
+  "notes": [
+    "Viser QuMagie ingenting i det hele tatt, er det første du skal sjekke om mappen er meldt inn som innholdskilde. Det er en langt vanligere årsak enn at kopieringen slo feil.",
+    "Å indeksere på nytt sletter miniatyrbilder, tagger og QuMagie-album. Selve bildene røres aldri av det."
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "en_hash": "04a5683d59ec",
+
+  "wait_time": "opptil tretti dager",
+  "format": ".zip med JSON og NDJSON",
+
+  "request": {
+    "label": "Discords personverninnstillinger"
+  },
+
+  "steps": [
+    {
+      "title": "Åpne Brukerinnstillinger, så Data og personvern",
+      "detail": "Bla ned til Be om alle dataene mine."
+    },
+    {
+      "title": "Velg hva som skal være med",
+      "detail": "Meldinger, servere og aktivitet er egne avkrysningsbokser. Ta med meldinger hvis du vil ha samtalene dine."
+    },
+    {
+      "title": "Send inn forespørselen",
+      "detail": "Discord bekrefter på e-post."
+    },
+    {
+      "title": "Vent opptil tretti dager",
+      "detail": "Det går som regel raskere, men Discord lover ingenting kortere enn en måned."
+    },
+    {
+      "title": "Last ned innen tretti dager",
+      "detail": "Lenken er levende i en måned etter at den kommer."
+    }
+  ],
+
+  "notes": [
+    "Meldingene dine er med i pakken, hvilket overrasker dem som venter noe annet - men bare dine. En servers samtale eksporteres ikke til deg, så en tråd leses som din halvdel av den, med svarene borte. Alt du har slettet for hånd er borte fra Discord og mangler derfor her også, og pakken er et sett JSON-filer i stedet for noe lesbart, så den trenger et verktøy for å gi mening.",
+    "Bare dine egne meldinger er med. Det andre skrev i den samme samtalen er ikke med, så en eksportert chat leses som den ene halvdelen av seg selv.",
+    "Vedlegg er lenker og ikke filer, og de lenkene er signert og går ut på dato. Når en gammel eksport åpnes, er de som regel døde.",
+    "Aktivitetsmappen er linjeseparert JSON og ikke en JSON-liste, og for de fleste kontoer utgjør den brorparten av nedlastingen."
+  ],
+
+  "faq": [
+    {
+      "q": "Er andres meldinger med i en Discord-eksport?",
+      "a": "Nei. Bare meldinger du selv har sendt. En samtale leses derfor som den ene siden av seg selv, hvilket overrasker de fleste som åpner en for første gang."
+    },
+    {
+      "q": "Hvorfor mangler bildene i Discord-eksporten min?",
+      "a": "Vedlegg lagres som lenker og ikke som filer, og Discord signerer de lenkene med en utløpstid. I en eksport som er mer enn noen få dager gammel, virker de stort sett ikke lenger."
+    },
+    {
+      "q": "Hvor lang tid tar en dataforespørsel til Discord?",
+      "a": "Opptil tretti dager, med Discords egne ord. De fleste kommer godt innenfor det, og nedlastingslenken lever så i tretti dager til."
+    }
+  ]
+}
