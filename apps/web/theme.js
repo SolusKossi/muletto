@@ -120,16 +120,31 @@ const MTheme = (function () {
           '<button type="button" role="menuitemradio" class="th-opt" data-theme-id="' + t.id + '">' +
           '<i class="th-sw" style="background:' + (SWATCH[t.id] || "currentColor") + '"></i>' +
           "<span><b>" + t.name + "</b><em>" + t.note + "</em></span></button>").join("") +
+        /* Said inside the menu rather than beside the button, because it is
+           only worth reading at the moment somebody is about to pick one. */
+        '<p class="th-wip">' + wipText() + "</p>" +
       "</div>";
     return wrap;
+  }
+
+  /* The themes are unfinished and the picker says so. Norwegian where the
+     page is Norwegian - read off the document rather than passed in, because
+     this script is shared by both trees and has no build step of its own. */
+  function wipText() {
+    return document.documentElement.lang === "nb"
+      ? "Temaene er under arbeid. Regn med ujevne kanter."
+      : "Themes are a work in progress. Expect rough edges.";
   }
 
   function mount() {
     const feet = document.querySelectorAll("footer");
     const foot = feet.length ? feet[feet.length - 1] : null;
     if (!foot) return;
-    const host = foot.querySelector(".wrap") || foot;
-    if (host.querySelector(".th-pick")) return;
+    /* Into the tool group beside the language picker where the page has one,
+       so the two sit together. Older pages have no group, and the footer wrap
+       is the same place this used to go. */
+    const host = foot.querySelector(".foot-tools") || foot.querySelector(".wrap") || foot;
+    if (host.querySelector(".th-pick:not(.lang-pick)")) return;
     host.appendChild(pickerEl());
     sync();
   }

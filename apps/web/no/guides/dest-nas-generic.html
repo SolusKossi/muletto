@@ -20,10 +20,10 @@
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="../../og.png" />
-  <link rel="stylesheet" href="../../styles.css?v=1b2cb6a8" />
+  <link rel="stylesheet" href="../../styles.css?v=1b5518f9" />
   <!-- Themes. In the head so a dark theme does not start as a white flash,
        and on every page so the choice follows the reader around. -->
-  <script src="../../theme.js?v=4ef9956d"></script>
+  <script src="../../theme.js?v=4f9137e0"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik flytter du dataene dine til Any NAS (network folder)","description":"Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til Any NAS (network folder). 6 steg, skrevet for deg som vil ha din egen kopi.","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Lag en mappe til det","text":"Opprett en delt mappe på NAS-en til biblioteket - bilder, eller arkiv, eller hva du fortsatt kommer til å forstå om fem år. Gi din egen konto skrivetilgang til den. Har NAS-en sin egen bildeapp, sjekk hvor den appen forventer at filene ligger før du velger, for feil mappe betyr at appen aldri ser dem."},{"@type":"HowToStep","position":2,"name":"Koble den til som en stasjon","text":"Følg merknaden over, så dukker den delte mappen opp som en helt vanlig mappe på maskinen din. Huk av for å koble til på nytt ved innlogging i Windows hvis du skal bruke den jevnlig. Bruk helst kabel til den første kopieringen - et stort bibliotek over wifi måles i timer."},{"@type":"HowToStep","position":3,"name":"Skriv biblioteket rett til den","text":"Eksporter fra Muletto rett til den tilkoblede stasjonen, eller kopier mappene over etterpå. Dette er vanlige mapper med vanlige filer, så ingenting på NAS-en trenger å forstå Muletto for at det skal virke."},{"@type":"HowToStep","position":4,"name":"Kontroller med antall og størrelse","text":"Sammenlign antall filer og samlet størrelse mot kilden. Nettverkskopiering feiler annerledes enn lokal: en forbindelse som ryker kan etterlate en mappe som ser komplett ut og mangler hundrevis av filer. Åpne noen bilder fra forskjellige år som en fornuftssjekk."},{"@type":"HowToStep","position":5,"name":"La NAS-en indeksere det, hvis den har en app","text":"De fleste bildeapper på en NAS må lese hver eneste fil før de viser noe som helst, og på et stort bibliotek går det i timevis. En app som ser tom ut kort tid etter kopieringen er som regel fortsatt i arbeid. Finn statusen for indekseringen i stedet for å gjette."},{"@type":"HowToStep","position":6,"name":"Husk at en NAS ikke er en sikkerhetskopi","text":"Den er én kopi, i én bygning, på disker som sannsynligvis ble kjøpt samtidig. RAID holder deg i gang når en disk ryker; det gjør ingenting med brann, tyveri, løsepengevirus eller at du sletter feil mappe. Bruk det sikkerhetskopiverktøyet NAS-en kommer med til å kopiere til en ekstern disk eller et annet sted, og test en gjenoppretting før du stoler på den."}]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/no/guides.html"},{"@type":"ListItem","position":3,"name":"Any NAS (network folder)","item":"https://muletto.app/no/guides/dest-nas-generic.html"}],"inLanguage":"nb"}</script>
 </head>
@@ -160,7 +160,33 @@
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           Les kildekoden
         </a>
-        <a class="foot-lang" href="../../guides/dest-nas-generic.html" hreflang="en" lang="en">English</a>
+        <span class="small"></span>
+      </div>
+      <!-- The two settings nobody needs to find. Both are deliberately almost
+           invisible and both open upward and to the right, because they sit at
+           the left edge of the footer and a menu anchored to their right edge
+           opens off the side of the page - which is what the theme menu was
+           doing, at x = -148, unreachable by any pointer.
+
+           theme.js appends its own picker into this group when the page has
+           one, so the two sit together rather than one being in the link row
+           and the other pushed to the far side of the footer. -->
+      <div class="foot-tools">
+        <div class="th-pick lang-pick">
+          <button type="button" class="th-btn" aria-haspopup="true" aria-expanded="false"
+            aria-label="Språk" title="Språk">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/>
+              <path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>
+          </button>
+          <div class="th-menu" hidden role="menu">
+            <a class="th-opt" role="menuitem" href="../../guides/dest-nas-generic.html"
+              hreflang="en" lang="en"><i class="th-sw th-sw-flag">EN</i><span><b>English</b><em>Fullstendig</em></span></a>
+            <a class="th-opt on" role="menuitem" href="#"
+              hreflang="nb" lang="nb"><i class="th-sw th-sw-flag">NO</i><span><b>Norsk</b><em>Ny, fortsatt under kontroll</em></span></a>
+            <p class="th-wip">Den norske oversettelsen er ny og fortsatt under kontroll. Si fra hvis noe leses feil.</p>
+          </div>
+        </div>
       </div>
     </div>
   </footer>

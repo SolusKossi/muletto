@@ -479,6 +479,12 @@ footer.site::before { content: ""; position: absolute; left: 0; right: 0; bottom
    picker is hard right. The tagline that used to sit in the middle said
    what every page already says and pushed the links onto a second line. */
 footer.site .wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+/* The two pickers sit together at the end of the footer row, with real space
+   between them and the edge. The theme picker used to be pushed here on its
+   own with margin-left:auto while the language link sat back in the link row,
+   which put two settings of the same kind two hundred pixels apart. */
+footer.site .wrap > .foot-tools { margin-left: auto; display: inline-flex;
+  align-items: center; gap: 10px; padding: 0 4px 0 18px; }
 footer.site .wrap > .th-pick { margin-left: auto; }
 footer.site .wordmark { height: 22px; background-color: var(--foot-ink); }
 footer.site .fine { color: var(--foot-ink); font-size: 14px; }
@@ -2897,6 +2903,9 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    focusable, announced, and clickable by anybody who goes looking - and it
    comes fully into view the moment it is hovered or focused, so keyboard
    users are not chasing something they cannot see. */
+/* Superseded: the language switch is a picker in .foot-tools now, beside the
+   theme one, rather than a bare link in the footer link row. Kept because a
+   page built before that change still carries the old markup. */
 .foot-lang { opacity: 0.06; transition: opacity 120ms ease; }
 .foot-lang:hover, .foot-lang:focus, .foot-lang:focus-visible { opacity: 1; }
 /* Plain :focus as well as :focus-visible. A browser only counts focus as
@@ -3800,11 +3809,31 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   width: 30px; height: 30px; padding: 0; color: var(--muted);
   background: none; border: 1px solid var(--line); border-radius: var(--radius);
   cursor: pointer; transition: color var(--t) var(--ease), border-color var(--t) var(--ease); }
+/* Both pickers are near-invisible until looked for. The themes are unfinished
+   and the Norwegian is new, so neither is something to advertise - but both
+   have to stay reachable, so this is opacity rather than display:none: still
+   focusable, still announced, and fully drawn the moment it has focus or the
+   pointer is on it. The whole group lifts together, so finding one finds the
+   other. */
+.foot-tools .th-btn { opacity: 0.05; transition: opacity 120ms var(--ease),
+  color var(--t) var(--ease), border-color var(--t) var(--ease); }
+.foot-tools:hover .th-btn,
+.foot-tools .th-btn:hover,
+.foot-tools .th-btn:focus,
+.foot-tools .th-btn:focus-visible { opacity: 1; }
+/* An open menu keeps its own button visible, or the thing you are using
+   disappears the moment the pointer moves into it. */
+.foot-tools .th-btn[aria-expanded="true"] { opacity: 1; }
+@media (prefers-contrast: more) { .foot-tools .th-btn { opacity: 0.7; } }
 .th-btn:hover { color: var(--ink); border-color: var(--muted); }
 .th-btn svg { width: 16px; height: 16px; }
 .th-btn:focus-visible, .th-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-/* Opens upwards: it lives at the foot of the page and there is nothing below. */
-.th-menu { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 40;
+/* Opens upwards, because it lives at the foot of the page and there is
+   nothing below - and to the right, because it lives at the left edge of the
+   footer. Anchored to its right edge instead, the menu opened to x = -148:
+   entirely off the side of the page, and no pointer could reach it. Measured
+   rather than guessed at, which is the only reason it was found. */
+.th-menu { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 40;
   min-width: 210px; padding: 5px; display: flex; flex-direction: column; gap: 2px;
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
@@ -3819,6 +3848,17 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   border: 1px solid var(--line); }
 .th-opt b { display: block; font-weight: 560; }
 .th-opt em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); }
+/* The unfinished note. Inside the menu, under the choices, because it is only
+   worth reading at the moment somebody is about to pick one. */
+.th-wip { margin: 4px 3px 1px; padding-top: 7px; border-top: 1px solid var(--line);
+  font-size: 11.5px; line-height: 1.45; color: var(--muted); }
+/* The language swatches are two letters rather than a colour. */
+.th-sw-flag { display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 15px; border-radius: 3px; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.3px; font-style: normal; color: var(--muted);
+  background: var(--surface-2); }
+.th-opt.on .th-sw-flag { color: var(--ink); box-shadow: 0 0 0 2px var(--accent); }
+.lang-pick .th-opt { text-decoration: none; }
 
 /* In the site footer, beside the links. A preference, not a feature: it should
    read as one more small thing in the footer and never compete with what is

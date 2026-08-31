@@ -421,6 +421,11 @@ const EN_STRINGS = {
   giMetaDesc: "Free step-by-step guides for requesting a complete copy of your data from Apple, Google, Samsung, Snapchat, Facebook and Instagram, plus how to store it on a NAS or external drive.",
   giCollName: "Muletto export guides",
   giCollDesc: "Guides for exporting your personal data from major services.",
+  langLabel: "Language",
+  langEn: "Complete",
+  langNb: "New, still being checked",
+  wipLang: "The Norwegian translation is new and still being checked. Tell us if something reads wrong.",
+  wipTheme: "Themes are a work in progress. Expect rough edges.",
   footTagline: "Built by one person. Everything runs in your browser, and the source is public.",
   feat1: "Opens GDPR export archives without unzipping them",
   feat2: "Merges exports from several services into one library",
@@ -586,8 +591,33 @@ function footer(depth, lang, altHref, tagline) {
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           ${t.source}
         </a>${commitLink()}${altHref ? `
-        <a class="foot-lang" href="${altHref}" hreflang="${t.otherLang}" lang="${t.otherLang}">${t.other}</a>` : ""}${tagline ? `
         <span class="small">${esc(tagline)}</span>` : ""}
+      </div>
+      <!-- The two settings nobody needs to find. Both are deliberately almost
+           invisible and both open upward and to the right, because they sit at
+           the left edge of the footer and a menu anchored to their right edge
+           opens off the side of the page - which is what the theme menu was
+           doing, at x = -148, unreachable by any pointer.
+
+           theme.js appends its own picker into this group when the page has
+           one, so the two sit together rather than one being in the link row
+           and the other pushed to the far side of the footer. -->
+      <div class="foot-tools">${altHref ? `
+        <div class="th-pick lang-pick">
+          <button type="button" class="th-btn" aria-haspopup="true" aria-expanded="false"
+            aria-label="${esc(t.langLabel)}" title="${esc(t.langLabel)}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/>
+              <path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>
+          </button>
+          <div class="th-menu" hidden role="menu">
+            <a class="th-opt${lang !== "nb" ? " on" : ""}" role="menuitem" href="${lang !== "nb" ? "#" : altHref}"
+              hreflang="en" lang="en"><i class="th-sw th-sw-flag">EN</i><span><b>English</b><em>${esc(t.langEn)}</em></span></a>
+            <a class="th-opt${lang === "nb" ? " on" : ""}" role="menuitem" href="${lang === "nb" ? "#" : altHref}"
+              hreflang="nb" lang="nb"><i class="th-sw th-sw-flag">NO</i><span><b>Norsk</b><em>${esc(t.langNb)}</em></span></a>
+            <p class="th-wip">${esc(t.wipLang)}</p>
+          </div>
+        </div>` : ""}
       </div>
     </div>
   </footer>`;
