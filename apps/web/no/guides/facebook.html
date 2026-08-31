@@ -25,7 +25,7 @@
        and on every page so the choice follows the reader around. -->
   <script src="../../theme.js?v=4ef9956d"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik laster du ned GDPR-eksporten fra Facebook og åpner den","description":"Slik laster du ned GDPR-eksporten din fra Facebook - bilder, meldinger, innlegg og aktivitet - og slik åpner du den og ser hva som ligger der. 6 steg, hva som faktisk kommer, og hvor lang tid det tar (minutter til noen dager, avhengig av størrelsen).","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Åpne Last ned informasjonen din","text":"Gå til Kontosenter, så Informasjonen din og tillatelser, så Last ned informasjonen din. Logg inn hvis du blir bedt om det."},{"@type":"HowToStep","position":2,"name":"Velg Facebook-profilen","text":"Er kontoene dine koblet sammen, velger du Facebook-profilen som eier dataene du vil ha."},{"@type":"HowToStep","position":3,"name":"Velg informasjon og tidsrom","text":"Sett tidsrommet til Hele tiden med mindre du har en grunn til å la være. Meta står på et nylig utsnitt på enkelte skjermer, og et tidsrom som stille blir stående på tolv måneder gir deg en eksport som ser komplett ut og mangler mesteparten av livet ditt. Huk av alt du bryr deg om; innlegg, bilder og meldinger er separate valg."},{"@type":"HowToStep","position":4,"name":"Velg format og kvalitet","text":"Velg JSON som format - og dette er en endring du må gjøre selv, for HTML er det boksen står på. HTML gir deg et sett nettsider som leses helt fint og lar seg importere ingen steder, så det å la standardvalget stå er nettopp slik folk ender opp med en eksport ingen verktøy vil ta imot. For mediekvalitet: Høy beholder bildene dine i full størrelse og omtrent dobler arkivet - ofte over 12 GB for en konto du har hatt lenge - mens Middels er langt mindre og permanent dårligere. Skal denne eksporten være kopien du beholder, velg Høy: det er eneste sjanse til å få ut originalene."},{"@type":"HowToStep","position":5,"name":"Opprett fila og vent","text":"Send inn forespørselen. Meta gjør nedlastingen klar og varsler deg når den er ferdig."},{"@type":"HowToStep","position":6,"name":"Last ned fila","text":"Lenken kommer på e-post og går ut etter noen dager, så last ned med en gang. Lagre hver del hvis den kommer oppdelt, hold dem i én mappe, og ikke pakk ut - Muletto leser arkivene direkte."}]}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Facebook","item":"https://muletto.app/no/guides/facebook.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/no/guides.html"},{"@type":"ListItem","position":3,"name":"Facebook","item":"https://muletto.app/no/guides/facebook.html"}],"inLanguage":"nb"}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"nb","mainEntity":[{"@type":"Question","name":"Hvorfor viser Facebook-eksporten min rare tegn i stedet for bokstaver?","acceptedAnswer":{"@type":"Answer","text":"Facebook skriver JSON ved å kode de enkelte bytene i hvert tegn i stedet for selve tegnet, så alt utenom rent engelsk kommer fram ødelagt. Norsk, svensk, tysk og hver eneste emoji rammes. Teksten er ikke skadet, bare feilkodet, og det lar seg rette opp helt nøyaktig. Muletto gjør det automatisk."}},{"@type":"Question","name":"Bør jeg velge JSON eller HTML for Facebook-nedlastingen?","acceptedAnswer":{"@type":"Answer","text":"JSON hvis du har tenkt å åpne den med noe annet enn en nettleser, for det beholder strukturen. HTML er lettere å skumme for hånd og mye vanskeligere å lese maskinelt. Muletto leser JSON-en."}},{"@type":"Question","name":"Hvor lang tid tar en Facebook-nedlasting?","acceptedAnswer":{"@type":"Answer","text":"Alt fra minutter til flere dager, avhengig av hvor mye det er. Nedlastingslenken lever bare noen få dager etter at den kommer, så hent den med en gang."}},{"@type":"Question","name":"Hvorfor er Facebook-eksporten min delt i flere filer?","acceptedAnswer":{"@type":"Answer","text":"Meta deler store nedlastinger rundt fire gigabyte. Delene er utsnitt av ett mappetre og ikke kopier, så pakk alle sammen ut på samme sted før du åpner, ellers ser hele seksjoner ut til å mangle."}}]}</script>
 </head>
 <body>
@@ -34,7 +34,7 @@
       <div class="nav-left">
         <a class="wordmark" href="../../no/index.html">muletto</a>
         <div class="nav-links">
-          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/guides.html" class="active">Veiledninger</a>
           <a href="../../no/privacy.html">Personvern</a>
         </div>
       </div>
@@ -49,7 +49,7 @@
       <nav class="crumbs" aria-label="Breadcrumb">
         <a href="../../no/index.html">Hjem</a>
         <span>/</span>
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <span>/</span>
         <span aria-current="page">Facebook</span>
       </nav>
@@ -67,7 +67,7 @@
       <div class="art-grid">
         <div class="art-main">
           <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">Meta Kontosenter - Last ned informasjonen din <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
-          <aside class="explain"><h2>JSON, not HTML, and it is not obvious why</h2><p>Meta offers both. HTML looks friendlier - it opens in a browser and resembles Facebook - but it is a rendering of your data rather than the data, and nothing can reliably read it back. JSON is the machine-readable one, and it is what Muletto reads. Pick HTML and you have a scrapbook you can only look at; pick JSON and you have your data, which Muletto turns into something you can look at anyway.</p></aside>
+          <aside class="explain"><h2>JSON, ikke HTML, og det er ikke opplagt hvorfor</h2><p>Meta tilbyr begge deler. HTML ser vennligere ut - det åpner i en nettleser og ligner på Facebook - men det er en framvisning av dataene dine og ikke dataene, og ingenting kan lese det pålitelig tilbake. JSON er den maskinlesbare, og det er den Muletto leser. Velger du HTML, har du en utklippsbok du bare kan se på; velger du JSON, har du dataene dine, som Muletto uansett gjør om til noe du kan se på.</p></aside>
 
           <h2>Steg for steg</h2>
           
@@ -182,7 +182,7 @@
     <div class="wrap">
       <a class="wordmark" href="../../no/index.html">muletto</a>
       <div class="foot-links">
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <a href="../../no/app.html">Åpne eksport</a>
         <a href="../../no/privacy.html">Personvern</a>
         <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">

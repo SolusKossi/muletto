@@ -1,13 +1,12 @@
 {
   "en_hash": "ef5216d6a38c",
-
+  "_provider_why": "Brand names are deliberately not translated and are not in the completeness check. This one is not purely a brand: it is two brands joined by an English conjunction, and 'Fitbit and Google Health' inside a Norwegian sentence reads as an oversight. Only the joining word changes.",
+  "provider": "Fitbit og Google Health",
   "wait_time": "timer til dager, avhengig av hvilken vei du går",
   "format": ".zip med JSON og CSV",
-
   "request": {
     "label": "Google Takeout"
   },
-
   "steps": [
     {
       "title": "Finn ut hvilken konto du har",
@@ -30,13 +29,11 @@
       "detail": "Puls er én fil per dag, og pulsvariasjon er en fil på to linjer per dag."
     }
   ],
-
   "notes": [
     "Overgangen til Google skapte en ny mappe med de samme målingene i et annet format, så én eksport kan inneholde begge deler.",
     "Søvnfilene er navngitt etter en dato, men hver av dem inneholder omtrent en måned med netter, i omvendt rekkefølge.",
     "Treningsfilene er nummerert i bolker på hundre i stedet for datert, så det finnes ingen måte å vite hva som ligger i en uten å åpne den."
   ],
-
   "faq": [
     {
       "q": "Hvor er Fitbit i Google Takeout?",

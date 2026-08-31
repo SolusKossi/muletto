@@ -1,17 +1,16 @@
 {
   "en_hash": "b75bcf7bd6c2",
-
   "wait_time": "minutter til noen dager, avhengig av størrelsen",
   "format": ".zip (anbefalt) eller .tgz, delt opp i biter på opptil 50 GB",
-
   "request": {
     "label": "Google Takeout"
   },
-
   "steps": [
     {
       "title": "Åpne Google Takeout",
-      "detail": "Logg inn med Google-kontoen du vil eksportere."
+      "detail": "Logg inn med Google-kontoen du vil eksportere.",
+      "caption": "Takeout åpner med alt valgt - 61 produkter. Fjern alt først, med mindre du faktisk vil ha alt sammen.",
+      "alt": "Google Takeout, trinn 1 'Velg data som skal inkluderes', med 61 av 61 produkter valgt og en formatknapp under hvert av dem."
     },
     {
       "title": "Fjern alt, og velg så det du trenger",
@@ -19,7 +18,9 @@
     },
     {
       "title": "Velg .zip og en stor filstørrelse",
-      "detail": "Velg .zip - det er formatet alt kan åpne, og det Muletto leser. For størrelse: velg den største biten som tilbys. Færre og større filer betyr færre nedlastinger å passe på og færre sjanser for at én av dem feiler. Et bibliotek på 50 GB med standardvalget 2 GB kommer som rundt 25 separate zip-filer. Filer over 2 GB kommer i zip64-formatet, som Muletto leser og en del skrivebordsverktøy ikke gjør."
+      "detail": "Velg .zip - det er formatet alt kan åpne, og det Muletto leser. For størrelse: velg den største biten som tilbys. Færre og større filer betyr færre nedlastinger å passe på og færre sjanser for at én av dem feiler. Et bibliotek på 50 GB med standardvalget 2 GB kommer som rundt 25 separate zip-filer. Filer over 2 GB kommer i zip64-formatet, som Muletto leser og en del skrivebordsverktøy ikke gjør.",
+      "caption": "Mål, hyppighet, filtype og størrelse ligger alle på én skjerm. Googles egen merknad her er verdt å lese: alt over 2 GB kommer tilbake som zip64, som enkelte verktøy ikke kan åpne. Muletto kan.",
+      "alt": "Google Takeout trinn 2, med mål 'Send nedlastingslenke på e-post', hyppighet 'Eksporter én gang', filtype .zip og filstørrelse 50 GB."
     },
     {
       "title": "Velg en engangseksport",
@@ -27,7 +28,9 @@
     },
     {
       "title": "Vent på e-posten",
-      "detail": "Små eksporter er ferdige på minutter; store bildebibliotek kan ta et døgn eller mer. Google sender deg en nedlastingslenke på e-post."
+      "detail": "Små eksporter er ferdige på minutter; store bildebibliotek kan ta et døgn eller mer. Google sender deg en nedlastingslenke på e-post.",
+      "caption": "Bekreftet på selve skjermen: timer eller dager. Det å be om alle 61 produktene er det som gjør det til dager.",
+      "alt": "Framdriften for en Google Takeout-eksport, som sier 'Google lager en kopi av data fra 61 produkter' og advarer om at det kan ta timer eller dager."
     },
     {
       "title": "Last ned alle delene",
@@ -38,14 +41,12 @@
       "detail": "Slipp alle zip-filene inn i Muletto på én gang. Den leser dem som én eksport, så et bilde i del 3 finner opplysningene sine i del 7, duplikatene Google lagde ved å eksportere albumkopier ved siden av årsmappene blir funnet og slått sammen, og datoene og stedene havner tilbake inni selve filene."
     }
   ],
-
   "notes": [
     "En Takeout er som regel større enn biblioteket ditt, fordi et bilde som ligger både i et album og i årsmappen sin eksporteres én gang for hver. De kopiene er byte for byte like, så duplikatsøket finner dem.",
     "Google navngir opplysningsfilene ujevnt - supplemental-metadata.json, avkortede former av det, og nummererte varianter - så et verktøy som bare treffer den pene skrivemåten går glipp av noen. Muletto treffer alle sammen.",
     "Ikke pakk ut før du åpner. Muletto leser inni arkivene, så utpakking koster bare tid og dobbelt så mye diskplass.",
     "Foto og Disk er to forskjellige produkter i Takeout. Vil du ha begge, må du huke av for begge - en Foto-eksport inneholder ingen Disk-filer."
   ],
-
   "faq": [
     {
       "q": "Hvorfor er alle Google Foto-bildene mine datert i dag etter en Takeout?",
@@ -67,5 +68,9 @@
       "q": "Hvorfor er Google Takeout-en min delt i flere zip-filer?",
       "a": "Du velger en maksimal arkivstørrelse når du ber om den, og alt som er større deles opp. Et bilde og sidevognfila si kan havne i hver sin del, så åpne alle sammen samtidig i stedet for én om gangen."
     }
-  ]
+  ],
+  "explain": {
+    "title": "Åpne alle delene samtidig, ikke én om gangen",
+    "body": "Google deler en stor eksport i nummererte zip-filer, og den holder ikke et bilde og opplysningsfila dens i samme fil. Åpner du del 3 for seg, har noen av de bildene verken dato eller sted, fordi JSON-en som beskriver dem ligger i del 7. Gi Muletto alle delene på én gang, så leses de som den ene eksporten de er. Dette er også grunnen til at en Takeout ser større ut enn biblioteket ditt: et bilde som ligger i et album og i årsmappen sin eksporteres to ganger."
+  }
 }

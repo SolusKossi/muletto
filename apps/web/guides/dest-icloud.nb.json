@@ -1,9 +1,7 @@
 {
   "en_hash": "5f735d654cdd",
-
   "wait_time": "minutter å importere, lengre før iCloud er synkronisert",
   "format": "importert inn i Bilder-biblioteket",
-
   "steps": [
     {
       "title": "Sjekk kopieringsinnstillingen før du importerer noe som helst",
@@ -30,9 +28,12 @@
       "detail": "Ombestemt deg om filer som bare henvises til? Marker dem i Bilder og velg Arkiv, Samle. Det kopierer dem inn i biblioteket, og fra da av tar iCloud dem, og en sikkerhetskopi av biblioteket dekker dem."
     }
   ],
-
   "notes": [
     "Filer det bare henvises til sikkerhetskopieres ikke sammen med bildebiblioteket. Bruker du dem, trenger den opprinnelige mappen sin egen sikkerhetskopi, og mister du den, mister du bildene.",
     "iCloud-lagringen deles med sikkerhetskopier, Disk og E-post, så plassen Bilder kan bruke er det resten har til overs."
-  ]
+  ],
+  "explain": {
+    "title": "Én avkrysningsboks avgjør om iCloud noen gang får se disse bildene",
+    "body": "I Bilder, Innstillinger, Generelt finnes en avkrysningsboks som heter Kopier objekter til Bilder-biblioteket. Lar du den stå avhuket, kopierer importen hver fil inn i biblioteket, der iCloud synkroniserer den og en sikkerhetskopi av biblioteket tar den med. Huker du den av, peker Bilder bare på filene der de ligger - Apple kaller det henviste filer. Henviste filer lagres ikke i iCloud, er ikke synlige på de andre enhetene dine, og er ikke med når biblioteket sikkerhetskopieres. Var planen å få alt inn i iCloud, er den avkrysningsboksen hele planen."
+  }
 }

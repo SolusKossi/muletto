@@ -1,13 +1,10 @@
 {
   "en_hash": "b5e5b5212ea2",
-
   "wait_time": "en kveld å sette opp, deretter minutter per import",
   "format": "mapper på disk, lest der de ligger eller lastet opp",
-
   "request": {
     "label": "Immich"
   },
-
   "steps": [
     {
       "title": "Bestem deg for hvilken av de to måtene du vil ha",
@@ -38,11 +35,14 @@
       "detail": "Med et eksternt bibliotek ligger originalene dine der du la dem, så de dekkes av det som allerede sikkerhetskopierer den mappen. Det som ikke dekkes er Immichs database, som inneholder albumene, ansiktene og alt du har redigert inne i Immich - inkludert opplysninger du la til der, som ikke skrives tilbake til eksterne filer. Ta sikkerhetskopi av databasen også, ellers er det arbeidet det du mister."
     }
   ],
-
   "notes": [
     "En ekstern fil du flytter eller gir nytt navn utenfor Immich behandles som en ny ressurs, og det Immich visste om den gamle er tapt. Bestem deg for mappestrukturen i Muletto først, og pek så Immich mot den.",
     "Å slette en ekstern fil legger ressursen i papirkurven i 30 dager og fjerner den så, sammen med alt Immich hadde notert om den.",
     "En skrivebeskyttet montering hindrer Immich i å endre eller slette originalene dine, og hindrer den også i å skrive opplysninger tilbake til dem. Det er en avveining og ikke en feil: velg den hvis mappen er arkivet ditt av rang.",
     "Skal du laste opp i stedet for å lese der filene ligger, håndterer immich-go svært store mengder og Google Takeout-arkiver bedre enn standardverktøyet, og trenger ingen Node.js installert."
-  ]
+  ],
+  "explain": {
+    "title": "Importstien er containerens sti, ikke din",
+    "body": "Immich kjører inne i en container, som ser et annet filsystem enn maskinen den kjører på. Når du legger til et eksternt bibliotek, gir du den en importsti, og den stien må være den containeren ser - det du skrev på høyre side av volumlinja i docker-compose.yml - og ikke stien du bruker på verten. En gjennomgang som kjører uten problemer og ikke finner noe som helst, er nesten alltid dette."
+  }
 }

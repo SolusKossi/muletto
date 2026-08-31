@@ -1,13 +1,10 @@
 {
   "en_hash": "e674102872d3",
-
   "wait_time": "minutter å kopiere, timer å indeksere",
   "format": "en delt mappe, indeksert av Synology Photos",
-
   "request": {
     "label": "Synologys kunnskapsbase"
   },
-
   "steps": [
     {
       "title": "Skru på den halvdelen du vil ha",
@@ -34,9 +31,12 @@
       "detail": "En NAS er ikke en sikkerhetskopi i seg selv - den er én kopi, i én bygning, på disker som sannsynligvis ble kjøpt samtidig. RAID beskytter deg mot at en disk ryker, ikke mot brann, tyveri eller at du sletter feil mappe. Legg til Hyper Backup mot en ekstern disk eller et annet sted, og sjekk at en gjenoppretting virker før du stoler på den."
     }
   ],
-
   "notes": [
     "Å gi den delte mappen nytt navn eller flytte filer rundt under Synology Photos betyr at alt må indekseres på nytt fra bunnen av, så få strukturen på plass i Muletto først.",
     "Personlig område viser bare den innloggede brukerens egen mappe. Skal flere se det samme biblioteket, må det være Delt område."
-  ]
+  ],
+  "explain": {
+    "title": "Personlig område eller Delt område, og hvorfor det betyr noe før du kopierer",
+    "body": "Synology Photos har to halvdeler, og de er to forskjellige mapper på disken. Personlig område viser det som ligger i din egen home/Photos-mappe, og ingen andre på NAS-en kan bla i den. Delt område viser den delte mappen /photo, som alle med tilgang kan se. Bestem deg først: å flytte et stort bibliotek mellom dem etterpå betyr å flytte filene og vente på at hele greia indekseres på nytt."
+  }
 }

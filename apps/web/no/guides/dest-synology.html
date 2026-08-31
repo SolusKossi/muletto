@@ -25,7 +25,7 @@
        and on every page so the choice follows the reader around. -->
   <script src="../../theme.js?v=4ef9956d"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik flytter du dataene dine til Synology","description":"Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til Synology. 6 steg, skrevet for deg som vil ha din egen kopi.","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Skru på den halvdelen du vil ha","text":"For Personlig område: åpne Kontrollpanel, Bruker og gruppe, Avansert, og slå på hjemmemappetjenesten - uten den finnes det ingen hjemmemappe å skrive til. For Delt område: åpne Synology Photos, Innstillinger, Delt område, og slå det på. Du kan ha begge deler; de viser bare hver sin mappe."},{"@type":"HowToStep","position":2,"name":"Pek Muletto mot riktig mappe","text":"Koble NAS-en til som en nettverksstasjon først, og eksporter så fra Muletto rett inn i den. For Personlig område er målet home/Photos på din egen konto. For Delt område er det den delte mappen /photo. Skriver du til en hvilken som helst annen mappe, kommer Synology Photos aldri til å se etter der, og det er den vanlige grunnen til at et bibliotek ser ut til å forsvinne etter kopieringen."},{"@type":"HowToStep","position":3,"name":"Behold mappestrukturen din","text":"Synology Photos har en mappevisning i tillegg til tidslinjen, så års- og månedsmappene Muletto skriver er fortsatt meningsfulle og lette å bla i. Du trenger ikke slå sammen noe eller gi nytt navn for å tilpasse deg."},{"@type":"HowToStep","position":4,"name":"Vent på indekseringen, og regn med at den tar tid","text":"Når filene først ligger der, leser NAS-en hver enkelt av dem, henter ut dato og sted, og lager miniatyrbilder. På et stort bibliotek er dette timer og ikke minutter, og på en eldre eller svakere modell kan det gå over natta. En app som ser tom ut etter en time er helt normalt - se etter igjen senere før du konkluderer med at noe har gått galt."},{"@type":"HowToStep","position":5,"name":"Sjekk datoene, ikke bare antallet","text":"Synology Photos bygger tidslinjen sin på datoen inni hver fil. Det er den Muletto reparerer før du eksporterer: uten det kommer et Google- eller Apple-arkiv datert den dagen du kopierte det, og tidslinjen blir én enorm dag. Åpne tidslinjen og bla noen år tilbake for å bekrefte før du sletter noe andre steder."},{"@type":"HowToStep","position":6,"name":"Sørg for at den faktisk er sikkerhetskopiert","text":"En NAS er ikke en sikkerhetskopi i seg selv - den er én kopi, i én bygning, på disker som sannsynligvis ble kjøpt samtidig. RAID beskytter deg mot at en disk ryker, ikke mot brann, tyveri eller at du sletter feil mappe. Legg til Hyper Backup mot en ekstern disk eller et annet sted, og sjekk at en gjenoppretting virker før du stoler på den."}]}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Synology","item":"https://muletto.app/no/guides/dest-synology.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/no/guides.html"},{"@type":"ListItem","position":3,"name":"Synology","item":"https://muletto.app/no/guides/dest-synology.html"}],"inLanguage":"nb"}</script>
 </head>
 <body>
   <nav class="nav">
@@ -33,7 +33,7 @@
       <div class="nav-left">
         <a class="wordmark" href="../../no/index.html">muletto</a>
         <div class="nav-links">
-          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/guides.html" class="active">Veiledninger</a>
           <a href="../../no/privacy.html">Personvern</a>
         </div>
       </div>
@@ -48,7 +48,7 @@
       <nav class="crumbs" aria-label="Breadcrumb">
         <a href="../../no/index.html">Hjem</a>
         <span>/</span>
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <span>/</span>
         <span aria-current="page">Synology</span>
       </nav>
@@ -66,7 +66,7 @@
       <div class="art-grid">
         <div class="art-main">
           <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">Synologys kunnskapsbase <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
-          <aside class="explain"><h2>Personal Space or Shared Space, and why it matters before you copy</h2><p>Synology Photos has two halves and they are different folders on disk. Personal Space shows what is in your own home/Photos folder and nobody else on the NAS can browse it. Shared Space shows the /photo shared folder, which everyone with permission can see. Decide first: moving a large library between them afterwards means moving the files and waiting for the whole thing to be indexed again.</p></aside>
+          <aside class="explain"><h2>Personlig område eller Delt område, og hvorfor det betyr noe før du kopierer</h2><p>Synology Photos har to halvdeler, og de er to forskjellige mapper på disken. Personlig område viser det som ligger i din egen home/Photos-mappe, og ingen andre på NAS-en kan bla i den. Delt område viser den delte mappen /photo, som alle med tilgang kan se. Bestem deg først: å flytte et stort bibliotek mellom dem etterpå betyr å flytte filene og vente på at hele greia indekseres på nytt.</p></aside>
 
           <h2>Steg for steg</h2>
           
@@ -153,7 +153,7 @@
     <div class="wrap">
       <a class="wordmark" href="../../no/index.html">muletto</a>
       <div class="foot-links">
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <a href="../../no/app.html">Åpne eksport</a>
         <a href="../../no/privacy.html">Personvern</a>
         <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">

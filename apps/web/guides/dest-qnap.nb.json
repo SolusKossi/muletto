@@ -1,13 +1,10 @@
 {
   "en_hash": "0ca4cf1c59e8",
-
   "wait_time": "minutter å kopiere, timer å indeksere",
   "format": "en multimediemappe, indeksert av QuMagie",
-
   "request": {
     "label": "QNAP-support"
   },
-
   "steps": [
     {
       "title": "Kopier biblioteket over på NAS-en",
@@ -34,9 +31,12 @@
       "detail": "Én NAS er én kopi i én bygning på disker som ble kjøpt samtidig. RAID dekker at en disk ryker, ikke brann, tyveri eller en feilslettet mappe. Bruk Hybrid Backup Sync mot en ekstern disk eller et annet sted, og test en gjenoppretting før du stoler på den."
     }
   ],
-
   "notes": [
     "Viser QuMagie ingenting i det hele tatt, er det første du skal sjekke om mappen er meldt inn som innholdskilde. Det er en langt vanligere årsak enn at kopieringen slo feil.",
     "Å indeksere på nytt sletter miniatyrbilder, tagger og QuMagie-album. Selve bildene røres aldri av det."
-  ]
+  ],
+  "explain": {
+    "title": "En mappe QNAP ikke vet om, er en mappe QuMagie ikke kan vise",
+    "body": "På en QNAP er det å kopiere bilder over på NAS-en bare halve jobben. QuMagie viser det systemet har indeksert, og systemet indekserer bare mapper som er meldt inn som multimediemapper. Legger du biblioteket ditt et sted som ikke er meldt inn, ligger filene trygt på disken og er fullstendig usynlige i appen - hvilket leses nøyaktig som om overføringen slo feil."
+  }
 }

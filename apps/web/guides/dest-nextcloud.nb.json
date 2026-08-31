@@ -1,9 +1,7 @@
 {
   "en_hash": "e11fc5eb322f",
-
   "wait_time": "en kveld å sette opp, deretter en gjennomgang og en indeksering",
   "format": "filer i Nextcloud, eller en mappe montert inn i det",
-
   "steps": [
     {
       "title": "Bestem om Nextcloud skal eie filene eller bare se dem",
@@ -34,10 +32,13 @@
       "detail": "Memories bygger tidslinjen sin på datoen inni hver fil, og det er nettopp det Muletto reparerer før du eksporterer. Uten det kommer et Google- eller Apple-arkiv datert den dagen du kopierte det. Bla noen år tilbake før du stoler på det."
     }
   ],
-
   "notes": [
     "occ må kjøres som brukeren webtjeneren bruker, typisk med sudo -u www-data php occ ... - kjører du den som root, etterlater du filer tjeneren ikke får lest etterpå.",
     "Ekstern lagring betyr at Nextcloud ikke eier filene. Å fjerne monteringen sletter dem ikke, og alt andre verktøy skriver inn i den mappen dukker opp etter neste gjennomgang.",
     "Memories er en annen app enn den innebygde Bilder-appen, og er den som er verdt å ha hvis det er en tidslinje, et kart og ansiktsgruppering du er ute etter."
-  ]
+  ],
+  "explain": {
+    "title": "Nextcloud merker ikke filer du legger inn bak ryggen på den",
+    "body": "Nextcloud fører sin egen database over hva som finnes. Laster du opp gjennom nettgrensesnittet eller synkroniseringsklienten, oppdateres den underveis. Kopierer du filer rett inn i datamappen, eller monterer en mappe du allerede har, aner ikke Nextcloud at de har kommet - mappen ser tom ut i nettleseren. Å be den se etter er én kommando, og det er steget hvert forsøk uten veiledning hopper over."
+  }
 }

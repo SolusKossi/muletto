@@ -25,7 +25,7 @@
        and on every page so the choice follows the reader around. -->
   <script src="../../theme.js?v=4ef9956d"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik laster du ned GDPR-eksporten fra X (Twitter) og åpner den","description":"Slik laster du ned GDPR-eksporten din fra X (Twitter) - innlegg og aktivitet, meldinger - og slik åpner du den og ser hva som ligger der. 6 steg, hva som faktisk kommer, og hvor lang tid det tar (som regel innen et døgn, iblant flere).","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Åpne Innstillinger, så Kontoen din","text":"På nettet, ikke i appen. Innstillinger og personvern, Kontoen din, Last ned et arkiv med dataene dine."},{"@type":"HowToStep","position":2,"name":"Bekreft passordet ditt","text":"Du blir bedt om å skrive det inn på nytt, og deretter om å bekrefte en kode sendt på e-post eller SMS."},{"@type":"HowToStep","position":3,"name":"Be om arkivet","text":"Det er én knapp og ingen valg. Du kan ikke velge tidsrom eller et utvalg."},{"@type":"HowToStep","position":4,"name":"Vent på varselet","text":"Det kommer i appen og på e-post. De fleste ser det innen et døgn; en stor konto kan bruke flere."},{"@type":"HowToStep","position":5,"name":"Last ned med en gang","text":"Lenken går ut etter omtrent en uke, og da må hele forespørselen gjøres på nytt."},{"@type":"HowToStep","position":6,"name":"Åpne Your archive.html for å bla i det","text":"Arkivet kommer med sin egen frakoblede leser. Merk mellomrommet i filnavnet - det er noe som velter en god del skript."}]}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"X (Twitter)","item":"https://muletto.app/no/guides/x-twitter.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/no/guides.html"},{"@type":"ListItem","position":3,"name":"X (Twitter)","item":"https://muletto.app/no/guides/x-twitter.html"}],"inLanguage":"nb"}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"nb","mainEntity":[{"@type":"Question","name":"Hvorfor er filene i X-arkivet mitt .js og ikke .json?","acceptedAnswer":{"@type":"Answer","text":"Fordi arkivet kommer med en frakoblet leser som laster dem som skript. Hver fil er en JavaScript-tilordning - window.YTD.tweets.part0 = [ ... ] - lagt rundt ellers helt vanlig JSON. En JSON-leser feiler på hver eneste av dem inntil den første linja er fjernet."}},{"@type":"Question","name":"Er direktemeldinger med i X-arkivet?","acceptedAnswer":{"@type":"Answer","text":"Ja, i direct-messages.js for samtaler mellom to, og direct-messages-group.js for gruppesamtaler. De ligger i klartekst."}},{"@type":"Question","name":"Hvorfor er de gamle innleggene mine avkortet i arkivet?","acceptedAnswer":{"@type":"Answer","text":"Av to grunner. Retweets lagres som et sammendrag på 140 tegn som begynner med RT @, uten noen vei tilbake til originalen. Lange innlegg lagres avkortet i tweets.js med hele teksten i note-tweet.js, koblet sammen med id."}},{"@type":"Question","name":"Er bokmerker med i X-dataarkivet?","acceptedAnswer":{"@type":"Answer","text":"Nei. Likerklikk er med, bokmerker er ikke, og det finnes ingen måte å be om dem."}}]}</script>
 </head>
 <body>
@@ -34,7 +34,7 @@
       <div class="nav-left">
         <a class="wordmark" href="../../no/index.html">muletto</a>
         <div class="nav-links">
-          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/guides.html" class="active">Veiledninger</a>
           <a href="../../no/privacy.html">Personvern</a>
         </div>
       </div>
@@ -49,7 +49,7 @@
       <nav class="crumbs" aria-label="Breadcrumb">
         <a href="../../no/index.html">Hjem</a>
         <span>/</span>
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <span>/</span>
         <span aria-current="page">X (Twitter)</span>
       </nav>
@@ -179,7 +179,7 @@
     <div class="wrap">
       <a class="wordmark" href="../../no/index.html">muletto</a>
       <div class="foot-links">
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <a href="../../no/app.html">Åpne eksport</a>
         <a href="../../no/privacy.html">Personvern</a>
         <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">

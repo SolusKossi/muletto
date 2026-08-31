@@ -1,9 +1,7 @@
 {
   "en_hash": "24376edc366b",
-
   "wait_time": "minutter å koble til, en time eller mer å kopiere",
   "format": "en nettverksmappe, lesbar av hva som helst",
-
   "steps": [
     {
       "title": "Lag en mappe til det",
@@ -30,9 +28,12 @@
       "detail": "Den er én kopi, i én bygning, på disker som sannsynligvis ble kjøpt samtidig. RAID holder deg i gang når en disk ryker; det gjør ingenting med brann, tyveri, løsepengevirus eller at du sletter feil mappe. Bruk det sikkerhetskopiverktøyet NAS-en kommer med til å kopiere til en ekstern disk eller et annet sted, og test en gjenoppretting før du stoler på den."
     }
   ],
-
   "notes": [
     "SMB er protokollen både Windows og macOS snakker. Tilbyr NAS-en AFP i tillegg, overse det - Apple har lagt det dødt, og SMB er den som fortsetter å virke.",
     "Har NAS-en en bildeapp, er indekseringen dens noe annet enn kopieringen. At filene er der og at appen viser dem er to forskjellige ting."
-  ]
+  ],
+  "explain": {
+    "title": "Slik kobler du til en nettverksmappe",
+    "body": "NAS-en din dukker opp på nettverket under et navn eller en adresse som 192.168.1.20. I Windows åpner du Filutforsker, høyreklikker Denne PC-en og velger Koble til nettverksstasjon, og skriver så to omvendte skråstreker, adressen, en omvendt skråstrek og navnet på den delte mappen. På en Mac bruker du Finder, Gå, Koble til tjener, og skriver smb: fulgt av to skråstreker og adressen. Når den først er koblet til, oppfører den seg som en hvilken som helst annen mappe, og det er alt Muletto trenger for å skrive til den."
+  }
 }

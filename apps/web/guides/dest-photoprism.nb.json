@@ -1,9 +1,7 @@
 {
   "en_hash": "aedbbfc8105f",
-
   "wait_time": "en kveld å sette opp, deretter en indekseringsrunde",
   "format": "mapper på disk, indeksert der de ligger",
-
   "steps": [
     {
       "title": "Installer det",
@@ -30,9 +28,12 @@
       "detail": "Du kan slippe nye mapper inn i originals når som helst uten å stoppe tjeneren, og så kjøre indekseringen på nytt. Bare det som er nytt blir lest, så en ny runde over et stort bibliotek går fort."
     }
   ],
-
   "notes": [
     "Originals-mappen er den PhotoPrism bryr seg om. Alt annet den lagrer - miniatyrbilder, databasen, mellomlageret - bor i storage-mappen, og det er den delen du skal sikkerhetskopiere ved siden av bildene dine.",
     "Indeksering endrer ikke filene dine, så mappestrukturen din blir stående nøyaktig slik Muletto skrev den, og alle andre verktøy kan fortsatt lese den."
-  ]
+  ],
+  "explain": {
+    "title": "Å indeksere er ikke å importere",
+    "body": "PhotoPrism bruker de to ordene om forskjellige ting. Å indeksere leser mappen du allerede har og lar hvert fil- og mappenavn være i fred. Å importere kopierer filer inn i PhotoPrisms egen originals-mappe og gir dem nye navn etter dens eget system. For et bibliotek Muletto nettopp har ordnet, er indeksering nesten alltid det du vil ha - du valgte mappenavnene av en grunn."
+  }
 }

@@ -71,7 +71,7 @@ const NL = String.fromCharCode(10);
  * privacy.html on disk and wrote a different 404. Two runs, two answers, from
  * one input - and the only symptom was a page reported stale forever. A build
  * has to be a function of its sources. */
-const NO_PAGES = new Set(["404.html", "privacy.html", "app.html", "index.html"]);
+const NO_PAGES = new Set(["404.html", "privacy.html", "app.html", "index.html", "guides.html"]);
 const hasNo = (file) => NO_PAGES.has(file);
 
 let LANG = "en";
@@ -100,6 +100,13 @@ const spelledWord = (n) =>
 
 const sib = (slug) => (LANG === "nb" && !TRANSLATED.has(slug))
   ? "../../guides/" + slug + ".html" : slug + ".html";
+
+/* A link from the guides index down to a guide. The index sits one level
+   higher than the guides themselves, so this is `guides/x.html` - and on the
+   Norwegian index, `../guides/x.html` for anything not translated, which
+   climbs out of /no/ rather than asking for a page that is not there. */
+const idx = (slug) => (LANG === "nb" && !TRANSLATED.has(slug))
+  ? "../guides/" + slug + ".html" : "guides/" + slug + ".html";
 
 /* "root" rather than a number, for the 404. That page is served in answer to
    any address that matched nothing, including ones several folders deep, so a
@@ -387,6 +394,33 @@ const EN_STRINGS = {
   prFix: "How to fix it",
   prMuletto: "How Muletto does it",
   prPrevent: "Stopping it happening again",
+  faq1Q: "Does it cost anything?",
+  faq1A: "No. Everything is free: the guides, and every part of the app. Opening an export, merging several, finding duplicates, repairing dates and writing the library back out all run on your own machine, so there is nothing to charge for. There is no paid tier, no account and nothing to buy.",
+  faq2Q: "Do I need an account?",
+  faq2A: "No. There is no sign-up, no email address and no password, because there is no server holding anything to sign in to.",
+  faq3Q: "Are my files uploaded anywhere?",
+  faq3A: "No. Your archives are read inside your browser, on your own machine. The page is served with a Content-Security-Policy whose connect-src is 'self' and nothing else, so the browser itself refuses to send your files anywhere regardless of what the code asks for. Turn off your wifi before you drop the files in and everything still works.",
+  faq4Q: "How long do the exports take to arrive?",
+  faq4A: "It varies enormously. Meta is often minutes to hours, Google hours to days, Apple up to seven days, and Snapchat up to thirty. The waits run in parallel, so if you want several, request them all on the same day.",
+  faq5Q: "Which services can I open an export from?",
+  faq5A: "{count} of them have a reader written for them, Apple, Google, Samsung, Snapchat, Facebook and Instagram among them, and an export from anything else opens too - listed and read as far as its shape allows. Several exports can be opened together and become one library.",
+  faq6Q: "What do I get back at the end?",
+  faq6A: "Ordinary folders of ordinary files, with the real dates and locations written into the photographs themselves, duplicates across services removed, and your messages, location history and account records readable. Nothing needs this site afterwards.",
+  giTitle: "Guides",
+  giLead: "How to get a complete copy of your data out of any major service, what you will get back, and where to put it afterwards. All free to read, no account.",
+  giJobsH: "Whole jobs",
+  giJobs: "Start to finish: request it, open it, tidy it up, put it where it is going. Begin here if you know where you want to end up.",
+  giWrongH: "When something has gone wrong",
+  giWrong: "You already have the export and it will not open, or it opened and the dates are nonsense. The cause, and the fix, including the fix that does not involve us.",
+  giOutH: "Getting your data out",
+  giOut: "One service at a time, with what to expect and the parts people get wrong.",
+  giKeepH: "Where to keep it",
+  giKeep: "Once your data is cleaned up, put it somewhere you control. These guides cover network drives, external disks, self-hosted servers, and getting a tidied library back into a cloud service.",
+  giFaqH: "Questions people ask first",
+  giMetaTitle: "GDPR export guides: request and open your data | Muletto",
+  giMetaDesc: "Free step-by-step guides for requesting a complete copy of your data from Apple, Google, Samsung, Snapchat, Facebook and Instagram, plus how to store it on a NAS or external drive.",
+  giCollName: "Muletto export guides",
+  giCollDesc: "Guides for exporting your personal data from major services.",
   footTagline: "Built by one person. Everything runs in your browser, and the source is public.",
   feat1: "Opens GDPR export archives without unzipping them",
   feat2: "Merges exports from several services into one library",
@@ -660,9 +694,21 @@ const crypto = require("crypto");
 
 /* Which fields hold prose. Everything not here is a slug, an enum, a brand
    name or a URL, and translating any of those would break something. */
+/* Enumerated across every guide rather than read off one of them, which is
+   how the first version came to miss four fields. `explain` is a whole
+   callout block with a heading and a paragraph, present on fifteen guides and
+   absent from the one I happened to inspect; `caption` and `alt` are the
+   words under and behind each screenshot, and alt text being invisible is
+   precisely why it would have stayed English indefinitely.
+ *
+ * Deliberately not here: `request.url` and `steps[].image` are addresses,
+ * `muletto_support.status` is not rendered on any page, and `provider` is a
+ * brand name. */
 const TRANSLATABLE = [
   "wait_time", "format", "request.label",
+  "explain.title", "explain.body",
   "steps[].title", "steps[].detail", "steps[].note",
+  "steps[].caption", "steps[].alt",
   "notes[]", "faq[].q", "faq[].a",
 ];
 
@@ -1228,7 +1274,7 @@ const ARROW = '<svg viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke
    what you end up with matters more than how long the request takes. */
 function flowCard(f) {
   const conf = confirmation(f);
-  return `        <a class="jobcard" href="guides/${esc(f.slug)}.html">
+  return `        <a class="jobcard" href="${esc(idx(f.slug))}">
           <span class="jobcard-ic" data-icon="${esc(f.icon || "route")}"></span>
           <span class="jobcard-body">
             <span class="jobcard-t">${esc(f.title)}</span>
@@ -1241,20 +1287,13 @@ function flowCard(f) {
         </a>`;
 }
 
-const FAQ = [
-  ["Does it cost anything?",
-   "No. Everything is free: the guides, and every part of the app. Opening an export, merging several, finding duplicates, repairing dates and writing the library back out all run on your own machine, so there is nothing to charge for. There is no paid tier, no account and nothing to buy."],
-  ["Do I need an account?",
-   "No. There is no sign-up, no email address and no password, because there is no server holding anything to sign in to."],
-  ["Are my files uploaded anywhere?",
-   "No. Your archives are read inside your browser, on your own machine. The page is served with a Content-Security-Policy whose connect-src is 'self' and nothing else, so the browser itself refuses to send your files anywhere regardless of what the code asks for. Turn off your wifi before you drop the files in and everything still works."],
-  ["How long do the exports take to arrive?",
-   "It varies enormously. Meta is often minutes to hours, Google hours to days, Apple up to seven days, and Snapchat up to thirty. The waits run in parallel, so if you want several, request them all on the same day."],
-  ["Which services can I open an export from?",
-   "Apple, Google, Samsung, Snapchat, Facebook and Instagram each have their own guide, and the app reads the zip archives all of them produce. Several exports can be opened together and become one library."],
-  ["What do I get back at the end?",
-   "Ordinary folders of ordinary files, with the real dates and locations written into the photographs themselves, duplicates across services removed, and your messages, location history and account records readable. Nothing needs this site afterwards."],
-];
+/* The questions somebody asks before they have tried anything, in the order
+   they ask them. Built per language, and the service count is passed in
+   rather than written down - it was six for a long time and is not now. */
+function faqList(readerCount) {
+  return [1, 2, 3, 4, 5, 6].map((i) =>
+    [T("faq" + i + "Q"), T("faq" + i + "A", { count: spelledWord(readerCount) })]);
+}
 
 /* The collection files - flows.json and problems.json - hold several pages in
  * one document rather than one page per file, so they need their own overlay.
@@ -1760,18 +1799,19 @@ ${rows}
 }
 
 
-function guidesIndex(all, dests, flows, problems) {
+function guidesIndex(all, dests, flows, problems, lang, alt, readerCount) {
+  const FAQ = faqList(readerCount);
   const body = `    <section class="page-head wrap">
-      <h1>Guides</h1>
-      <p>How to get a complete copy of your data out of any major service, what you will get back, and where to put it afterwards. All free to read, no account.</p>
+      <h1>${esc(T("giTitle"))}</h1>
+      <p>${esc(T("giLead"))}</p>
     </section>
 
     <section class="wrap gd-wrap">
 
       <div class="gd-sec">
         <div class="section-head">
-          <h2>Whole jobs</h2>
-          <p>Start to finish: request it, open it, tidy it up, put it where it is going. Begin here if you know where you want to end up.</p>
+          <h2>${esc(T("giJobsH"))}</h2>
+          <p>${esc(T("giJobs"))}</p>
         </div>
         <div class="jobgrid">
 ${(flows || []).map(flowCard).join("\n")}
@@ -1780,11 +1820,11 @@ ${(flows || []).map(flowCard).join("\n")}
 
       ${(problems || []).length ? `<div class="gd-sec">
         <div class="section-head">
-          <h2>When something has gone wrong</h2>
-          <p>You already have the export and it will not open, or it opened and the dates are nonsense. The cause, and the fix, including the fix that does not involve us.</p>
+          <h2>${esc(T("giWrongH"))}</h2>
+          <p>${esc(T("giWrong"))}</p>
         </div>
         <div class="probgrid">
-${problems.map((p) => `          <a class="probcard" href="guides/${esc(p.slug)}.html">
+${problems.map((p) => `          <a class="probcard" href="${esc(idx(p.slug))}">
             <h3>${esc(p.title)}</h3>
             <p>${esc(p.symptom.length > 150 ? p.symptom.slice(0, 147) + "..." : p.symptom)}</p>
           </a>`).join("\n")}
@@ -1793,28 +1833,28 @@ ${problems.map((p) => `          <a class="probcard" href="guides/${esc(p.slug)}
 
       <div class="gd-sec">
         <div class="section-head">
-          <h2>Getting your data out</h2>
-          <p>One service at a time, with what to expect and the parts people get wrong.</p>
+          <h2>${esc(T("giOutH"))}</h2>
+          <p>${esc(T("giOut"))}</p>
         </div>
         <div class="svcgrid">
-${all.map((g) => card(g, `guides/${g.slug}.html`, "service")).join("\n")}
+${all.map((g) => card(g, idx(g.slug), "service")).join("\n")}
         </div>
       </div>
 
       <div class="gd-sec">
         <div class="section-head">
-          <h2>Where to keep it</h2>
-          <p>Once your data is cleaned up, put it somewhere you control. These guides cover network drives, external disks, self-hosted servers, and getting a tidied library back into a cloud service.</p>
+          <h2>${esc(T("giKeepH"))}</h2>
+          <p>${esc(T("giKeep"))}</p>
         </div>
         <div class="svcgrid">
-${dests.map((g) => card(g, `guides/${g.slug}.html`, "dest")).join("\n")}
+${dests.map((g) => card(g, idx(g.slug), "dest")).join("\n")}
         </div>
       </div>
     </section>
 
     <section class="wrap tight">
       <div class="section-head">
-        <h2>Questions people ask first</h2>
+        <h2>${esc(T("giFaqH"))}</h2>
       </div>
       <div class="faq">
 ${FAQ.map(([q, a]) => `        <details class="faq-item"><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}
@@ -1822,16 +1862,17 @@ ${FAQ.map(([q, a]) => `        <details class="faq-item"><summary>${esc(q)}</sum
     </section>`;
 
   return page({
-    depth: 0, active: "guides",
-    title: "GDPR export guides: request and open your data | Muletto",
-    description: "Free step-by-step guides for requesting a complete copy of your data from Apple, Google, Samsung, Snapchat, Facebook and Instagram, plus how to store it on a NAS or external drive.",
-    canonical: `${SITE}/guides.html`,
+    depth: lang === "nb" ? 1 : 0, active: "guides",
+    lang, alt,
+    title: T("giMetaTitle"),
+    description: T("giMetaDesc"),
+    canonical: SITE + (lang === "nb" ? "/no/guides.html" : "/guides.html"),
     jsonld: [{
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: "Muletto export guides",
-      description: "Guides for exporting your personal data from major services.",
-      url: `${SITE}/guides.html`,
+      name: T("giCollName"),
+      description: T("giCollDesc"),
+      url: SITE + (lang === "nb" ? "/no/guides.html" : "/guides.html"),
     }, {
       "@context": "https://schema.org",
       "@type": "FAQPage",
@@ -2256,7 +2297,36 @@ function main() {
     nNo++;
   }
   LANG = "en";
-  fs.writeFileSync(path.join(WEB, "guides.html"), guidesIndex(all, dests, flows, problems), "utf8");
+  {
+    /* Every page the index links to has to be in the same tree, so the index
+       is only written in Norwegian when they all are. TRANSLATED is widened
+       to the collections first, because `idx` reads it to decide whether a
+       link climbs out of /no/ or stays in it. */
+    TRANSLATED = new Set([...translated.keys(), ...nbFlowSet, ...nbProbSet]);
+    const rc = [...all, ...dests].filter((g) => (g.muletto_support || {}).importable).length;
+    const everything = [...all, ...dests, ...flows, ...problems];
+    const allTranslated = everything.every((g) => TRANSLATED.has(g.slug));
+    LANG = "en";
+    fs.writeFileSync(path.join(WEB, "guides.html"),
+      guidesIndex(all, dests, flows, problems, "en",
+        allTranslated ? { href: "no/guides.html", loc: `${SITE}/no/guides.html`, lang: "nb" } : null,
+        rc), "utf8");
+    if (allTranslated) {
+      LANG = "nb";
+      const nbAll = all.map((g) => translated.get(g.slug) || g);
+      const nbDests = dests.map((g) => translated.get(g.slug) || g);
+      fs.writeFileSync(path.join(WEB, "no", "guides.html"),
+        guidesIndex(nbAll, nbDests, nbFlows.items, nbProblems.items, "nb",
+          { href: "../guides.html", loc: `${SITE}/guides.html`, lang: "en" }, rc), "utf8");
+      LANG = "en";
+    } else {
+      const stale = path.join(WEB, "no", "guides.html");
+      if (fs.existsSync(stale)) {
+        fs.unlinkSync(stale);
+        console.warn("  NOTE: removed no/guides.html - not every page it links to is translated");
+      }
+    }
+  }
 
   /* The pages that used to be hand-written HTML. Each is emitted in English
      always, and in Norwegian when its strings are there - which they are, so
@@ -2554,11 +2624,27 @@ function main() {
     return (rel) => seen.get("apps/web/" + rel) || null;
   })();
 
+  /* The four top-level pages, in both languages where both exist.
+   *
+   * The Norwegian ones were on disk, linked from the chrome, and carrying
+   * hreflang in their heads - and absent from here entirely, which meant the
+   * one place a search engine is told about a page it has not crawled did not
+   * mention them. Their alternates are written explicitly rather than
+   * inferred, because the guide rule below matches /guides/<slug>.html and
+   * these are not that shape. */
+  const topPair = (file, pri, loc, noLoc) => {
+    const rows = [{ loc, pri, file }];
+    if (fs.existsSync(path.join(WEB, "no", file))) {
+      rows[0].alt = { en: loc, nb: noLoc };
+      rows.push({ loc: noLoc, pri, file: "no/" + file, alt: { en: loc, nb: noLoc } });
+    }
+    return rows;
+  };
   const urls = [
-    { loc: `${SITE}/`, pri: "1.0", file: "index.html" },
-    { loc: `${SITE}/guides.html`, pri: "0.9", file: "guides.html" },
-    { loc: `${SITE}/app.html`, pri: "0.9", file: "app.html" },
-    { loc: `${SITE}/privacy.html`, pri: "0.7", file: "privacy.html" },
+    ...topPair("index.html", "1.0", `${SITE}/`, `${SITE}/no/`),
+    ...topPair("guides.html", "0.9", `${SITE}/guides.html`, `${SITE}/no/guides.html`),
+    ...topPair("app.html", "0.9", `${SITE}/app.html`, `${SITE}/no/app.html`),
+    ...topPair("privacy.html", "0.7", `${SITE}/privacy.html`, `${SITE}/no/privacy.html`),
     ...flows.map((f) => ({ loc: `${SITE}/guides/${f.slug}.html`, pri: "0.85",
                            file: "guides/" + f.slug + ".html" })),
     ...problems.map((p) => ({ loc: `${SITE}/guides/${p.slug}.html`, pri: "0.85",

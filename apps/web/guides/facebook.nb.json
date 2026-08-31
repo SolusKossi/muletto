@@ -1,13 +1,10 @@
 {
   "en_hash": "e9fd6f6d3773",
-
   "wait_time": "minutter til noen dager, avhengig av størrelsen",
   "format": ".zip med JSON- eller HTML-filer og medier",
-
   "request": {
     "label": "Meta Kontosenter - Last ned informasjonen din"
   },
-
   "steps": [
     {
       "title": "Åpne Last ned informasjonen din",
@@ -34,7 +31,6 @@
       "detail": "Lenken kommer på e-post og går ut etter noen dager, så last ned med en gang. Lagre hver del hvis den kommer oppdelt, hold dem i én mappe, og ikke pakk ut - Muletto leser arkivene direkte."
     }
   ],
-
   "notes": [
     "Tre innstillinger på bestillingsskjermen avgjør hva eksporten ikke inneholder, og alle tre står imot deg fra før. Mediekvalitet Lav gir deg bildene permanent nedskalert - originalene er ikke i fila, og ingen senere handling henter dem tilbake. Tidsrommet står på et nylig utsnitt på enkelte skjermer i stedet for på alt. Og kategorilista er et sett avkrysningsbokser: alt du lar stå uavhuket er rett og slett borte, uten at noe i nedlastingen sier at det noen gang ble tilbudt. Tar du feil på én av dem, må du be om den på nytt og vente på nytt, så den siden er verdt å lese sakte.",
     "Facebook og Instagram bor begge i Meta Kontosenter, så du kan be om dem fra samme sted.",
@@ -43,7 +39,6 @@
     "HTML-eksporter kan ikke leses tilbake, verken av Muletto eller av noe annet. Har du allerede en, be om JSON i tillegg - det koster en ny ventetid og ingenting mer.",
     "Ventetiden er som regel minutter til timer og ikke dager, men Meta viser ingen framdrift, og e-posten er eneste signal."
   ],
-
   "faq": [
     {
       "q": "Hvorfor viser Facebook-eksporten min rare tegn i stedet for bokstaver?",
@@ -61,5 +56,9 @@
       "q": "Hvorfor er Facebook-eksporten min delt i flere filer?",
       "a": "Meta deler store nedlastinger rundt fire gigabyte. Delene er utsnitt av ett mappetre og ikke kopier, så pakk alle sammen ut på samme sted før du åpner, ellers ser hele seksjoner ut til å mangle."
     }
-  ]
+  ],
+  "explain": {
+    "title": "JSON, ikke HTML, og det er ikke opplagt hvorfor",
+    "body": "Meta tilbyr begge deler. HTML ser vennligere ut - det åpner i en nettleser og ligner på Facebook - men det er en framvisning av dataene dine og ikke dataene, og ingenting kan lese det pålitelig tilbake. JSON er den maskinlesbare, og det er den Muletto leser. Velger du HTML, har du en utklippsbok du bare kan se på; velger du JSON, har du dataene dine, som Muletto uansett gjør om til noe du kan se på."
+  }
 }

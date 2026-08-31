@@ -25,7 +25,7 @@
        and on every page so the choice follows the reader around. -->
   <script src="../../theme.js?v=4ef9956d"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik flytter du dataene dine til Immich (self-hosted)","description":"Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til Immich (self-hosted). 7 steg, skrevet for deg som vil ha din egen kopi.","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Bestem deg for hvilken av de to måtene du vil ha","text":"Immich kan enten ta en kopi av biblioteket ditt inn i sitt eget lager, eller lese mappen du allerede har og la filene ligge nøyaktig der de er. Det siste heter et eksternt bibliotek, og for et bibliotek Muletto nettopp har skrevet ut er det som regel det riktige: mappene beholder strukturen du valgte, og ingenting dobles opp på disken. Å laste opp passer bedre hvis du vil at Immich skal være eneste kopi og styre filene selv."},{"@type":"HowToStep","position":2,"name":"Installer det","text":"Immich er en selvhostet bilde- og videotjener med mobilapp, tidslinje, søk og ansiktsgjenkjenning. Den kjører med Docker Compose på en NAS, en hjemmeserver eller en hvilken som helst ledig PC. Følg den offisielle installasjonen, start den, åpne nettgrensesnittet og opprett den første kontoen - den kontoen er administrator, og den finnes bare på din egen maskin."},{"@type":"HowToStep","position":3,"name":"Monter mappen din så containeren kan se den","text":"Dette er steget folk gjør feil. Immich kjører inne i en container, som har sitt eget syn på filsystemet, så legg bibliotekmappen din inn i docker-compose.yml som et volum - for eksempel stien på verten til venstre og en containersti som /mnt/media/photos til høyre. Legg til :ro på slutten for å montere den skrivebeskyttet hvis du vil at Immich aldri skal kunne endre eller slette originalene dine. Start stakken på nytt etterpå."},{"@type":"HowToStep","position":4,"name":"Legg det til som et eksternt bibliotek","text":"I nettgrensesnittet går du til Administrasjon, Eksterne bibliotek, og oppretter ett for brukeren din. Sett importstien til den stien containeren ser - /mnt/media/photos i eksempelet over - og ikke stien verten din bruker. En sti som er riktig på verten og feil inne i containeren er den vanlige grunnen til at en gjennomgang ikke finner noe. Utelatelsesmønstre bruker glob-syntaks hvis du vil holde undermapper utenfor."},{"@type":"HowToStep","position":5,"name":"Kjør gjennomgangen, og la den gjenta seg selv","text":"Kjør den første gjennomgangen fra den samme skjermen. Immich leser hver fil der den ligger og bygger tidslinjen, kartet og søkeindeksen ut fra den - filene kopieres ikke. Deretter plukker en nattlig jobb opp alt nytt, og du kan sette i gang en ny gjennomgang for hånd når du har lagt noe i mappen. Nyere versjoner gjorde gjennomgangen dramatisk raskere, så et stort bibliotek er ikke lenger en nattjobb."},{"@type":"HowToStep","position":6,"name":"Sjekk at datoene kom med","text":"Immich sorterer etter datoen inni hver fil, ikke etter filens tidsstempel på disken. Det er nøyaktig det Muletto reparerer før du eksporterer: et Google- eller Apple-arkiv importert uten det steget kommer datert den dagen du importerte det, og et tiår med bilder klapper sammen til én ettermiddag. Ta stikkprøver på noen gamle i tidslinjen før du stoler på hele biblioteket."},{"@type":"HowToStep","position":7,"name":"Sikkerhetskopier de delene som betyr noe","text":"Med et eksternt bibliotek ligger originalene dine der du la dem, så de dekkes av det som allerede sikkerhetskopierer den mappen. Det som ikke dekkes er Immichs database, som inneholder albumene, ansiktene og alt du har redigert inne i Immich - inkludert opplysninger du la til der, som ikke skrives tilbake til eksterne filer. Ta sikkerhetskopi av databasen også, ellers er det arbeidet det du mister."}]}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Immich (self-hosted)","item":"https://muletto.app/no/guides/dest-immich.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/no/guides.html"},{"@type":"ListItem","position":3,"name":"Immich (self-hosted)","item":"https://muletto.app/no/guides/dest-immich.html"}],"inLanguage":"nb"}</script>
 </head>
 <body>
   <nav class="nav">
@@ -33,7 +33,7 @@
       <div class="nav-left">
         <a class="wordmark" href="../../no/index.html">muletto</a>
         <div class="nav-links">
-          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/guides.html" class="active">Veiledninger</a>
           <a href="../../no/privacy.html">Personvern</a>
         </div>
       </div>
@@ -48,7 +48,7 @@
       <nav class="crumbs" aria-label="Breadcrumb">
         <a href="../../no/index.html">Hjem</a>
         <span>/</span>
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <span>/</span>
         <span aria-current="page">Immich (self-hosted)</span>
       </nav>
@@ -66,7 +66,7 @@
       <div class="art-grid">
         <div class="art-main">
           <p><a class="btn primary lg" href="" target="_blank" rel="noopener noreferrer">Immich <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
-          <aside class="explain"><h2>The import path is the container&#39;s path, not yours</h2><p>Immich runs inside a container, which sees a different filesystem from the machine it runs on. When you add an External Library you give it an import path, and that path has to be the one the container sees - whatever you wrote on the right-hand side of the volume line in docker-compose.yml - not the path you use on the host. A scan that runs happily and finds nothing at all is almost always this.</p></aside>
+          <aside class="explain"><h2>Importstien er containerens sti, ikke din</h2><p>Immich kjører inne i en container, som ser et annet filsystem enn maskinen den kjører på. Når du legger til et eksternt bibliotek, gir du den en importsti, og den stien må være den containeren ser - det du skrev på høyre side av volumlinja i docker-compose.yml - og ikke stien du bruker på verten. En gjennomgang som kjører uten problemer og ikke finner noe som helst, er nesten alltid dette.</p></aside>
 
           <h2>Steg for steg</h2>
           
@@ -160,7 +160,7 @@
     <div class="wrap">
       <a class="wordmark" href="../../no/index.html">muletto</a>
       <div class="foot-links">
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <a href="../../no/app.html">Åpne eksport</a>
         <a href="../../no/privacy.html">Personvern</a>
         <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">

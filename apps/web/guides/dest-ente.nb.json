@@ -1,9 +1,7 @@
 {
   "en_hash": "aae013121553",
-
   "wait_time": "en opplasting, på din egen maskin",
   "format": "kryptert på maskinen din, og så lastet opp",
-
   "steps": [
     {
       "title": "Vurder om avveiningen passer deg",
@@ -30,9 +28,12 @@
       "detail": "Kryptert og driftet av andre er fortsatt driftet av andre. Ente gjør det lett å dra - kommandolinjeverktøyet finnes nettopp for at du skal kunne ta løpende eksporter uten å være avhengig av dem - så sett opp det, eller behold mappen Muletto skrev på en disk du eier selv."
     }
   ],
-
   "notes": [
     "Det finnes ingen migreringsverktøy som kjører på Entes side, og det er en følge av krypteringen og ikke et hull. Alt som skal lese biblioteket ditt må kjøre på din egen maskin.",
     "Kommandolinjeverktøyet henter fra Ente til lokal lagring; endringer i de lokale filene synkroniseres ikke tilbake. Se på det som et eksportverktøy, for det er det det er til."
-  ]
+  ],
+  "explain": {
+    "title": "Hvorfor importen skjer på din egen maskin",
+    "body": "Ente krypterer alt før det forlater maskinen din, og serverne deres kan ikke dekryptere noe av det. Det er hele poenget med tjenesten, og det har en praktisk følge: det finnes ingen importør på serversiden, for en server som ikke kan lese bildene dine kan heller ikke sortere dem. Hver import kjører i skrivebordsappen, på din egen datamaskin, som krypterer underveis. Regn med at det tar reell tid og reell prosessorkraft på et stort bibliotek."
+  }
 }

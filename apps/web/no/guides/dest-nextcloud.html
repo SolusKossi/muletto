@@ -25,7 +25,7 @@
        and on every page so the choice follows the reader around. -->
   <script src="../../theme.js?v=4ef9956d"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Slik flytter du dataene dine til Nextcloud (self-hosted)","description":"Steg for steg: slik flytter du det ryddede bilde- og dataarkivet ditt til Nextcloud (self-hosted). 7 steg, skrevet for deg som vil ha din egen kopi.","inLanguage":"nb","step":[{"@type":"HowToStep","position":1,"name":"Bestem om Nextcloud skal eie filene eller bare se dem","text":"To valg. La Nextcloud lagre biblioteket selv, ved å laste opp gjennom nettgrensesnittet eller skrivebordsklienten - enklest, og da har den styringen på sin egen datamappe. Eller la biblioteket ligge der det er og legg det til som ekstern lagring, som monterer mappen inn i Nextcloud uten å flytte noe. Det siste passer et bibliotek som allerede bor på en NAS eller en stor disk."},{"@type":"HowToStep","position":2,"name":"Skal du laste opp, bruk skrivebordsklienten","text":"Installer Nextcloud-skrivebordsklienten, koble den til tjeneren din, og pek den mot mappen Muletto skrev. Den takler titusenvis av filer, fortsetter der den slapp når forbindelsen ryker, og viser reell framdrift. Opplasting i nettleseren går greit for en håndfull filer og er elendig for et bibliotek."},{"@type":"HowToStep","position":3,"name":"Skal du montere, legg det til som ekstern lagring","text":"I administratorinnstillingene åpner du Ekstern lagring, legger til en Lokal lagring, gir den et mappenavn slik det skal vises i Nextcloud, og setter stien til mappen på tjeneren. Kjører Nextcloud i en container, er den stien den containeren ser, ikke vertens. Sørg for at brukeren webtjeneren kjører som kan lese den, ellers dukker monteringen opp og blir stivnakket tom."},{"@type":"HowToStep","position":4,"name":"Fortell Nextcloud at filene er der","text":"Dette er steget som betyr noe. På tjeneren kjører du occ files:scan for brukeren som eier mappen, eller med --all for alle. Den går gjennom filsystemet og skriver det den finner inn i databasen. Før den har kjørt, finnes filer kopiert inn utenfra rett og slett ikke, sett fra Nextcloud."},{"@type":"HowToStep","position":5,"name":"Installer Memories for en ordentlig bildetidslinje","text":"Filer-appen lister opp mapper; den er ikke et bildebibliotek. Memories legger til en tidslinje, et kart, album og ansiktsgruppering. Etter at du har installert den, kjør occ memories:index for å lese datoene og stedene ut av filene og bygge tidslinjen. På ekstern lagring går dette tregere, fordi hver fil må leses gjennom monteringen."},{"@type":"HowToStep","position":6,"name":"Hold det oppdatert av seg selv","text":"Alt som legges til utenfra Nextcloud krever en ny gjennomgang. En planlagt jobb som kjører occ files:scan --all med jevne mellomrom holder det ærlig; Memories indekserer så de nye filene gjennom sin egen bakgrunnsjobb. Legger du bare inn ting gjennom klienten eller nettgrensesnittet, trengs ingen av delene."},{"@type":"HowToStep","position":7,"name":"Sjekk at datoene kom med","text":"Memories bygger tidslinjen sin på datoen inni hver fil, og det er nettopp det Muletto reparerer før du eksporterer. Uten det kommer et Google- eller Apple-arkiv datert den dagen du kopierte det. Bla noen år tilbake før du stoler på det."}]}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/guides.html"},{"@type":"ListItem","position":3,"name":"Nextcloud (self-hosted)","item":"https://muletto.app/no/guides/dest-nextcloud.html"}],"inLanguage":"nb"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Muletto","item":"https://muletto.app/no/"},{"@type":"ListItem","position":2,"name":"Veiledninger","item":"https://muletto.app/no/guides.html"},{"@type":"ListItem","position":3,"name":"Nextcloud (self-hosted)","item":"https://muletto.app/no/guides/dest-nextcloud.html"}],"inLanguage":"nb"}</script>
 </head>
 <body>
   <nav class="nav">
@@ -33,7 +33,7 @@
       <div class="nav-left">
         <a class="wordmark" href="../../no/index.html">muletto</a>
         <div class="nav-links">
-          <a href="../../guides.html" class="active">Veiledninger</a>
+          <a href="../../no/guides.html" class="active">Veiledninger</a>
           <a href="../../no/privacy.html">Personvern</a>
         </div>
       </div>
@@ -48,7 +48,7 @@
       <nav class="crumbs" aria-label="Breadcrumb">
         <a href="../../no/index.html">Hjem</a>
         <span>/</span>
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <span>/</span>
         <span aria-current="page">Nextcloud (self-hosted)</span>
       </nav>
@@ -66,7 +66,7 @@
       <div class="art-grid">
         <div class="art-main">
           
-          <aside class="explain"><h2>Nextcloud does not notice files you put there behind its back</h2><p>Nextcloud keeps its own database of what exists. Upload through the web interface or the sync client and it updates as it goes. Copy files straight into the data folder, or mount a folder you already have, and Nextcloud has no idea they arrived - the folder looks empty in the browser. Telling it to look is one command, and it is the step every guide-less attempt misses.</p></aside>
+          <aside class="explain"><h2>Nextcloud merker ikke filer du legger inn bak ryggen på den</h2><p>Nextcloud fører sin egen database over hva som finnes. Laster du opp gjennom nettgrensesnittet eller synkroniseringsklienten, oppdateres den underveis. Kopierer du filer rett inn i datamappen, eller monterer en mappe du allerede har, aner ikke Nextcloud at de har kommet - mappen ser tom ut i nettleseren. Å be den se etter er én kommando, og det er steget hvert forsøk uten veiledning hopper over.</p></aside>
 
           <h2>Steg for steg</h2>
           
@@ -159,7 +159,7 @@
     <div class="wrap">
       <a class="wordmark" href="../../no/index.html">muletto</a>
       <div class="foot-links">
-        <a href="../../guides.html">Veiledninger</a>
+        <a href="../../no/guides.html">Veiledninger</a>
         <a href="../../no/app.html">Åpne eksport</a>
         <a href="../../no/privacy.html">Personvern</a>
         <a class="foot-src" href="https://github.com/SolusKossi/muletto" target="_blank" rel="noopener noreferrer">

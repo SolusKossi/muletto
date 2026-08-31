@@ -1,13 +1,10 @@
 {
   "en_hash": "76a5433bd907",
-
   "wait_time": "timer til dager, og Snapchat sender deg en e-post når den er klar",
   "format": ".zip med JSON- og HTML-filer",
-
   "request": {
     "label": "Snapchat-kontosiden"
   },
-
   "steps": [
     {
       "title": "Logg inn på accounts.snapchat.com",
@@ -15,7 +12,9 @@
     },
     {
       "title": "Åpne Mine data",
-      "detail": "Det er øverste punkt i menyen til venstre når du er logget inn. Siden går gjennom tre nummererte trinn: velg dataene dine, bekreft tidsrom og e-postadresse, og vent."
+      "detail": "Det er øverste punkt i menyen til venstre når du er logget inn. Siden går gjennom tre nummererte trinn: velg dataene dine, bekreft tidsrom og e-postadresse, og vent.",
+      "caption": "Trinn 1. Ingenting er huket av for deg - hver kategori og hver medieeksport må skrus på for hånd.",
+      "alt": "Snapchats Mine data-side på trinn 1, Velg data som skal inkluderes, med en liste over tretten kategorier og en bryter ved siden av hver."
     },
     {
       "title": "La Eksporter JSON-filer stå på",
@@ -31,29 +30,33 @@
     },
     {
       "title": "Velg Hele tiden, og kontroller e-postadressen",
-      "detail": "Trinn 2 spør etter et tidsrom, og det er her folk stille mister historikken sin: det står ikke på alt fra før. Du må velge Hele tiden selv. Lar du det være, får du et utsnitt i stedet for et arkiv, og det er ikke det noen mener når de ber om dataene sine. Se deretter nøye på adressen som vises, for det er dit nedlastingslenken går, og det er adressen som står på kontoen - ikke en du velger her. Er det en gammel postkasse du ikke leser lenger, bytt den i kontoinnstillingene før du sender inn, ikke etter: forespørselen bruker den adressen som står på kontoen i det øyeblikket du lager den. Får du ikke byttet den, kan du fortsatt hente eksporten fra Mine data-siden uten e-posten, slik det står lenger ned. Trykk Send inn."
+      "detail": "Trinn 2 spør etter et tidsrom, og det er her folk stille mister historikken sin: det står ikke på alt fra før. Du må velge Hele tiden selv. Lar du det være, får du et utsnitt i stedet for et arkiv, og det er ikke det noen mener når de ber om dataene sine. Se deretter nøye på adressen som vises, for det er dit nedlastingslenken går, og det er adressen som står på kontoen - ikke en du velger her. Er det en gammel postkasse du ikke leser lenger, bytt den i kontoinnstillingene før du sender inn, ikke etter: forespørselen bruker den adressen som står på kontoen i det øyeblikket du lager den. Får du ikke byttet den, kan du fortsatt hente eksporten fra Mine data-siden uten e-posten, slik det står lenger ned. Trykk Send inn.",
+      "caption": "Trinn 2. Sett tidsrommet til Hele tiden. Det gjør den ikke av seg selv.",
+      "alt": "Trinn 2 av Snapchat-eksporten, med tidsrommet satt til Hele tiden og et felt for e-postadresse under."
     },
     {
       "title": "Vent på e-posten",
-      "detail": "Snapchat sier jobben kan ta timer eller dager, avhengig av hvor mye som skal samles inn. Siden viser forespørselen som Pågår med tidspunktet du opprettet den, og du kan lukke fanen - den trenger ikke stå åpen."
+      "detail": "Snapchat sier jobben kan ta timer eller dager, avhengig av hvor mye som skal samles inn. Siden viser forespørselen som Pågår med tidspunktet du opprettet den, og du kan lukke fanen - den trenger ikke stå åpen.",
+      "caption": "Trinn 3. Trygt å lukke fanen; lenken kommer på e-post.",
+      "alt": "Trinn 3 av Snapchat-eksporten, der forespørselen står oppført som Pågår med et opprettelsestidspunkt."
     },
     {
       "title": "Regn med et varsel i appen du kan overse",
-      "detail": "Snapchat sender et varsel fra selve appen om at dataene dine er på vei. Det er kun til orientering og det er ingenting å gjøre med det - ingen lenke, ingen nedlasting, og det betyr ikke at eksporten er klar. Overse det og vent på e-posten."
+      "detail": "Snapchat sender et varsel fra selve appen om at dataene dine er på vei. Det er kun til orientering og det er ingenting å gjøre med det - ingen lenke, ingen nedlasting, og det betyr ikke at eksporten er klar. Overse det og vent på e-posten.",
+      "caption": "Omtrent to minutter etter innsending. Kun til orientering - det er ikke eksporten.",
+      "alt": "Et varsel fra Snapchat-appen som sier 'Snapchat-dataene dine er på vei', mottatt kort tid etter at forespørselen ble sendt."
     },
     {
       "title": "Last ned hver del med en gang",
       "detail": "Ikke vent på e-posten. Gå tilbake til accounts.snapchat.com, åpne Mine data og velg Se eksporter: hver forespørsel du har gjort står der med status og en nedlastingsknapp, så du kan hente filene uten at e-posten er innblandet i det hele tatt. Dette betyr mer enn det høres ut som. Lenken skal vare rundt sju dager, og adressen på kontoen er ofte en som ble satt opp for mange år siden og som du ikke leser lenger - det er slik folk ber om en eksport tre ganger på rad og går glipp av den tre ganger, hvor hvert forsøk stille går ut på dato i en innboks de aldri åpner. Sjekk siden et par timer etter at du har bedt om den, og deretter daglig. Store eksporter deles i flere deler, og du trenger alle sammen."
     }
   ],
-
   "notes": [
     "Eksporter JSON-filer er den ene bryteren det er verdt å dobbeltsjekke. HTML alene er lesbart, men lar seg ikke importere - verken i Muletto eller noe annet.",
     "Den første e-posten kommer i løpet av minutter og bekrefter bare at forespørselen er mottatt. Nedlastingslenken kommer i en senere, egen e-post.",
     "Minner, delte historier og chatmedier telles for seg, utenfor de ti datakategoriene, så et utvalg som ser fullstendig ut kan likevel mangle bildene dine.",
     "Størrelsen avgjøres nesten utelukkende av Minner. Chatter, venner og posisjonshistorikk er noen få megabyte JSON, men år med lagrede snaps og videoer kan bli titalls gigabyte. Muletto leser arkivet stykkevis i stedet for å laste det inn samlet, så et stort arkiv åpnes på samme måte som et lite."
   ],
-
   "faq": [
     {
       "q": "Hvorfor ligger ikke Snapchat-minnene mine i nedlastingen?",

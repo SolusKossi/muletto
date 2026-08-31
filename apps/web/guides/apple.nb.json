@@ -1,13 +1,10 @@
 {
   "en_hash": "e5e284450c92",
-
   "wait_time": "opptil 7 dager (Apple sender deg en e-post når den er klar)",
   "format": "én eller flere .zip-filer, delt i biter du velger selv (1-25 GB hver)",
-
   "request": {
     "label": "Apples portal for data og personvern"
   },
-
   "steps": [
     {
       "title": "Logg inn på privacy.apple.com",
@@ -38,7 +35,6 @@
       "detail": "Slipp hver del inn i Muletto på én gang. Den leser dem som én eksport, tyder HEIC uten å konvertere noe, setter datoene og stedene tilbake inn i selve filene, og finner bildene som også ligger i Google- eller Snapchat-arkivene dine. Vil du ha vanlige JPEG-er til slutt, er det en avkrysningsboks for det når du lagrer."
     }
   ],
-
   "notes": [
     "Det denne eksporten ikke inneholder, og som tar så godt som alle: ingen passord. De er ende-til-ende-krypterte i iCloud, så Apple sitter på dem som klumper de ikke har nøkkelen til. Helse er mindre entydig og verdt å kjenne til: Apples egne støttesider sier at helsedata kan følge med en dataforespørsel, men en ekte eksport på atten arkiver, bedt om i juli 2026, kom uten noe av det. Huk av for det hvis det tilbys, og hent det av telefonen i tillegg - det tar et minutt og virker helt sikkert. Helse hentes fra iPhonen i stedet, på omtrent ett minutt, og det finnes en egen Apple Health-veiledning her for det. Bilder er en annen sak: ikke hemmelige, bare store, så de er en egen ting å velge og ikke en del av kontoarkivene. Og har du Avansert databeskyttelse slått på, vokser det krypterte settet til rundt tjuetre kategorier, så eksporten din blir mindre og ikke større.",
     "Denne eksporten gir deg originalene i full oppløsning, ikke de komprimerte forhåndsvisningene enkelte synkroniseringsverktøy etterlater seg.",
@@ -47,7 +43,6 @@
     "Apple tilbyr også en egen tjeneste som overfører iCloud-bildesamlingen din direkte til en annen leverandør. Det er noe annet enn denne eksporten: den flytter biblioteket ditt til et annet selskap i stedet for å gi deg en kopi av ditt eget.",
     "HEIC-filer virker fortsatt etter at Muletto har skrevet datoer og steder tilbake, og eksporteres slik de kom med mindre du ber om JPEG på veien ut - én avkrysningsboks på lagringsskjermen, konvertert her og ikke lastet opp noe sted, til omtrent dobbel filstørrelse."
   ],
-
   "faq": [
     {
       "q": "Hvorfor sendte Apple meg atten separate zip-filer?",
@@ -65,5 +60,9 @@
       "q": "Hva ligger i Apple Media Services-arkivet?",
       "a": "Kjøpshistorikk, App Store-aktivitet, lytting i Apple Music og Game Center-data. Det inneholder nye zip-filer i stedet for rene regneark, så alt som bare pakker ut ett nivå vil se ut til å finne nesten ingenting i det."
     }
-  ]
+  ],
+  "explain": {
+    "title": "iPhone-bildene dine kommer tilbake som HEIC, og de fleste verktøy vil ikke åpne dem",
+    "body": "Apple gir deg filene tilbake i sitt opprinnelige format, og for alt tatt med en nyere iPhone betyr det HEIC og ikke JPEG. Det er den ærlige måten å gjøre det på, og det er også derfor en Apple-eksport så ofte ser ødelagt ut: Windows viser grå plassholdere, ganske mange bildeprogrammer nekter rett ut, og det vanlige rådet er å konvertere alt sammen først. Muletto leser HEIC direkte, med den samme videokodeken nettleseren din allerede har, så det finnes ikke noe konverteringssteg før du kan se hva du fikk. Når du lagrer biblioteket ut igjen, velger du selv: behold dem slik de kom, eller huk av én boks og få dem skrevet som JPEG. Konverteringen skjer på din egen maskin, den beholder datoen og stedet, og det er verdt å vite at en JPEG er den eneste av de to en opptaksdato kan skrives inn i - så det å konvertere er også det som lar en reparert dato følge med fila."
+  }
 }

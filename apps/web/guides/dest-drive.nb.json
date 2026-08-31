@@ -1,9 +1,7 @@
 {
   "en_hash": "3599bdb2f32b",
-
   "wait_time": "en time å kopiere, og så en sjekk én gang i året",
   "format": "vanlige mapper på en disk du eier",
-
   "steps": [
     {
       "title": "Kjøp mer plass enn du trenger",
@@ -34,9 +32,12 @@
       "detail": "Koble til hver disk, åpne flere bilder fra forskjellige år, og sjekk at antallet fortsatt stemmer. Disker svikter like gjerne mens de ligger i en skuff som mens de er i bruk, og de svikter i stillhet. En sikkerhetskopi som aldri er testet er et håp, ikke en sikkerhetskopi. Legg inn en påminnelse i kalenderen nå."
     }
   ],
-
   "notes": [
     "Bits råtner. Vanlige filsystemer kan ikke fortelle deg at en fil stille har forfalt, og det er derfor den årlige sjekken og kopi nummer to betyr mer enn valget av format.",
     "Har du arkiver på Linux og vil ha vern mot stille korrupsjon, sjekksummerer ZFS og Btrfs alt sammen og kan reparere skade. Ingen av dem virker på Windows eller macOS uten en god del arbeid, så det er et valg for en NAS og ikke for en disk du bærer med deg."
-  ]
+  ],
+  "explain": {
+    "title": "Tre kopier, to slags steder, én et annet sted",
+    "body": "En disk i en skuff er én kopi. Blir huset oversvømt, er det null kopier. Ha tre: den du bruker, en nummer to på annen maskinvare, og en tredje et helt annet sted - en annen bygning, hos en slektning, eller en betalt tjeneste et sted. Annen maskinvare betyr noe fordi to disker kjøpt samtidig gjerne ryker samtidig, og et annet sted betyr noe fordi brann og tyveri tar hele rom."
+  }
 }
