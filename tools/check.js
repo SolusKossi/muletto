@@ -335,10 +335,18 @@ console.log("\nClaims the documents make");
   const { facts, claims, deadPaths, spelled } = require("./claims.js");
   const f = facts();
   const cache = new Map();
+  /* Whitespace is collapsed on both sides before matching. These documents are
+     hard-wrapped at 78 columns, so a claimed phrase lands across a line break
+     the moment the paragraph around it is reworded - and the guard then reads
+     as a stale fact rather than as a reflow, which is the wrong alarm and the
+     most tedious kind to chase. Collapsing runs of whitespace to one space
+     cannot make a claim match text it did not already match, since a single
+     space stays a single space; it only stops a newline from hiding one. */
+  const flat = (s) => s.toLowerCase().replace(/\s+/g, " ");
   const doc = (name) => {
     if (!cache.has(name)) {
       const p = path.join(ROOT, name);
-      cache.set(name, fs.existsSync(p) ? fs.readFileSync(p, "utf8").toLowerCase() : null);
+      cache.set(name, fs.existsSync(p) ? flat(fs.readFileSync(p, "utf8")) : null);
     }
     return cache.get(name);
   };
@@ -350,10 +358,10 @@ console.log("\nClaims the documents make");
        carries a subset on purpose, so RELEASE.md and TODO.md are absent there
        and their claims simply have nothing to check against. */
     if (text === null) { skipped++; continue; }
-    if (c.say !== undefined && !text.includes(c.say.toLowerCase())) {
+    if (c.say !== undefined && !text.includes(flat(c.say))) {
       fail(c.doc + ' should say "' + c.say + '" - ' + c.why); bad++;
     }
-    if (c.never !== undefined && text.includes(c.never.toLowerCase())) {
+    if (c.never !== undefined && text.includes(flat(c.never))) {
       fail(c.doc + ' still says "' + c.never + '" - ' + c.why); bad++;
     }
   }

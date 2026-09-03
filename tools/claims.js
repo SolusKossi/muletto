@@ -201,6 +201,20 @@ function claims(f) {
     say: spelled(f.notMeasured) + " of the " + spelled(f.readable.length) + " readers",
     why: "readers with no real export behind them" });
 
+  /* The guides section of TODO opens by counting itself, and it was wrong by
+     nine pages: written when there were thirty and never touched again as
+     problem pages, two more services and the Norwegian tree arrived. It is a
+     count, so it belongs here rather than in somebody's memory. The second
+     one is the denominator in "four of the eighteen have a walked flow",
+     which said sixteen for the same reason. */
+  list.push(
+    { doc: "TODO.md", say: spelled(f.guidePages) + " pages today",
+      why: "guide pages on disk" },
+    { doc: "TODO.md", say: spelled(f.serviceGuides) + " services, ",
+      why: "guides for requesting an export" },
+    { doc: "TODO.md", say: "of the " + spelled(f.serviceGuides) + " service guides",
+      why: "the same count again, as the denominator for walked flows" });
+
   /* The split between what has met a real export and what has not. Six and
      eleven today. It is the claim a summary is most likely to round in the
      flattering direction, so both halves are counted from PROVIDERS itself. */
