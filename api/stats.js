@@ -8,7 +8,13 @@
  * matters beyond good practice here: this repository is public, so anything
  * checked in is published.
  *
- * Three things guard it, and none of them is the admin page:
+ * Four things guard it, and none of them is the admin page:
+ *
+ *   A budget of five wrong answers in fifteen minutes, checked before any
+ *   hashing happens. It is listed first because it runs first, and because it
+ *   guards something the other three do not: scrypt is expensive on purpose,
+ *   so an endpoint that runs it for anybody who asks is a way of spending the
+ *   site's compute allowance without knowing a single password.
  *
  *   scrypt, at a cost that takes about a tenth of a second. That is nothing
  *   once and ruinous a billion times, which is the whole point of a password
@@ -31,6 +37,36 @@ const { configured, pipeline, foundVars } = require("./_store");
 
 const HASH = process.env.ADMIN_HASH || "";
 const TOKEN_LIFE = 2 * 60 * 60 * 1000;
+
+/* The failure budget that stands in front of scrypt.
+ *
+ * scrypt is deliberately expensive - that is the whole point of it - and that
+ * makes this endpoint the most expensive thing the site can be asked to do.
+ * Measured at 31 ms of pure processor time per attempt on a laptop, and
+ * several times that on a shared cloud core. Everything else here is a page
+ * view costing about a thousandth of a millisecond.
+ *
+ * Without a budget, that asymmetry runs the wrong way. The whole month's
+ * compute allowance is roughly seventy thousand attempts, which a single
+ * machine can send in about two hours - so anyone who read the source could
+ * turn the site off by guessing at passwords they never needed to get right.
+ * That is not an attack on the password. It is an attack on the bill, and a
+ * stronger hash makes it worse rather than better.
+ *
+ * Five failures in fifteen minutes, and then no hashing at all until the
+ * window passes. It costs a legitimate login one cheap read, it caps the
+ * damage at twenty hashes an hour however hard anybody tries, and it leaves
+ * the door open for somebody who knows the password after a short wait.
+ *
+ * One counter, and nothing about who. No address, no hash of an address, no
+ * identifier of any kind - the same rule the rest of the site keeps, so
+ * privacy.html did not have to change to allow this. The cost is that a
+ * determined attacker can hold the door shut for fifteen minutes at a time,
+ * which is a fair trade against a bill nobody can cap.
+ */
+const GATE_KEY = "mu:admin:fails";
+const GATE_MAX = 5;
+const GATE_WINDOW = 15 * 60;
 
 const json = (res, code, body) => {
   res.statusCode = code;
@@ -78,6 +114,41 @@ function tokenValid(tok) {
   return got.length === want.length && crypto.timingSafeEqual(got, want);
 }
 
+/* Read, spend, and clear the budget.
+ *
+ * All three fail open. If the counter store is unconfigured or unreachable
+ * there is nothing to count with, and the choice is between letting the
+ * attempt through and locking the owner out of their own site until they
+ * redeploy. A store that is briefly down is a great deal more likely than
+ * somebody attacking during exactly that minute.
+ *
+ * The expiry is set by whoever records the first failure of a window rather
+ * than on every failure, which is the same trick the page counter uses:
+ * INCR returns the new total, so a 1 is the first one. */
+async function gateOpen() {
+  if (!configured()) return true;
+  try {
+    const out = await pipeline([["GET", GATE_KEY]]);
+    const n = out && out[0] != null ? Number(out[0]) : 0;
+    return !(n >= GATE_MAX);
+  } catch { return true; }
+}
+
+async function gateSpend() {
+  if (!configured()) return;
+  try {
+    const out = await pipeline([["INCR", GATE_KEY]]);
+    if (out && Number(out[0]) === 1) await pipeline([["EXPIRE", GATE_KEY, GATE_WINDOW]]);
+  } catch { /* an uncounted failure is not worth an error */ }
+}
+
+/* A right answer clears the record, so the owner mistyping it four times and
+   then getting it right does not leave the door half shut behind them. */
+async function gateClear() {
+  if (!configured()) return;
+  try { await pipeline([["DEL", GATE_KEY]]); } catch { /* nothing to do */ }
+}
+
 const dayList = (n) => {
   const out = [];
   const d = new Date();
@@ -123,13 +194,45 @@ module.exports = async function handler(req, res) {
   if (typeof body === "string") { try { body = JSON.parse(body); } catch { body = null; } }
   body = body || {};
 
+  /* The order of these three is the whole defence, so it is worth saying why.
+   *
+   * The token first, because verifying one is an HMAC and costs nothing. A
+   * session that is already open can never be shut out by the budget below,
+   * however hard anybody else is hammering the door.
+   *
+   * Then the budget, because it is one small read and it decides whether the
+   * expensive thing is allowed to happen at all.
+   *
+   * scrypt last, and only then. Every arrangement that runs it earlier is a
+   * way of paying for somebody else's guess. */
   let token = body.token;
   if (!tokenValid(token)) {
-    /* Every wrong answer costs the same tenth of a second scrypt takes, and
-       the reply says nothing about which part was wrong. */
-    if (!body.password || !checkPassword(body.password)) {
+    /* Nothing to check, so nothing to spend. An empty or absurd password is
+       refused before it can cost anything, and it does not count against the
+       budget either - it never reached the part that costs. */
+    const given = typeof body.password === "string" ? body.password : "";
+    if (!given || given.length > 200) {
       return json(res, 401, { error: "Wrong password." });
     }
+
+    if (!(await gateOpen())) {
+      /* Saying so plainly. An attacker learns nothing they could not measure
+         anyway, and the owner needs to know it is a wait rather than a
+         forgotten password - which is exactly the wrong thing to conclude
+         here, because it sends them off to reset something that was right. */
+      res.setHeader("Retry-After", String(GATE_WINDOW));
+      return json(res, 429, { error: "Too many wrong passwords. This waits fifteen " +
+        "minutes before it will check another one. A password already accepted in " +
+        "this tab still works." });
+    }
+
+    /* Every wrong answer costs the same tenth of a second scrypt takes, and
+       the reply says nothing about which part was wrong. */
+    if (!checkPassword(given)) {
+      await gateSpend();
+      return json(res, 401, { error: "Wrong password." });
+    }
+    await gateClear();
     token = tokenFor();
   }
 

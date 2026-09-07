@@ -135,6 +135,11 @@ function facts() {
     notMeasured,
     measured: provSections.length - notMeasured,
     samples: fs.readdirSync(path.join(WEB, "samples")).filter((f) => f.endsWith(".zip")).length,
+    /* The size _headers cites as the reason stamped assets are worth caching
+       for a year. A stylesheet that grows is an argument that gets stronger,
+       so this one rots in the harmless direction - but it is still a number
+       in prose, and those are counted here rather than remembered. */
+    stylesKb: Math.round(fs.statSync(path.join(WEB, "styles.css")).size / 1024),
     donateLink,
     connectSrc,
   };
@@ -214,6 +219,12 @@ function claims(f) {
       why: "guides for requesting an export" },
     { doc: "TODO.md", say: "of the " + spelled(f.serviceGuides) + " service guides",
       why: "the same count again, as the denominator for walked flows" });
+
+  /* The cache rules explain themselves by naming the file that made them
+     worth writing. Checked because a comment justifying a decision with a
+     number is exactly the kind that outlives the number. */
+  list.push({ doc: "apps/web/_headers", say: "styles.css is " + f.stylesKb + " KB",
+    why: "the size of the asset the immutable rule exists for" });
 
   /* The split between what has met a real export and what has not. Six and
      eleven today. It is the claim a summary is most likely to round in the

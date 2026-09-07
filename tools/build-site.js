@@ -2787,17 +2787,32 @@ Sitemap: ${SITE}/sitemap.xml
         source: "/" + n,
         destination: "/" + n + ".html",
       })),
-      headers: sections.map((sec) => ({
+      headers: sections.map((sec) => {
+        /* A source ending "?v" means the rule applies only to requests that
+           carry a v query - the stamped assets. Vercel expresses that as a
+           `has` condition; _headers has no syntax for it, so this is the one
+           place the two formats genuinely differ.
+
+           It earns the difference. Without it the choice is between caching
+           every .css and .js for a year, which pins the unstamped ones
+           404.html reaches for, and caching none of them, which is what was
+           happening. */
+        const stamped = sec.source.endsWith("?v");
+        const raw = stamped ? sec.source.slice(0, -2) : sec.source;
         // Netlify and Cloudflare take /* and /*.css; Vercel wants a pattern.
-        source: sec.source === "/*" ? "/(.*)"
-          : sec.source.startsWith("/*.") ? "/(.*)." + sec.source.slice(3)
-          : sec.source,
+        const out = {
+          source: raw === "/*" ? "/(.*)"
+            : raw.startsWith("/*.") ? "/(.*)." + raw.slice(3)
+            : raw,
+        };
+        if (stamped) out.has = [{ type: "query", key: "v" }];
         /* The noindex lives here rather than in _headers so it cannot be left
            on by accident: it exists only in builds that did not ask to be
            live, and `npm run build:live` removes it by not adding it. Failing
            to rebuild therefore fails safe - the site stays unindexed. */
-        headers: sec.headers,
-      })),
+        out.headers = sec.headers;
+        return out;
+      }),
     }, null, 2) + "\n", "utf8");
   }
 

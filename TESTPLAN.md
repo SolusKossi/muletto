@@ -757,3 +757,26 @@ has to remember to update:
 
    Both fixed, and all six reconcile to zero - apple 86, google 201 (197 read,
    4 unread), instagram 34, reddit 11, samsung 17, snapchat 17.
+
+## 13. The two server-side endpoints
+
+The only code here that does not run in the reader's browser, and therefore
+the only code that can cost money. Everything else on this site is a file.
+
+The ladder above is about exports and does not map cleanly onto a serverless
+function, so `S` here means the handler was driven for real against a fake
+store rather than read - which is what `tools/check-admin-gate.js` does -
+and `V` still means it was watched doing it on the live deployment.
+
+| What has to work | State | Notes |
+|---|---|---|
+| `/api/hit` counts a view without identifying anybody | `S` | No cookie, no address, no user agent kept. Measured at 0.0011 ms of processor time per call, so the counter itself cannot be what any bill is made of |
+| `/api/hit` refuses a path that is not a real page | `S` | Open lists let a stranger fill the store with invented addresses |
+| `/api/stats` refuses a wrong password | `S` | scrypt, then `timingSafeEqual` |
+| **`/api/stats` refuses a sixth wrong password without hashing it** | `S` | The one that matters for cost. Five failures in fifteen minutes, then no hashing until the window passes. Confirmed by counting calls to `scryptSync`: five, then zero however many more arrive |
+| An open session is never shut out by that budget | `S` | The token is checked first and is an HMAC, so a session already open costs nothing and cannot be blocked by somebody else's guessing |
+| A correct password clears the budget | `S` | Otherwise mistyping it four times leaves the door half shut behind you |
+| The budget fails open when the store is unreachable | `S` | A store outage must not become a lockout that needs a redeploy to escape |
+| `sw.js` is served uncacheable | `-` | The rule was dead until 2026-09-07 - `/*.js` matched later and won. Fixed in `_headers`; **needs confirming against the live site after a deploy**, which is how the fault was found in the first place |
+| Stamped assets are served immutable for a year | `-` | Same: generated correctly, not yet seen on the wire |
+| Nothing is sent from `app.html` at all | `V` | Watched across five views in the network tab. This is the one the whole product rests on |

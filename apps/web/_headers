@@ -39,16 +39,41 @@
 /sitemap.xml
   Cache-Control: public, max-age=3600
 
-# The offline worker must never be served stale. Every other file it caches is
-# reached through a stamped URL, so the worker itself is the only thing that can
-# pin a whole generation of the app in place - cache it for an hour and an hour
-# is how long a fix takes to reach anyone who has visited before.
-/sw.js
-  Cache-Control: public, max-age=0, must-revalidate
-
-# Content-addressed nothing yet, so no long-lived immutable caching. Revisit if
-# the CSS and JS ever get hashed filenames.
+# The unstamped fallback, and it is a real case rather than a leftover: 404.html
+# is served at any depth, so it reaches its assets by root-absolute path with no
+# stamp on them. An hour, because those addresses do change content.
 /*.css
   Cache-Control: public, max-age=3600
 /*.js
   Cache-Control: public, max-age=3600
+
+# A "?v" on the end of the pattern means "only requests carrying a v query".
+# Those are stamped, and a stamp is a sha256 of the file itself, so the address
+# changes whenever the bytes do and the old one can be kept for as long as you
+# like. This is the rule that was missing: styles.css is 214 KB and was being
+# revalidated hourly by every returning reader for no reason at all.
+#
+# It has to come after the two above, because when several of these match the
+# same request the last one wins - which is not a detail, see /sw.js below.
+#
+# Netlify and Cloudflare read this file directly and match on path only, so a
+# pattern with a query in it simply never matches there and those hosts keep
+# the hour above. That is the safe direction to be wrong in.
+/*.css?v
+  Cache-Control: public, max-age=31536000, immutable
+/*.js?v
+  Cache-Control: public, max-age=31536000, immutable
+
+# The offline worker must never be served stale. Every other file it caches is
+# reached through a stamped URL, so the worker itself is the only thing that can
+# pin a whole generation of the app in place - cache it for an hour and an hour
+# is how long a fix takes to reach anyone who has visited before.
+#
+# It is last on purpose, and this block used to sit above /*.js where it did
+# nothing at all. Where two patterns match, the last one wins, so /*.js was
+# quietly overriding this and the live site served sw.js with max-age=3600 -
+# exactly the hour the paragraph above says must not happen. Measured against
+# the deployed site rather than read out of this file, which is the only reason
+# it was noticed. Anything added below this line will break it again.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate

@@ -300,6 +300,32 @@ console.log("\nInternal links and images");
    was visible without opening the console.
 
    JSON-LD is exempt: it is data the browser never executes. */
+/* ---------- the admin failure budget ---------- */
+
+/* Run here rather than left as a script somebody remembers, because what it
+   checks is an absence - that a sixth wrong password does not reach scrypt -
+   and an absence is exactly what comes back silently once a branch moves.
+   It needs no network and no password; the store is a Map. */
+console.log("\nThe budget in front of the admin password");
+{
+  const run = require("child_process").spawnSync(
+    process.execPath, [path.join(__dirname, "check-admin-gate.js")],
+    { cwd: ROOT, encoding: "utf8" });
+  if (run.error) fail("check-admin-gate.js would not run: " + run.error.message);
+  else if (run.status !== 0) {
+    for (const line of String(run.stdout || "").split("\n")) {
+      if (/^\s*FAIL/.test(line)) fail(line.trim().replace(/^FAIL\s*/, ""));
+    }
+    if (run.status !== 0 && !/FAIL/.test(String(run.stdout || ""))) {
+      fail("check-admin-gate.js exited " + run.status);
+    }
+  } else {
+    const n = (String(run.stdout || "").match(/^\s*ok\s/gm) || []).length;
+    ok(n + " behaviours of the admin gate hold, and scrypt is reached " +
+      "five times at most per window");
+  }
+}
+
 console.log("\nInline scripts (the CSP refuses these in production)");
 {
   const offenders = [];
