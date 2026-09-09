@@ -300,6 +300,70 @@ console.log("\nInternal links and images");
    was visible without opening the console.
 
    JSON-LD is exempt: it is data the browser never executes. */
+/* ---------- every class a page uses has a rule somewhere ---------- */
+
+/* The check that would have caught the home page being unstyled for ten days.
+ *
+ * index.html was the only page linking styles-v2.css, and when it was
+ * converted to the generator the second link did not survive. The page went on
+ * building, passing every check here, and rendering as plain text under a
+ * correctly styled header - because the header and footer come from the shared
+ * chrome and were the only parts whose classes still had rules.
+ *
+ * Nothing noticed, because nothing was comparing the two halves. The markup
+ * knew which classes it used and the stylesheet knew which ones it defined,
+ * and no one asked whether those were the same set.
+ *
+ * A class with no rule is not always a fault - scripts add and remove state
+ * classes that no stylesheet needs to mention, and the allowance below names
+ * those. Everything else has to be styled by something. */
+console.log("\nClasses used by pages, and rules to match");
+{
+  const cssText = walk(WEB, (p) => p.endsWith(".css")).map((f) => fs.readFileSync(f, "utf8")).join("\n");
+  const defined = new Set([...cssText.matchAll(/\.(-?[_a-zA-Z][_a-zA-Z0-9-]*)/g)].map((m) => m[1]));
+
+  /* Applied by script, never selected by a stylesheet. Each one is named
+     rather than pattern-matched, so adding to this list is a decision. */
+  const SCRIPTED = new Set(["js", "no-js", "is-open", "is-busy"]);
+
+  /* Hooks in the markup that no stylesheet claims. None of these breaks a
+     page, which is the difference between them and the home page: they sit on
+     elements a descendant rule already covers, so removing the class would
+     change nothing and adding a rule is a design decision rather than a
+     repair.
+       flow, prob-cause, prob-ours, prob-prevent - sections inside .flow /
+         .problem, already styled by `.problem section` and its neighbours.
+       art-kicker, svc-wide - genuine gaps: a paragraph and a card modifier
+         that were given names and never given a look. Recorded in TODO.md
+         rather than invented here.
+     Listed one by one on purpose. A pattern would have swallowed the whole
+     g- family and this check would have missed the thing it was written for. */
+  const HOOKS = new Set(["flow", "prob-cause", "prob-ours", "prob-prevent",
+    "art-kicker", "svc-wide"]);
+
+  const pages = walk(WEB, (p) => p.endsWith(".html"));
+  const offenders = new Map();
+  for (const f of pages) {
+    const html = fs.readFileSync(f, "utf8");
+    for (const m of html.matchAll(/class="([^"]*)"/g)) {
+      for (const c of m[1].split(/\s+/)) {
+        if (!c || defined.has(c) || SCRIPTED.has(c) || HOOKS.has(c)) continue;
+        if (!offenders.has(c)) offenders.set(c, new Set());
+        offenders.get(c).add(rel(f));
+      }
+    }
+  }
+  if (offenders.size) {
+    for (const [c, where] of [...offenders].sort((a, b) => b[1].size - a[1].size)) {
+      const list = [...where];
+      fail("." + c + " is used by " + list.length + " page" + (list.length === 1 ? "" : "s") +
+        " and no stylesheet defines it - e.g. " + list[0]);
+    }
+  } else {
+    ok(pages.length + " pages use only classes some stylesheet defines");
+  }
+}
+
 /* ---------- the admin failure budget ---------- */
 
 /* Run here rather than left as a script somebody remembers, because what it
