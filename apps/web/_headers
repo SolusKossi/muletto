@@ -50,7 +50,7 @@
 # A "?v" on the end of the pattern means "only requests carrying a v query".
 # Those are stamped, and a stamp is a sha256 of the file itself, so the address
 # changes whenever the bytes do and the old one can be kept for as long as you
-# like. This is the rule that was missing: styles.css is 234 KB and was being
+# like. This is the rule that was missing: styles.css is 236 KB and was being
 # revalidated hourly by every returning reader for no reason at all.
 #
 # It has to come after the two above, because when several of these match the

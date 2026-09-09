@@ -960,8 +960,30 @@ body.no-scroll { overflow: hidden; }
 /* The explorer reuses semantic elements the marketing pages already style, so
    it has to opt out of those first. section carries 112px of vertical padding
    for the landing page, which turned every one-item day in the timeline into a
-   quarter of a screen of nothing. */
-#explorer section { padding: 0; }
+   quarter of a screen of nothing.
+
+   Wrapped in :where() so it weighs nothing.
+   ------------------------------------------------------------------------
+   As `#explorer section` this reset carried an id's specificity, which no
+   class selector can beat - so every <section> in the explorer had its
+   padding silently removed and could not ask for it back. It is a reset, and
+   a reset that outranks the components it is resetting is a trap rather than
+   a default.
+
+   It behaved like one. This file works around it in three separate places:
+   `#explorer .cl-group` and its neighbours below repeat their padding at id
+   strength, and two whole redesigns - the health panels and the chat summary
+   - are written with <div> instead of <section> with a comment each saying
+   why. It had eaten the padding on both before anybody noticed, and it had
+   quietly eaten it on the chart cards too: `.cs-card` declares 18px 20px and
+   computed to zero everywhere it was used, which is every view with a chart
+   on it.
+
+   :where() contributes no specificity at all, so this now weighs exactly what
+   a bare `section` weighs and beats the marketing rule on source order alone,
+   while any class - .cs-card included - beats it. The workarounds below stay
+   correct and are simply no longer necessary. */
+:where(#explorer) section { padding: 0; }
 #explorer h1, #explorer h2, #explorer h3, #explorer h4 { line-height: 1.3; }
 #explorer main { flex: initial; }
 
@@ -1986,8 +2008,11 @@ stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
 .nt-golink { display: block; margin-top: 4px; font-size: 11.5px; font-weight: 560;
   color: var(--accent); }
 
-/* The `#explorer section { padding: 0 }` reset outranks any class selector, so
-   a section that does want padding has to say so at the same specificity. */
+/* These repeat their padding at id strength because the reset above used to
+   outrank every class selector. It does not any more - it is wrapped in
+   :where() - so these three are belt and braces rather than the only thing
+   holding the padding up. Harmless, and left alone: changing markup that
+   works to prove a point is how this file got long. */
 #explorer .cl-group { padding: 16px 18px 20px; }
 #explorer .cl-rules { padding: 16px 20px; }
 #explorer .lib-bar { padding: 14px 18px; }
@@ -3482,12 +3507,14 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
    varying opacity, so it stays in the site's greyscale and follows light and
    dark without a second set of rules.
 
-   Every panel here is a div and not a section, on purpose. `#explorer section
-   { padding: 0 }` strips the site's page-level padding inside the explorer,
-   and an id selector outranks any class - so a <section> with a padding rule
-   silently renders flush to its own border. It did: the whole health page
-   shipped with every box's contents against the edge. Elsewhere in this file
-   that is worked around by writing `#explorer .thing`; these are panels
+   Every panel here is a div and not a section, and it no longer has to be.
+   The `#explorer section { padding: 0 }` reset used to outrank any class, so
+   a <section> with a padding rule rendered flush to its own border - the
+   whole health page shipped that way. The reset is wrapped in :where() now
+   and weighs nothing, so a section would be fine. These stay divs because
+   they work; the note is kept so the next person knows the constraint is
+   gone rather than rediscovering it. Elsewhere that was worked around by
+   writing `#explorer .thing`; these are panels
    inside a view rather than sections of a page, so they sidestep it by not
    being sections at all. */
 .hv { display: block; width: 100%; height: auto; }
@@ -3674,10 +3701,13 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
   font-size: 10.5px; color: var(--muted); }
 
 /* ---- chat: the summary it opens on ----
-   Every box here is a div, not a section. `#explorer section { padding: 0 }`
-   strips padding inside the explorer at a specificity no class can beat, and
-   it has now eaten the padding on two separate redesigns - the health page and
-   this one - because a <section> is the obvious element and the wrong one. */
+   Every box here is a div, not a section, for a reason that has since been
+   fixed at its root. `#explorer section { padding: 0 }` stripped padding at a
+   specificity no class could beat, and it ate the padding on three separate
+   redesigns before anybody caught the cause - the health page, this one, and
+   the chart cards, where `.cs-card` asked for 18px 20px and got zero on every
+   view that draws a chart. The reset is `:where(#explorer) section` now and
+   weighs nothing, so <section> is safe again. */
 .cs-main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px;
   align-items: stretch; margin-bottom: 18px; }
 .cs-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
