@@ -1367,9 +1367,17 @@ const MTopics = (function () {
       return out;                                     // recording is still legible
     };
 
-    const drawWave = () => {
-      if (!row) return;
-      const c = row.querySelector(".au-wave");
+    /* Draws any row, not only the one playing.
+     *
+     * It used to take no argument and read the closure's `row`, so a waveform
+     * existed only for the recording currently making sound and every other
+     * line in the list was blank. The shape of the sound is the reason this
+     * view is a list of waveforms rather than a list of filenames, so it is
+     * drawn for every row and the playing one merely gains a progress split.
+     */
+    const drawWave = (li) => {
+      if (!li) return;
+      const c = li.querySelector(".au-wave");
       if (!c) return;
       const w = c.clientWidth || 240, h = c.height;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -1377,20 +1385,76 @@ const MTopics = (function () {
       const g = c.getContext("2d");
       g.setTransform(dpr, 0, 0, 1, 0, 0);
       g.clearRect(0, 0, w, h);
-      const peaks = row.__peaks;
-      const played = audio.duration ? audio.currentTime / audio.duration : 0;
-      const cs = getComputedStyle(row);
-      const done = cs.getPropertyValue("--wave-on").trim() || "#5b6cff";
-      const todo = cs.getPropertyValue("--wave-off").trim() || "#d5d7e0";
+      const peaks = li.__peaks;
+      /* Only the playing row has a played part. */
+      const played = (li === row && audio.duration)
+        ? audio.currentTime / audio.duration : 0;
+      /* Asked of the canvas, which is where the two variables are declared.
+         This used to ask the <li>, and custom properties inherit downwards
+         rather than up - so both lookups came back empty and what got drawn
+         was the fallback, which was a blue. The theme is greyscale and the
+         waveform was the one thing on the page that was not. */
+      const cs = getComputedStyle(c);
+      const done = cs.getPropertyValue("--wave-on").trim() || "#0c0c0c";
+      const todo = cs.getPropertyValue("--wave-off").trim() || "#e3e3e3";
       const bars = Math.max(24, Math.floor(w / 3));
       for (let i = 0; i < bars; i++) {
         const at = i / bars;
         const v = peaks ? peaks[Math.floor(at * peaks.length)] || 0 : 0.12;
         const bh = Math.max(2, v * (h - 4));
-        g.fillStyle = at <= played ? done : todo;
+        g.fillStyle = (played > 0 && at <= played) ? done : todo;
         g.fillRect(i * 3, (h - bh) / 2, 2, bh);
       }
     };
+
+    /* One AudioContext for the view.
+     *
+     * There was one per decode, and browsers cap how many a page may hold at
+     * around six - so on an export with hundreds of recordings the sevenths
+     * onwards would simply stop producing a waveform. It was invisible while
+     * only the playing row drew one; it would not have stayed invisible. */
+    let actx = null;
+    const audioCtx = () => {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!actx) { try { actx = new AC(); } catch (e) { return null; } }
+      return actx;
+    };
+
+    /* Peaks are decoded when a row comes into view, not when it plays.
+     *
+     * Decoding is the expensive half and an export can hold hundreds of
+     * recordings, so this is deliberately unhurried: two at a time, each one
+     * only ever decoded once, and a row that will not decode is marked so it
+     * is not attempted again. Until the peaks land the row draws a flat bar,
+     * which is the same thing an undecodable format leaves behind. */
+    let decoding = 0;
+    const queue = [];
+    const pump = () => {
+      while (decoding < 2 && queue.length) {
+        const li = queue.shift();
+        if (!li || li.__peaks || li.__nopeaks) continue;
+        decoding++;
+        peaksFor(li).then(() => { decoding--; pump(); },
+                          () => { decoding--; pump(); });
+      }
+    };
+    async function peaksFor(li) {
+      const f = files[Number(li.dataset.i)];
+      const s = f && sourceOf(ctx, f);
+      const ac = audioCtx();
+      if (!f || !s || !ac) { li.__nopeaks = true; return; }
+      try {
+        const blob = await MZip.extractBlob(s.file, f, mimeOfAudio(f.name));
+        const buf = await ac.decodeAudioData(await blob.arrayBuffer());
+        li.__peaks = peaksOf(buf, 900);
+        drawWave(li);
+      } catch (e) {
+        /* Playable but not decodable is a real combination. The row keeps its
+           flat bar and the sound still works. */
+        li.__nopeaks = true;
+      }
+    }
 
     const paint = () => {
       if (!row) return;
@@ -1400,7 +1464,7 @@ const MTopics = (function () {
           (isFinite(audio.duration) ? " / " + clock(audio.duration) : "");
       }
       row.classList.toggle("au-playing", !audio.paused);
-      drawWave();
+      drawWave(row);
     };
     audio.addEventListener("timeupdate", paint);
     audio.addEventListener("loadedmetadata", paint);
@@ -1423,14 +1487,12 @@ const MTopics = (function () {
            waveform arrives when it arrives rather than holding up the sound,
            and a format the browser can play but not decode simply stays flat
            rather than failing. */
-        if (!li.__peaks) {
-          const AC = window.AudioContext || window.webkitAudioContext;
-          if (AC) {
-            blob.arrayBuffer()
-              .then((ab) => new AC().decodeAudioData(ab))
-              .then((buf) => { li.__peaks = peaksOf(buf, 900); if (row === li) drawWave(); })
-              .catch(() => { /* undecodable: the bars stay flat, the sound still plays */ });
-          }
+        if (!li.__peaks && !li.__nopeaks) {
+          /* Straight to the front: this is the row somebody is listening to.
+             The decode itself is the shared queue's job, so playing a
+             recording cannot start a second decode of the same bytes. */
+          queue.unshift(li);
+          pump();
         }
         return true;
       } catch (err) {
@@ -1530,7 +1592,32 @@ const MTopics = (function () {
     el.addEventListener("pointercancel", endScrub);
 
     // Bars are laid out from the element's width, so a resize has to redraw.
-    window.addEventListener("resize", drawWave);
+    const drawAll = () => el.querySelectorAll(".au").forEach((li) => drawWave(li));
+    window.addEventListener("resize", drawAll);
+
+    /* Every row gets its flat bar immediately and its real shape when the
+       decode catches up. Watched rather than done in one pass, because the
+       list is capped at four hundred rows and decoding four hundred
+       recordings to paint a screen holding eight of them is the mistake the
+       single <audio> element upstairs exists to avoid. */
+    const rows = [...el.querySelectorAll(".au")];
+    rows.forEach((li) => drawWave(li));
+    if (window.IntersectionObserver) {
+      const watch = new IntersectionObserver((entries) => {
+        for (const en of entries) {
+          if (!en.isIntersecting) continue;
+          watch.unobserve(en.target);
+          queue.push(en.target);
+        }
+        pump();
+      }, { rootMargin: "300px" });
+      rows.forEach((li) => watch.observe(li));
+    } else {
+      /* No observer: decode the first handful and leave the rest flat until
+         they are played. Better than deciding to decode all four hundred. */
+      rows.slice(0, 8).forEach((li) => queue.push(li));
+      pump();
+    }
   }
 
   const AUDIO_MIME = { m4a: "audio/mp4", mp3: "audio/mpeg", wav: "audio/wav",

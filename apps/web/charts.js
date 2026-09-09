@@ -189,12 +189,31 @@ const MCharts = (function () {
     const step = Math.max(1, Math.ceil(pts.length / 150));
     let out = '<line x1="0" y1="' + (h - 1) + '" x2="' + w + '" y2="' + (h - 1) +
       '" stroke="currentColor" opacity="0.16" stroke-width="1"/>';
+    /* Ticks standing on the baseline, not circles sitting on it.
+     *
+     * Every chart here is drawn with preserveAspectRatio="none", because a
+     * time axis has to fill whatever width its column happens to be. A circle
+     * under that stretch is not a circle: at 600 units drawn across 1,560
+     * pixels each one came out two and a half times wider than it was tall,
+     * so a row of marks read as a row of smears. A vertical tick is the same
+     * mark at any width.
+     *
+     * They also use the height rather than hugging the bottom. The old marks
+     * were a couple of units tall in a box of seventy-four, so the card was
+     * almost entirely empty above a thin smudge along its floor - which is
+     * what this looked like on a real export and why it got called scuffed.
+     *
+     * Where every point carries the same value - one mark per sign-in, which
+     * is the case this was written for - they come out a uniform height, and
+     * the drawing says what the caption says: when, and how often. */
+    const span = (h - 2);
     for (let i = 0; i < pts.length; i += step) {
       const p = pts[i];
-      const x = (((p.t - t0) / (t1 - t0)) * (w - 4) + 2).toFixed(1);
-      const r = 1.4 + 1.8 * ((p.v - lo) / (hi - lo));
-      out += '<circle cx="' + x + '" cy="' + (h - 1 - r - 1).toFixed(1) + '" r="' + r.toFixed(1) +
-        '" fill="currentColor" opacity="0.5"/>';
+      const x = ((p.t - t0) / (t1 - t0)) * (w - 4) + 2;
+      const th = span * (0.45 + 0.5 * ((p.v - lo) / (hi - lo)));
+      out += '<rect x="' + (x - 0.45).toFixed(1) + '" y="' + (h - 1 - th).toFixed(1) +
+        '" width="0.9" height="' + th.toFixed(1) +
+        '" fill="currentColor" opacity="0.45"/>';
     }
     return svg(w, h, out, "hv-dots", carry(pts.filter((_, i) => i % step === 0), o.meta));
   }

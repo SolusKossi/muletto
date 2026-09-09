@@ -575,12 +575,12 @@ function commitLink() {
  * Hidden from the eye is not the same as hidden from the page, and only the
  * first of those is wanted here.
  */
-function footer(depth, lang, altHref, tagline) {
+function footer(depth, lang, altHref, tagline, flush) {
   const up = upTo(depth);
   const t = STRINGS[lang || "en"];
   const home = up + (lang === "nb" && hasNo("index.html") ? "no/index.html" : "index.html");
   const at = (f) => up + (lang === "nb" && hasNo(f) ? "no/" + f : f);
-  return `  <footer class="site">
+  return `  <footer class="site${flush ? " flush" : ""}">
     <div class="wrap">
       <a class="wordmark" href="${home}">muletto</a>
       <div class="foot-links">
@@ -634,7 +634,7 @@ function footer(depth, lang, altHref, tagline) {
  * language - which is exactly what it is. `check.js` verifies the pairing in
  * both directions rather than trusting this to stay right. */
 function page({ depth, title, description, canonical, body, jsonld, active, noindex,
-                extraScript, lang, alt, bodyScripts, tagline }) {
+                extraScript, lang, alt, bodyScripts, tagline, flushFooter }) {
   const up = upTo(depth);
   const code = lang || "en";
   /* The head is built here rather than by the caller, so LANG has to be right
@@ -680,7 +680,7 @@ ${nav(depth, active, code)}
 ${body}
   </main>
 
-${footer(depth, code, alt && alt.href, tagline)}
+${footer(depth, code, alt && alt.href, tagline, flushFooter)}
 
 ${bodyScripts !== undefined ? bodyScripts : `  <!-- Every disclosure on the site opens and shuts rather than jumping. -->
   <script src="${up}disclose.js"></script>
@@ -1805,6 +1805,16 @@ ${rows}
     body,
     extraScript: "vow.js",
     tagline: T("footTagline"),
+    /* The home page ends on the datasheet, which is already the footer's
+       black. Every other page ends on paper and wants the step wedge above
+       the footer to walk the ground down into it; here that wedge starts at
+       white, so it drew a bright band between one dark section and another -
+       a seam announcing a join that was not there.
+
+       styles.css has carried `footer.site.flush` for exactly this since it
+       was written, under the line "A page whose last section is already dark
+       needs no run-up to one", and nothing had ever set it. */
+    flushFooter: true,
     /* Restored rather than reinvented: converting the page to the generator
        dropped this block, which is the only structured data saying what the
        thing actually is. The name and the feature list are the same in both

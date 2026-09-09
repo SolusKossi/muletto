@@ -44,6 +44,9 @@
      The variable names stay so every component that already asks for an accent
      keeps working; only what they resolve to has changed. */
   --accent: #0c0c0c;
+  /* The explorer's rail, and the gutter that has to clear it. Read by both
+     .rail and .ex-scroll so the two cannot drift apart. */
+  --rail-w: 118px;
   --accent-strong: #000000;
   --accent-soft: #f0f0f0;
   --accent-ink: #ffffff;
@@ -1028,7 +1031,23 @@ body.no-scroll { overflow: hidden; }
 .ex-topact { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .btn.sm { padding: 7px 13px; font-size: 13px; }
 
-.ex-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 26px 26px 60px; }
+/* Both gutters, in one place.
+ *
+ * The right one has to clear the rail, which is the explorer's scrollbar and
+ * is positioned over this column. That number had been set three times, in
+ * three separate rules further down this file - 78px, then 100px, then 132px
+ * - each pass leaving the last one in place, all four unconditional, so the
+ * file said four different things and the last one quietly won.
+ *
+ * It is derived now. --rail-w is what the rail is actually laid out at, so
+ * widening the rail cannot leave the content running underneath it again, and
+ * there is one number to change rather than a stack of overrides to notice.
+ *
+ * The left gutter was never part of that argument and sat at the 26px it was
+ * born with, so content ran up against the sidebar while a hundred and thirty
+ * pixels of air sat on the other side. */
+.ex-scroll { flex: 1; min-height: 0; overflow-y: auto;
+  padding: 26px calc(var(--rail-w) + 14px) 60px 40px; }
 .ex-headline h1 { margin: 0; font-size: 25px; font-weight: 640; letter-spacing: -0.02em; }
 .ex-headline p { margin: 4px 0 0; font-size: 14px; }
 
@@ -1249,8 +1268,6 @@ body.no-scroll { overflow: hidden; }
 .rail-m:hover .rail-t { color: var(--accent); }
 .rail-m:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Leave room so long rows do not run under the rail. */
-.ex-scroll { padding-right: 78px; }
 
 /* ---------- Image library ---------- */
 .ex-lib { margin-top: 4px; }
@@ -1485,8 +1502,10 @@ body.exploring > nav.nav { display: block; position: relative; z-index: 70; }
 /* ==========================================================================
    Rail, second pass: legible, and cheap to move
    ========================================================================== */
-.rail { width: 86px; top: 60px; right: 4px; }
-.ex-scroll { padding-right: 100px; }
+/* The width that used to be here is gone, not moved: --rail-w owns it now and
+   .ex-scroll derives its gutter from the same token. Leaving a second width
+   in the file is how the gutter came to be set four times. */
+.rail { top: 60px; right: 4px; }
 
 .rail-t { font-size: 12px; font-weight: 500; }
 .rail-m.y .rail-t { font-size: 13.5px; font-weight: 660; }
@@ -1538,8 +1557,7 @@ body.exploring > nav.nav { display: block; position: relative; z-index: 70; }
    The labels scale up, so the space they need is the magnified size, not the
    resting one. Sizing the rail for the resting text is what clipped them.
    ========================================================================== */
-.rail { width: 118px; padding: 4px 10px 4px 0; overflow: visible; }
-.ex-scroll { padding-right: 132px; }
+.rail { width: var(--rail-w); padding: 4px 10px 4px 0; overflow: visible; }
 .ex-main { overflow: visible; }
 
 /* Each mark reserves height in proportion to how magnified it is, so the ones
@@ -3033,11 +3051,20 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .au-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; min-width: 0; }
 .au-size { justify-self: end; font-variant-numeric: tabular-nums; }
-/* Present and laid out, just not shown. No height change on hover. */
-.au-ctl { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px;
-  opacity: 0; visibility: hidden;
+/* Present and laid out, just not shown. No height change on hover.
+ *
+ * The strip itself is always visible now, and the transport controls inside
+ * it are what fade. Hiding the whole row hid the waveform with it, which is
+ * the one thing on this page worth seeing without touching anything: the
+ * shape of the sound says where the talking is, and a list of filenames does
+ * not. The buttons keep `visibility` rather than `display`, so they hold
+ * their space and nothing moves when they appear. */
+.au-ctl { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; }
+.au-ctl .au-b, .au-ctl .au-time { opacity: 0; visibility: hidden;
   transition: opacity .16s var(--ease), visibility 0s linear .16s; }
-.au:hover .au-ctl, .au-on .au-ctl { opacity: 1; visibility: visible;
+.au:hover .au-ctl .au-b, .au-on .au-ctl .au-b,
+.au:hover .au-ctl .au-time, .au-on .au-ctl .au-time,
+.au-ctl .au-b:focus-visible { opacity: 1; visibility: visible;
   transition: opacity .16s var(--ease), visibility 0s; }
 /* Transport controls, not form buttons: no border, no background, no text. */
 .au-b { border: 0; background: none; color: var(--muted); padding: 0; cursor: pointer;
@@ -3605,6 +3632,9 @@ main > section.wrap:last-child { padding-bottom: var(--section); }
 .cs-card > p.muted { margin: 0 0 12px; }
 .cs-chart { margin: 12px 0 2px; }
 .cs-chart .hv { height: 92px; }
+/* A rug of ticks is not a line chart and does not want a line chart's height.
+   At 92px the marks were a thin band along the floor of a mostly empty card. */
+.cs-chart .hv-dots { height: 54px; }
 .cs-note { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
 .cs-note b { color: var(--ink); font-weight: 600; }
 
