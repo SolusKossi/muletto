@@ -634,7 +634,7 @@ function footer(depth, lang, altHref, tagline, flush) {
  * language - which is exactly what it is. `check.js` verifies the pairing in
  * both directions rather than trusting this to stay right. */
 function page({ depth, title, description, canonical, body, jsonld, active, noindex,
-                extraScript, lang, alt, bodyScripts, tagline, flushFooter }) {
+                extraScript, lang, alt, bodyScripts, tagline, flushFooter, bodyClass }) {
   const up = upTo(depth);
   const code = lang || "en";
   /* The head is built here rather than by the caller, so LANG has to be right
@@ -673,7 +673,7 @@ ${noindex ? '  <meta name="robots" content="noindex,follow" />\n' : ""}  <link r
   <script src="${up}theme.js"></script>
 ${(jsonld || []).map((j) => `  <script type="application/ld+json">${JSON.stringify(j)}</script>`).join("\n")}
 </head>
-<body>
+<body${bodyClass ? ' class="' + bodyClass + '"' : ""}>
 ${nav(depth, active, code)}
 
   <main>
@@ -1805,6 +1805,24 @@ ${rows}
     body,
     extraScript: "vow.js",
     tagline: T("footTagline"),
+    /* The home page is the only page built from the v2 vocabulary, and the
+       class saying so has to be on <body> for two reasons.
+
+       themes/kossi.css hangs the whole dark palette for this page off
+       `[data-theme="kossi"] body.v2`, deliberately: a bare `:root` would be
+       settled by load order against the defaults and would lose, and the
+       comment in that file says so. No class, no override - so every --g-
+       token stayed at its paper-white default and the dark theme rendered
+       black text on white panels between a dark header and a dark footer.
+
+       It also carries the home page's buttons: `.v2 .g-btn` is what makes the
+       calls to action look like buttons rather than links.
+
+       Dropped when this page was converted to the generator on 28 August,
+       along with the styles-v2.css link. Same conversion, same shape of
+       mistake, and invisible for the same twelve days because the deployment
+       was failing. */
+    bodyClass: "v2",
     /* The home page ends on the datasheet, which is already the footer's
        black. Every other page ends on paper and wants the step wedge above
        the footer to walk the ground down into it; here that wedge starts at

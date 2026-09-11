@@ -371,7 +371,16 @@ console.log("\nClasses used by pages, and rules to match");
    and an absence is exactly what comes back silently once a branch moves.
    It needs no network and no password; the store is a Map. */
 console.log("\nThe budget in front of the admin password");
-{
+if (!fs.existsSync(path.join(ROOT, "api", "stats.js"))) {
+  /* The endpoints are not in every tree. They are withheld from the published
+     subset while the host's free processor allowance recovers - see the note
+     against "api" in make-public.js - so a tree without them has nothing to
+     exercise rather than a failing test.
+
+     Said out loud rather than skipped quietly. A check that stops checking
+     without mentioning it is the exact failure this file exists to catch. */
+  console.log("  ..   api/stats.js is not in this tree, so there is no gate to exercise");
+} else {
   const run = require("child_process").spawnSync(
     process.execPath, [path.join(__dirname, "check-admin-gate.js")],
     { cwd: ROOT, encoding: "utf8" });
