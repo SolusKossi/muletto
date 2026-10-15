@@ -1,0 +1,22 @@
+// Cloudflare: the site as static assets, with no Worker code at all.
+//
+// Moved here from Vercel on 2026-10-15 after the project was paused twice for
+// running out of function processor time. Nothing a visitor uses runs on a
+// server, and static requests here are not metered against any allowance.
+//
+// html_handling "none" is the setting that matters. The default strips .html
+// and redirects /guides.html to /guides, and every canonical link, og:url and
+// sitemap entry on this site names the .html address - a canonical that
+// redirects is the one thing a canonical must not do.
+//
+// _headers (the Content-Security-Policy) and _redirects in apps/web are read
+// from the assets directory as they are.
+{
+  "name": "muletto",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./apps/web",
+    "html_handling": "none",
+    "not_found_handling": "404-page"
+  }
+}
