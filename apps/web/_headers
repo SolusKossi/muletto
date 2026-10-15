@@ -75,5 +75,10 @@
 # exactly the hour the paragraph above says must not happen. Measured against
 # the deployed site rather than read out of this file, which is the only reason
 # it was noticed. Anything added below this line will break it again.
+# Cloudflare joins every matching rule's headers rather than letting the last
+# one win, so without the line below sw.js went out with three Cache-Control
+# values glued together. `! Cache-Control` drops what /*.js already set. The
+# Vercel generator skips it, having no colon to split on.
 /sw.js
+  ! Cache-Control
   Cache-Control: public, max-age=0, must-revalidate
