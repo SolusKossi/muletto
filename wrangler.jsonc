@@ -11,12 +11,31 @@
 //
 // _headers (the Content-Security-Policy) and _redirects in apps/web are read
 // from the assets directory as they are.
+//
+// worker/index.js runs for /api/* and nothing else (run_worker_first), so
+// every page is still served without running code - the counter and the
+// owner-only stats are the only two things that do.
 {
   "name": "muletto",
+  "main": "worker/index.js",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./apps/web",
+    "binding": "ASSETS",
     "html_handling": "none",
-    "not_found_handling": "404-page"
-  }
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  // The domain lives here rather than in the dashboard, so a redeploy cannot
+  // lose it and a fork's deploy cannot claim it by accident without editing.
+  "routes": [
+    { "pattern": "muletto.app", "custom_domain": true },
+    { "pattern": "www.muletto.app", "custom_domain": true }
+  ],
+  // Daily counts. No id: wrangler creates the namespace on first deploy.
+  "kv_namespaces": [{ "binding": "COUNTS" }],
+  // Cloudflare Access, which guards /admin and /api/stats. Both values are
+  // public identifiers rather than secrets. Until they are filled in, the
+  // stats endpoint refuses everybody and says why.
+  "vars": { "ACCESS_TEAM": "", "ACCESS_AUD": "" }
 }

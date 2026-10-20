@@ -160,12 +160,12 @@
     btn.textContent = "Show me";
   });
 
-  /* Already signed in this tab? Then skip straight past the gate. */
+  /* Signed in through Cloudflare Access? Then there is nothing to type: Access
+     stopped everybody else before this page loaded, and the endpoint checks
+     its token. The password form stays for a deployment without Access. */
   let saved = null;
   try { saved = sessionStorage.getItem(KEY); } catch { /* private mode */ }
-  if (saved) {
-    load({ token: saved })
-      .then(draw)
-      .catch(() => { try { sessionStorage.removeItem(KEY); } catch { /* fine */ } });
-  }
+  load(saved ? { token: saved } : {})
+    .then((d) => { gate.hidden = true; draw(d); })
+    .catch(() => { try { sessionStorage.removeItem(KEY); } catch { /* fine */ } });
 })();
