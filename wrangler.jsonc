@@ -34,8 +34,8 @@
   ],
   // Daily counts. No id: wrangler creates the namespace on first deploy.
   "kv_namespaces": [{ "binding": "COUNTS" }],
-  // Cloudflare Access, which guards /admin and /api/stats. Both values are
-  // public identifiers rather than secrets. Until they are filled in, the
-  // stats endpoint refuses everybody and says why.
-  "vars": { "ACCESS_TEAM": "", "ACCESS_AUD": "" }
+  // The admin key's hash is a secret set in the dashboard (Worker, Settings,
+  // Variables and Secrets: ADMIN_KEY_HASH), never written here - this file is
+  // public. Generate it with node tools/admin-key.js.
+  "keep_vars": true
 }

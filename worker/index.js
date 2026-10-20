@@ -12,12 +12,8 @@
  *   POST /api/hit    one page view, counted with nobody attached to it
  *   POST /api/stats  the counts, for the owner only
  *
- * The owner check is Cloudflare Access, not a password. The scrypt check that
- * guarded this on Vercel was expensive on purpose, which made it the thing
- * strangers spent the allowance on - and it would not fit in the free plan's
- * processor limit here anyway. Access stops a stranger at Cloudflare's edge
- * before this code runs, and the signed token it adds is verified below so the
- * workers.dev address cannot be used to walk round it.
+ * The owner check is a long random key compared by hash - see below for why
+ * that, rather than a password, is what lets it be cheap.
  */
 
 const DAYS_KEPT = 400;
@@ -64,49 +60,62 @@ async function hit(req, env) {
   return none;
 }
 
-/* ---------- the owner check ---------- */
+/* ---------- the owner check ----------
+ *
+ * A long random key, not a password, and that difference is the whole design.
+ * A password a person chose can be guessed, so it needs a slow hash, and the
+ * slow hash is what strangers spent the Vercel allowance on. A key from
+ * tools/admin-key.js is 32 random characters - about 190 bits - and cannot be
+ * guessed at any speed, so a plain SHA-256 comparison is enough and a wrong
+ * guess costs microseconds. The deployment holds only the hash, as the secret
+ * ADMIN_KEY_HASH; the key itself lives in the owner's password manager.
+ *
+ * A right answer gets a signed token valid for two hours, so the key is sent
+ * once per session rather than with every request. */
 
-let certs = null, certsAt = 0;
-const b64u = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")
-  .padEnd(Math.ceil(s.length / 4) * 4, "=")), (c) => c.charCodeAt(0));
+const TOKEN_LIFE = 2 * 3600e3;
+const enc = (s) => new TextEncoder().encode(s);
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 
-async function accessOk(req, env) {
-  const team = env.ACCESS_TEAM, aud = env.ACCESS_AUD;
-  if (!team || !aud) return { ok: false, why: "Cloudflare Access is not configured for this deployment." };
-  const tok = req.headers.get("cf-access-jwt-assertion");
-  if (!tok) return { ok: false, why: "Not signed in through Cloudflare Access." };
-  const [h, p, s] = tok.split(".");
-  if (!s) return { ok: false, why: "Malformed Access token." };
-  let head, claims;
-  try {
-    head = JSON.parse(new TextDecoder().decode(b64u(h)));
-    claims = JSON.parse(new TextDecoder().decode(b64u(p)));
-  } catch (e) { return { ok: false, why: "Malformed Access token." }; }
+function same(a, b) {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
 
-  if (!certs || Date.now() - certsAt > 3600e3) {
-    const r = await fetch("https://" + team + ".cloudflareaccess.com/cdn-cgi/access/certs");
-    certs = (await r.json()).keys || [];
-    certsAt = Date.now();
+async function sign(env, exp) {
+  const k = await crypto.subtle.importKey("raw", enc(env.ADMIN_KEY_HASH),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return hex(await crypto.subtle.sign("HMAC", k, enc(String(exp))));
+}
+
+async function owner(env, body) {
+  const want = String(env.ADMIN_KEY_HASH || "").toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(want)) {
+    return { ok: false, why: "No ADMIN_KEY_HASH is set on this deployment. Run node tools/admin-key.js." };
   }
-  const jwk = certs.find((k) => k.kid === head.kid);
-  if (!jwk) return { ok: false, why: "Access token signed by an unknown key." };
-  const key = await crypto.subtle.importKey("jwk", jwk,
-    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
-  const good = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64u(s),
-    new TextEncoder().encode(h + "." + p));
-  const auds = [].concat(claims.aud || []);
-  if (!good || !auds.includes(aud) || (claims.exp || 0) * 1000 < Date.now()) {
-    return { ok: false, why: "Access token did not verify." };
+  const tok = String(body.token || "");
+  const dot = tok.indexOf(".");
+  if (dot > 0) {
+    const exp = Number(tok.slice(0, dot));
+    if (exp > Date.now() && same(tok.slice(dot + 1), await sign(env, exp))) return { ok: true, token: tok };
   }
-  return { ok: true };
+  const given = typeof body.password === "string" ? body.password.trim() : "";
+  if (!given || given.length > 200) return { ok: false, why: "Wrong key." };
+  if (!same(hex(await crypto.subtle.digest("SHA-256", enc(given))), want)) {
+    return { ok: false, why: "Wrong key." };
+  }
+  const exp = Date.now() + TOKEN_LIFE;
+  return { ok: true, token: exp + "." + await sign(env, exp) };
 }
 
 async function stats(req, env) {
-  const who = await accessOk(req, env);
-  if (!who.ok) return json(401, { error: who.why });
-  if (!env.COUNTS) return json(200, { configured: false, days: [], found: [] });
   let body = {};
   try { body = await req.json(); } catch (e) { /* defaults */ }
+  const who = await owner(env, body || {});
+  if (!who.ok) return json(401, { error: who.why });
+  if (!env.COUNTS) return json(200, { token: who.token, configured: false, days: [], found: [] });
   const n = Math.min(DAYS_KEPT, Math.max(1, Number(body.days) || 60));
   const list = [];
   for (let i = 0; i < n; i++) list.push(new Date(Date.now() - i * 86400e3).toISOString().slice(0, 10));
@@ -123,7 +132,7 @@ async function stats(req, env) {
   });
   const sorted = (m) => [...m].map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n);
   return json(200, {
-    configured: true, days: perDay, total: perDay.reduce((a, b) => a + b.views, 0),
+    token: who.token, configured: true, days: perDay, total: perDay.reduce((a, b) => a + b.views, 0),
     pages: sorted(B["p:"]).slice(0, 60), referrers: sorted(B["r:"]).slice(0, 40),
     countries: sorted(B["g:"]).slice(0, 40), browsers: sorted(B["u:"]), devices: sorted(B["d:"]),
   });
