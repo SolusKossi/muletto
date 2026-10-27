@@ -11,7 +11,6 @@
 const MParse = (function () {
   // Its own, like every other module here. Reaching for app.js's copy works
   // only because of load order, which is not a thing to depend on.
-  const plural = (n, one, many) => `${n.toLocaleString(LOC)} ${n === 1 ? one : many}`;
 
   /* ---------- shared helpers ---------- */
 
@@ -219,9 +218,10 @@ const MParse = (function () {
   /* Said plainly, in the library, rather than left for somebody to notice. */
   function noteDropped(lib, dropped, what) {
     if (!dropped) return;
-    lib.notes.push(dropped + " " + what + " were not read, because this export holds " +
-      "more of them than Muletto opens in one go. Nothing is wrong with the files - " +
-      "they are listed under All files, and What is in here counts them.");
+    lib.notes.push(T("{n} {what} were not read, because this export holds more of them than " +
+        "Muletto opens in one go. Nothing is wrong with the files - they are listed " +
+        "under All files, and What is in here counts them.",
+        { n: dropped.toLocaleString(LOC), what: T(what) }));
   }
 
   // Find the first array of objects hiding under any key matching a pattern.
@@ -295,12 +295,14 @@ const MParse = (function () {
         const at = await MVideo.readCreationDate(blob);
         if (at) { m.at = at; lib.events.push({ at, kind: "video", label: m.name }); }
         done++;
-        if (say && done % 10 === 0) say("Reading dates out of the videos - " + done + " so far...");
+        if (say && done % 10 === 0) say(T("Reading dates out of the videos - {n} so far...", { n: done.toLocaleString(LOC) }));
       } catch { /* skip unreadable video */ }
     }
     if (skipped) {
-      lib.notes.push(plural(skipped, "video is", "videos are") + " too large to unpack just to " +
-        "read a date, so they keep whatever date came with the export. Nothing about them is missing.");
+      lib.notes.push(N("{n} video is too large to unpack just to read a date, so it keeps whatever " +
+          "date came with the export. Nothing about it is missing.",
+          "{n} videos are too large to unpack just to read a date, so they keep whatever " +
+          "date came with the export. Nothing about them is missing.", skipped));
     }
   }
 
@@ -336,7 +338,8 @@ const MParse = (function () {
       if (!/\.jpe?g$/i.test(m.name)) continue;
       done++;
       if (say && done % 50 === 0) {
-        say("Reading dates and places out of the photographs - " + done + " of up to " + cap + "...");
+        say(T("Reading dates and places out of the photographs - {n} of up to {cap}...",
+          { n: done.toLocaleString(LOC), cap: cap.toLocaleString(LOC) }));
       }
       try {
         const head = await MZip.readHead(file, m.entry, 96 * 1024);
@@ -358,9 +361,13 @@ const MParse = (function () {
       } catch { /* unreadable photo; leave it undated */ }
     }
     if (dated) {
-      lib.notes.push("Recovered the date from " + dated.toLocaleString(LOC) +
-        " photo" + (dated === 1 ? "" : "s") + " by reading what the camera wrote into the file" +
-        (located ? ", and the location from " + located.toLocaleString(LOC) : "") + ".");
+      lib.notes.push(located
+          ? N("Recovered the date from {n} photo by reading what the camera wrote into " +
+              "the file, and the location from {loc}.",
+              "Recovered the date from {n} photos by reading what the camera wrote into " +
+              "the file, and the location from {loc}.", dated, { loc: located.toLocaleString(LOC) })
+          : N("Recovered the date from {n} photo by reading what the camera wrote into the file.",
+              "Recovered the date from {n} photos by reading what the camera wrote into the file.", dated));
     }
   }
 
@@ -433,10 +440,12 @@ const MParse = (function () {
       dated++;
     }
     if (!dated) return;
-    lib.notes.push(plural(dated, "file had", "files had") + " no date inside, but the " +
-      "service had written the date into the filename. " +
-      (dated === 1 ? "It has" : "They have") + " been dated from that. Where the file " +
-      "itself said something different, the file was believed.");
+    lib.notes.push(N("{n} file had no date inside, but the service had written the date into the " +
+        "filename. It has been dated from that. Where the file itself said something " +
+        "different, the file was believed.",
+        "{n} files had no date inside, but the service had written the date into the " +
+        "filename. They have been dated from that. Where the file itself said something " +
+        "different, the file was believed.", dated));
   }
 
   /* The date the archive itself is carrying, and when it means anything.
@@ -503,11 +512,14 @@ const MParse = (function () {
       dated++;
     }
     if (!dated) return;
-    lib.notes.push(plural(dated, "file has", "files have") + " no date inside and no " +
-      "metadata file beside " + (dated === 1 ? "it" : "them") + ", so the date the " +
-      "archive itself records has been used. Those dates run across several " +
-      "years rather than all landing on the day the export was made, which is what " +
-      "makes them worth trusting here.");
+    lib.notes.push(N("{n} file has no date inside and no metadata file beside it, so the date the " +
+        "archive itself records has been used. Those dates run across several years " +
+        "rather than all landing on the day the export was made, which is what makes " +
+        "them worth trusting here.",
+        "{n} files have no date inside and no metadata file beside them, so the date the " +
+        "archive itself records has been used. Those dates run across several years " +
+        "rather than all landing on the day the export was made, which is what makes " +
+        "them worth trusting here.", dated));
   }
 
   /* What a file is, when the name refuses to say.
@@ -603,9 +615,9 @@ const MParse = (function () {
       });
     }
     if (unknown.length > SNIFF_CAP) {
-      lib.notes.push("Checked the first " + SNIFF_CAP + " files that had no extension to see " +
-        "whether they were pictures. " + (unknown.length - SNIFF_CAP) + " more were left in " +
-        "Other files unchecked.");
+      lib.notes.push(T("Checked the first {cap} files that had no extension to see whether they were " +
+          "pictures. {more} more were left in Other files unchecked.",
+          { cap: SNIFF_CAP, more: (unknown.length - SNIFF_CAP).toLocaleString(LOC) }));
     }
   }
 
@@ -679,7 +691,10 @@ const MParse = (function () {
           });
         }
       }
-      if (n) lib.notes.push(`${n.toLocaleString(LOC)} Memories are listed in this export as time-limited download links rather than files. Download them from Snapchat before the links expire, then open them here.`);
+      if (n) lib.notes.push(N("{n} Memory is listed in this export as a time-limited download link rather " +
+                 "than a file. Download it from Snapchat before the link expires, then open it here.",
+                 "{n} Memories are listed in this export as time-limited download links rather " +
+                 "than files. Download them from Snapchat before the links expire, then open them here.", n));
     }
 
     // Locations
@@ -789,10 +804,12 @@ const MParse = (function () {
     await classifyFiles(lib, entries, file);
 
     if (lib.media.some((m) => /heic|heif/i.test(m.name))) {
-      lib.notes.push("Some photos are HEIC. Muletto decodes them for preview and can convert them to JPG; writing dates back into HEIC itself is not supported yet.");
+      lib.notes.push(T("Some photos are HEIC. Muletto decodes them for preview and can convert them to " +
+          "JPG; writing dates back into HEIC itself is not supported yet."));
     }
     if (!lib.media.length && lib.tables.length) {
-      lib.notes.push("This part of your Apple export contains account and service records. Photos arrive in a separate iCloud Photos archive - open that file too.");
+      lib.notes.push(T("This part of your Apple export contains account and service records. Photos " +
+          "arrive in a separate iCloud Photos archive - open that file too."));
     }
 
     /* Apple Health, which is a separate export from the phone rather than part
@@ -850,7 +867,7 @@ const MParse = (function () {
           lib.insights.push({ n: res.records.toLocaleString(LOC), label: T("Health records") });
         }
       } catch (err) {
-        lib.notes.push("The Health export in this archive could not be read. Everything else in it opened normally.");
+        lib.notes.push(T("The Health export in this archive could not be read. Everything else in it opened normally."));
       }
     }
     return lib;
@@ -928,11 +945,12 @@ const MParse = (function () {
         label: T("Dates recoverable"),
         note: T("from Takeout metadata"), accent: true,
       });
-      lib.notes.push(
-        "Google stores each photo's real date and location in a separate metadata file rather than in the photo itself. " +
-        "That is why re-uploaded Takeout libraries often show up in the wrong order. Muletto reads those files and can write the correct date back into each photo." +
-        (capped ? " This export is large, so only the first " + SIDECAR_CAP.toLocaleString(LOC) + " were read here." : "")
-      );
+      lib.notes.push(T("Google stores each photo's real date and location in a separate metadata file " +
+          "rather than in the photo itself. That is why re-uploaded Takeout libraries often " +
+          "show up in the wrong order. Muletto reads those files and can write the correct " +
+          "date back into each photo.") +
+        (capped ? " " + T("This export is large, so only the first {n} were read here.",
+          { n: SIDECAR_CAP.toLocaleString(LOC) }) : ""));
     }
 
     // Location history (can be enormous, so guard the size)
@@ -946,7 +964,9 @@ const MParse = (function () {
         /* Said plainly. This used to promise that "the desktop app handles
            files this size", and there is no desktop app - it offered the
            reader a way out that does not exist. */
-        lib.notes.push("Your location history file is " + Math.round(locEntry.size / 1048576) + " MB, which is larger than this reads in one pass, so the places in it have been skipped. Everything else in the export is unaffected.");
+        lib.notes.push(T("Your location history file is {mb} MB, which is larger than this reads in one " +
+            "pass, so the places in it have been skipped. Everything else in the export is unaffected.",
+            { mb: Math.round(locEntry.size / 1048576).toLocaleString(LOC) }));
       } else {
         const rec = await readJsonSafe(file, locEntry);
         const list = rec && (rec.locations || rec.Records || []);
@@ -1082,11 +1102,11 @@ const MParse = (function () {
       /(^|\/)(location history|timeline)( \(timeline\))?\//i.test(e.name));
     const gotPlaces = lib.places.length > placesBefore;
     if (hasTimelineFolder && !gotPlaces) {
-      lib.notes.push("Google sent a Timeline folder with no location history in it. " +
-        "That is not a fault in the export: Google moved Timeline onto the phone during " +
-        "2024 and 2025 and shut the server-side one down in June 2025, so a Takeout has " +
-        "nothing left to include. The history is still on your phone and can be exported " +
-        "from the Google Maps app, under Settings and then Personal Content.");
+      lib.notes.push(T("Google sent a Timeline folder with no location history in it. " +
+          "That is not a fault in the export: Google moved Timeline onto the phone during " +
+          "2024 and 2025 and shut the server-side one down in June 2025, so a Takeout has " +
+          "nothing left to include. The history is still on your phone and can be exported " +
+          "from the Google Maps app, under Settings and then Personal Content."));
     }
 
     // YouTube watch history
@@ -1096,7 +1116,7 @@ const MParse = (function () {
       if (Array.isArray(list)) {
         for (const v of list.slice(0, 8000)) {
           const at = parseDate(v.time);
-          if (at) lib.events.push({ at, kind: "video", label: (v.title || "Watched a video").replace(/^Watched\s+/, "Watched ") });
+          if (at) lib.events.push({ at, kind: "video", label: (v.title || T("Watched a video")).replace(/^Watched\s+/, "Watched ") });
         }
       }
     }
@@ -1130,9 +1150,10 @@ const MParse = (function () {
           n: indexed.toLocaleString(LOC), label: T("Emails indexed"),
           note: T("headers only, from {size} of mail", { size }), accent: true,
         });
-        lib.notes.push("Your Gmail mailbox (" + size + ") was indexed by header: sender, subject and date. Message bodies and attachments are deliberately not loaded.");
+        lib.notes.push(T("Your Gmail mailbox ({size}) was indexed by header: sender, subject and date. " +
+            "Message bodies and attachments are deliberately not loaded.", { size }));
       } else {
-        lib.notes.push("This export contains your Gmail mailbox (" + size + " as MBOX). It is listed under All files.");
+        lib.notes.push(T("This export contains your Gmail mailbox ({size} as MBOX). It is listed under All files.", { size }));
       }
     }
 
@@ -1196,8 +1217,8 @@ const MParse = (function () {
       for (const post of list.slice(0, 4000)) {
         const t = post.creation_timestamp || (post.media && post.media[0] && post.media[0].creation_timestamp);
         const at = t ? new Date(t * 1000) : null;
-        const title = fixMojibake(post.title || (post.media && post.media[0] && post.media[0].title) || "Post");
-        if (at) lib.events.push({ at, kind: "post", label: title || "Post" });
+        const title = fixMojibake(post.title || (post.media && post.media[0] && post.media[0].title) || T("Post"));
+        if (at) lib.events.push({ at, kind: "post", label: title || T("Post") });
       }
     }
 
@@ -1309,7 +1330,8 @@ const MParse = (function () {
       });
     }
     if (!lib.media.length && lib.tables.length) {
-      lib.notes.push("This part of your Samsung export holds service records. Gallery photos arrive only if Samsung Cloud backup was switched on, and may be in a separate archive.");
+      lib.notes.push(T("This part of your Samsung export holds service records. Gallery photos arrive " +
+          "only if Samsung Cloud backup was switched on, and may be in a separate archive."));
     }
     return lib;
   }
@@ -1403,9 +1425,10 @@ const MParse = (function () {
     }
     if (mergedInto) {
       lib.tables = out;
-      lib.notes.push(plural(mergedFrom, "file was", "files were") + " joined into " +
-        plural(mergedInto, "table", "tables") + ", because this export splits a long " +
-        "table across numbered files. Nothing was lost and repeated rows were dropped.");
+      lib.notes.push(T("{files} joined into {tables}, because this export splits a long table across " +
+          "numbered files. Nothing was lost and repeated rows were dropped.",
+          { files: N("{n} file was", "{n} files were", mergedFrom),
+            tables: N("{n} table", "{n} tables", mergedInto) }));
     }
   }
 
@@ -1553,7 +1576,7 @@ const MParse = (function () {
   async function addSpreadsheets(lib, file, entries, say) {
     const sheets = entries.filter((e) => /\.xlsx$/i.test(e.name));
     if (!sheets.length) return;
-    if (say) say("Reading " + plural(sheets.length, "spreadsheet", "spreadsheets") + "...");
+    if (say) say(N("Reading {n} spreadsheet...", "Reading {n} spreadsheets...", sheets.length));
     for (const e of sheets.slice(0, 40)) {
       try {
         const tables = await readXlsx(file, e);
@@ -1621,19 +1644,23 @@ const MParse = (function () {
     const stranded = (lib.media || []).filter(
       (m) => !m.isOverlay && OVERLAY_RE.test(m.path)).length;
     if (stranded) {
-      lib.notes.push(plural(stranded, "caption is", "captions are") + " in this export " +
-        "without the memory they were drawn on - Snapchat sends the two as separate " +
-        "files, and only one arrived. They show up as writing on a transparent " +
-        "background, because that is all they are.");
+      lib.notes.push(N("{n} caption is in this export without the memory it was drawn on - Snapchat " +
+          "sends the two as separate files, and only one arrived. It shows up as writing " +
+          "on a transparent background, because that is all it is.",
+          "{n} captions are in this export without the memory they were drawn on - Snapchat " +
+          "sends the two as separate files, and only one arrived. They show up as writing " +
+          "on a transparent background, because that is all they are.", stranded));
     }
     if (!paired) return;
 
     // The overlays themselves leave the library: they are not memories.
     lib.media = lib.media.filter((m) => !m.isOverlay);
-    lib.notes.push(plural(paired, "memory has", "memories have") + " a caption or " +
-      "sticker that Snapchat sent as a separate transparent picture. They have been " +
-      "put back onto the memory they belong to, so they are not sitting in your " +
-      "library as black squares.");
+    lib.notes.push(N("{n} memory has a caption or sticker that Snapchat sent as a separate transparent " +
+        "picture. It has been put back onto the memory, so it is not sitting in your " +
+        "library as a black square.",
+        "{n} memories have a caption or sticker that Snapchat sent as a separate transparent " +
+        "picture. They have been put back onto the memory they belong to, so they are not " +
+        "sitting in your library as black squares.", paired));
   }
 
   /* ---------- Reddit ----------
@@ -1740,8 +1767,8 @@ const MParse = (function () {
             lib.events.push({
               at,
               kind: key === "posts" ? "post" : "comment",
-              label: (key === "posts" ? "Posted" : "Commented") +
-                (sub ? " in " + sub : "") + (what ? ": " + what : ""),
+              label: (key === "posts" ? T("Posted") : T("Commented")) +
+                (sub ? " " + T("in {sub}", { sub }) : "") + (what ? ": " + what : ""),
             });
             added++;
           }
@@ -1801,11 +1828,11 @@ const MParse = (function () {
     }
 
     if (withIp) {
-      lib.notes.push("Reddit includes the internet address you were connected from on " +
-        plural(withIp, "row", "rows") + " of this export" +
-        (ipFiles.length ? " (" + ipFiles.slice(0, 3).join(", ") + ")" : "") +
-        ". Nobody expects that in a copy of their own posts, and it is worth knowing " +
-        "before you put the folder anywhere shared.");
+      lib.notes.push(T("Reddit includes the internet address you were connected from on {rows} of this " +
+          "export{files}. Nobody expects that in a copy of their own posts, and it is worth " +
+          "knowing before you put the folder anywhere shared.",
+          { rows: N("{n} row", "{n} rows", withIp),
+            files: ipFiles.length ? " (" + ipFiles.slice(0, 3).join(", ") + ")" : "" }));
     }
 
     const posts = found.get("posts") || 0, comments = found.get("comments") || 0;
@@ -1829,8 +1856,8 @@ const MParse = (function () {
     /* What Reddit ships that this export does not have. Said only for Reddit,
        because it is a statement about Reddit. */
     if (!found.size) {
-      lib.notes.push("This looks like a Reddit export, but none of the files it usually " +
-        "contains were found. If the download was split, open the other parts alongside it.");
+      lib.notes.push(T("This looks like a Reddit export, but none of the files it usually contains were " +
+          "found. If the download was split, open the other parts alongside it."));
     }
 
     lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
@@ -1916,27 +1943,27 @@ const MParse = (function () {
       lib.insights.push({ n: tracks.size.toLocaleString(LOC), label: T("Different tracks") });
 
       const span = [plays[0].at, plays[plays.length - 1].at];
-      lib.notes.push("The history runs from " + span[0].toISOString().slice(0, 10) +
-        " to " + span[1].toISOString().slice(0, 10) + ".");
+      lib.notes.push(T("The history runs from {from} to {to}.",
+          { from: span[0].toISOString().slice(0, 10), to: span[1].toISOString().slice(0, 10) }));
 
       /* The distinction that decides whether this export was worth waiting
          for. Said plainly, because the file names do not say it. */
       if (extended && !short) {
-        lib.notes.push("This is the extended history, which is the one that covers " +
-          "your whole account rather than the last year.");
+        lib.notes.push(T("This is the extended history, which is the one that covers your whole account " +
+            "rather than the last year."));
       } else if (short && !extended) {
-        lib.notes.push("This is the one-year history. The extended history, which goes " +
-          "back to the beginning, is a separate request on the same page and takes " +
-          "up to thirty days.");
+        lib.notes.push(T("This is the one-year history. The extended history, which goes back to the " +
+            "beginning, is a separate request on the same page and takes up to thirty days."));
       }
 
       /* Spotify writes the address you were listening from onto every row of
          the extended history. Nobody expects that in a music export. */
       const withIp = plays.filter((p) => p.ip).length;
       if (withIp) {
-        lib.notes.push(plural(withIp, "play was", "plays were") + " recorded with the " +
-          "internet address you were listening from. Spotify puts it on every row of " +
-          "the extended history.");
+        lib.notes.push(N("{n} play was recorded with the internet address you were listening from. " +
+            "Spotify puts it on every row of the extended history.",
+            "{n} plays were recorded with the internet address you were listening from. " +
+            "Spotify puts it on every row of the extended history.", withIp));
       }
       const countries = new Set(plays.map((p) => p.country).filter(Boolean));
       if (countries.size > 1) {
@@ -2108,7 +2135,7 @@ const MParse = (function () {
     tweets.sort((a, b) => (a.at || 0) - (b.at || 0));
 
     for (const t of tweets) {
-      if (t.at) lib.events.push({ at: t.at, kind: "tweet", label: t.text.slice(0, 140) || "Posted" });
+      if (t.at) lib.events.push({ at: t.at, kind: "tweet", label: t.text.slice(0, 140) || T("Posted") });
     }
     if (tweets.length) {
       lib.insights.push({ n: tweets.length.toLocaleString(LOC), label: T("Posts"), accent: true });
@@ -2122,15 +2149,19 @@ const MParse = (function () {
       });
       const undated = tweets.filter((t) => !t.at).length;
       if (undated) {
-        lib.notes.push(plural(undated, "post has", "posts have") + " a date X wrote in " +
-          "a format nothing could read, so " + (undated === 1 ? "it is" : "they are") +
-          " in the table but not on the timeline.");
+        lib.notes.push(N("{n} post has a date X wrote in a format nothing could read, so it is in the " +
+            "table but not on the timeline.",
+            "{n} posts have a date X wrote in a format nothing could read, so they are in the " +
+            "table but not on the timeline.", undated));
       }
     }
     if (restored) {
-      lib.notes.push(plural(restored, "post was", "posts were") + " truncated in the " +
-        "main file and complete in note-tweet.js. The full text has been used. Reading " +
-        "only the first file leaves those cut off mid-sentence with nothing to say so.");
+      lib.notes.push(N("{n} post was truncated in the main file and complete in note-tweet.js. The full " +
+          "text has been used. Reading only the first file leaves it cut off mid-sentence " +
+          "with nothing to say so.",
+          "{n} posts were truncated in the main file and complete in note-tweet.js. The full " +
+          "text has been used. Reading only the first file leaves those cut off mid-sentence " +
+          "with nothing to say so.", restored));
     }
 
     /* Direct messages. One conversation per entry, and the only name X gives
@@ -2173,10 +2204,10 @@ const MParse = (function () {
         note: N("across {n} conversation", "across {n} conversations", lib.conversations.length),
         accent: true });
       if (unnamed) {
-        lib.notes.push("X names a conversation after the account numbers in it and " +
-          "does not include the other person's handle anywhere in the archive, so " +
-          plural(unnamed, "conversation is", "conversations are") + " titled with a " +
-          "number. That is what the export contains.");
+        lib.notes.push(T("X names a conversation after the account numbers in it and does not include the " +
+            "other person's handle anywhere in the archive, so {convs} titled with a number. " +
+            "That is what the export contains.",
+            { convs: N("{n} conversation is", "{n} conversations are", unnamed) }));
       }
     }
 
@@ -2311,13 +2342,14 @@ const MParse = (function () {
       /* The thing people are surprised by: a Discord package holds only what
          you typed. Everybody else's half of every conversation is missing,
          and reading one without knowing that is baffling. */
-      lib.notes.push("A Discord package contains only the messages you sent. The " +
-        "replies are not in it, so a conversation here is one side of one.");
+      lib.notes.push(T("A Discord package contains only the messages you sent. The replies are not in " +
+          "it, so a conversation here is one side of one."));
     }
     if (attachments) {
-      lib.notes.push(plural(attachments, "message links", "messages link") + " to an " +
-        "attachment by address rather than including the file. Those pictures are " +
-        "on Discord's servers, not in this export.");
+      lib.notes.push(N("{n} message links to an attachment by address rather than including the file. " +
+          "That picture is on Discord's servers, not in this export.",
+          "{n} messages link to an attachment by address rather than including the file. " +
+          "Those pictures are on Discord's servers, not in this export.", attachments));
     }
 
     await classifyFiles(lib, entries, file);
@@ -2459,28 +2491,31 @@ const MParse = (function () {
     /* The three things people are surprised by, and none of them is a fault
        in the export. */
     if (archives.size > 1) {
-      lib.notes.push("This export is " + archives.size + " separate archives. Amazon's " +
-        "category dropdown takes one category at a time, so a full picture means several " +
-        "requests, which complete anywhere from six hours to a few weeks apart. Anything " +
-        "requested on a different date is a different archive, and they can hold two " +
-        "versions of the same file - Amazon changed the format in February 2026.");
+      lib.notes.push(T("This export is {n} separate archives. Amazon's category dropdown takes one " +
+          "category at a time, so a full picture means several requests, which complete " +
+          "anywhere from six hours to a few weeks apart. Anything requested on a different " +
+          "date is a different archive, and they can hold two versions of the same file - " +
+          "Amazon changed the format in February 2026.", { n: archives.size.toLocaleString(LOC) }));
     }
     if (emptyTables) {
-      lib.notes.push(plural(emptyTables, "file was", "files were") + " empty. That is a " +
-        "normal result rather than a failure: Amazon ships an archive for services you " +
-        "never used, and creates empty Alexa lists for accounts that never had Alexa. A " +
-        "file being present is not the same as data being present.");
+      lib.notes.push(N("{n} file was empty. That is a normal result rather than a failure: Amazon ships " +
+          "an archive for services you never used, and creates empty Alexa lists for " +
+          "accounts that never had Alexa. A file being present is not the same as data being present.",
+          "{n} files were empty. That is a normal result rather than a failure: Amazon ships " +
+          "an archive for services you never used, and creates empty Alexa lists for " +
+          "accounts that never had Alexa. A file being present is not the same as data being present.",
+          emptyTables));
     }
     if (orders) {
-      lib.notes.push("Amazon writes its dates with no timezone on them, and does not "
-        + "say anywhere which one it meant. They are read as UTC, so that everybody "
-        + "opening this export sees the same time - read as local time instead, an "
-        + "order placed near midnight lands on a different day for each person.");
+      lib.notes.push(T("Amazon writes its dates with no timezone on them, and does not say anywhere which " +
+          "one it meant. They are read as UTC, so that everybody opening this export sees " +
+          "the same time - read as local time instead, an order placed near midnight lands " +
+          "on a different day for each person."));
     }
     if (entries.some((e) => /photo/i.test(e.name))) {
-      lib.notes.push("An Amazon Photos export documents the library rather than " +
-        "containing it - the metadata is here and the photographs are not. Downloading " +
-        "the pictures themselves is a separate job from the Photos app.");
+      lib.notes.push(T("An Amazon Photos export documents the library rather than containing it - the " +
+          "metadata is here and the photographs are not. Downloading the pictures themselves " +
+          "is a separate job from the Photos app."));
     }
 
     await classifyFiles(lib, entries, file);
@@ -2611,10 +2646,10 @@ const MParse = (function () {
     }
 
     /* The one that saves somebody an afternoon. */
-    lib.notes.push("This archive is the record of what you did - searches, pages, apps, " +
-      "places - and not the things you made. Your files are a separate download from " +
-      "OneDrive and your email a separate one from Outlook, and neither of them is in " +
-      "here. Nothing has gone missing; they were never part of this request.");
+    lib.notes.push(T("This archive is the record of what you did - searches, pages, apps, places - and " +
+        "not the things you made. Your files are a separate download from OneDrive and your " +
+        "email a separate one from Outlook, and neither of them is in here. Nothing has gone " +
+        "missing; they were never part of this request."));
 
     await classifyFiles(lib, entries, file);
     return lib;
@@ -2697,7 +2732,7 @@ const MParse = (function () {
             const who = [iFirst >= 0 ? r[iFirst] : "", iLast >= 0 ? r[iLast] : ""]
               .filter(Boolean).join(" ");
             lib.events.push({ at, kind: "connection",
-              label: "Connected with " + (who || "someone") });
+              label: who ? T("Connected with {who}", { who }) : T("Connected with someone") });
           }
         }
 
@@ -2799,16 +2834,18 @@ const MParse = (function () {
     if (posts) lib.insights.push({ n: posts.toLocaleString(LOC), label: T("Posts") });
 
     if (droppedPreamble) {
-      lib.notes.push("LinkedIn writes a paragraph of explanation above the columns in " +
-        plural(droppedPreamble, "file", "files") + ", before the header rather than " +
-        "after it. That paragraph is not data and is not shown as a table.");
+      lib.notes.push(N("LinkedIn writes a paragraph of explanation above the columns in {n} file, before " +
+          "the header rather than after it. That paragraph is not data and is not shown as a table.",
+          "LinkedIn writes a paragraph of explanation above the columns in {n} files, before " +
+          "the header rather than after it. That paragraph is not data and is not shown as a table.",
+          droppedPreamble));
     }
     /* Said whether or not a connections file turned up, because it is the
        reason this export disappoints people. */
     if (connections) {
-      lib.notes.push("The connections file holds a name, a company, a job title and the " +
-        "date - and close to nothing else. No profile address, no headline, no skills. " +
-        "That is what LinkedIn puts in it, not what was lost on the way in.");
+      lib.notes.push(T("The connections file holds a name, a company, a job title and the date - and " +
+          "close to nothing else. No profile address, no headline, no skills. That is what " +
+          "LinkedIn puts in it, not what was lost on the way in."));
     }
 
     await classifyFiles(lib, entries, file);
@@ -3013,32 +3050,32 @@ const MParse = (function () {
     }
 
     if (duplicates) {
-      lib.notes.push(plural(duplicates, "reading was", "readings were") + " the same " +
-        "measurement at the same moment written down twice - what the move to Google " +
-        "left behind, where an export carries two folders of the same metrics. " +
-        (duplicates === 1 ? "It has" : "They have") + " been counted once. Added up " +
-        "straight from the files, those days would read double.");
+      lib.notes.push(N("{n} reading was the same measurement at the same moment written down twice - " +
+          "what the move to Google left behind, where an export carries two folders of the " +
+          "same metrics. It has been counted once. Added up straight from the files, those " +
+          "days would read double.",
+          "{n} readings were the same measurement at the same moment written down twice - " +
+          "what the move to Google left behind, where an export carries two folders of the " +
+          "same metrics. They have been counted once. Added up straight from the files, those " +
+          "days would read double.", duplicates));
     } else if (roots.size > 1) {
-      lib.notes.push("This export has more than one folder that could hold the same " +
-        "metrics, which is what the move to Google left behind. Nothing in them " +
-        "overlapped, so nothing was dropped.");
+      lib.notes.push(T("This export has more than one folder that could hold the same metrics, which is " +
+          "what the move to Google left behind. Nothing in them overlapped, so nothing was dropped."));
     }
     if (json.length > FILE_CAP) {
-      lib.notes.push("Read " + FILE_CAP.toLocaleString(LOC) + " of " +
-        json.length.toLocaleString(LOC) + " data files. Fitbit writes one per day per " +
-        "measurement, so a long history runs to thousands; the rest are listed and " +
-        "not summarised.");
+      lib.notes.push(T("Read {n} of {of} data files. Fitbit writes one per day per measurement, so a long " +
+          "history runs to thousands; the rest are listed and not summarised.",
+          { n: FILE_CAP.toLocaleString(LOC), of: json.length.toLocaleString(LOC) }));
     }
     if (undatedFiles) {
-      lib.notes.push(plural(undatedFiles, "file", "files") + " held no readable " +
-        "timestamps and " + (undatedFiles === 1 ? "was" : "were") + " left out of the " +
-        "daily figures. The " + (undatedFiles === 1 ? "file is" : "files are") +
-        " still in the export.");
+      lib.notes.push(N("{n} file held no readable timestamps and was left out of the daily figures. " +
+          "The file is still in the export.",
+          "{n} files held no readable timestamps and were left out of the daily figures. " +
+          "The files are still in the export.", undatedFiles));
     }
-    lib.notes.push("Dates come from inside each record, never from the filename. " +
-      "A file called sleep-2026-01-05 holds about a month of nights in reverse order, " +
-      "and the exercise files are numbered rather than dated, so the name is not " +
-      "evidence of what is inside.");
+    lib.notes.push(T("Dates come from inside each record, never from the filename. A file called " +
+        "sleep-2026-01-05 holds about a month of nights in reverse order, and the exercise " +
+        "files are numbered rather than dated, so the name is not evidence of what is inside."));
 
     await classifyFiles(lib, entries, file);
     return lib;
@@ -3220,21 +3257,29 @@ const MParse = (function () {
     /* The two notes that matter, and they are about what cannot be known
        rather than about what went wrong. */
     if (conflicting) {
-      lib.notes.push(plural(conflicting, "chat has", "chats have") + " dates that " +
-        "contradict each other - some lines can only be day-first and others can only " +
-        "be month-first, in one file. Day-first was used. Check any date that matters.");
+      lib.notes.push(N("{n} chat has dates that contradict each other - some lines can only be day-first " +
+          "and others can only be month-first, in one file. Day-first was used. Check any " +
+          "date that matters.",
+          "{n} chats have dates that contradict each other - some lines can only be day-first " +
+          "and others can only be month-first, in one file. Day-first was used. Check any " +
+          "date that matters.", conflicting));
     } else if (ambiguous) {
-      lib.notes.push(plural(ambiguous, "chat is", "chats are") + " short enough that " +
-        "no date in " + (ambiguous === 1 ? "it" : "them") + " has a day above the " +
-        "twelfth, so whether WhatsApp wrote day-first or month-first cannot be told " +
-        "from the file. Day-first was assumed, which is the more common form. If these " +
-        "should be a single month rather than spread across the year, that is why.");
+      lib.notes.push(N("{n} chat is short enough that no date in it has a day above the twelfth, so " +
+          "whether WhatsApp wrote day-first or month-first cannot be told from the file. " +
+          "Day-first was assumed, which is the more common form. If these should be a single " +
+          "month rather than spread across the year, that is why.",
+          "{n} chats are short enough that no date in them has a day above the twelfth, so " +
+          "whether WhatsApp wrote day-first or month-first cannot be told from the file. " +
+          "Day-first was assumed, which is the more common form. If these should be a single " +
+          "month rather than spread across the year, that is why.", ambiguous));
     }
     if (omitted) {
-      lib.notes.push(plural(omitted, "message says", "messages say") + " its picture " +
-        "was left out. That is the Without media option at the moment the chat was " +
-        "exported, and the pictures cannot be recovered from this file - export the " +
-        "chat again and choose With media.");
+      lib.notes.push(N("{n} message says its picture was left out. That is the Without media option at " +
+          "the moment the chat was exported, and the pictures cannot be recovered from this " +
+          "file - export the chat again and choose With media.",
+          "{n} messages say their picture was left out. That is the Without media option at " +
+          "the moment the chat was exported, and the pictures cannot be recovered from this " +
+          "file - export the chat again and choose With media.", omitted));
     }
 
     await classifyFiles(lib, entries, file);
@@ -3380,10 +3425,9 @@ const MParse = (function () {
 
     if (!big) {
       if (asText.length) {
-        lib.notes.push("This is the TXT export. TikTok offers TXT or JSON at the moment " +
-          "you request it, the two are not the same data, and the TXT one is not " +
-          "documented anywhere. Request it again and choose JSON - the files here are " +
-          "listed but not read.");
+        lib.notes.push(T("This is the TXT export. TikTok offers TXT or JSON at the moment you request it, " +
+            "the two are not the same data, and the TXT one is not documented anywhere. " +
+            "Request it again and choose JSON - the files here are listed but not read."));
       }
       await classifyFiles(lib, entries, file);
       return lib;
@@ -3395,10 +3439,9 @@ const MParse = (function () {
        that looks like a parser failure. */
     const data = await readJsonSafe(file, big);
     if (!data) {
-      lib.notes.push("The whole export is one file, and this one is " +
-        Math.round(big.size / (1024 * 1024)) + " MB - too large to read in a browser tab " +
-        "without risking the tab. Nothing in it has been lost; it could not be opened " +
-        "here.");
+      lib.notes.push(T("The whole export is one file, and this one is {mb} MB - too large to read in a " +
+          "browser tab without risking the tab. Nothing in it has been lost; it could not be " +
+          "opened here.", { mb: Math.round(big.size / (1024 * 1024)).toLocaleString(LOC) }));
       await classifyFiles(lib, entries, file);
       return lib;
     }
@@ -3428,10 +3471,10 @@ const MParse = (function () {
         accent: sec.key === "watch" });
       found.push(sec.key);
       if (dated < rows.length) {
-        lib.notes.push(plural(rows.length - dated, "row in", "rows in") + " " +
-          sec.label.toLowerCase() + " carried a date in a shape nothing could read, so " +
-          (rows.length - dated === 1 ? "it is" : "they are") + " in the table and not on " +
-          "the timeline.");
+        lib.notes.push(N("{n} row in {table} carried a date in a shape nothing could read, so it is in the " +
+            "table and not on the timeline.",
+            "{n} rows in {table} carried a date in a shape nothing could read, so they are in " +
+            "the table and not on the timeline.", rows.length - dated, { table: T(sec.label).toLowerCase() }));
       }
     }
 
@@ -3472,15 +3515,14 @@ const MParse = (function () {
 
     /* The thing worth saying before anything else, and the reason a TikTok
        export disappoints people who wanted their videos back. */
-    lib.notes.push("A TikTok export contains no video, no picture and no message " +
-      "attachment - every one of them is a web address pointing back at TikTok. " +
-      "Muletto does not fetch them, because it does not make network requests at all, " +
-      "so what you have here is the record of your account rather than its contents.");
+    lib.notes.push(T("A TikTok export contains no video, no picture and no message attachment - every " +
+        "one of them is a web address pointing back at TikTok. Muletto does not fetch them, " +
+        "because it does not make network requests at all, so what you have here is the " +
+        "record of your account rather than its contents."));
 
     if (!found.includes("watch")) {
-      lib.notes.push("There is no watch history in this export. Requesting only some " +
-        "categories rather than all of your data is reported to drop it, so if you " +
-        "wanted it, request everything.");
+      lib.notes.push(T("There is no watch history in this export. Requesting only some categories rather " +
+          "than all of your data is reported to drop it, so if you wanted it, request everything."));
     }
 
     await classifyFiles(lib, entries, file);
@@ -3547,9 +3589,9 @@ const MParse = (function () {
           const vals = rows.map((r) => parseFloat(r[iDist])).filter((v) => !isNaN(v));
           const big = vals.filter((v) => v > 1000).length;
           if (big && vals.length && big < vals.length) {
-            lib.notes.push("The distance column mixes metres and kilometres: " +
-              plural(big, "row looks", "rows look") + " like metres and the rest like " +
-              "kilometres. Strava writes both under the same heading.");
+            lib.notes.push(T("The distance column mixes metres and kilometres: {rows} like metres and the rest " +
+                "like kilometres. Strava writes both under the same heading.",
+                { rows: N("{n} row looks", "{n} rows look", big) }));
           }
         }
       }
@@ -3577,16 +3619,16 @@ const MParse = (function () {
         note: T("from the start of each GPX track") });
     }
     if (gpx.length > GPX_CAP) {
-      lib.notes.push("Read the start of the first " + GPX_CAP + " GPX tracks. " +
-        (gpx.length - GPX_CAP) + " more are in the export and are listed as files.");
+      lib.notes.push(T("Read the start of the first {cap} GPX tracks. {more} more are in the export and " +
+          "are listed as files.", { cap: GPX_CAP, more: (gpx.length - GPX_CAP).toLocaleString(LOC) }));
     }
     if (gz.length || fit.length) {
       const parts = [];
-      if (gz.length) parts.push(plural(gz.length, "track is", "tracks are") + " gzipped");
-      if (fit.length) parts.push(plural(fit.length, "is", "are") + " in Garmin's FIT format");
-      lib.notes.push("Strava sends whatever format each activity was recorded in, so " +
-        parts.join(" and ") + ". Those are kept as files: they are not read here yet, " +
-        "and nothing in them has been lost.");
+      if (gz.length) parts.push(N("{n} track is gzipped", "{n} tracks are gzipped", gz.length));
+      if (fit.length) parts.push(N("{n} is in Garmin's FIT format", "{n} are in Garmin's FIT format", fit.length));
+      lib.notes.push(T("Strava sends whatever format each activity was recorded in, so {parts}. Those are " +
+          "kept as files: they are not read here yet, and nothing in them has been lost.",
+          { parts: parts.join(" " + T("and") + " ") }));
     }
 
     /* The remaining CSVs - posts, comments, clubs, profile, gear - are tables
@@ -3615,7 +3657,9 @@ const MParse = (function () {
   async function parse(file, entries, detected, say) {
     const slug = detected && detected.slug;
     const finish = async (libPromise) => {
-      if (say) say("Working out what is in " + (detected && detected.label ? detected.label : "this export") + "...");
+      if (say) say(detected && detected.label
+        ? T("Working out what is in {what}...", { what: detected.label })
+        : T("Working out what is in this export..."));
       const lib = await libPromise;
       pairOverlays(lib);
       await addSpreadsheets(lib, file, entries, say);
