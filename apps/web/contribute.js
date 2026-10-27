@@ -83,9 +83,9 @@ const MContribute = (function () {
     const L = [];
     L.push("## What happened");
     L.push("");
-    L.push("Muletto read " + (s.total - s.unread).toLocaleString() + " of " +
-      s.total.toLocaleString() + " files in this export. " +
-      s.unread.toLocaleString() + " produced nothing.");
+    L.push("Muletto read " + (s.total - s.unread).toLocaleString(LOC) + " of " +
+      s.total.toLocaleString(LOC) + " files in this export. " +
+      s.unread.toLocaleString(LOC) + " produced nothing.");
     L.push("");
     if (providers.length) L.push("Service: " + providers.join(", "));
     if (s.worst.length) {
@@ -135,7 +135,7 @@ const MContribute = (function () {
     const title = manual
       ? "[" + who + "] Please support this export"
       : "[" + (providers[0] || "export") + "] " +
-        s.unread.toLocaleString() + " of " + s.total.toLocaleString() + " files not read";
+        s.unread.toLocaleString(LOC) + " of " + s.total.toLocaleString(LOC) + " files not read";
     const url = REPO + "/issues/new?labels=export&title=" +
       encodeURIComponent(title) + "&body=" + encodeURIComponent(issueBody(s, providers));
 
@@ -152,8 +152,8 @@ const MContribute = (function () {
             ? "Muletto has no reader written for " + esc(who) + " yet, so it is showing " +
               "the contents as the export wrote them. Telling us what this format looks " +
               "like is what turns that into proper support."
-            : s.unread.toLocaleString() + " of " +
-              s.total.toLocaleString() + " files produced nothing. That is not always " +
+            : s.unread.toLocaleString(LOC) + " of " +
+              s.total.toLocaleString(LOC) + " files produced nothing. That is not always " +
               "wrong, but it is more than usual, and it probably means Muletto does not " +
               "understand part of what " + who + " sent you.") +
           "</p></div></header>" +

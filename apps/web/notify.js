@@ -158,7 +158,7 @@ const MNotify = (function () {
         "<span><b>" + esc(n.title) + "</b>" +
         (n.body ? "<em>" + esc(n.body) + "</em>" : "") +
         (n.goto && n.action ? '<span class="nt-golink">' + esc(n.action) + "</span>" : "") +
-        '<time>' + n.at.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) + "</time>" +
+        '<time>' + n.at.toLocaleTimeString(LOC, { hour: "2-digit", minute: "2-digit" }) + "</time>" +
         "</span></button>").join("");
     list.querySelectorAll(".nt-item.go").forEach((b) => {
       b.addEventListener("click", () => {

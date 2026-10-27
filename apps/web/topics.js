@@ -27,7 +27,7 @@
 const MTopics = (function () {
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const num = (n) => (n || 0).toLocaleString();
+  const num = (n) => (n || 0).toLocaleString(LOC);
   const plural = (n, one, many) => num(n) + " " + (n === 1 ? one : many);
 
   /* What the sidebar number should say.
@@ -63,10 +63,10 @@ const MTopics = (function () {
     const d = new Date(String(v));
     return isNaN(d) ? null : d;
   }
-  const shortDate = (d) => d.toLocaleDateString(undefined,
+  const shortDate = (d) => d.toLocaleDateString(LOC,
     { day: "numeric", month: "short", year: "numeric" });
   /* With the time, which a mail header needs and a list does not. */
-  const longDate = (d) => d.toLocaleString(undefined,
+  const longDate = (d) => d.toLocaleString(LOC,
     { weekday: "short", day: "numeric", month: "short", year: "numeric",
       hour: "2-digit", minute: "2-digit" });
 
@@ -1112,7 +1112,7 @@ const MTopics = (function () {
     const PAGE = 400;
     const row = (e) => "<li>" +
       '<div class="cal-when">' +
-        (e.at ? esc(e.allDay ? shortDate(e.at) : e.at.toLocaleString(undefined,
+        (e.at ? esc(e.allDay ? shortDate(e.at) : e.at.toLocaleString(LOC,
           { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }))
               : "<span class='muted'>no date</span>") +
       "</div>" +

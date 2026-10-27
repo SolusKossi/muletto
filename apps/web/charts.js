@@ -235,10 +235,10 @@ const MCharts = (function () {
       return [(c + r * Math.cos(a)).toFixed(1), (c + r * Math.sin(a)).toFixed(1)];
     };
     let ticks = "";
-    const N = 44;
-    for (let i = 0; i <= N; i++) {
-      const on = i / N <= frac;
-      const a = ((START + SWEEP * (i / N)) * Math.PI) / 180;
+    const TICKS = 44;
+    for (let i = 0; i <= TICKS; i++) {
+      const on = i / TICKS <= frac;
+      const a = ((START + SWEEP * (i / TICKS)) * Math.PI) / 180;
       const r1 = r - (on ? 7 : 4), r2 = r;
       ticks += '<line x1="' + (c + r1 * Math.cos(a)).toFixed(1) +
         '" y1="' + (c + r1 * Math.sin(a)).toFixed(1) +
@@ -389,7 +389,7 @@ const MCharts = (function () {
           '" fill="none" stroke="currentColor" stroke-width="' +
           (size * 0.028).toFixed(1) + '" stroke-linecap="round" opacity="' +
           (n ? (0.22 + 0.6 * (n / top)).toFixed(2) : "0.09") + '" data-hv-cell="' +
-          esc(String(hIdx).padStart(2, "0") + ":00 &#183; " + n.toLocaleString() + " " +
+          esc(String(hIdx).padStart(2, "0") + ":00 &#183; " + n.toLocaleString(LOC) + " " +
               (n === 1 ? (o.noun || "message") : (o.noun || "message") + "s")) + '"/>';
       }
     }
@@ -488,7 +488,7 @@ const MCharts = (function () {
    * Takes timestamps. Anything with a `t` will do - messages, searches,
    * sign-ins - because a habit is a habit whatever it is a habit of.
    */
-  const DAYNAME = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const DAYNAME = MI18N.days("short");
 
   function grid(pts, opt) {
     const o = opt || {};
@@ -523,7 +523,7 @@ const MCharts = (function () {
           (y + cell / 2) + '" r="' + r.toFixed(2) + '" fill="currentColor" opacity="' +
           (n ? (0.16 + 0.74 * f).toFixed(2) : "0.07") + '" data-hv-cell="' +
           esc(DAYNAME[d] + " " + String(h).padStart(2, "0") + ":00 &#183; " +
-              n.toLocaleString() + " " + (n === 1 ? noun : noun + "s")) + '"/>';
+              n.toLocaleString(LOC) + " " + (n === 1 ? noun : noun + "s")) + '"/>';
       }
     }
     const w = 24 * (cell + gap) - gap, h = 7 * (cell + gap) - gap;
@@ -549,7 +549,7 @@ const MCharts = (function () {
       "<li><span class=\"hv-rank-k\">" + esc(r.name) + "</span>" +
       '<span class="hv-rank-bar"><i style="width:' +
         Math.max(2, Math.round((r.n / top) * 100)) + '%"></i></span>' +
-      '<span class="hv-rank-n">' + r.n.toLocaleString() +
+      '<span class="hv-rank-n">' + r.n.toLocaleString(LOC) +
       (r.note ? '<em>' + esc(r.note) + "</em>" : "") + "</span></li>").join("") + "</ol>";
   }
 
@@ -576,8 +576,7 @@ const MCharts = (function () {
 
   /* ---------- what is under the pointer ---------- */
 
-  const MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const MONTH = MI18N.months("short");
 
   const day = (t) => {
     const d = new Date(t);
@@ -599,7 +598,7 @@ const MCharts = (function () {
     if (meta && meta.hours) return asHours(v);
     const n = Math.abs(v) >= 100 ? Math.round(v)
       : Math.abs(v) >= 10 ? Math.round(v * 10) / 10 : Math.round(v * 100) / 100;
-    return n.toLocaleString() + (meta && meta.unit ? " " + meta.unit : "");
+    return n.toLocaleString(LOC) + (meta && meta.unit ? " " + meta.unit : "");
   }
 
   /* The wording depends on the drawing, because the drawings mean different

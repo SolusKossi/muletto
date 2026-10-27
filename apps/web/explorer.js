@@ -15,22 +15,22 @@
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
-  const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
-  const num = (n) => Number(n || 0).toLocaleString();
+  const plural = (n, one, many) => `${n.toLocaleString(LOC)} ${n === 1 ? one : many}`;
+  const num = (n) => Number(n || 0).toLocaleString(LOC);
 
   const fmtBytes = (n) => {
     if (!n) return "0 B";
     const u = ["B", "KB", "MB", "GB", "TB"];
     const i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
-    return (n / Math.pow(1024, i)).toFixed(i ? 1 : 0) + " " + u[i];
+    return MI18N.dec(n / Math.pow(1024, i), i ? 1 : 0) + " " + u[i];
   };
 
   const DAY = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
   const SHORTDAY = { year: "numeric", month: "short", day: "numeric" };
   const TIME = { hour: "2-digit", minute: "2-digit" };
-  const fmtDay = (d) => d.toLocaleDateString(undefined, DAY);
-  const fmtShort = (d) => d.toLocaleDateString(undefined, SHORTDAY);
-  const fmtTime = (d) => d.toLocaleTimeString(undefined, TIME);
+  const fmtDay = (d) => d.toLocaleDateString(LOC, DAY);
+  const fmtShort = (d) => d.toLocaleDateString(LOC, SHORTDAY);
+  const fmtTime = (d) => d.toLocaleTimeString(LOC, TIME);
 
   /* Each kind of record gets one colour, used by its icon here, its dot in the
      timeline and its chip in the legend, so the eye learns it once. */
@@ -772,8 +772,7 @@
      the one thing worth showing when picking a range over somebody's own
      history. Months with nothing in them are dimmed and unselectable. */
   const DOW = ["M", "T", "W", "T", "F", "S", "S"];
-  const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"];
+  const MONTH_NAMES = MI18N.months("long");
 
   const dayStart = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const dayEnd = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
@@ -2058,7 +2057,7 @@
   function monthHtml(g) {
     return '<section class="lib-month" data-gi="' + g.gi + '">' +
       '<h3 class="ex-dayh">' + (g.date
-        ? esc(g.date.toLocaleDateString(undefined, { year: "numeric", month: "long" }))
+        ? esc(g.date.toLocaleDateString(LOC, { year: "numeric", month: "long" }))
         : "No date recorded") +
         "<span>" + plural(g.items.length, "picture", "pictures") + "</span></h3>" +
       '<div class="lib-grid">' + g.items.map((m, i) =>

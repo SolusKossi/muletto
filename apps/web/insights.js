@@ -177,8 +177,7 @@ const MInsight = (function () {
     return out.charAt(0).toUpperCase() + out.slice(1);
   }
 
-  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const MONTHS = MI18N.months("short");
   function niceValue(key, v) {
     const s = String(v == null ? "" : v).trim();
     if (!s) return s;
@@ -264,10 +263,10 @@ const MInsight = (function () {
 
   const fmtNum = (n) => {
     if (!isFinite(n)) return "-";
-    if (Math.abs(n) >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (Math.abs(n) >= 1000000) return MI18N.dec(n / 1000000, 1).replace(/[.,]0$/, "") + "M";
     if (Math.abs(n) >= 10000) return Math.round(n / 1000) + "k";
-    if (Number.isInteger(n)) return n.toLocaleString();
-    return (Math.round(n * 10) / 10).toLocaleString();
+    if (Number.isInteger(n)) return n.toLocaleString(LOC);
+    return (Math.round(n * 10) / 10).toLocaleString(LOC);
   };
 
   /* Money is not abbreviated the way a count is. "140M" for a total of 140
@@ -277,8 +276,8 @@ const MInsight = (function () {
   const fmtMoney = (n, code) => {
     if (!isFinite(n)) return "-";
     const body = Math.abs(n) >= 1000
-      ? Math.round(n).toLocaleString()
-      : (Math.round(n * 100) / 100).toLocaleString();
+      ? Math.round(n).toLocaleString(LOC)
+      : (Math.round(n * 100) / 100).toLocaleString(LOC);
     return code ? body + " " + code : body;
   };
 

@@ -20,12 +20,12 @@ const MExport = (function () {
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
-  const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
+  const plural = (n, one, many) => `${n.toLocaleString(LOC)} ${n === 1 ? one : many}`;
   const fmtBytes = (n) => {
     if (!n) return "0 B";
     const u = ["B", "KB", "MB", "GB", "TB"];
     const i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
-    return (n / Math.pow(1024, i)).toFixed(i ? 1 : 0) + " " + u[i];
+    return MI18N.dec(n / Math.pow(1024, i), i ? 1 : 0) + " " + u[i];
   };
   const pad = (n) => String(n).padStart(2, "0");
 
@@ -470,7 +470,7 @@ const MExport = (function () {
           res.bytes += (bytes && bytes.length !== undefined) ? bytes.length : (size || 0);
         } catch { res.failed++; }
         if (i % 5 === 0 || i === list.length) {
-          note.say(`${i.toLocaleString()} of ${list.length.toLocaleString()} - ${fmtBytes(res.bytes)}`);
+          note.say(`${i.toLocaleString(LOC)} of ${list.length.toLocaleString(LOC)} - ${fmtBytes(res.bytes)}`);
         }
       }
 
@@ -625,11 +625,11 @@ const MExport = (function () {
       </header>
       <div class="xw-body">
         <div class="xw-tiles">
-          <div><b>${(r.written || 0).toLocaleString()}</b><span>files written</span></div>
+          <div><b>${(r.written || 0).toLocaleString(LOC)}</b><span>files written</span></div>
           <div><b>${esc(fmtBytes(r.bytes || 0))}</b><span>on disk</span></div>
-          ${r.repaired ? `<div><b>${r.repaired.toLocaleString()}</b><span>dates repaired</span></div>` : ""}
-          ${r.captioned ? `<div><b>${r.captioned.toLocaleString()}</b><span>descriptions written in</span></div>` : ""}
-          ${r.failed ? `<div class="bad"><b>${r.failed.toLocaleString()}</b><span>could not be written</span></div>` : ""}
+          ${r.repaired ? `<div><b>${r.repaired.toLocaleString(LOC)}</b><span>dates repaired</span></div>` : ""}
+          ${r.captioned ? `<div><b>${r.captioned.toLocaleString(LOC)}</b><span>descriptions written in</span></div>` : ""}
+          ${r.failed ? `<div class="bad"><b>${r.failed.toLocaleString(LOC)}</b><span>could not be written</span></div>` : ""}
         </div>
         <ul class="xw-did">
           <li>Arranged as <strong>${esc((LAYOUTS[state.opt.layout] || {}).label || "")}</strong>.</li>

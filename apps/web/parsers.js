@@ -11,7 +11,7 @@
 const MParse = (function () {
   // Its own, like every other module here. Reaching for app.js's copy works
   // only because of load order, which is not a thing to depend on.
-  const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
+  const plural = (n, one, many) => `${n.toLocaleString(LOC)} ${n === 1 ? one : many}`;
 
   /* ---------- shared helpers ---------- */
 
@@ -358,9 +358,9 @@ const MParse = (function () {
       } catch { /* unreadable photo; leave it undated */ }
     }
     if (dated) {
-      lib.notes.push("Recovered the date from " + dated.toLocaleString() +
+      lib.notes.push("Recovered the date from " + dated.toLocaleString(LOC) +
         " photo" + (dated === 1 ? "" : "s") + " by reading what the camera wrote into the file" +
-        (located ? ", and the location from " + located.toLocaleString() : "") + ".");
+        (located ? ", and the location from " + located.toLocaleString(LOC) : "") + ".");
     }
   }
 
@@ -679,7 +679,7 @@ const MParse = (function () {
           });
         }
       }
-      if (n) lib.notes.push(`${n.toLocaleString()} Memories are listed in this export as time-limited download links rather than files. Download them from Snapchat before the links expire, then open them here.`);
+      if (n) lib.notes.push(`${n.toLocaleString(LOC)} Memories are listed in this export as time-limited download links rather than files. Download them from Snapchat before the links expire, then open them here.`);
     }
 
     // Locations
@@ -847,7 +847,7 @@ const MParse = (function () {
           });
         }
         if (res.records) {
-          lib.insights.push({ n: res.records.toLocaleString(), label: "Health records" });
+          lib.insights.push({ n: res.records.toLocaleString(LOC), label: "Health records" });
         }
       } catch (err) {
         lib.notes.push("The Health export in this archive could not be read. Everything else in it opened normally.");
@@ -924,14 +924,14 @@ const MParse = (function () {
 
     if (sidecars.size) {
       lib.insights.push({
-        n: (capped ? sidecars.size : withDate).toLocaleString(),
+        n: (capped ? sidecars.size : withDate).toLocaleString(LOC),
         label: "Dates recoverable",
         note: "from Takeout metadata", accent: true,
       });
       lib.notes.push(
         "Google stores each photo's real date and location in a separate metadata file rather than in the photo itself. " +
         "That is why re-uploaded Takeout libraries often show up in the wrong order. Muletto reads those files and can write the correct date back into each photo." +
-        (capped ? " This export is large, so only the first " + SIDECAR_CAP.toLocaleString() + " were read here." : "")
+        (capped ? " This export is large, so only the first " + SIDECAR_CAP.toLocaleString(LOC) + " were read here." : "")
       );
     }
 
@@ -1063,7 +1063,7 @@ const MParse = (function () {
         });
       }
       if (series.size) {
-        lib.insights.push({ n: series.size.toLocaleString(), label: "Fit measurements" });
+        lib.insights.push({ n: series.size.toLocaleString(LOC), label: "Fit measurements" });
       }
     }
 
@@ -1106,7 +1106,7 @@ const MParse = (function () {
     if (mbox.length) {
       const bytes = mbox.reduce((s, e) => s + e.size, 0);
       const size = bytes >= 1073741824
-        ? (bytes / 1073741824).toFixed(1) + " GB"
+        ? MI18N.dec(bytes / 1073741824, 1) + " GB"
         : Math.max(1, Math.round(bytes / 1048576)) + " MB";
       // Streamed, headers only - the bodies are never held in memory.
       let indexed = 0;
@@ -1127,7 +1127,7 @@ const MParse = (function () {
       }
       if (indexed) {
         lib.insights.push({
-          n: indexed.toLocaleString(), label: "Emails indexed",
+          n: indexed.toLocaleString(LOC), label: "Emails indexed",
           note: "headers only, from " + size + " of mail", accent: true,
         });
         lib.notes.push("Your Gmail mailbox (" + size + ") was indexed by header: sender, subject and date. Message bodies and attachments are deliberately not loaded.");
@@ -1228,8 +1228,8 @@ const MParse = (function () {
 
     if (lib.conversations.length) {
       lib.insights.push({
-        n: lib.conversations.reduce((s, c) => s + c.messages.length, 0).toLocaleString(),
-        label: "Messages", note: "across " + lib.conversations.length.toLocaleString() + " conversations", accent: true,
+        n: lib.conversations.reduce((s, c) => s + c.messages.length, 0).toLocaleString(LOC),
+        label: "Messages", note: "across " + lib.conversations.length.toLocaleString(LOC) + " conversations", accent: true,
       });
     }
     return lib;
@@ -1304,7 +1304,7 @@ const MParse = (function () {
 
     if (healthRows) {
       lib.insights.push({
-        n: healthRows.toLocaleString(), label: "Health records",
+        n: healthRows.toLocaleString(LOC), label: "Health records",
         note: "steps, sleep and workouts", accent: true,
       });
     }
@@ -1811,7 +1811,7 @@ const MParse = (function () {
     const posts = found.get("posts") || 0, comments = found.get("comments") || 0;
     if (posts || comments) {
       lib.insights.push({
-        n: (posts + comments).toLocaleString(),
+        n: (posts + comments).toLocaleString(LOC),
         label: "Posts and comments",
         note: posts && comments
           ? plural(posts, "post", "posts") + " and " + plural(comments, "comment", "comments")
@@ -1821,7 +1821,7 @@ const MParse = (function () {
     }
     if (found.get("subs")) {
       lib.insights.push({
-        n: (found.get("subs")).toLocaleString(),
+        n: (found.get("subs")).toLocaleString(LOC),
         label: "Subreddits followed", note: "at the time of the export",
       });
     }
@@ -1908,12 +1908,12 @@ const MParse = (function () {
       const artists = new Set(real.map((p) => p.artist).filter(Boolean));
       const tracks = new Set(real.map((p) => p.track + " - " + p.artist));
 
-      lib.insights.push({ n: real.length.toLocaleString(), label: "Tracks played",
-        note: "of " + plays.length.toLocaleString() + " entries; the rest were " +
+      lib.insights.push({ n: real.length.toLocaleString(LOC), label: "Tracks played",
+        note: "of " + plays.length.toLocaleString(LOC) + " entries; the rest were " +
               "under thirty seconds, which Spotify counts as a skip", accent: true });
-      lib.insights.push({ n: hours.toLocaleString(), label: "Hours of listening" });
-      lib.insights.push({ n: artists.size.toLocaleString(), label: "Different artists" });
-      lib.insights.push({ n: tracks.size.toLocaleString(), label: "Different tracks" });
+      lib.insights.push({ n: hours.toLocaleString(LOC), label: "Hours of listening" });
+      lib.insights.push({ n: artists.size.toLocaleString(LOC), label: "Different artists" });
+      lib.insights.push({ n: tracks.size.toLocaleString(LOC), label: "Different tracks" });
 
       const span = [plays[0].at, plays[plays.length - 1].at];
       lib.notes.push("The history runs from " + span[0].toISOString().slice(0, 10) +
@@ -2111,7 +2111,7 @@ const MParse = (function () {
       if (t.at) lib.events.push({ at: t.at, kind: "tweet", label: t.text.slice(0, 140) || "Posted" });
     }
     if (tweets.length) {
-      lib.insights.push({ n: tweets.length.toLocaleString(), label: "Posts", accent: true });
+      lib.insights.push({ n: tweets.length.toLocaleString(LOC), label: "Posts", accent: true });
       lib.tables.push({
         name: "Posts", path: tweets[0].path,
         columns: ["When", "Text", "Likes", "Reposts"],
@@ -2169,8 +2169,8 @@ const MParse = (function () {
     }
     if (dmCount) {
       lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-      lib.insights.push({ n: dmCount.toLocaleString(), label: "Direct messages",
-        note: "across " + lib.conversations.length.toLocaleString() + " conversations",
+      lib.insights.push({ n: dmCount.toLocaleString(LOC), label: "Direct messages",
+        note: "across " + lib.conversations.length.toLocaleString(LOC) + " conversations",
         accent: true });
       if (unnamed) {
         lib.notes.push("X names a conversation after the account numbers in it and " +
@@ -2305,8 +2305,8 @@ const MParse = (function () {
 
     if (total) {
       lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-      lib.insights.push({ n: total.toLocaleString(), label: "Messages",
-        note: "across " + lib.conversations.length.toLocaleString() + " channels",
+      lib.insights.push({ n: total.toLocaleString(LOC), label: "Messages",
+        note: "across " + lib.conversations.length.toLocaleString(LOC) + " channels",
         accent: true });
       /* The thing people are surprised by: a Discord package holds only what
          you typed. Everybody else's half of every conversation is missing,
@@ -2446,9 +2446,9 @@ const MParse = (function () {
     }
 
     if (orders) {
-      lib.insights.push({ n: orders.toLocaleString(), label: "Orders", accent: true });
+      lib.insights.push({ n: orders.toLocaleString(LOC), label: "Orders", accent: true });
       if (spend > 0) {
-        lib.insights.push({ n: Math.round(spend).toLocaleString(),
+        lib.insights.push({ n: Math.round(spend).toLocaleString(LOC),
           label: "Total ordered", note: currency || "in whatever the export was priced in" });
       }
     }
@@ -2603,11 +2603,11 @@ const MParse = (function () {
 
     let first = true;
     for (const [label, n] of [...counts.entries()].sort((a, b) => b[1] - a[1])) {
-      lib.insights.push({ n: n.toLocaleString(), label, accent: first });
+      lib.insights.push({ n: n.toLocaleString(LOC), label, accent: first });
       first = false;
     }
     if (placed) {
-      lib.insights.push({ n: placed.toLocaleString(), label: "Locations on the map" });
+      lib.insights.push({ n: placed.toLocaleString(LOC), label: "Locations on the map" });
     }
 
     /* The one that saves somebody an afternoon. */
@@ -2784,19 +2784,19 @@ const MParse = (function () {
     }
 
     if (connections) {
-      lib.insights.push({ n: connections.toLocaleString(), label: "Connections", accent: true });
+      lib.insights.push({ n: connections.toLocaleString(LOC), label: "Connections", accent: true });
       if (noEmail) {
-        lib.insights.push({ n: noEmail.toLocaleString(), label: "Connections with no address",
+        lib.insights.push({ n: noEmail.toLocaleString(LOC), label: "Connections with no address",
           note: "an address is only here if that person chose to share it" });
       }
     }
     if (messages) {
       lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-      lib.insights.push({ n: messages.toLocaleString(), label: "Messages",
-        note: "across " + lib.conversations.length.toLocaleString() + " conversations",
+      lib.insights.push({ n: messages.toLocaleString(LOC), label: "Messages",
+        note: "across " + lib.conversations.length.toLocaleString(LOC) + " conversations",
         accent: true });
     }
-    if (posts) lib.insights.push({ n: posts.toLocaleString(), label: "Posts" });
+    if (posts) lib.insights.push({ n: posts.toLocaleString(LOC), label: "Posts" });
 
     if (droppedPreamble) {
       lib.notes.push("LinkedIn writes a paragraph of explanation above the columns in " +
@@ -3001,13 +3001,13 @@ const MParse = (function () {
     }
 
     if (days.size || sleeps.length) {
-      lib.insights.push({ n: records.toLocaleString(), label: "Health readings",
+      lib.insights.push({ n: records.toLocaleString(LOC), label: "Health readings",
         accent: true });
       lib.insights.push({ n: String(byMetric.size + (sleeps.length ? 1 : 0)),
         label: "Measurements recorded" });
       const all = [...days.keys()].sort();
       if (all.length) {
-        lib.insights.push({ n: all.length.toLocaleString(), label: "Days covered",
+        lib.insights.push({ n: all.length.toLocaleString(LOC), label: "Days covered",
           note: all[0] + " to " + all[all.length - 1] });
       }
     }
@@ -3024,8 +3024,8 @@ const MParse = (function () {
         "overlapped, so nothing was dropped.");
     }
     if (json.length > FILE_CAP) {
-      lib.notes.push("Read " + FILE_CAP.toLocaleString() + " of " +
-        json.length.toLocaleString() + " data files. Fitbit writes one per day per " +
+      lib.notes.push("Read " + FILE_CAP.toLocaleString(LOC) + " of " +
+        json.length.toLocaleString(LOC) + " data files. Fitbit writes one per day per " +
         "measurement, so a long history runs to thousands; the rest are listed and " +
         "not summarised.");
     }
@@ -3212,8 +3212,8 @@ const MParse = (function () {
 
     if (total) {
       lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-      lib.insights.push({ n: total.toLocaleString(), label: "Messages",
-        note: "across " + lib.conversations.length.toLocaleString() +
+      lib.insights.push({ n: total.toLocaleString(LOC), label: "Messages",
+        note: "across " + lib.conversations.length.toLocaleString(LOC) +
               plural(lib.conversations.length, " chat", " chats").replace(/^\d+\s*/, " "),
         accent: true });
     }
@@ -3240,7 +3240,7 @@ const MParse = (function () {
 
     await classifyFiles(lib, entries, file);
     if (attached) {
-      lib.insights.push({ n: attached.toLocaleString(), label: "Messages with an attachment" });
+      lib.insights.push({ n: attached.toLocaleString(LOC), label: "Messages with an attachment" });
     }
     return lib;
   }
@@ -3425,7 +3425,7 @@ const MParse = (function () {
       if (!table.length) continue;
       lib.tables.push({ name: sec.label, path: big.name,
         columns: ["When", "What"], rows: table.reverse() });
-      lib.insights.push({ n: rows.length.toLocaleString(), label: sec.label,
+      lib.insights.push({ n: rows.length.toLocaleString(LOC), label: sec.label,
         accent: sec.key === "watch" });
       found.push(sec.key);
       if (dated < rows.length) {
@@ -3465,8 +3465,8 @@ const MParse = (function () {
       }
       if (total) {
         lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-        lib.insights.push({ n: total.toLocaleString(), label: "Messages",
-          note: "across " + lib.conversations.length.toLocaleString() + " conversations",
+        lib.insights.push({ n: total.toLocaleString(LOC), label: "Messages",
+          note: "across " + lib.conversations.length.toLocaleString(LOC) + " conversations",
           accent: true });
       }
     }
@@ -3556,7 +3556,7 @@ const MParse = (function () {
       }
     }
     if (activities) {
-      lib.insights.push({ n: activities.toLocaleString(), label: "Activities", accent: true });
+      lib.insights.push({ n: activities.toLocaleString(LOC), label: "Activities", accent: true });
     }
 
     /* The GPS files themselves. */
@@ -3574,7 +3574,7 @@ const MParse = (function () {
       placed++;
     }
     if (placed) {
-      lib.insights.push({ n: placed.toLocaleString(), label: "Activities placed on the map",
+      lib.insights.push({ n: placed.toLocaleString(LOC), label: "Activities placed on the map",
         note: "from the start of each GPX track" });
     }
     if (gpx.length > GPX_CAP) {

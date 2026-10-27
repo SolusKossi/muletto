@@ -695,7 +695,9 @@ ${bodyScripts !== undefined ? bodyScripts : `  <!-- Every disclosure on the site
   <script src="${up}disclose.js"></script>
   <!-- Counts that a guide was read. See privacy.html. -->
   <script src="${up}analytics.js"></script>
-  <script src="${up}app.js"></script>
+  <!-- app.js runs on every page and calls T(), so the words come first. -->
+  <script src="${up}i18n.js"></script>
+${code === "nb" ? `  <script src="${up}no/i18n.nb.js"></script>\n` : ""}  <script src="${up}app.js"></script>
 ${extraScript ? `  <script src="${up}${extraScript}"></script>\n` : ""}`}
 </body>
 </html>
@@ -1649,6 +1651,7 @@ function appPage(lang, alt, sampleCount, readerCount) {
 
   /* Order matters in three places and the comments say where. */
   const scripts = [
+    ["i18n.js", "The app's words in the reader's language. First, because every\n       script after it may call T()."],
     "notify.js", "tips.js", "jobs.js", "store.js", "derived.js", "donate.js",
     "zipcrypt.js", "zip.js",
     ["tar.js", "Gzipped tar, because Google offers .tgz next to .zip."],
@@ -1663,10 +1666,14 @@ function appPage(lang, alt, sampleCount, readerCount) {
     ["disclose.js", "Every disclosure on the site opens and shuts rather than jumping."],
     "app.js", "swreg.js",
   ];
+  /* The Norwegian dictionary sits beside the Norwegian page, so only it pays
+     for the download, and goes straight after i18n.js. */
+  if (lang === "nb") scripts.splice(1, 0, ["@no/i18n.nb.js", "Norwegian for every T() in the app."]);
   const bodyScripts = scripts.map((s) => {
     const [file, note] = Array.isArray(s) ? s : [s, null];
+    const src = file.startsWith("@no/") ? file.slice(4) : up + file;
     return (note ? "  <!-- " + note + " -->\n" : "") +
-      `  <script src="${up}${file}"></script>`;
+      `  <script src="${src}"></script>`;
   }).join("\n");
 
   return page({

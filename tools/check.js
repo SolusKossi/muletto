@@ -300,6 +300,93 @@ console.log("\nInternal links and images");
    was visible without opening the console.
 
    JSON-LD is exempt: it is data the browser never executes. */
+/* ---------- every word the app prints has its Norwegian ---------- */
+
+/* The app's text goes through T("English") and N("one", "many", n), and
+   apps/web/no/i18n.nb.js holds the Norwegian. A string missing from the
+   dictionary does not break anything - it prints in English - which is
+   exactly why it needs a check: the fallback is silent.
+
+   Keys are read from the source rather than from a list, so a sentence added
+   to the app without its Norwegian fails here, on the commit that added it.
+   A key may be several literals joined with +, the way long sentences are
+   written in this codebase. A T() whose argument is not a literal is the
+   caller's own business and is not counted. */
+console.log("\nThe app's words, in Norwegian");
+{
+  const dictFile = path.join(WEB, "no", "i18n.nb.js");
+  const appKeys = (src) => {
+    const keys = [];
+    const re = /\b(T|N)\(\s*/g;
+    let m;
+    while ((m = re.exec(src))) {
+      let i = re.lastIndex;
+      const want = m[1] === "N" ? 2 : 1;
+      for (let k = 0; k < want; k++) {
+        let s = "", got = false;
+        for (;;) {
+          while (/\s/.test(src[i])) i++;
+          const q = src[i];
+          if (q !== '"' && q !== "'") break;
+          let j = i + 1, part = "";
+          while (j < src.length && src[j] !== q) {
+            if (src[j] === "\\") { part += JSON.parse('"' + src.slice(j, j + 2).replace(/^\\'/, "'") + '"'); j += 2; continue; }
+            part += src[j++];
+          }
+          s += part; got = true; i = j + 1;
+          while (/\s/.test(src[i])) i++;
+          if (src[i] === "+") { i++; continue; }
+          break;
+        }
+        if (!got) break;
+        keys.push(s);
+        while (/\s/.test(src[i])) i++;
+        if (src[i] === ",") i++;
+      }
+    }
+    return keys;
+  };
+  const files = walk(WEB, (p) => p.endsWith(".js") && path.dirname(p) === WEB);
+  const used = new Map();
+  for (const f of files) {
+    if (path.basename(f) === "i18n.js") continue;
+    for (const k of appKeys(fs.readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, ""))) {
+      if (!used.has(k)) used.set(k, path.basename(f));
+    }
+  }
+  let dict = {};
+  if (fs.existsSync(dictFile)) {
+    const MI18N = { add: (o) => Object.assign(dict, o) };
+    new Function("MI18N", fs.readFileSync(dictFile, "utf8"))(MI18N);
+  }
+  const missing = [...used].filter(([k]) => !(k in dict));
+  for (const [k, f] of missing.slice(0, 25)) fail(f + ': no Norwegian for "' + k.slice(0, 70) + '"');
+  if (missing.length > 25) fail("... and " + (missing.length - 25) + " more without Norwegian");
+  const unused = Object.keys(dict).filter((k) => !used.has(k));
+  if (unused.length) {
+    console.log("  ..   " + unused.length + " dictionary entr" + (unused.length === 1 ? "y is" : "ies are") +
+      " no longer used by the app, e.g. \"" + unused[0].slice(0, 50) + "\"");
+  }
+  if (!missing.length) ok(used.size + " strings the app prints, every one with its Norwegian");
+
+  /* T() is defined by i18n.js, and app.js calls it on every page it runs on,
+     guides included. A page that loads app.js without i18n.js in front of it
+     throws on the first word and loses its icons and its lightbox with it. */
+  let pagesOk = 0;
+  /* index-old.html is the superseded hand-written home page: make-public.js
+     excludes it, so it is never served and never needs the words. */
+  for (const f of walk(WEB, (p) => p.endsWith(".html") && path.basename(p) !== "index-old.html")) {
+    const h = fs.readFileSync(f, "utf8");
+    const app = h.search(/<script src="[^"]*\bapp\.js/);
+    if (app < 0) continue;
+    const i18n = h.search(/<script src="[^"]*\bi18n\.js/);
+    if (i18n < 0 || i18n > app) fail(rel(f) + " loads app.js without i18n.js before it");
+    else if (/\/no\//.test(rel(f)) && !/i18n\.nb\.js/.test(h)) fail(rel(f) + " is Norwegian but does not load the dictionary");
+    else pagesOk++;
+  }
+  ok(pagesOk + " pages load the words before the app");
+}
+
 /* ---------- a translation carries what its English carries ---------- */
 
 /* Text changes between languages; pictures and outbound links do not. A

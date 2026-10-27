@@ -13,15 +13,15 @@
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
-  const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
-  const num = (n) => (n || 0).toLocaleString();
+  const plural = (n, one, many) => `${n.toLocaleString(LOC)} ${n === 1 ? one : many}`;
+  const num = (n) => (n || 0).toLocaleString(LOC);
 
   const DAY_FMT = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
   const TIME_FMT = { hour: "2-digit", minute: "2-digit" };
 
   const dayKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const fmtDay = (d) => d.toLocaleDateString(undefined, DAY_FMT);
-  const fmtTime = (d) => d.toLocaleTimeString(undefined, TIME_FMT);
+  const fmtDay = (d) => d.toLocaleDateString(LOC, DAY_FMT);
+  const fmtTime = (d) => d.toLocaleTimeString(LOC, TIME_FMT);
 
   /* ---------- building one stream out of everything ---------- */
 
@@ -68,7 +68,7 @@
     for (const pts of placeDays.values()) {
       items.push({
         at: pts[pts.length - 1].at, type: "place",
-        title: pts.length === 1 ? "Location recorded" : `${pts.length.toLocaleString()} locations recorded`,
+        title: pts.length === 1 ? "Location recorded" : `${pts.length.toLocaleString(LOC)} locations recorded`,
         count: pts.length, points: pts,
         src: pts[0].src, srcLabel: pts[0].srcLabel, srcSlug: pts[0].srcSlug,
       });
@@ -102,14 +102,14 @@
      the honest view: if a date looks wrong here, the export is wrong. */
   function treeHtml(value, depth = 0) {
     if (value === null || value === undefined) return `<span class="tv-null">none</span>`;
-    if (value instanceof Date) return `<span class="tv-date">${esc(value.toLocaleString())}</span>`;
+    if (value instanceof Date) return `<span class="tv-date">${esc(value.toLocaleString(LOC))}</span>`;
     if (Array.isArray(value)) {
       if (!value.length) return `<span class="tv-null">empty</span>`;
       return `<details class="tv-node"${depth < 1 ? " open" : ""}>
         <summary>${plural(value.length, "item", "items")}</summary>
         <div class="tv-kids">${value.slice(0, 200).map((v, i) =>
           `<div class="tv-row"><span class="tv-k">${i}</span>${treeHtml(v, depth + 1)}</div>`).join("")}
-        ${value.length > 200 ? `<div class="tv-row tv-null">${(value.length - 200).toLocaleString()} more not shown</div>` : ""}</div>
+        ${value.length > 200 ? `<div class="tv-row tv-null">${(value.length - 200).toLocaleString(LOC)} more not shown</div>` : ""}</div>
       </details>`;
     }
     if (typeof value === "object") {
@@ -200,7 +200,7 @@
         </p>
         <div class="tl-legend">
           ${[...counts.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) =>
-            `<span class="tl-chip t-${t}"><i></i>${esc(typeName(t, n))} ${n.toLocaleString()}</span>`).join("")}
+            `<span class="tl-chip t-${t}"><i></i>${esc(typeName(t, n))} ${n.toLocaleString(LOC)}</span>`).join("")}
         </div>
       </div>
       <div class="tl" id="tl"></div>
@@ -218,7 +218,7 @@
         more.innerHTML = `<p class="muted small">That is the whole record - back to ${esc(fmtDay(oldest))}.</p>`;
         if (io) io.disconnect();
       } else {
-        more.innerHTML = `<button class="btn ghost" id="tl-load">Load earlier (${(days.length - drawn).toLocaleString()} days left)</button>`;
+        more.innerHTML = `<button class="btn ghost" id="tl-load">Load earlier (${(days.length - drawn).toLocaleString(LOC)} days left)</button>`;
         panel.querySelector("#tl-load").addEventListener("click", drawPage);
       }
     };
@@ -255,7 +255,7 @@
         <div class="tl-date">
           <h3>${esc(fmtDay(d.date))}</h3>
           <span class="muted small">${[...per.entries()]
-            .map(([t, n]) => `${n.toLocaleString()} ${typeName(t, n).toLowerCase()}`).join(", ")}</span>
+            .map(([t, n]) => `${n.toLocaleString(LOC)} ${typeName(t, n).toLowerCase()}`).join(", ")}</span>
         </div>
         <div class="tl-items">
           ${d.items.map((it, i) => itemHtml(it, d.key, i)).join("")}
@@ -434,8 +434,7 @@
    */
   let chatMode = "stats";
 
-  const MONTHS = ["January", "February", "March", "April", "May", "June", "July",
-                  "August", "September", "October", "November", "December"];
+  const MONTHS = MI18N.months("long");
 
   /* Two letters from a name, the way every address book does it. Split on
      punctuation as well as spaces, because half the names in a chat export
@@ -684,7 +683,7 @@
                 <span class="ca-name">${esc(p.name)}</span>
                 <span class="ca-sub">
                   ${[...p.platforms.keys()].map((s) => `<i class="ca-ic" data-icon="${esc(s)}" title="${esc(p.platforms.get(s))}"></i>`).join("")}
-                  ${p.hitCount ? `${p.hitCount.toLocaleString()} matching` : plural(p.messages.length, "message", "messages")}
+                  ${p.hitCount ? `${p.hitCount.toLocaleString(LOC)} matching` : plural(p.messages.length, "message", "messages")}
                 </span>
               </span>
             </button>`).join("")}
@@ -804,7 +803,7 @@
       <div class="map-head">
         <p class="muted small">
           ${plural(pts.length, "recorded location", "recorded locations")}${dated.length < pts.length
-            ? `, ${(pts.length - dated.length).toLocaleString()} without a date` : ""}.
+            ? `, ${(pts.length - dated.length).toLocaleString(LOC)} without a date` : ""}.
           Drawn from the coordinates in your export. The coastline ships with the page,
           so no map service is contacted and nothing about where you have been leaves
           this device.

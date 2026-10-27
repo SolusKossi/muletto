@@ -16,34 +16,11 @@ const HERE = (function () {
   return me ? me.slice(0, me.lastIndexOf("/") + 1) : "";
 })();
 
-/* The handful of app messages that are translated so far. The app itself is
-   still English inside; these are the ones a Norwegian reader meets before
-   any export is open. */
-const NB = document.documentElement.lang === "nb";
-const SAY = NB ? {
-  sampleFetch: "Eksempeleksportene kunne ikke hentes.",
-  sampleOffline: "Eksemplene er det eneste p\u00e5 denne siden som m\u00e5 lastes ned, og du er frakoblet. " +
-    "Din egen eksport trenger ingen tilkobling - slipp den inn, s\u00e5 \u00e5pnes den. Eller koble til et " +
-    "\u00f8yeblikk for \u00e5 hente eksemplene, s\u00e5 virker de frakoblet etterp\u00e5 ogs\u00e5.",
-  sampleMissing: "Fant ikke eksempelfilen ",
-  sampleNote: "Dette er <strong>eksempeleksporter</strong>, ikke dine data - seks sm\u00e5 arkiver formet som " +
-    "de ekte. Det samme bildet finnes i flere av dem, og det er det duplikat- og likhetsverkt\u00f8yene finner.",
-} : {
-  sampleFetch: "The sample exports could not be fetched.",
-  sampleOffline: "The samples are the one part of this page that has to be downloaded, " +
-    "and you are offline. Your own export needs no connection - drop it in " +
-    "and it opens. Or reconnect for a moment to fetch the samples, after " +
-    "which they work offline too.",
-  sampleMissing: "missing ",
-  sampleNote: "These are <strong>sample exports</strong>, not your data - six small archives " +
-    "shaped like the real thing. The same photo appears in more than one of them, which is what the " +
-    "duplicate and similar-photo tools are finding.",
-};
 const fmtBytes = (n) => {
   if (!n) return "0 B";
   const u = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(n) / Math.log(1024));
-  return (n / Math.pow(1024, i)).toFixed(i ? 1 : 0) + " " + u[i];
+  return MI18N.dec(n / Math.pow(1024, i), i ? 1 : 0) + " " + u[i];
 };
 
 /* ---------- Official provider marks (single-path brand logos, themed via currentColor) ----------
@@ -114,8 +91,9 @@ function iconSvg(key) {
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
-const fmtDate = (d) => d ? d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+/* one and many arrive already translated: plural(n, T("file"), T("files")). */
+const plural = (n, one, many) => `${n.toLocaleString(LOC)} ${n === 1 ? one : many}`;
+const fmtDate = (d) => d ? d.toLocaleDateString(LOC, { year: "numeric", month: "short", day: "numeric" }) : "";
 
 /* ---------- Decorative icons on static pages ---------- */
 // Guide pages and the guides index are generated as static HTML for search
@@ -139,7 +117,7 @@ function buildLightbox() {
   el.className = "lightbox";
   el.hidden = true;
   el.innerHTML =
-    '<button class="lb-close" type="button" aria-label="Close">' +
+    '<button class="lb-close" type="button" aria-label="' + T("Close") + '">' +
       '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
       '<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" ' +
       'stroke-linecap="round" fill="none"/></svg></button>' +
@@ -187,7 +165,7 @@ function wireShots() {
     const caption = fig.querySelector("figcaption")?.textContent || "";
     img.tabIndex = 0;
     img.setAttribute("role", "button");
-    img.title = "Click to see it full size";
+    img.title = T("Click to see it full size");
     img.addEventListener("click", () => openLightbox(img, caption));
     img.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openLightbox(img, caption); }
@@ -247,11 +225,11 @@ async function renderWhatYouGet() {
 /* ---------- Category classification and duplicates ---------- */
 
 const CATEGORIES = [
-  { key: "photos", label: "Photos", ext: ["jpg", "jpeg", "png", "heic", "heif", "gif", "webp", "bmp", "tif", "tiff", "dng", "raw"] },
-  { key: "videos", label: "Videos", ext: ["mp4", "mov", "m4v", "avi", "mkv", "webm", "3gp", "hevc"] },
-  { key: "audio", label: "Audio", ext: ["mp3", "m4a", "aac", "wav", "ogg", "opus", "flac"] },
-  { key: "records", label: "Records and messages", ext: ["json", "html", "htm", "csv", "xml", "vcf", "ics", "txt"] },
-  { key: "other", label: "Other files", ext: [] },
+  { key: "photos", label: T("Photos"), ext: ["jpg", "jpeg", "png", "heic", "heif", "gif", "webp", "bmp", "tif", "tiff", "dng", "raw"] },
+  { key: "videos", label: T("Videos"), ext: ["mp4", "mov", "m4v", "avi", "mkv", "webm", "3gp", "hevc"] },
+  { key: "audio", label: T("Audio"), ext: ["mp3", "m4a", "aac", "wav", "ogg", "opus", "flac"] },
+  { key: "records", label: T("Records and messages"), ext: ["json", "html", "htm", "csv", "xml", "vcf", "ics", "txt"] },
+  { key: "other", label: T("Other files"), ext: [] },
 ];
 function categoryOf(name) {
   const e = (name.split(".").pop() || "").toLowerCase();
@@ -498,25 +476,25 @@ function askPassword(name, wrong, progress) {
       '<div class="xw-scrim"></div>' +
       '<div class="xw" role="dialog" aria-modal="true" aria-labelledby="pw-t">' +
         '<header class="xw-head"><div><h2 id="pw-t">' +
-          (wrong ? "That password did not work" : "This export is locked") + "</h2>" +
+          (wrong ? T("That password did not work") : T("This export is locked")) + "</h2>" +
           '<p class="muted small">' + (wrong
-            ? "Check the email again - a trailing space is the usual culprit."
-            : "Samsung locks every archive and emails the password separately, under " +
-              "Send my file password on the download page. One password opens all of them.") +
+            ? T("Check the email again - a trailing space is the usual culprit.")
+            : T("Samsung locks every archive and emails the password separately, under " +
+              "Send my file password on the download page. One password opens all of them.")) +
           "</p></div></header>" +
         '<div class="xw-body">' +
-          '<label class="pw-label" for="pw-in">Password for ' + esc(name) + "</label>" +
+          '<label class="pw-label" for="pw-in">' + T("Password for {name}", { name: esc(name) }) + "</label>" +
           '<input class="pw-in" id="pw-in" type="password" autocomplete="off" spellcheck="false" />' +
-          '<p class="muted small pw-note">Used here and nowhere else. Not saved, not sent ' +
-          "anywhere, and forgotten when this tab closes.</p>" +
-          list("Already open", done, "pw-ok") +
-          list("Still locked", todo, "pw-locked") +
+          '<p class="muted small pw-note">' + T("Used here and nowhere else. Not saved, not sent " +
+          "anywhere, and forgotten when this tab closes.") + "</p>" +
+          list(T("Already open"), done, "pw-ok") +
+          list(T("Still locked"), todo, "pw-locked") +
         "</div>" +
         '<footer class="xw-foot">' +
-          '<button class="btn ghost" id="pw-cancel">Cancel</button>' +
+          '<button class="btn ghost" id="pw-cancel">' + T("Cancel") + '</button>' +
           '<div class="xw-footl">' +
-            '<button class="btn secondary" id="pw-skip">Skip this one</button>' +
-            '<button class="btn primary" id="pw-go">Unlock</button>' +
+            '<button class="btn secondary" id="pw-skip">' + T("Skip this one") + '</button>' +
+            '<button class="btn primary" id="pw-go">' + T("Unlock") + '</button>' +
           "</div>" +
         "</footer>" +
       "</div>";
@@ -580,10 +558,10 @@ async function readSource(file, seen) {
      its own blob. Everything after this point is identical. */
   if (typeof MTar !== "undefined" && MTar.isTgz(file.name)) {
     const say = seen && seen.say;
-    if (say) say("Unpacking " + file.name + " - a .tgz has to be read in one go...");
+    if (say) say(T("Unpacking {name} - a .tgz has to be read in one go...", { name: file.name }));
     const all = await MTar.read(file, (n, b) => {
-      if (say) say("Unpacking " + file.name + " - " + n.toLocaleString() +
-                   " files so far (" + fmtBytes(b) + ")...");
+      if (say) say(T("Unpacking {name} - {n} files so far ({size})...",
+                     { name: file.name, n: n.toLocaleString(LOC), size: fmtBytes(b) }));
     });
     readCancelled();
     const det = detectProvider(all, file.name);
@@ -620,8 +598,8 @@ async function readSource(file, seen) {
     // than only between one archive and the next.
     readCancelled();
     if (seen && seen.say) {
-      seen.say("Unpacking " + a.name.split("/").pop() +
-               " (" + fmtBytes(a.size) + ") from inside " + file.name + "...");
+      seen.say(T("Unpacking {name} ({size}) from inside {outer}...",
+                 { name: a.name.split("/").pop(), size: fmtBytes(a.size), outer: file.name }));
     }
   });
   const all = nest.entries;
@@ -650,18 +628,18 @@ async function readSource(file, seen) {
      a single file, so everything reconciles. Apple's Other Data holds a 1.3 GB
      zip of Siri recordings, which is over the limit and stays shut. Say so. */
   for (const s of nest.skipped) {
-    const who = s.name.split("/").pop() + " is an archive inside this one, and ";
-    const fix = " Its contents are not counted anywhere below. Unzip that one " +
-                "file yourself and drop it in on its own to read it.";
+    const v = { name: s.name.split("/").pop(), size: fmtBytes(s.size) };
+    const fix = " " + T("Its contents are not counted anywhere below. Unzip that one " +
+                "file yourself and drop it in on its own to read it.");
     if (s.reason === "unreadable") {
-      lib.notes.push(who + "it could not be opened - it may need its own " +
-                     "password, or be damaged." + fix);
+      lib.notes.push(T("{name} is an archive inside this one, and it could not be opened - " +
+                       "it may need its own password, or be damaged.", v) + fix);
     } else if (s.reason === "budget") {
-      lib.notes.push(who + "this export has more nested archives than Muletto " +
-                     "opens in one go." + fix);
+      lib.notes.push(T("{name} is an archive inside this one, and this export has more nested " +
+                       "archives than Muletto opens in one go.", v) + fix);
     } else {
-      lib.notes.push(who + "at " + fmtBytes(s.size) + " this browser would not " +
-                     "give us room to unpack it." + fix);
+      lib.notes.push(T("{name} is an archive inside this one, and at {size} this browser would " +
+                       "not give us room to unpack it.", v) + fix);
     }
   }
 
@@ -821,7 +799,7 @@ function foldRepeats(sources) {
 function mergeSources(sources) {
   const many = sources.length > 1;
   const merged = {
-    provider: { slug: "merged", label: "Merged library" },
+    provider: { slug: "merged", label: T("Merged library") },
     media: [], conversations: [], events: [], places: [],
     tables: [], files: [], notes: [], insights: [], sources: [],
   };
@@ -853,11 +831,12 @@ function mergeSources(sources) {
   merged.conversations.sort((a, b) => b.messages.length - a.messages.length);
   for (const r of repeats) {
     merged.notes.push(
-      `You opened ${r.copies} ${r.label} exports. The newest one is used, because a fresh ` +
-      `export contains everything an older one did - ${r.folded.toLocaleString()} identical ` +
-      `files were folded away rather than shown twice.` +
-      (r.kept ? ` ${r.kept.toLocaleString()} file${r.kept === 1 ? "" : "s"} present only in the ` +
-        `older export ${r.kept === 1 ? "was" : "were"} kept.` : ""));
+      T("You opened {copies} {label} exports. The newest one is used, because a fresh " +
+        "export contains everything an older one did - {n} identical files were folded " +
+        "away rather than shown twice.",
+        { copies: r.copies, label: r.label, n: r.folded.toLocaleString(LOC) }) +
+      (r.kept ? " " + N("{n} file present only in the older export was kept.",
+                        "{n} files present only in the older export were kept.", r.kept) : ""));
   }
   resolveSelf(merged);
   return merged;
@@ -940,7 +919,7 @@ const cancelRead = { wanted: false };
 
 function readCancelled() {
   if (!cancelRead.wanted) return false;
-  const e = new Error("Stopped before anything was read.");
+  const e = new Error(T("Stopped before anything was read."));
   e.cancelled = true;
   throw e;
 }
@@ -956,8 +935,8 @@ function showCurtain(name) {
         <span class="wordmark">muletto</span>
         <div class="curtain-bar"><i></i></div>
         <p class="curtain-msg" id="curtain-msg"></p>
-        <p class="curtain-fine">Reading it here, on your machine. Nothing is being uploaded.</p>
-        <button class="btn ghost curtain-stop" id="curtain-stop">Stop</button>
+        <p class="curtain-fine">${T("Reading it here, on your machine. Nothing is being uploaded.")}</p>
+        <button class="btn ghost curtain-stop" id="curtain-stop">${T("Stop")}</button>
       </div>`;
     document.body.appendChild(el);
     el.querySelector("#curtain-stop").addEventListener("click", () => {
@@ -977,7 +956,7 @@ function showCurtain(name) {
   cancelRead.wanted = false;
   if (typeof MZip !== "undefined") MZip.setCancelled(false);
   const stop = el.querySelector("#curtain-stop");
-  if (stop) { stop.disabled = false; stop.textContent = "Stop"; }
+  if (stop) { stop.disabled = false; stop.textContent = T("Stop"); }
   document.body.classList.add("curtained");
   curtainSay(name);
   return el;
@@ -1013,7 +992,7 @@ async function handleFiles(fileList, opts) {
      or the click rather than after a work file has been read. Every return
      between here and the try below is guarded by !files.length, so there is no
      path that raises the curtain and then leaves without it. */
-  if (files.length) showCurtain("Opening your export...");
+  if (files.length) showCurtain(T("Opening your export..."));
 
   let restored = null;
   for (const f of work) {
@@ -1024,10 +1003,10 @@ async function handleFiles(fileList, opts) {
     } catch (e) {
     if (e && e.cancelled) {
       hideCurtain();
-      MNotify.push("Opening cancelled", {
+      MNotify.push(T("Opening cancelled"), {
         kind: "info",
-        body: "Nothing was read. The archives are untouched, and you can try again whenever " +
-          "the password turns up.",
+        body: T("Nothing was read. The archives are untouched, and you can try again whenever " +
+          "the password turns up."),
       });
       return;
     }
@@ -1041,8 +1020,9 @@ async function handleFiles(fileList, opts) {
     }
   }
   if (restored !== null && !files.length) {
-    const msg = `Restored what Muletto had worked out about ${plural(restored, "file", "files")}. ` +
-      "Anything that applies to what you open will not be done again.";
+    const msg = N("Restored what Muletto had worked out about {n} file.",
+                  "Restored what Muletto had worked out about {n} files.", restored) + " " +
+      T("Anything that applies to what you open will not be done again.");
     if (document.getElementById("explorer")) MExplorer.status(msg);
     else { const o = $("#import-result"); o.hidden = false; o.innerHTML = `<div class="note">${esc(msg)}</div>`; }
     return;
@@ -1070,12 +1050,13 @@ async function handleFiles(fileList, opts) {
     seenBytes.set(key, set);
   }
   const status = append ? MExplorer.status : null;
-  showCurtain("Opening your export...");
+  showCurtain(T("Opening your export..."));
   try {
     for (let i = 0; i < files.length; i++) {
       readCancelled();
-      const msg = `Reading ${files[i].name} (${fmtBytes(files[i].size)})` +
-        (files.length > 1 ? ` - ${i + 1} of ${files.length}` : "") + "...";
+      const v = { name: files[i].name, size: fmtBytes(files[i].size), i: i + 1, n: files.length };
+      const msg = files.length > 1 ? T("Reading {name} ({size}) - {i} of {n}...", v)
+                                   : T("Reading {name} ({size})...", v);
       curtainSay(msg);
       if (status) status(msg);
       else out.innerHTML = `<p class="loading">${esc(msg)}</p>`;
@@ -1096,10 +1077,10 @@ async function handleFiles(fileList, opts) {
     if (e && e.cancelled) {
       out.hidden = true;
       out.innerHTML = "";
-      MNotify.push("Stopped", {
+      MNotify.push(T("Stopped"), {
         kind: "info",
-        body: "Nothing was read, and nothing was changed. Your archives are exactly " +
-          "as they were - open them again whenever you want.",
+        body: T("Nothing was read, and nothing was changed. Your archives are exactly " +
+          "as they were - open them again whenever you want."),
       });
       return;
     }
@@ -1135,7 +1116,7 @@ async function handleFiles(fileList, opts) {
      they came from. */
   const byCompany = [];
   for (const s of sources) {
-    const label = s.det ? s.det.label : "Unrecognized";
+    const label = s.det ? s.det.label : T("Unrecognized");
     const slug = s.det ? s.det.slug : "box";
     let g = byCompany.find((x) => x.label === label);
     if (!g) { g = { label, slug, files: [] }; byCompany.push(g); }
@@ -1145,20 +1126,21 @@ async function handleFiles(fileList, opts) {
     '<details class="src-co"><summary>' +
       `<span class="d-ic">${iconSvg(g.slug)}</span>` +
       `<strong>${esc(g.label)}</strong>` +
-      `<span class="src-n">${g.files.length} file${g.files.length === 1 ? "" : "s"}</span>` +
+      `<span class="src-n">${N("{n} file", "{n} files", g.files.length)}</span>` +
     "</summary><ul>" +
       g.files.map((n) => `<li>${esc(n)}</li>`).join("") +
     "</ul></details>";
 
   const sourceLine = many
-    ? `<div class="detected detected-co"><span class="src-lead">Merged <strong>${sources.length}</strong> ` +
-      `export${sources.length === 1 ? "" : "s"} from <strong>${byCompany.length}</strong> ` +
-      `${byCompany.length === 1 ? "service" : "services"}</span>` +
+    ? `<div class="detected detected-co"><span class="src-lead">` +
+      (byCompany.length === 1
+        ? T("Merged <strong>{n}</strong> exports from <strong>{s}</strong> service", { n: sources.length, s: byCompany.length })
+        : T("Merged <strong>{n}</strong> exports from <strong>{s}</strong> services", { n: sources.length, s: byCompany.length })) + `</span>` +
       byCompany.map(companyChip).join("") +
       `</div>`
     : (sources[0].det
-      ? `<div class="detected"><span class="d-ic">${iconSvg(sources[0].det.slug)}</span><span>Detected ${/^[aeiou]/i.test(sources[0].det.label) ? "an" : "a"} <strong>${esc(sources[0].det.label)}</strong> export</span></div>`
-      : `<div class="detected unknown"><span>Export type not recognized. Opening it as a general archive.</span></div>`);
+      ? `<div class="detected"><span class="d-ic">${iconSvg(sources[0].det.slug)}</span><span>${MI18N.LANG === "nb" ? T("Detected a <strong>{label}</strong> export", { label: esc(sources[0].det.label) }) : (/^[aeiou]/i.test(sources[0].det.label) ? T("Detected an <strong>{label}</strong> export", { label: esc(sources[0].det.label) }) : T("Detected a <strong>{label}</strong> export", { label: esc(sources[0].det.label) }))}</span></div>`
+      : `<div class="detected unknown"><span>${T("Export type not recognized. Opening it as a general archive.")}</span></div>`);
 
   if (append) {
     renderLibrary(out, merged, sources, allEntries, demo);
@@ -1167,17 +1149,17 @@ async function handleFiles(fileList, opts) {
   }
 
   out.innerHTML = `
-    <p class="proof"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg> Opened in your browser. Nothing was uploaded - ${many ? "these files" : "this file"} stayed on your device, and what was read is kept here so it is waiting next time.</p>
+    <p class="proof"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg> ${many ? T("Opened in your browser. Nothing was uploaded - these files stayed on your device, and what was read is kept here so it is waiting next time.") : T("Opened in your browser. Nothing was uploaded - this file stayed on your device, and what was read is kept here so it is waiting next time.")}</p>
     ${sourceLine}
     <div class="tiles">
-      <div class="tile"><div class="tile-n">${allEntries.length.toLocaleString()}</div><div class="tile-l">Total items</div><div class="tile-s">${fmtBytes(total)}</div></div>
+      <div class="tile"><div class="tile-n">${allEntries.length.toLocaleString(LOC)}</div><div class="tile-l">${T("Total items")}</div><div class="tile-s">${fmtBytes(total)}</div></div>
       ${CATEGORIES.filter((c) => counts[c.key]).map((c) =>
-        `<div class="tile"><div class="tile-n">${counts[c.key].n.toLocaleString()}</div><div class="tile-l">${c.label}</div><div class="tile-s">${fmtBytes(counts[c.key].size)}</div></div>`).join("")}
+        `<div class="tile"><div class="tile-n">${counts[c.key].n.toLocaleString(LOC)}</div><div class="tile-l">${c.label}</div><div class="tile-s">${fmtBytes(counts[c.key].size)}</div></div>`).join("")}
       ${dup.dupFiles > 0
-        ? `<div class="tile accent"><div class="tile-n">${dup.dupFiles.toLocaleString()}</div><div class="tile-l">Exact duplicates</div><div class="tile-s">${fmtBytes(dup.reclaimable)} to reclaim${many ? ", across all exports" : ""}</div></div>`
-        : `<div class="tile"><div class="tile-n">0</div><div class="tile-l">Exact duplicates</div><div class="tile-s">nothing to clean up</div></div>`}
+        ? `<div class="tile accent"><div class="tile-n">${dup.dupFiles.toLocaleString(LOC)}</div><div class="tile-l">${T("Exact duplicates")}</div><div class="tile-s">${many ? T("{size} to reclaim, across all exports", { size: fmtBytes(dup.reclaimable) }) : T("{size} to reclaim", { size: fmtBytes(dup.reclaimable) })}</div></div>`
+        : `<div class="tile"><div class="tile-n">0</div><div class="tile-l">${T("Exact duplicates")}</div><div class="tile-s">${T("nothing to clean up")}</div></div>`}
     </div>
-    <div id="library"><p class="loading" style="margin-top:18px">Reading the contents...</p></div>`;
+    <div id="library"><p class="loading" style="margin-top:18px">${T("Reading the contents...")}</p></div>`;
 
   /* The small copies are made here, behind the curtain, because this is the
      one moment the reader is already waiting and nothing is on screen to be
@@ -1187,24 +1169,24 @@ async function handleFiles(fileList, opts) {
   const lockedFiles = sources.reduce((n, s) => n + (s.locked || 0), 0);
   const lockedNames = sources.filter((s) => s.locked).map((s) => s.name);
   if (lockedFiles) {
-    MNotify.push(plural(lockedFiles, "file is", "files are") + " password protected", {
+    MNotify.push(N("{n} file is password protected", "{n} files are password protected", lockedFiles), {
       kind: "warn",
-      body: "Only the list of what is inside could be read for " +
-        plural(lockedNames.length, "archive", "archives") + ". Samsung emails the " +
-        "password separately: on the download page, Send my file password mails it. Open " +
-        "the same files again and enter it when asked.",
-      action: "Read the Samsung guide",
+      body: N("Only the list of what is inside could be read for {n} archive.",
+              "Only the list of what is inside could be read for {n} archives.", lockedNames.length) + " " +
+        T("Samsung emails the password separately: on the download page, Send my file password " +
+          "mails it. Open the same files again and enter it when asked."),
+      action: T("Read the Samsung guide"),
       goto: () => { location.href = "guides/samsung.html"; },
     });
   }
 
-  curtainSay("Building your timeline...");
+  curtainSay(T("Building your timeline..."));
   current.sources = sources;
   try {
     const had = await loadThumbIndex(merged.media);
     const missing = merged.media.filter((m) => (m.renderable && !m.heif) || m.kind === "video").length - had;
     if (missing > 0) {
-      curtainSay("Preparing " + missing.toLocaleString() + " pictures...");
+      curtainSay(N("Preparing {n} picture...", "Preparing {n} pictures...", missing));
       await buildThumbs(merged.media, curtainSay);
     }
   } catch { /* the originals still work; this is only to make them quick */ }
@@ -1240,11 +1222,11 @@ function persist() {
    misrepresent what the product does, which is the opposite of the point. */
 function demoBlocked(what) {
   if (!current.demo) return false;
-  MNotify.push("Not available on the sample data", {
+  MNotify.push(T("Not available on the sample data"), {
     kind: "warn",
-    body: what + " works on your own library, not on the demonstration. These six " +
+    body: T("{what} works on your own library, not on the demonstration. These six " +
       "archives are invented people, nothing here is saved to your browser, and it is " +
-      "all gone when you close the tab. Open a real export and everything is available.",
+      "all gone when you close the tab. Open a real export and everything is available.", { what }),
   });
   return true;
 }
@@ -1297,11 +1279,11 @@ function cleanupTally(lib) {
 async function saveIntoFolders(_unused, repairDates) {
   const { sources, lib } = current;
   if (!window.showDirectoryPicker) {
-    MNotify.push("This browser cannot write folders", { kind: "warn",
-      body: "Chrome or Edge can. Otherwise, download the file list instead." });
+    MNotify.push(T("This browser cannot write folders"), { kind: "warn",
+      body: T("Chrome or Edge can. Otherwise, download the file list instead.") });
     return;
   }
-  const note = MNotify.task("Saving into dated folders");
+  const note = MNotify.task(T("Saving into dated folders"));
   const statusEl = { set textContent(v) { note.say(v); }, get textContent() { return ""; } };
   const tally = cleanupTally(lib);
   // Continue a job left unfinished by a crash, reboot or closed tab.
@@ -1312,7 +1294,7 @@ async function saveIntoFolders(_unused, repairDates) {
   if (job && job.dirHandle && job.done.length) {
     if (await MJobs.ensureWritable(job.dirHandle)) {
       root = job.dirHandle;
-      statusEl.textContent = `Continuing where this left off - ${job.done.length.toLocaleString()} already saved.`;
+      statusEl.textContent = T("Continuing where this left off - {n} already saved.", { n: job.done.length.toLocaleString(LOC) });
     } else {
       job = null; // permission declined; fall through to a fresh pick
     }
@@ -1374,21 +1356,22 @@ async function saveIntoFolders(_unused, repairDates) {
       failed++;
     }
     if ((done + failed) % 10 === 0 || done + failed + skipped === items.length) {
-      statusEl.textContent = `Saving... ${(done + failed + skipped).toLocaleString()} of ${items.length.toLocaleString()}` +
-        (skipped ? ` (${skipped.toLocaleString()} already saved earlier)` : "");
+      statusEl.textContent = T("Saving... {i} of {n}", { i: (done + failed + skipped).toLocaleString(LOC), n: items.length.toLocaleString(LOC) }) +
+        (skipped ? " " + T("({n} already saved earlier)", { n: skipped.toLocaleString(LOC) }) : "");
     }
   }
   if (tracker) await tracker.flush();
   // Finished cleanly, so the job no longer needs to be resumable.
   if (job && failed === 0) await MJobs.remove(job.id).catch(() => {});
-  note.done(`Saved ${plural(done, "file", "files")} into dated folders`, {
-    body: (skipped ? `${skipped.toLocaleString()} were already saved before. ` : "") +
-      (repaired ? `${repaired.toLocaleString()} had the correct date written in. ` : "") +
-      (unrepairable ? `${unrepairable.toLocaleString()} were left as they were - only JPEG can be repaired. ` : "") +
-      (failed ? `${failed} could not be written. ` : "") +
-      (tally.drop ? `${tally.drop.toLocaleString()} left out by your clean-up choices, saving ` +
-        `${fmtBytes(tally.freedBytes)}. ` : "") +
-      "Your archives were not touched, and nothing was uploaded.",
+  const nf = (x) => x.toLocaleString(LOC);
+  note.done(N("Saved {n} file into dated folders", "Saved {n} files into dated folders", done), {
+    body: (skipped ? T("{n} were already saved before.", { n: nf(skipped) }) + " " : "") +
+      (repaired ? T("{n} had the correct date written in.", { n: nf(repaired) }) + " " : "") +
+      (unrepairable ? T("{n} were left as they were - only JPEG can be repaired.", { n: nf(unrepairable) }) + " " : "") +
+      (failed ? T("{n} could not be written.", { n: nf(failed) }) + " " : "") +
+      (tally.drop ? T("{n} left out by your clean-up choices, saving {size}.",
+        { n: nf(tally.drop), size: fmtBytes(tally.freedBytes) }) + " " : "") +
+      T("Your archives were not touched, and nothing was uploaded."),
   });
 }
 
@@ -1478,11 +1461,11 @@ async function scanSimilar() {
   const pool = all.slice(0, SIMILAR_CAP);
   const skipped = all.length - pool.length;
   if (pool.length < 2) {
-    MNotify.push("Not enough photos to compare", {
-      kind: "warn", body: "This library needs at least two displayable pictures." });
+    MNotify.push(T("Not enough photos to compare"), {
+      kind: "warn", body: T("This library needs at least two displayable pictures.") });
     return;
   }
-  const note = MNotify.task("Comparing photos");
+  const note = MNotify.task(T("Comparing photos"));
   const statusEl = { set textContent(v) { note.say(v); }, get textContent() { return ""; } };
   /* Hashing a photo costs a full decode, so it is done once per file ever.
      The results are filed under the file's contents, which means a photo that
@@ -1527,8 +1510,8 @@ async function scanSimilar() {
       computed.push({ id, hint, phash: sig.bits, plum: sig.lum, psd: sig.sd });
     } catch { /* unreadable image, skip */ }
     if (i % 15 === 0) {
-      statusEl.textContent = `Comparing photos... ${i + 1} of ${pool.length}` +
-        (reused ? ` (${reused.toLocaleString()} already done)` : "");
+      statusEl.textContent = T("Comparing photos... {i} of {n}", { i: i + 1, n: pool.length }) +
+        (reused ? " " + T("({n} already done)", { n: reused.toLocaleString(LOC) }) : "");
     }
   }
   if (computed.length) await MDerived.record(computed);
@@ -1567,18 +1550,19 @@ async function scanSimilar() {
 
   /* Say plainly that nothing has been changed. "Found 13 groups" on its own
      reads like something was done about them. */
+  const nf = (x) => x.toLocaleString(LOC);
   note.done(groups.length
-    ? `Found ${plural(groups.length, "group", "groups")} of pictures that look alike`
-    : "No lookalike pictures found", {
+    ? N("Found {n} group of pictures that look alike", "Found {n} groups of pictures that look alike", groups.length)
+    : T("No lookalike pictures found"), {
     body: (groups.length
-      ? `Nothing has been changed yet. Around ${fmtBytes(extra)} sits in the extra copies.`
-      : "Every picture here is distinct, beyond the exact copies.") +
-      ` ${pool.length.toLocaleString()} pictures compared.` +
-      (flat ? ` ${flat.toLocaleString()} were too flat to fingerprint - a plain black or white
-        picture has nothing to match on - so they were left out.`.replace(/\s+/g, " ") : "") +
-      (skipped ? ` ${skipped.toLocaleString()} were not reached in this pass.` : "") +
-      (reused ? ` ${reused.toLocaleString()} were already compared on an earlier visit.` : ""),
-    action: groups.length ? "Decide what to keep" : null,
+      ? T("Nothing has been changed yet. Around {size} sits in the extra copies.", { size: fmtBytes(extra) })
+      : T("Every picture here is distinct, beyond the exact copies.")) +
+      " " + T("{n} pictures compared.", { n: nf(pool.length) }) +
+      (flat ? " " + T("{n} were too flat to fingerprint - a plain black or white picture has nothing " +
+        "to match on - so they were left out.", { n: nf(flat) }) : "") +
+      (skipped ? " " + T("{n} were not reached in this pass.", { n: nf(skipped) }) : "") +
+      (reused ? " " + T("{n} were already compared on an earlier visit.", { n: nf(reused) }) : ""),
+    action: groups.length ? T("Decide what to keep") : null,
     goto: groups.length ? () => MExplorer.showView("cleanup") : null,
   });
 }
@@ -1587,17 +1571,19 @@ async function renderSimilar(panel, lib) {
   const groups = (lib.similar || []).slice(0, 40);
   const extra = (lib.similar || []).reduce((s, g) => s + g.slice(1).reduce((t, m) => t + m.size, 0), 0);
   panel.innerHTML = `
-    <p class="muted small">${plural(lib.similar.length, "group", "groups")} of photos that look the same,
-      from the ${lib.similarScanned.toLocaleString()} compared. Keeping the largest of each and removing the rest
-      would free about <strong>${fmtBytes(extra)}</strong>. Groups can include exact copies as well as resized ones.</p>
+    <p class="muted small">${N("{n} group of photos that look the same, from the {of} compared.",
+      "{n} groups of photos that look the same, from the {of} compared.", lib.similar.length,
+      { of: lib.similarScanned.toLocaleString(LOC) })} ${T("Keeping the largest of each and removing the rest " +
+      "would free about <strong>{size}</strong>. Groups can include exact copies as well as resized ones.",
+      { size: fmtBytes(extra) })}</p>
     ${groups.map((g, gi) => `
       <div class="dupe-group">
-        <div class="dupe-head">${plural(g.length, "copy", "copies")} &middot; keeping the largest saves ${fmtBytes(g.slice(1).reduce((t, m) => t + m.size, 0))}</div>
+        <div class="dupe-head">${N("{n} copy", "{n} copies", g.length)} &middot; ${T("keeping the largest saves {size}", { size: fmtBytes(g.slice(1).reduce((t, m) => t + m.size, 0)) })}</div>
         <div class="thumbs">
           ${g.map((m, mi) => `
             <figure class="thumb" data-g="${gi}" data-m="${mi}">
               <div class="ph"></div>
-              <figcaption title="${esc(m.path)}">${mi === 0 ? '<span class="keep">keep</span> ' : ""}${esc(m.name)}<br /><span class="muted">${fmtBytes(m.size)}${m.srcLabel ? " &middot; " + esc(m.srcLabel) : ""}</span></figcaption>
+              <figcaption title="${esc(m.path)}">${mi === 0 ? '<span class="keep">' + T("keep") + '</span> ' : ""}${esc(m.name)}<br /><span class="muted">${fmtBytes(m.size)}${m.srcLabel ? " &middot; " + esc(m.srcLabel) : ""}</span></figcaption>
             </figure>`).join("")}
         </div>
       </div>`).join("")}`;
@@ -1638,11 +1624,11 @@ async function renderSimilar(panel, lib) {
    Path segments that occur once are usually people, so they are replaced. */
 async function buildReport(background) {
   if (!current.sources || !current.sources.length) return null;
-  const note = background ? null : MNotify.task("Checking what is in your export");
+  const note = background ? null : MNotify.task(T("Checking what is in your export"));
   try {
     const reports = [];
     for (const src of current.sources) {
-      if (note) note.say(`Reading the shape of ${src.name}...`);
+      if (note) note.say(T("Reading the shape of {name}...", { name: src.name }));
       const r = await MDiagnose.build(src);
       r.parserRead = MDiagnose.coverage(src.lib);
       r.reconciled = MDiagnose.reconcile(src);
@@ -1663,15 +1649,15 @@ async function buildReport(background) {
       catch (err) { /* never let an offer to help break the thing it is about */ }
     }
     if (note) {
-      note.done("Checked your export", {
-        body: "What is inside it, and how much of it was understood.",
-        action: "See it",
+      note.done(T("Checked your export"), {
+        body: T("What is inside it, and how much of it was understood."),
+        action: T("See it"),
         goto: () => MExplorer.showView("report"),
       });
     }
     return reports;
   } catch (e) {
-    if (note) note.failed("Could not check the export: " + (e && e.message ? e.message : "unknown error"));
+    if (note) note.failed(T("Could not check the export: {why}", { why: e && e.message ? e.message : T("unknown error") }));
     return null;
   }
 }
@@ -1769,10 +1755,10 @@ function renderLibrary(root, lib, sources, entries, demo) {
         else renderFiles(panel, use === lib ? entries : entries.filter((e) => e.src === undefined || use.files.some((f) => f.entry === e)));
       },
       save: () => {
-        if (demoBlocked("Saving a library")) return;
+        if (demoBlocked(T("Saving a library"))) return;
         if (!lib.media.length) {
-          MNotify.push("Nothing to save", { kind: "warn",
-            body: "This library has no photos or videos in it." });
+          MNotify.push(T("Nothing to save"), { kind: "warn",
+            body: T("This library has no photos or videos in it.") });
           return;
         }
         MExport.open({ lib, sources, entries });
@@ -1786,7 +1772,7 @@ function renderLibrary(root, lib, sources, entries, demo) {
         const f = $("#file");
         if (f) f.click();
       },
-      findSimilar: () => demoBlocked("Comparing photographs") || scanSimilar(),
+      findSimilar: () => demoBlocked(T("Comparing photographs")) || scanSimilar(),
       /* `plan` and `describe` used to live here, opening the sort-by-
          instruction and AI-description panels. Both are withdrawn for now.
          They were the only features that cost anything and the only ones that
@@ -1796,14 +1782,14 @@ function renderLibrary(root, lib, sources, entries, demo) {
          explorer.js hides each panel when its action is absent, so removing
          them here removes the buttons too. The code is in the history when it
          comes back - see TODO.md. */
-      manifest: () => demoBlocked("Writing a list of the files") || downloadManifest(),
+      manifest: () => demoBlocked(T("Writing a list of the files")) || downloadManifest(),
       /* A copy of the work, as a file the user keeps.
 
          What is stored in the browser is enough to come back next month on
          this machine, but it is the browser's to evict and it does not travel.
          Anything that cost money must not depend on a cache. */
       saveWork: async (status) => {
-        if (demoBlocked("Saving your work to a file")) return;
+        if (demoBlocked(T("Saving your work to a file"))) return;
         const n = await MDerived.count();
         if (!n) {
           /* A notification, not a line under a button in the sidebar.
@@ -1812,27 +1798,28 @@ function renderLibrary(root, lib, sources, entries, demo) {
              entirely - so pressing the button appeared to do nothing at all.
              Anything that answers a press has to appear where the press
              happened. */
-          MNotify.push("Nothing to save yet", {
-            body: "A work file holds the slow results - which photographs are " +
+          MNotify.push(T("Nothing to save yet"), {
+            body: T("A work file holds the slow results - which photographs are " +
               "duplicates, the dates and places read back out of them, any " +
               "descriptions written. None of that has been worked out for this " +
               "library yet, so the file would be empty. Compare photographs or " +
               "repair dates first, then save, and next year's export can be read " +
-              "against it instead of doing the same work again.",
+              "against it instead of doing the same work again."),
           });
           return;
         }
-        status.textContent = "Writing your work file...";
+        status.textContent = T("Writing your work file...");
         const { blob, ext, raw } = await MDerived.toFile({
           sources: sources.map((x) => (x.det ? x.det.label : x.name)),
           items: entries.length,
         });
         const stamp = new Date().toISOString().slice(0, 10);
         download(`muletto-work-${stamp}.${ext}`, blob);
-        status.textContent = `Saved what Muletto worked out about ${plural(n, "file", "files")} ` +
-          `(${fmtBytes(blob.size)}${blob.size < raw ? ", compressed from " + fmtBytes(raw) : ""}). ` +
-          "Keep it with your exports. It holds no photos and no messages - only the results, " +
-          "filed against each file's contents, so it still applies to next year's export.";
+        status.textContent = N("Saved what Muletto worked out about {n} file", "Saved what Muletto worked out about {n} files", n) +
+          " (" + (blob.size < raw ? T("{size}, compressed from {raw}", { size: fmtBytes(blob.size), raw: fmtBytes(raw) })
+                                  : fmtBytes(blob.size)) + "). " +
+          T("Keep it with your exports. It holds no photos and no messages - only the results, " +
+          "filed against each file's contents, so it still applies to next year's export.");
       },
 
       loadWork: async (status) => {
@@ -1841,14 +1828,14 @@ function renderLibrary(root, lib, sources, entries, demo) {
         input.accept = ".muletto,.json,.gz";
         input.addEventListener("change", async () => {
           if (!input.files.length) return;
-          status.textContent = "Reading your work file...";
+          status.textContent = T("Reading your work file...");
           try {
             const r = await MDerived.fromFile(input.files[0]);
             await MViews.loadLinks();
-            status.textContent = `Restored what Muletto had worked out about ` +
-              `${plural(r.total, "file", "files")}` +
-              (r.written ? `, saved ${fmtDate(new Date(r.written))}` : "") +
-              ". Anything that applies to what is open now will not be done again.";
+            status.textContent = N("Restored what Muletto had worked out about {n} file",
+                                   "Restored what Muletto had worked out about {n} files", r.total) +
+              (r.written ? T(", saved {date}", { date: fmtDate(new Date(r.written)) }) : "") +
+              ". " + T("Anything that applies to what is open now will not be done again.");
           } catch (e) {
             status.textContent = e.message;
           }
@@ -1867,17 +1854,17 @@ function renderLibrary(root, lib, sources, entries, demo) {
          look broken in the first place. */
       forget: async (say) => {
         const tell = (m) => { if (typeof say === "function") say(m); };
-        tell("Clearing the saved library...");
+        tell(T("Clearing the saved library..."));
         await MStore.clear();
-        tell("Clearing what was worked out...");
+        tell(T("Clearing what was worked out..."));
         await MDerived.clear();
-        tell("Releasing the pictures...");
+        tell(T("Releasing the pictures..."));
         thumbBlobs.clear();
         thumbCache.clear();
         try { sessionStorage.removeItem("muletto:open"); } catch { /* nothing kept */ }
         releaseUrls();
         current = { sources: [], lib: null, entries: null, query: "" };
-        tell("Done.");
+        tell(T("Done."));
         MExplorer.close();
         /* Back to the front page. Staying here leaves an app with nothing in
            it and a drop zone that looks like the export failed to open. The
@@ -1912,20 +1899,20 @@ function renderLibrary(root, lib, sources, entries, demo) {
   panel.innerHTML = current.demo ? `
     <div class="reopen demo-done">
       <div>
-        <strong>That was the sample data</strong>
-        <p class="muted small">Invented people, six archives, nothing saved and nothing
-        uploaded. Your own export opens the same way - and everything that was held back
-        on the demonstration works on it.</p>
+        <strong>${T("That was the sample data")}</strong>
+        <p class="muted small">${T("Invented people, six archives, nothing saved and nothing " +
+        "uploaded. Your own export opens the same way - and everything that was held back " +
+        "on the demonstration works on it.")}</p>
       </div>
-      <button class="btn primary" id="reopen-real">Open my own export</button>
+      <button class="btn primary" id="reopen-real">${T("Open my own export")}</button>
     </div>` : `
     <div class="reopen">
       <div>
-        <strong>${plural(sources.length, "export", "exports")} open</strong>
+        <strong>${N("{n} export open", "{n} exports open", sources.length)}</strong>
         <p class="muted small">${sources.map((s) => esc(s.det ? s.det.label : s.name)).join(", ")} -
-        ${plural(entries.length, "file", "files")} read on this device, none uploaded.</p>
+        ${N("{n} file read on this device, none uploaded.", "{n} files read on this device, none uploaded.", entries.length)}</p>
       </div>
-      <button class="btn primary" id="reopen">Back to your data</button>
+      <button class="btn primary" id="reopen">${T("Back to your data")}</button>
     </div>`;
   if (current.demo) {
     $("#reopen-real", panel).addEventListener("click", () => {
@@ -2090,8 +2077,8 @@ async function buildThumbs(media, say) {
           done++;
         } else failed++;
         if (say && (done % 25 === 0 || done === todo.length)) {
-          say("Preparing " + todo.length.toLocaleString() + " pictures... " +
-              done.toLocaleString() + " done");
+          say("Preparing " + todo.length.toLocaleString(LOC) + " pictures... " +
+              done.toLocaleString(LOC) + " done");
         }
         flush(false).then(() => feed(w));
       };
@@ -2178,9 +2165,9 @@ async function renderMedia(panel, lib) {
   const q = current.query;
   const pool = q ? lib.media.filter((m) => m.path.toLowerCase().includes(q)) : lib.media;
   const shown = pool.slice(0, 200);
-  if (!pool.length) { panel.innerHTML = `<p class="muted small">No photos or videos match "${esc(q)}".</p>`; return; }
+  if (!pool.length) { panel.innerHTML = `<p class="muted small">${T("No photos or videos match \"{q}\".", { q: esc(q) })}</p>`; return; }
   panel.innerHTML = `
-    <p class="muted small">${plural(pool.length, "photo or video", "photos and videos")}${q ? ` matching "${esc(q)}"` : ""}${pool.length > shown.length ? `, showing the first ${shown.length}` : ""}.</p>
+    <p class="muted small">${N("{n} photo or video", "{n} photos and videos", pool.length)}${q ? " " + T("matching \"{q}\"", { q: esc(q) }) : ""}${pool.length > shown.length ? T(", showing the first {n}", { n: shown.length }) : ""}.</p>
     <div class="thumbs">
       ${shown.map((m, i) => `
         <figure class="thumb" data-i="${i}">
@@ -2213,7 +2200,7 @@ async function renderMedia(panel, lib) {
 /* explorer.js has its own num(); this file does not, and reaching for one
    that was not there threw inside the first card and left the previous
    view on screen with the new title above it. */
-const cardNum = (n) => Number(n).toLocaleString();
+const cardNum = (n) => Number(n).toLocaleString(LOC);
 
 function sparkline(points, w, h) {
   if (points.length < 2) {
@@ -2243,13 +2230,13 @@ function barRow(label, value, max, note) {
     '<em class="bar-n">' + esc(note != null ? note : cardNum(value)) + "</em></li>";
 }
 
-const shortDate = (ms) => new Date(ms).toLocaleDateString(undefined,
+const shortDate = (ms) => new Date(ms).toLocaleDateString(LOC,
   { year: "numeric", month: "short" });
 
 function cardHtml(c) {
   const span = c.span && c.span.from
     ? '<span class="card-span">' + shortDate(c.span.from) +
-      (c.span.to - c.span.from > 86400000 ? " to " + shortDate(c.span.to) : "") + "</span>"
+      (c.span.to - c.span.from > 86400000 ? " " + T("to") + " " + shortDate(c.span.to) : "") + "</span>"
     : "";
   const head = '<header><h3>' + esc(c.title) + "</h3>" +
     (c.source ? '<span class="card-src">' + esc(c.source) + "</span>" : "") + "</header>";
@@ -2261,8 +2248,8 @@ function cardHtml(c) {
         '<span class="muted small">' + esc(c.statLabel) + "</span></div>" +
       (c.chart ? sparkline(c.points, 320, 64) : "") +
       "<footer>" +
-        (c.chart ? "<span>" + esc(c.low) + " low</span><span>" + esc(c.high) + " high</span>" : "") +
-        "<span>" + cardNum(c.n) + (c.n === 1 ? " reading" : " readings") + "</span>" +
+        (c.chart ? "<span>" + T("{v} low", { v: esc(c.low) }) + "</span><span>" + T("{v} high", { v: esc(c.high) }) + "</span>" : "") +
+        "<span>" + (c.n === 1 ? T("{n} reading", { n: cardNum(c.n) }) : T("{n} readings", { n: cardNum(c.n) })) + "</span>" +
       "</footer>" + span + "</article>";
   }
   if (c.kind === "money") {
@@ -2272,14 +2259,14 @@ function cardHtml(c) {
        two hundred that did not, and saying both is the whole difference
        between a number and a fact. */
     const where = c.rows && c.rows > c.n
-      ? "over " + cardNum(c.n) + " of " + cardNum(c.rows) + " rows"
-      : "across " + cardNum(c.n) + (c.n === 1 ? " row" : " rows");
+      ? T("over {n} of {of} rows", { n: cardNum(c.n), of: cardNum(c.rows) })
+      : (c.n === 1 ? T("across {n} row", { n: cardNum(c.n) }) : T("across {n} rows", { n: cardNum(c.n) }));
     return '<article class="card card-money">' + head +
       '<div class="card-figure"><strong>' + esc(c.stat) + "</strong>" +
         '<span class="muted small">' + esc(where) + "</span></div>" +
       (c.years.length
         ? '<ul class="bars">' + c.years.map((y) => barRow(y.label, y.n, max, MInsight.fmtNum(y.n))).join("") + "</ul>"
-        : '<p class="muted small">No dates on these, so they cannot be split by year.</p>') +
+        : '<p class="muted small">' + T("No dates on these, so they cannot be split by year.") + '</p>') +
       span + "</article>";
   }
   if (c.kind === "facts") {
@@ -2287,7 +2274,7 @@ function cardHtml(c) {
       '<dl>' + c.facts.map(([k, v]) =>
         "<dt>" + esc(k) + '</dt><dd title="' + esc(String(v).slice(0, 400)) + '">' +
         esc(v) + "</dd>").join("") + "</dl>" +
-      (c.n > c.facts.length ? '<p class="muted small">' + cardNum(c.n - c.facts.length) + " more</p>" : "") +
+      (c.n > c.facts.length ? '<p class="muted small">' + T("{n} more", { n: cardNum(c.n - c.facts.length) }) + "</p>" : "") +
       "</article>";
   }
   if (c.kind === "rank") {
@@ -2295,7 +2282,7 @@ function cardHtml(c) {
     return '<article class="card card-rank">' + head +
       (c.subtitle ? '<p class="muted small">' + esc(c.subtitle) + "</p>" : "") +
       '<ul class="bars">' + c.bars.map((b) => barRow(b.label, b.n, max)).join("") + "</ul>" +
-      '<footer><span>' + cardNum(c.n) + " rows</span></footer>" + span + "</article>";
+      '<footer><span>' + (c.n === 1 ? T("{n} row", { n: cardNum(c.n) }) : T("{n} rows", { n: cardNum(c.n) })) + "</span></footer>" + span + "</article>";
   }
   if (c.kind === "list") {
     /* "16 more" with nothing to click was a card telling the reader what it
@@ -2312,11 +2299,11 @@ function cardHtml(c) {
       "</ol>" +
       (rest.length
         ? '<footer><button type="button" class="card-more linklike" data-n="' + rest.length + '">' +
-          "Show " + cardNum(rest.length) + " more</button></footer>"
+          T("Show {n} more", { n: cardNum(rest.length) }) + "</button></footer>"
         : "") +
       (hiddenInFile > 0
-        ? '<footer><span class="muted">' + cardNum(hiddenInFile) +
-          " more are in the table, under Records.</span></footer>" : "") +
+        ? '<footer><span class="muted">' + T("{n} more are in the table, under Records.", { n: cardNum(hiddenInFile) }) +
+          "</span></footer>" : "") +
       span + "</article>";
   }
   if (c.kind === "other") {
@@ -2375,21 +2362,21 @@ function coverageHtml(lib, want) {
       '<li class="cov' + (on ? " on" : " off") + '">' +
         "<h4>" + esc(svc.name) + "</h4>" +
         "<p>" + esc(svc.holds) + "</p>" +
-        (!on && svc.needs ? '<p class="cov-need">Needs ' + esc(svc.needs) + "</p>" : "") +
+        (!on && svc.needs ? '<p class="cov-need">' + T("Needs {what}", { what: esc(T(svc.needs)) }) + "</p>" : "") +
         (!on && svc.unknownName
-          ? '<p class="cov-need">Samsung has not published a name for this archive, so we ' +
-            "cannot tell whether yours arrived.</p>" : "") +
+          ? '<p class="cov-need">' + T("Samsung has not published a name for this archive, so we " +
+            "cannot tell whether yours arrived.") + "</p>" : "") +
         (svc.note ? '<p class="cov-need">' + esc(svc.note) + "</p>" : "") +
       "</li>";
 
     const wantServices = want !== "groups";
     const wantGroups = want !== "services";
     out += '<section class="cov-block">' + (!wantServices ? "" :
-      "<h3>" + esc(c.label) + " sent " + c.found.length + " of " +
-        (c.found.length + c.absent.length) + " services</h3>" +
-      '<p class="muted small">A service that holds nothing for you is left out of the export ' +
+      "<h3>" + T("{who} sent {n} of {of} services", { who: esc(c.label), n: c.found.length,
+        of: c.found.length + c.absent.length }) + "</h3>" +
+      '<p class="muted small">' + T("A service that holds nothing for you is left out of the export " +
         "entirely, so this is the only place it shows up. Greyed means it was not in " +
-        "what you opened.</p>" +
+        "what you opened.") + "</p>" +
       '<ul class="cov-grid">' +
         c.found.map((x) => tile(x, true)).join("") +
         c.absent.map((x) => tile(x, false)).join("") +
@@ -2398,11 +2385,11 @@ function coverageHtml(lib, want) {
     for (const g of (wantGroups ? c.groups : [])) {
       const have = g.items.filter((i) => i.found).length;
       out += '<div class="cov-sub' + (g.active ? "" : " off") + '">' +
-        "<h4>" + esc(g.title) + " - " + have + " of " + g.items.length + "</h4>" +
+        "<h4>" + esc(T(g.title)) + " - " + T("{n} of {of}", { n: have, of: g.items.length }) + "</h4>" +
         '<p class="muted small">' + esc(g.blurb) + "</p>" +
         '<ul class="cov-chips">' + g.items.map((i) =>
           '<li class="' + (i.found ? "on" : "off") + '" title="' +
-            esc(i.holds + (i.needs && !i.found ? " Needs " + i.needs : "")) + '">' +
+            esc(T(i.holds) + (i.needs && !i.found ? " " + T("Needs {what}", { what: T(i.needs) }) : "")) + '">' +
             esc(i.name) + "</li>").join("") + "</ul></div>";
     }
     out += "</section>";
@@ -2434,10 +2421,10 @@ function renderHighlights(panel, lib) {
   const cards = (typeof MInsight !== "undefined" ? MInsight.build(tables) : []);
   const cover = coverageHtml(lib, "services");
   if (!cards.length && !cover) {
-    panel.innerHTML = '<div class="ex-empty"><h3>Nothing to summarise yet</h3>' +
-      '<p class="muted">This is where the records an export ships get turned into ' +
+    panel.innerHTML = '<div class="ex-empty"><h3>' + T("Nothing to summarise yet") + "</h3>" +
+      '<p class="muted">' + T("This is where the records an export ships get turned into " +
       "something readable - what you measured, what you bought, what you saved. " +
-      "Nothing in this library shipped tables of that kind.</p></div>";
+      "Nothing in this library shipped tables of that kind.") + "</p></div>";
     return;
   }
   panel.innerHTML = cover + '<div class="cards">' + cards.map(cardHtml).join("") + "</div>";
@@ -2458,8 +2445,8 @@ document.addEventListener("click", (ev) => {
   if (!rest) return;
   rest.hidden = !rest.hidden;
   btn.textContent = rest.hidden
-    ? "Show " + cardNum(Number(btn.dataset.n)) + " more"
-    : "Show fewer";
+    ? T("Show {n} more", { n: cardNum(Number(btn.dataset.n)) })
+    : T("Show fewer");
 });
 
 /* A cell that is not a string.
@@ -2549,9 +2536,9 @@ function readableOrder(columns) {
 function renderTables(panel, lib) {
   learnVideoTitles(lib);
   if (!lib.tables.length) {
-    panel.innerHTML = `<div class="ex-empty"><h3>No record tables here</h3>
-      <p class="muted">These are the spreadsheets and lists an export ships - purchases,
-      login history, subscriptions. Not every service includes them.</p></div>`;
+    panel.innerHTML = `<div class="ex-empty"><h3>${T("No record tables here")}</h3>
+      <p class="muted">${T("These are the spreadsheets and lists an export ships - purchases, " +
+      "login history, subscriptions. Not every service includes them.")}</p></div>`;
     return;
   }
   panel.innerHTML = `
@@ -2565,9 +2552,9 @@ function renderTables(panel, lib) {
     const rows = t.rows.slice(0, 200);
     const ord = readableOrder(t.columns);
     const from = t.fromFiles > 1
-      ? ` Joined from ${plural(t.fromFiles, "file", "files")} the export split it across.` : "";
+      ? " " + N("Joined from {n} file the export split it across.", "Joined from {n} files the export split it across.", t.fromFiles) : "";
     box.innerHTML = `
-      <p class="muted small">${plural(t.rows.length, "row", "rows")}${t.rows.length > rows.length ? `, showing 200` : ""}.${from}</p>
+      <p class="muted small">${N("{n} row", "{n} rows", t.rows.length)}${t.rows.length > rows.length ? T(", showing 200") : ""}.${from}</p>
       <div class="tablewrap"><table>
         <thead><tr>${ord.map((ci) => `<th>${esc(t.columns[ci])}</th>`).join("")}</tr></thead>
         <tbody>${rows.map((r) => `<tr>${ord.map((ci) => {
@@ -2596,16 +2583,16 @@ function renderTables(panel, lib) {
 
 function renderFiles(panel, entries) {
   if (!entries.length) {
-    panel.innerHTML = `<div class="ex-empty"><h3>No files to list</h3>
-      <p class="muted">Nothing in the archives matches what you are looking at.</p></div>`;
+    panel.innerHTML = `<div class="ex-empty"><h3>${T("No files to list")}</h3>
+      <p class="muted">${T("Nothing in the archives matches what you are looking at.")}</p></div>`;
     return;
   }
   const q = current.query;
   const pool = q ? entries.filter((e) => e.name.toLowerCase().includes(q)) : entries;
   const rows = [...pool].sort((a, b) => b.size - a.size).slice(0, 500);
-  if (!pool.length) { panel.innerHTML = `<p class="muted small">No files match "${esc(q)}".</p>`; return; }
+  if (!pool.length) { panel.innerHTML = `<p class="muted small">${T("No files match \"{q}\".", { q: esc(q) })}</p>`; return; }
   panel.innerHTML = `
-    <p class="muted small">${plural(pool.length, "file", "files")}${q ? ` matching "${esc(q)}"` : ""}${pool.length > rows.length ? ", showing the 500 largest" : ""}. Click one to look at it.</p>
+    <p class="muted small">${N("{n} file", "{n} files", pool.length)}${q ? " " + T("matching \"{q}\"", { q: esc(q) }) : ""}${pool.length > rows.length ? T(", showing the 500 largest") : ""}. ${T("Click one to look at it.")}</p>
     <div class="filelist">
       ${rows.map((e, i) => `<div class="fl-row" data-i="${i}"><span class="fl-name">${esc(e.name)}${SNIFF_LABEL[e.sniffedAs] ? `<em class="fl-kind">${SNIFF_LABEL[e.sniffedAs]}</em>` : ""}<i class="fl-go">${FL_ARROW}</i></span><span class="sz">${fmtBytes(e.size)}</span></div>`).join("")}
     </div>`;
@@ -2635,8 +2622,8 @@ function renderFiles(panel, entries) {
       } catch (err) {
         const box = MExplorer.showPanel(entry.name.split("/").pop(), entry.name, "note");
         if (box) {
-          box.innerHTML = '<p class="muted small">That would not open: ' +
-            esc(String((err && err.message) || err)) + "</p>";
+          box.innerHTML = '<p class="muted small">' + T("That would not open: {why}",
+            { why: esc(String((err && err.message) || err)) }) + "</p>";
         }
       }
       row.classList.remove("fl-busy");
@@ -2650,12 +2637,12 @@ function renderFiles(panel, entries) {
     const where = [fmtBytes(entry.size), entry.name].filter(Boolean).join(" - ");
     const box = MExplorer.showPanel(name, where, "note");
     if (!box) return;
-    box.innerHTML = '<p class="muted small">Reading...</p>';
+    box.innerHTML = '<p class="muted small">' + T("Reading...") + "</p>";
     try {
       box.innerHTML = await previewHtml(entry);
     } catch (err) {
-      box.innerHTML = '<p class="muted small">That would not open: ' +
-        esc(String((err && err.message) || err)) + "</p>";
+      box.innerHTML = '<p class="muted small">' + T("That would not open: {why}",
+        { why: esc(String((err && err.message) || err)) }) + "</p>";
     }
   });
 }
@@ -2683,7 +2670,7 @@ const FL_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
 const INLINE_SNIFFED = new Set(["webpage", "mbox"]);
 /* Samsung names a saved page hashCode1539051287 and gives it no extension, so
    the only way anybody learns what it is, is if the row says so. */
-const SNIFF_LABEL = { webpage: "saved web page", mbox: "mail" };
+const SNIFF_LABEL = { webpage: T("saved web page"), mbox: T("mail") };
 
 /* A saved web page, actually shown as one.
  *
@@ -2743,7 +2730,7 @@ const INLINE_EXT = new RegExp("\\.(jpe?g|png|gif|webp|bmp|avif|heic|heif|" +
 
 async function previewHtml(entry) {
   const src = current.sources[entry.src || 0];
-  if (!src || !src.file) return '<p class="muted small">That archive is no longer open.</p>';
+  if (!src || !src.file) return '<p class="muted small">' + T("That archive is no longer open.") + "</p>";
   const name = entry.name.split("/").pop();
   const ext = (name.split(".").pop() || "").toLowerCase();
 
@@ -2780,25 +2767,25 @@ async function previewHtml(entry) {
     const subject = ((/^subject:\s*(.+)$/im.exec(raw.slice(0, 2000)) || [])[1] || "").trim();
     const when = ((/^date:\s*(.+)$/im.exec(raw.slice(0, 2000)) || [])[1] || "").trim();
     const html = mhtmlHtml(raw);
-    const head = '<p class="muted small">A web page you saved in your browser' +
-      (when ? " on " + esc(when) : "") + ", shown from the archive.</p>";
+    const head = '<p class="muted small">' + (when
+      ? T("A web page you saved in your browser on {when}, shown from the archive.", { when: esc(when) })
+      : T("A web page you saved in your browser, shown from the archive.")) + "</p>";
     if (!html) {
-      return head + '<p class="muted small">The page itself could not be pulled ' +
-        "out of the file.</p>";
+      return head + '<p class="muted small">' + T("The page itself could not be pulled out of the file.") + "</p>";
     }
     return (subject ? "<h4>" + esc(subject) + "</h4>" : "") + head +
       '<div class="fl-page">' +
       (typeof MTopics !== "undefined" && MTopics.safeHtml
-        ? MTopics.safeHtml(html, "They were saved inside this file, which is not " +
-            "unpacked here - nothing was requested from the web to show this.")
+        ? MTopics.safeHtml(html, T("They were saved inside this file, which is not " +
+            "unpacked here - nothing was requested from the web to show this."))
         : '<pre class="fl-text">' + esc(html.slice(0, 100000)) + "</pre>") +
       "</div>";
   }
 
   if (TEXTY.includes(ext) || entry.sniffedAs === "mbox") {
     if ((entry.size || 0) > PREVIEW_MAX) {
-      return '<p class="muted small">' + esc(fmtBytes(entry.size)) +
-        " of text, which is more than is worth putting on screen at once.</p>";
+      return '<p class="muted small">' + T("{size} of text, which is more than is worth putting on screen at once.",
+        { size: esc(fmtBytes(entry.size)) }) + "</p>";
     }
     let text = await MZip.extractText(src.file, entry);
     if (ext === "json") {
@@ -2808,14 +2795,13 @@ async function previewHtml(entry) {
     }
     if (typeof MMoji !== "undefined" && MMoji.repair) text = MMoji.repair(text) || text;
     return '<pre class="fl-text">' + esc(text.slice(0, 200000)) +
-      (text.length > 200000 ? "\n\n... cut here" : "") + "</pre>";
+      (text.length > 200000 ? "\n\n... " + T("cut here") : "") + "</pre>";
   }
 
   /* Unreachable in practice - the caller opens anything not on the inline
      list in its own tab before getting here - but a kind that slips through
      should say so rather than show an empty box. */
-  return '<p class="muted small">Nothing here can draw a <code>.' + esc(ext) +
-    "</code>.</p>";
+  return '<p class="muted small">' + T("Nothing here can draw a <code>.{ext}</code>.", { ext: esc(ext) }) + "</p>";
 }
 
 /* ---------- Wiring ---------- */
@@ -2851,7 +2837,7 @@ async function loadSamples(btn) {
      button and only raising the curtain once handleFiles started meant a second
      of a page that looked like it had ignored the click, followed by a curtain
      that flashed past. The click is the moment to answer. */
-  showCurtain("Fetching the sample exports...");
+  showCurtain(T("Fetching the sample exports..."));
   try {
     const files = [];
     for (const name of SAMPLES) {
@@ -2876,9 +2862,13 @@ async function loadSamples(btn) {
         res = await fetch(HERE + "samples/" + name + (SAMPLES_V ? "?v=" + SAMPLES_V : ""),
                           { cache: "no-cache" });
       } catch (err) {
-        throw new Error(navigator.onLine ? SAY.sampleFetch : SAY.sampleOffline);
+        throw new Error(navigator.onLine ? T("The sample exports could not be fetched.") :
+          T("The samples are the one part of this page that has to be downloaded, " +
+            "and you are offline. Your own export needs no connection - drop it in " +
+            "and it opens. Or reconnect for a moment to fetch the samples, after " +
+            "which they work offline too."));
       }
-      if (!res.ok) throw new Error(SAY.sampleMissing + name);
+      if (!res.ok) throw new Error(T("Missing sample file {name}", { name }));
       files.push(new File([await res.blob()], name));
     }
     await handleFiles(files, { demo: true });
@@ -2886,14 +2876,16 @@ async function loadSamples(btn) {
     if (out) {
       const note = document.createElement("div");
       note.className = "note";
-      note.innerHTML = SAY.sampleNote;
+      note.innerHTML = T("These are <strong>sample exports</strong>, not your data - six small archives " +
+        "shaped like the real thing. The same photo appears in more than one of them, which is what the " +
+        "duplicate and similar-photo tools are finding.");
       out.insertBefore(note, out.firstChild.nextSibling);
     }
   } catch (e) {
     // The curtain is raised before the first fetch now, so a failure here has
     // to take it back down - otherwise the page is stuck behind it.
     hideCurtain();
-    btn.textContent = "Sample data could not be loaded.";
+    btn.textContent = T("Sample data could not be loaded.");
     btn.disabled = false;
     return;
   }
@@ -2928,12 +2920,12 @@ function closeOpenerOnMobile() {
   if (!drop || !isHandheld()) return false;
   drop.classList.add("drop-off");
   drop.innerHTML =
-    "<p><strong>Opening an export needs a computer</strong></p>" +
-    "<p class=\"small\">These archives run to tens of gigabytes, and a phone browser " +
+    "<p><strong>" + T("Opening an export needs a computer") + "</strong></p>" +
+    "<p class='small'>" + T("These archives run to tens of gigabytes, and a phone browser " +
     "runs out of memory long before it finishes reading one. Phones also cannot write a " +
-    "library back out to a folder, which is the point of the exercise.</p>" +
-    "<p class=\"small\">The guides below work perfectly well here, and this is a good place " +
-    "to read them while you wait for an export to arrive. Come back on a laptop to open it.</p>";
+    "library back out to a folder, which is the point of the exercise.") + "</p>" +
+    "<p class='small'>" + T("The guides below work perfectly well here, and this is a good place " +
+    "to read them while you wait for an export to arrive. Come back on a laptop to open it.") + "</p>";
   // Nothing to click, and nothing to pick a file with.
   const input = $("#file");
   if (input) input.remove();
@@ -2988,13 +2980,13 @@ async function offerResume() {
   slot.className = "resume-card";
   slot.innerHTML = `
     <div>
-      <strong>You have a save in progress.</strong>
+      <strong>${T("You have a save in progress.")}</strong>
       <div class="muted small">${esc(job.fileNames.join(", "))} &middot;
-        ${job.done.length.toLocaleString()} of ${job.total.toLocaleString()} files already written.</div>
+        ${T("{n} of {of} files already written.", { n: job.done.length.toLocaleString(LOC), of: job.total.toLocaleString(LOC) })}</div>
     </div>
     <div class="tool-actions">
-      <button class="btn primary" id="resume-go">Continue saving</button>
-      <button class="btn ghost" id="resume-drop">Discard</button>
+      <button class="btn primary" id="resume-go">${T("Continue saving")}</button>
+      <button class="btn ghost" id="resume-drop">${T("Discard")}</button>
     </div>`;
 
   $("#resume-drop", slot).addEventListener("click", async () => {
@@ -3006,18 +2998,18 @@ async function offerResume() {
     const btn = $("#resume-go", slot);
     btn.disabled = true;
     if (!(await MJobs.sourcesReadable(job))) {
-      slot.innerHTML = `<div class="muted small">Those export files have moved or been deleted since,
-        so this cannot be continued automatically. Open them again below and the already-saved files
-        will still be skipped.</div>`;
+      slot.innerHTML = `<div class="muted small">${T("Those export files have moved or been deleted since, " +
+        "so this cannot be continued automatically. Open them again below and the already-saved files " +
+        "will still be skipped.")}</div>`;
       return;
     }
     slot.hidden = true;
     await handleFiles(job.sources);
     // #save-status went with the old tab strip; this said nothing for a while.
-    MNotify.push("Ready to continue", {
+    MNotify.push(T("Ready to continue"), {
       kind: "done",
-      body: "Choose Export, and the files already written will be skipped.",
-      action: "Export",
+      body: T("Choose Export, and the files already written will be skipped."),
+      action: T("Export"),
       goto: () => { const b = document.getElementById("ex-save"); if (b) b.click(); },
     });
   });
@@ -3034,7 +3026,7 @@ function markExportOpen(sources, entries) {
       sources: sources.length,
       files: entries.length,
       label: sources.length === 1 ? (sources[0].det ? sources[0].det.label : sources[0].name)
-        : sources.length + " exports",
+        : N("{n} export", "{n} exports", sources.length),
     }));
   } catch { /* private mode; the nav item just will not appear */ }
   addExploreLink();
@@ -3048,9 +3040,11 @@ function addExploreLink() {
     if (nav.querySelector(".nav-explore")) return;
     const a = document.createElement("a");
     a.className = "nav-explore";
-    a.href = "app.html";
-    a.innerHTML = '<span class="dot"></span>Your data';
-    a.title = info.label + ", " + info.files.toLocaleString() + " files open in this tab";
+    /* From the site root, not from the page: a bare "app.html" on a guide
+       page pointed at /guides/app.html, which does not exist. */
+    a.href = HERE + (MI18N.LANG === "nb" ? "no/app.html" : "app.html");
+    a.innerHTML = '<span class="dot"></span>' + T("Your data");
+    a.title = T("{label}, {n} files open in this tab", { label: info.label, n: info.files.toLocaleString(LOC) });
     nav.appendChild(a);
   });
 }
@@ -3089,14 +3083,14 @@ async function offerLibrary() {
   slot.className = "resume-card";
   slot.innerHTML = `
     <div>
-      <strong>You had an export open here${when ? " on " + esc(when) : ""}.</strong>
-      <div class="muted small">${esc(label)}${bytes ? " &middot; " + esc(fmtBytes(bytes)) : ""}${
-        reread ? " &middot; would be read again from the same files, which takes a few minutes"
-               : " &middot; picks up in a moment"}</div>
+      <strong>${when ? T("You had an export open here on {when}.", { when: esc(when) }) : T("You had an export open here.")}</strong>
+      <div class="muted small">${esc(label)}${bytes ? " &middot; " + esc(fmtBytes(bytes)) : ""} &middot; ${
+        reread ? T("would be read again from the same files, which takes a few minutes")
+               : T("picks up in a moment")}</div>
     </div>
     <div class="tool-actions">
-      <button class="btn primary" id="restore-go">${reread ? "Read it again" : "Pick up where I left off"}</button>
-      <button class="btn ghost" id="restore-drop">Start fresh</button>
+      <button class="btn primary" id="restore-go">${reread ? T("Read it again") : T("Pick up where I left off")}</button>
+      <button class="btn ghost" id="restore-drop">${T("Start fresh")}</button>
     </div>`;
 
   $("#restore-drop", slot).addEventListener("click", async () => {
@@ -3118,7 +3112,7 @@ async function restoreLibrary(saved) {
   const out = $("#import-result");
   out.hidden = false;
 
-  showCurtain("Picking up where you left off...");
+  showCurtain(T("Picking up where you left off..."));
 
   // Rebuilt from the parts, exactly as a fresh open would, so a restored
   // library and a newly opened one behave identically from here on.
@@ -3136,12 +3130,12 @@ async function restoreLibrary(saved) {
 
   const note = [];
   if (saved.savedAt) {
-    note.push("Opened again from this device - last used " + fmtDate(new Date(saved.savedAt)) + ".");
+    note.push(T("Opened again from this device - last used {date}.", { date: fmtDate(new Date(saved.savedAt)) }));
   }
   if (saved.missing && saved.missing.length) {
-    note.push(plural(saved.missing.length, "archive has", "archives have") +
-      " been moved or deleted since (" + saved.missing.map(esc).join(", ") +
-      "), so pictures from " + (saved.missing.length === 1 ? "it" : "them") + " cannot be shown.");
+    note.push(N("{n} archive has been moved or deleted since ({names}), so pictures from it cannot be shown.",
+      "{n} archives have been moved or deleted since ({names}), so pictures from them cannot be shown.",
+      saved.missing.length, { names: saved.missing.map(esc).join(", ") }));
   }
   if (note.length) MExplorer.status(note.join(" "));
   return true;
@@ -3165,11 +3159,14 @@ function noteReopenNeeded() {
   const many = (info.sources || 1) > 1;
   const note = document.createElement("div");
   note.className = "note reopen-note";
-  note.innerHTML = "You had <strong>" + esc(info.label) + "</strong> open, and " +
-    (many ? "they" : "it") + " could not be reopened - the " +
-    (many ? "archives were" : "archive was") + " most likely moved, renamed or deleted, or this " +
-    "browser cleared its storage. Choose " + (many ? "them" : "it") + " again and everything " +
-    "Muletto already worked out still applies.";
+  const lv = { label: esc(info.label) };
+  note.innerHTML = many
+    ? T("You had <strong>{label}</strong> open, and they could not be reopened - the archives were " +
+      "most likely moved, renamed or deleted, or this browser cleared its storage. Choose them again " +
+      "and everything Muletto already worked out still applies.", lv)
+    : T("You had <strong>{label}</strong> open, and it could not be reopened - the archive was " +
+      "most likely moved, renamed or deleted, or this browser cleared its storage. Choose it again " +
+      "and everything Muletto already worked out still applies.", lv);
   drop.parentNode.insertBefore(note, drop);
 }
 
@@ -3200,10 +3197,10 @@ if ($("#resume")) offerResume();
   if (!flag) return;
   try { sessionStorage.removeItem("muletto:forgot"); } catch { /* fine */ }
   if (typeof MNotify === "undefined") return;
-  MNotify.push("Everything was forgotten", {
+  MNotify.push(T("Everything was forgotten"), {
     kind: "ok",
-    body: "The comparisons, the repaired dates, the descriptions and the small copies are " +
-      "cleared from this browser. Your exports are untouched, wherever you keep them.",
+    body: T("The comparisons, the repaired dates, the descriptions and the small copies are " +
+      "cleared from this browser. Your exports are untouched, wherever you keep them."),
   });
 })();
 if (document.querySelector("[data-icon]")) hydrateIcons();

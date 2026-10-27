@@ -11,8 +11,7 @@
 (function (global) {
   "use strict";
 
-  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const MONTHS = MI18N.months("short");
 
   /* How far the magnification reaches, in marks, and how much it lifts. A
      narrow falloff feels twitchy; a wide one makes everything the same size. */
