@@ -2362,7 +2362,7 @@ function coverageHtml(lib, want) {
       '<li class="cov' + (on ? " on" : " off") + '">' +
         "<h4>" + esc(svc.name) + "</h4>" +
         "<p>" + esc(svc.holds) + "</p>" +
-        (!on && svc.needs ? '<p class="cov-need">' + T("Needs {what}", { what: esc(T(svc.needs)) }) + "</p>" : "") +
+        (!on && svc.needs ? '<p class="cov-need">' + T("Needs {what}", { what: esc(svc.needs) }) + "</p>" : "") +
         (!on && svc.unknownName
           ? '<p class="cov-need">' + T("Samsung has not published a name for this archive, so we " +
             "cannot tell whether yours arrived.") + "</p>" : "") +
@@ -2385,11 +2385,11 @@ function coverageHtml(lib, want) {
     for (const g of (wantGroups ? c.groups : [])) {
       const have = g.items.filter((i) => i.found).length;
       out += '<div class="cov-sub' + (g.active ? "" : " off") + '">' +
-        "<h4>" + esc(T(g.title)) + " - " + T("{n} of {of}", { n: have, of: g.items.length }) + "</h4>" +
+        "<h4>" + esc(g.title) + " - " + T("{n} of {of}", { n: have, of: g.items.length }) + "</h4>" +
         '<p class="muted small">' + esc(g.blurb) + "</p>" +
         '<ul class="cov-chips">' + g.items.map((i) =>
           '<li class="' + (i.found ? "on" : "off") + '" title="' +
-            esc(T(i.holds) + (i.needs && !i.found ? " " + T("Needs {what}", { what: T(i.needs) }) : "")) + '">' +
+            esc(i.holds + (i.needs && !i.found ? " " + T("Needs {what}", { what: i.needs }) : "")) + '">' +
             esc(i.name) + "</li>").join("") + "</ul></div>";
     }
     out += "</section>";

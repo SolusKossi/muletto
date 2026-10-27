@@ -157,17 +157,17 @@ const MTopics = (function () {
 
   function unsupportedNote(tables) {
     const unknown = [...new Set(tables.filter((t) => !PARSED[slugOf(t)])
-      .map((t) => t.srcLabel || "this export"))];
+      .map((t) => t.srcLabel || T("this export")))];
     if (!unknown.length) return "";
     return '<div class="tp-warn">' +
-      "<b>" + esc(unknown.join(", ")) +
-      (unknown.length === 1 ? " is" : " are") +
-      " not read in a tailored way yet.</b>" +
-      "<p>Everything is shown, as the export wrote it, and some of it may look raw or arrive " +
+      "<b>" + (unknown.length === 1
+        ? T("{who} is not read in a tailored way yet.", { who: esc(unknown.join(", ")) })
+        : T("{who} are not read in a tailored way yet.", { who: esc(unknown.join(", ")) })) + "</b>" +
+      "<p>" + T("Everything is shown, as the export wrote it, and some of it may look raw or arrive " +
       "in the wrong order. Nothing is missing and nothing has been altered - we simply have " +
-      "not taught it this format.</p>" +
+      "not taught it this format.") + "</p>" +
       '<button type="button" class="btn secondary sm" id="tp-help" data-provider="' +
-        esc(unknown.join(", ")) + '">Help us support it</button>' +
+        esc(unknown.join(", ")) + '">' + T("Help us support it") + "</button>" +
       "</div>";
   }
 
@@ -237,7 +237,7 @@ const MTopics = (function () {
     const at = who.handle ? "@" + who.handle.replace(/^@/, "") : "";
     const author = '<div class="cmt-who">' +
       '<span class="cmt-pfp" aria-hidden="true">' + esc(initial) + "</span>" +
-      "<b>" + esc(who.name || at || "You") + "</b>" +
+      "<b>" + esc(who.name || at || T("You")) + "</b>" +
       (at && who.name ? '<span class="cmt-at">' + esc(at) + "</span>" : "") +
       "</div>";
 
@@ -277,8 +277,8 @@ const MTopics = (function () {
           (c.at ? "<time>" + esc(shortDate(c.at)) + "</time>" : "") +
           (YT_ID.test(c.video)
             ? ' <a href="https://www.youtube.com/watch?v=' + encodeURIComponent(c.video) +
-              '" target="_blank" rel="noopener noreferrer nofollow">Watch the video</a>' : "") +
-          (reply.length ? " <em>" + plural(reply.length, "reply", "replies") + "</em>" : "") +
+              '" target="_blank" rel="noopener noreferrer nofollow">' + T("Watch the video") + "</a>" : "") +
+          (reply.length ? " <em>" + N("{n} reply", "{n} replies", reply.length) + "</em>" : "") +
         "</div>" +
         (reply.length ? '<ol class="cmt-kids">' + reply.map((k) => one(k, depth + 1)).join("") + "</ol>" : "") +
         "</li>";
@@ -290,27 +290,26 @@ const MTopics = (function () {
     el.innerHTML =
       unsupportedNote(match.map((m) => m.table)) +
       '<div class="tp-stats">' +
-        '<div><b>' + num(all.length) + "</b><span>comments</span></div>" +
-        (videos ? '<div><b>' + num(videos) + "</b><span>videos commented on</span></div>" : "") +
-        (from ? '<div><b>' + esc(shortDate(from)) + " to " + esc(shortDate(to)) +
-                "</b><span>from first to last</span></div>" : "") +
+        '<div><b>' + num(all.length) + "</b><span>" + T("comments") + "</span></div>" +
+        (videos ? '<div><b>' + num(videos) + "</b><span>" + T("videos commented on") + "</span></div>" : "") +
+        (from ? '<div><b>' + T("{from} to {to}", { from: esc(shortDate(from)), to: esc(shortDate(to)) }) +
+                "</b><span>" + T("from first to last") + "</span></div>" : "") +
       "</div>" +
       (orphans
         ? '<p class="muted small">' +
-          (orphans === 1
-            ? "1 reply is shown on its own, because the comment it answered is not in this export."
-            : num(orphans) + " replies are shown on their own, because the comments they " +
-              "answered are not in this export.") +
-          " Nothing has been dropped.</p>"
+          N("{n} reply is shown on its own, because the comment it answered is not in this export.",
+            "{n} replies are shown on their own, because the comments they answered are not in this export.",
+            orphans) + " " + T("Nothing has been dropped.") + "</p>"
         : "") +
       (withVideo < all.length && withVideo
-        ? '<p class="muted small">' + plural(all.length - withVideo, "comment does", "comments do") +
-          " not say which video they belong to. The export does not record it.</p>"
+        ? '<p class="muted small">' + N("{n} comment does not say which video it belongs to.",
+            "{n} comments do not say which video they belong to.", all.length - withVideo) +
+          " " + T("The export does not record it.") + "</p>"
         : "") +
       '<ol class="cmt-list">' + shown.map((c) => one(c, 0)).join("") + "</ol>" +
       (roots.length > shown.length
-        ? '<p class="muted small">Showing the newest ' + num(shown.length) + " of " +
-          num(roots.length) + ". The rest are under Records.</p>"
+        ? '<p class="muted small">' + T("Showing the newest {n} of {of}. The rest are under Records.",
+          { n: num(shown.length), of: num(roots.length) }) + "</p>"
         : "");
   }
 
@@ -444,11 +443,11 @@ const MTopics = (function () {
   };
 
   const FAMILY = [
-    { key: "move", name: "Movement", holds: "Activity and workouts", icon: "activity" },
-    { key: "rest", name: "Recovery", holds: "Sleep and stress", icon: "clock" },
-    { key: "body", name: "Body", holds: "Vitals and composition", icon: "heart" },
-    { key: "gait", name: "Walking and balance", holds: "How you move, not how much", icon: "route" },
-    { key: "log",  name: "Logged by hand", holds: "Meals, drinks and badges", icon: "note" },
+    { key: "move", name: T("Movement"), holds: T("Activity and workouts"), icon: "activity" },
+    { key: "rest", name: T("Recovery"), holds: T("Sleep and stress"), icon: "clock" },
+    { key: "body", name: T("Body"), holds: T("Vitals and composition"), icon: "heart" },
+    { key: "gait", name: T("Walking and balance"), holds: T("How you move, not how much"), icon: "route" },
+    { key: "log",  name: T("Logged by hand"), holds: T("Meals, drinks and badges"), icon: "note" },
   ];
 
   /* What the numbers did between the two ends of the record.
@@ -495,7 +494,7 @@ const MTopics = (function () {
   const spanWords = (pts) => {
     if (!pts || pts.length < 2) return "";
     const a = new Date(pts[0].t), b = new Date(pts[pts.length - 1].t);
-    return shortDate(a) + " to " + shortDate(b);
+    return T("{from} to {to}", { from: shortDate(a), to: shortDate(b) });
   };
 
   const mean = (pts) => (pts.length
@@ -505,7 +504,7 @@ const MTopics = (function () {
      minutes and the figure "413" means nothing to anybody. */
   const asHours = (mins) => {
     const h = Math.floor(mins / 60), m = Math.round(mins - h * 60);
-    return h + "h " + String(m).padStart(2, "0") + "m";
+    return T("{h}h {m}m", { h, m: String(m).padStart(2, "0") });
   };
 
   /* What a chart needs in order to say its own numbers out loud. Sleep is
@@ -598,8 +597,9 @@ const MTopics = (function () {
         .filter((s) => s.trend && !s.trend.steady)
         .sort((a, b) => Math.abs(b.trend.pct) - Math.abs(a.trend.pct))
         .slice(0, 2)
-        .map((s) => '<span class="hh-pill">' + esc(s.kind.name) + " " +
-          (s.trend.up ? "up" : "down") + " " + Math.abs(s.trend.pct) + "%</span>")
+        .map((s) => '<span class="hh-pill">' + (s.trend.up
+          ? T("{what} up {pct}%", { what: esc(s.kind.name), pct: Math.abs(s.trend.pct) })
+          : T("{what} down {pct}%", { what: esc(s.kind.name), pct: Math.abs(s.trend.pct) })) + "</span>")
         .join("");
       rows.push(
         '<div class="hh-row">' +
@@ -625,9 +625,11 @@ const MTopics = (function () {
     }
 
     return '<div class="hh">' +
-      '<header class="hh-head"><h2>Health, over time</h2>' +
-      '<p class="muted">' + (years ? esc(plural(years, "year", "years")) + " of " : "") +
-      "readings, taken by your own devices and kept together here.</p></header>" +
+      '<header class="hh-head"><h2>' + T("Health, over time") + "</h2>" +
+      '<p class="muted">' + (years
+        ? N("{n} year of readings, taken by your own devices and kept together here.",
+            "{n} years of readings, taken by your own devices and kept together here.", years)
+        : T("Readings, taken by your own devices and kept together here.")) + "</p></header>" +
       (axis ? '<div class="hh-axis">' + axis + "</div>" : "") +
       '<div class="hh-rows">' + rows.join("") + "</div>" +
       standoutHtml(signal) +
@@ -665,15 +667,17 @@ const MTopics = (function () {
       .sort((a, b) => Math.abs(b.trend.pct) - Math.abs(a.trend.pct))
       .slice(0, 3);
     if (!movers.length) return "";
-    return '<div class="hh-stand"><h3>What stands out</h3><div class="hh-cards">' +
+    return '<div class="hh-stand"><h3>' + T("What stands out") + '</h3><div class="hh-cards">' +
       movers.map((s) => {
         const t = s.trend, u = s.series.unit ? " " + s.series.unit : "";
         return '<article class="hh-card">' +
           '<i data-icon="' + esc(iconForKind(s)) + '"></i>' +
           "<b>" + esc(s.kind.name) + "</b>" +
-          '<p class="muted small"><strong>' + (t.up ? "Up " : "Down ") + Math.abs(t.pct) +
-          "%</strong> across the record, from " + esc(num(t.from)) + esc(u) + " to " +
-          esc(num(t.to)) + esc(u) + ".</p></article>";
+          '<p class="muted small">' + (t.up
+            ? T("<strong>Up {pct}%</strong> across the record, from {from} to {to}.",
+                { pct: Math.abs(t.pct), from: esc(num(t.from)) + esc(u), to: esc(num(t.to)) + esc(u) })
+            : T("<strong>Down {pct}%</strong> across the record, from {from} to {to}.",
+                { pct: Math.abs(t.pct), from: esc(num(t.from)) + esc(u), to: esc(num(t.to)) + esc(u) })) + "</p></article>";
       }).join("") + "</div></div>";
   }
 
@@ -696,8 +700,8 @@ const MTopics = (function () {
       const v = mean(pts);
       const lo = Math.min(45, Math.floor(v - 20)), hi = Math.max(95, Math.ceil(v + 20));
       tiles.push('<article class="hb-tile">' + viz.dial(v, lo, hi) +
-        '<div class="hb-read"><b>' + esc(num(Math.round(v))) + '<em>bpm</em></b>' +
-        "<span>Resting heart rate</span>" + deltaChip(heart.trend) + "</div></article>");
+        '<div class="hb-read"><b>' + esc(num(Math.round(v))) + '<em>' + T('bpm') + '</em></b>' +
+        "<span>" + T("Resting heart rate") + "</span>" + deltaChip(heart.trend) + "</div></article>");
     }
 
     const sleep = signal.get("sleep");
@@ -710,7 +714,7 @@ const MTopics = (function () {
         '<div class="hb-band">' + viz.band(pts, { w: 120, h: 118, n: 26, meta: metaFor(sleep) }) + "</div>" +
         '<div class="hb-read"><b>' + esc(minutes ? asHours(v) : num(Math.round(v * 10) / 10)) +
         (minutes ? "" : '<em>' + esc(sleep.series.unit || "") + "</em>") + "</b>" +
-        "<span>Time asleep, per night</span>" + deltaChip(sleep.trend) + "</div></article>");
+        "<span>" + T("Time asleep, per night") + "</span>" + deltaChip(sleep.trend) + "</div></article>");
     }
 
     const steps = signal.get("steps");
@@ -720,21 +724,23 @@ const MTopics = (function () {
       tiles.push('<article class="hb-tile">' +
         '<div class="hb-bars">' + viz.bars(pts, { w: 150, h: 118, n: 22, meta: metaFor(steps) }) + "</div>" +
         '<div class="hb-read"><b>' + esc(num(Math.round(mean(pts)))) + "</b>" +
-        "<span>Steps a day</span>" + deltaChip(steps.trend) + "</div></article>");
+        "<span>" + T("Steps a day") + "</span>" + deltaChip(steps.trend) + "</div></article>");
     }
 
     if (!tiles.length) return "";
-    return '<div class="hb"><header class="hb-head"><h3>Where things stand now</h3>' +
-      '<p class="muted small">The most recent stretch of the record' +
-      (window ? ", " + esc(window) : "") + ".</p></header>" +
+    return '<div class="hb"><header class="hb-head"><h3>' + T("Where things stand now") + "</h3>" +
+      '<p class="muted small">' + (window
+        ? T("The most recent stretch of the record, {span}.", { span: esc(window) })
+        : T("The most recent stretch of the record.")) + "</p></header>" +
       '<div class="hb-grid">' + tiles.join("") + "</div></div>";
   }
 
   function deltaChip(t) {
     if (!t) return "";
-    if (t.steady) return '<span class="hb-chip">steady across the record</span>';
+    if (t.steady) return '<span class="hb-chip">' + T("steady across the record") + "</span>";
     return '<span class="hb-chip ' + (t.up ? "up" : "down") + '">' +
-      (t.up ? "up " : "down ") + Math.abs(t.pct) + "% across the record</span>";
+      (t.up ? T("up {pct}% across the record", { pct: Math.abs(t.pct) })
+            : T("down {pct}% across the record", { pct: Math.abs(t.pct) })) + "</span>";
   }
 
   /* ---------- every signal, drawn as itself ---------- */
@@ -755,8 +761,8 @@ const MTopics = (function () {
         '<div class="hx-grid">' + list.map((s) => panelHtml(s, viz)).join("") + "</div></div>";
     }
     if (!out) return "";
-    return '<div class="hx"><header class="hb-head"><h3>Every signal, in full</h3>' +
-      '<p class="muted small">Each one drawn the way it behaves.</p></header>' +
+    return '<div class="hx"><header class="hb-head"><h3>' + T("Every signal, in full") + "</h3>" +
+      '<p class="muted small">' + T("Each one drawn the way it behaves.") + "</p></header>" +
       out + "</div>";
   }
 
@@ -767,7 +773,7 @@ const MTopics = (function () {
    * page - so this reads the columns, and draws nothing if they are absent. */
   function stagesHtml(s, viz) {
     if (!viz || s.kind.key !== "sleep") return "";
-    const WANT = [[/deep/i, "Deep"], [/rem/i, "REM"], [/light|core/i, "Light"]];
+    const WANT = [[/deep/i, T("Deep")], [/rem/i, "REM"], [/light|core/i, T("Light")]];
     for (const t of s.tables) {
       const cols = t.columns || [];
       const found = WANT.map(([re, label]) => {
@@ -830,13 +836,13 @@ const MTopics = (function () {
     const t = s.trend;
     const trend = t
       ? '<p class="hx-trend">' + (t.steady
-          ? "Steady across the record."
-          : esc(num(t.from)) + esc(unit) + " to " + esc(num(t.to)) + esc(unit) +
+          ? T("Steady across the record.")
+          : T("{from} to {to}", { from: esc(num(t.from)) + esc(unit), to: esc(num(t.to)) + esc(unit) }) +
             ' <span class="' + (t.up ? "up" : "down") + '">' +
-            (t.up ? "up " : "down ") + Math.abs(t.pct) + "%</span>") + "</p>"
+            (t.up ? T("up {pct}%", { pct: Math.abs(t.pct) }) : T("down {pct}%", { pct: Math.abs(t.pct) })) + "</span>") + "</p>"
       : "";
     const range = c && c.chart
-      ? '<span class="hx-range">' + esc(c.low) + " to " + esc(c.high) + esc(unit) + "</span>" : "";
+      ? '<span class="hx-range">' + T("{from} to {to}", { from: esc(c.low), to: esc(c.high) + esc(unit) }) + "</span>" : "";
     return '<article class="hx-card' + (chart ? " has-chart" : "") + '">' +
       "<h5>" + esc(s.kind.name) + "</h5>" +
       figure +
@@ -844,8 +850,8 @@ const MTopics = (function () {
       stagesHtml(s, viz) +
       trend +
       '<p class="muted small hx-holds">' + esc(holdsFor(s)) + "</p>" +
-      '<p class="hx-n">' + plural(s.rows, "reading", "readings") +
-        (s.tables.length > 1 ? " across " + plural(s.tables.length, "table", "tables") : "") +
+      '<p class="hx-n">' + N("{n} reading", "{n} readings", s.rows) +
+        (s.tables.length > 1 ? " " + N("across {n} table", "across {n} tables", s.tables.length) : "") +
         (range ? " &middot; " + range : "") + "</p></article>";
   }
 
@@ -853,18 +859,18 @@ const MTopics = (function () {
   function sourcesHtml(match, signal) {
     const by = new Map();
     for (const m of match) {
-      const label = m.table.srcLabel || "This export";
+      const label = m.table.srcLabel || T("This export");
       by.set(label, (by.get(label) || 0) + m.table.rows.length);
     }
     if (by.size < 1) return "";
     const rows = [...by.entries()].sort((a, b) => b[1] - a[1]);
     return '<div class="hs"><div class="hs-what"><b>' +
-      esc(plural(signal.size, "kind of health data", "kinds of health data")) + " found</b>" +
-      '<p class="muted small">A phone records a little of this. A watch records most of it, ' +
-      "every day.</p></div>" +
+      esc(N("{n} kind of health data found", "{n} kinds of health data found", signal.size)) + "</b>" +
+      '<p class="muted small">' + T("A phone records a little of this. A watch records most of it, " +
+      "every day.") + "</p></div>" +
       '<div class="hs-list">' + rows.map(([label, n]) =>
         '<span class="hs-src"><b>' + esc(label) + "</b><em>" +
-        esc(plural(n, "reading", "readings")) + "</em></span>").join("") + "</div></div>";
+        esc(N("{n} reading", "{n} readings", n)) + "</em></span>").join("") + "</div></div>";
   }
 
   /* ---------- what this service records and this export does not ---------- */
@@ -874,9 +880,9 @@ const MTopics = (function () {
        what Samsung Health would also have recorded. Saying it over Google Fit
        data was claiming knowledge of the wrong product. */
     if (!missing.length || !match.some((m) => m.slug === "samsung")) return "";
-    return '<div class="hx"><h3 class="tp-h">Not in this export</h3>' +
-      '<p class="muted small">Samsung Health records these too. They are absent here, ' +
-      "which usually means no device ever recorded them.</p>" +
+    return '<div class="hx"><h3 class="tp-h">' + T("Not in this export") + "</h3>" +
+      '<p class="muted small">' + T("Samsung Health records these too. They are absent here, " +
+      "which usually means no device ever recorded them.") + "</p>" +
       '<ul class="hl-missing">' + missing.map((k) =>
         "<li><b>" + esc(k.name) + "</b>" +
         (k.needs ? '<span class="muted small">' + esc(k.needs) + "</span>" : "") +
@@ -1063,7 +1069,7 @@ const MTopics = (function () {
     const card = (c) => '<article class="ct">' +
       '<span class="ct-pfp" aria-hidden="true">' +
         esc((c.name || "?").trim().charAt(0).toUpperCase()) + "</span>" +
-      "<div><b>" + esc(c.name || "No name") + "</b>" +
+      "<div><b>" + esc(c.name || T("No name")) + "</b>" +
       (c.title || c.org
         ? '<div class="muted small">' + esc([c.title, c.org].filter(Boolean).join(", ")) + "</div>"
         : "") +
@@ -1075,13 +1081,13 @@ const MTopics = (function () {
     el.innerHTML =
       unsupportedNote([]) +
       '<div class="tp-stats">' +
-        '<div><b>' + num(cards.length) + "</b><span>contacts</span></div>" +
-        '<div><b>' + num(withPhone) + "</b><span>with a phone number</span></div>" +
-        '<div><b>' + num(withEmail) + "</b><span>with an email address</span></div>" +
+        '<div><b>' + num(cards.length) + "</b><span>" + T("contacts") + "</span></div>" +
+        '<div><b>' + num(withPhone) + "</b><span>" + T("with a phone number") + "</span></div>" +
+        '<div><b>' + num(withEmail) + "</b><span>" + T("with an email address") + "</span></div>" +
       "</div>" +
       (files.length > read.length
-        ? '<p class="muted small">' + num(files.length - read.length) +
-          " could not be read.</p>" : "") +
+        ? '<p class="muted small">' + T("{n} could not be read.", { n: num(files.length - read.length) }) +
+          "</p>" : "") +
       '<div class="ct-grid">' + cards.map(card).join("") + "</div>";
   }
 
@@ -1114,29 +1120,29 @@ const MTopics = (function () {
       '<div class="cal-when">' +
         (e.at ? esc(e.allDay ? shortDate(e.at) : e.at.toLocaleString(LOC,
           { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }))
-              : "<span class='muted'>no date</span>") +
+              : "<span class='muted'>" + T("no date") + "</span>") +
       "</div>" +
-      '<div class="cal-what"><b>' + esc(e.summary || "Untitled") + "</b>" +
+      '<div class="cal-what"><b>' + esc(e.summary || T("Untitled")) + "</b>" +
         (e.where ? '<span class="muted small">' + esc(e.where) + "</span>" : "") +
-        (e.repeats ? '<span class="cal-tag">repeats</span>' : "") +
-        (e.todo ? '<span class="cal-tag">reminder</span>' : "") +
+        (e.repeats ? '<span class="cal-tag">' + T("repeats") + "</span>" : "") +
+        (e.todo ? '<span class="cal-tag">' + T("reminder") + "</span>" : "") +
       "</div></li>";
 
     el.innerHTML =
       '<div class="tp-stats">' +
         '<div><b>' + num(events.length - todos) + "</b><span>" +
-          (events.length - todos === 1 ? "event" : "events") + "</span></div>" +
+          (events.length - todos === 1 ? T("event") : T("events")) + "</span></div>" +
         (todos ? '<div><b>' + num(todos) + "</b><span>" +
-          (todos === 1 ? "reminder" : "reminders") + "</span></div>" : "") +
+          (todos === 1 ? T("reminder") : T("reminders")) + "</span></div>" : "") +
         (repeats ? '<div><b>' + num(repeats) + "</b><span>" +
-          (repeats === 1 ? "repeats" : "repeat") + "</span></div>" : "") +
-        (from ? '<div><b>' + esc(shortDate(from)) + " to " + esc(shortDate(to)) +
-                "</b><span>first to last</span></div>" : "") +
+          (repeats === 1 ? T("repeats") : T("repeat")) + "</span></div>" : "") +
+        (from ? '<div><b>' + T("{from} to {to}", { from: esc(shortDate(from)), to: esc(shortDate(to)) }) +
+                "</b><span>" + T("first to last") + "</span></div>" : "") +
       "</div>" +
       '<ol class="cal-list">' + events.slice(0, PAGE).map(row).join("") + "</ol>" +
       (events.length > PAGE
-        ? '<p class="muted small">Showing the newest ' + num(PAGE) + " of " +
-          num(events.length) + ".</p>" : "");
+        ? '<p class="muted small">' + T("Showing the newest {n} of {of}.", { n: num(PAGE), of: num(events.length) }) +
+          "</p>" : "");
   }
 
   /* ---------- notes ---------- */
@@ -1219,33 +1225,33 @@ const MTopics = (function () {
     el.innerHTML =
       '<div class="tp-stats">' +
         '<div><b>' + num(files.length + held.length) + "</b><span>" +
-          (files.length + held.length === 1 ? "note" : "notes") + "</span></div>" +
-        (words ? '<div><b>' + num(words) + "</b><span>words in them</span></div>" : "") +
+          (files.length + held.length === 1 ? T("note") : T("notes")) + "</span></div>" +
+        (words ? '<div><b>' + num(words) + "</b><span>" + T("words in them") + "</span></div>" : "") +
         (pictureCount ? '<div><b>' + num(pictureCount) + "</b><span>" +
-          (pictureCount === 1 ? "picture inside them" : "pictures inside them") +
+          (pictureCount === 1 ? T("picture inside them") : T("pictures inside them")) +
           "</span></div>" : "") +
       "</div>" +
       (files.length > read.length
-        ? '<p class="muted small">Showing the first ' + num(read.length) + ". Open " +
-          "All files for the rest.</p>" : "") +
+        ? '<p class="muted small">' + T("Showing the first {n}. Open All files for the rest.", { n: num(read.length) }) +
+          "</p>" : "") +
       (held.length
-        ? '<p class="muted small">' + plural(held.length, "note", "notes") +
-          " arrived as S Note files. Samsung has not published that format, so the " +
+        ? '<p class="muted small">' + N("{n} note arrived as an S Note file.", "{n} notes arrived as S Note files.", held.length) +
+          " " + T("Samsung has not published that format, so the " +
           "handwriting in them cannot be read here - the pictures put into them can, " +
-          "and are below. They are in Images too, so a saved copy still includes them.</p>"
+          "and are below. They are in Images too, so a saved copy still includes them.") + "</p>"
         : "") +
       '<div class="nt-grid">' +
         notes.map((n) =>
           '<article class="nt-note"><h3>' + esc(n.title.slice(0, 90)) + "</h3>" +
           "<p>" + esc(n.body.slice(0, 400)) + (n.body.length > 400 ? "..." : "") + "</p>" +
-          '<footer class="muted small">' + plural(n.words, "word", "words") + "</footer>" +
+          '<footer class="muted small">' + N("{n} word", "{n} words", n.words) + "</footer>" +
           "</article>").join("") +
         withPics.map((p) =>
           '<article class="nt-note nt-drawn"><h3>' + esc(p.title.slice(0, 90)) + "</h3>" +
           '<div class="nt-pics">' + p.urls.map((u) =>
             '<img src="' + u + '" alt="" loading="lazy">').join("") + "</div>" +
-          '<footer class="muted small">' + plural(p.total, "picture", "pictures") +
-          ", handwriting not readable</footer></article>").join("") +
+          '<footer class="muted small">' + N("{n} picture, handwriting not readable", "{n} pictures, handwriting not readable", p.total) +
+          "</footer></article>").join("") +
       "</div>";
   }
 
@@ -1292,13 +1298,13 @@ const MTopics = (function () {
 
     el.innerHTML =
       '<div class="tp-stats">' +
-        '<div><b>' + num(files.length) + "</b><span>recordings</span></div>" +
-        '<div><b>' + esc(bytesText(bytes)) + "</b><span>of audio</span></div>" +
+        '<div><b>' + num(files.length) + "</b><span>" + T("recordings") + "</span></div>" +
+        '<div><b>' + esc(bytesText(bytes)) + "</b><span>" + T("of audio") + "</span></div>" +
         '<div><b>' + num(folders.size) + "</b><span>" +
-          (folders.size === 1 ? "folder" : "folders") + "</span></div>" +
+          (folders.size === 1 ? T("folder") : T("folders")) + "</span></div>" +
       "</div>" +
-      '<p class="muted small">Played from the archive on this machine. Nothing is ' +
-        "downloaded and nothing is sent anywhere.</p>" +
+      '<p class="muted small">' + T("Played from the archive on this machine. Nothing is " +
+        "downloaded and nothing is sent anywhere.") + "</p>" +
       '<ol class="au-list">' + files.slice(0, 400).map((f, i) =>
         '<li class="au" data-i="' + i + '">' +
           '<div class="au-name">' + esc(f.name.split("/").pop()) + "</div>" +
@@ -1309,18 +1315,18 @@ const MTopics = (function () {
              carry a 10 inside the curl, which is how Apple and the BBC both
              draw skip, so the number is there without being a label. */
           '<div class="au-ctl">' +
-            '<button type="button" class="au-b au-back" title="Back 10 seconds"' +
-              ' aria-label="Back 10 seconds">' + SKIP_BACK + "</button>" +
-            '<button type="button" class="au-b au-toggle" title="Play"' +
-              ' aria-label="Play">' + PLAY_ICON + PAUSE_ICON + "</button>" +
-            '<button type="button" class="au-b au-fwd" title="Forward 10 seconds"' +
-              ' aria-label="Forward 10 seconds">' + SKIP_FWD + "</button>" +
+            '<button type="button" class="au-b au-back" title="' + T("Back 10 seconds") + '"' +
+              ' aria-label="' + T("Back 10 seconds") + '">' + SKIP_BACK + "</button>" +
+            '<button type="button" class="au-b au-toggle" title="' + T("Play") + '"' +
+              ' aria-label="' + T("Play") + '">' + PLAY_ICON + PAUSE_ICON + "</button>" +
+            '<button type="button" class="au-b au-fwd" title="' + T("Forward 10 seconds") + '"' +
+              ' aria-label="' + T("Forward 10 seconds") + '">' + SKIP_FWD + "</button>" +
             '<canvas class="au-wave" height="34"></canvas>' +
             '<span class="au-time">0:00</span>' +
           "</div>" +
         "</li>").join("") + "</ol>" +
       (files.length > 400
-        ? '<p class="muted small">Showing the first 400 of ' + num(files.length) + ".</p>" : "");
+        ? '<p class="muted small">' + T("Showing the first 400 of {n}.", { n: num(files.length) }) + "</p>" : "");
 
     /* One <audio> for the whole list, not one per row.
      *
@@ -1499,7 +1505,7 @@ const MTopics = (function () {
         li.classList.remove("au-loading");
         li.classList.add("au-failed");
         const t = li.querySelector(".au-time");
-        if (t) t.textContent = "would not play";
+        if (t) t.textContent = T("would not play");
         return false;
       }
     }
@@ -1753,23 +1759,31 @@ const MTopics = (function () {
       .map(([name, c]) => ({ name, n: c }));
 
     return '<div class="cs cs-tight"><div class="cs-grid">' +
-      '<section class="cs-card cs-wide"><h3>How much, and when</h3>' +
+      '<section class="cs-card cs-wide"><h3>' + T("How much, and when") + "</h3>" +
         '<div class="cs-chart">' + viz.bars(months, { w: 600, h: 84, n: 60,
           meta: { unit: "" } }) + "</div></section>" +
 
-      '<section class="cs-card"><h3>Which services</h3>' +
+      '<section class="cs-card"><h3>' + T("Which services") + "</h3>" +
         viz.ranked(services, { limit: 8 }) + "</section>" +
 
-      '<section class="cs-card cs-wide"><h3>The hours you are awake</h3>' +
-        '<p class="muted small">Everything you did, by hour of the day and day of the week.</p>' +
-        viz.grid(dated, { noun: "thing" }) + "</section>" +
+      '<section class="cs-card cs-wide"><h3>' + T("The hours you are awake") + "</h3>" +
+        '<p class="muted small">' + T("Everything you did, by hour of the day and day of the week.") + "</p>" +
+        viz.grid(dated, { one: T("{n} thing"), many: T("{n} things") }) + "</section>" +
 
       (repeated.length
-        ? '<section class="cs-card"><h3>Looked up more than once</h3>' +
+        ? '<section class="cs-card"><h3>' + T("Looked up more than once") + "</h3>" +
           viz.ranked(repeated, { limit: 8 }) + "</section>"
         : "") +
     "</div></div>";
   }
+
+  /* Google writes these verbs in English whatever language the account uses,
+     so they are matched in English above and only translated here, for show. */
+  const VERB_SHOWN = {
+    "Searched for": T("Searched for"), "Watched": T("Watched"), "Visited": T("Visited"),
+    "Used": T("Used"), "Viewed": T("Viewed"), "Listened to": T("Listened to"),
+    "Saved": T("Saved"), "Opened": T("Opened"),
+  };
 
   async function drawActivity(el, match, lib, ctx) {
     const files = match[0].files;
@@ -1800,7 +1814,7 @@ const MTopics = (function () {
     const row = (i) => "<li>" +
       '<div class="ac-when">' + (i.at ? esc(shortDate(i.at)) : "") + "</div>" +
       '<div class="ac-what">' +
-        (i.verb ? '<span class="ac-verb">' + esc(i.verb) + "</span> " : "") +
+        (i.verb ? '<span class="ac-verb">' + esc(VERB_SHOWN[i.verb] || i.verb) + "</span> " : "") +
         (i.href
           ? '<a href="' + esc(i.href) + '" target="_blank" rel="noopener noreferrer nofollow">' +
             esc(i.what) + "</a>"
@@ -1810,22 +1824,24 @@ const MTopics = (function () {
 
     el.innerHTML =
       '<div class="tp-stats">' +
-        '<div><b>' + num(items.length) + "</b><span>things you did</span></div>" +
-        '<div><b>' + num(byProduct.size) + "</b><span>Google services</span></div>" +
+        '<div><b>' + num(items.length) + "</b><span>" + T("things you did") + "</span></div>" +
+        '<div><b>' + num(byProduct.size) + "</b><span>" + T("Google services") + "</span></div>" +
         (dated.length
-          ? '<div><b>' + esc(shortDate(dated[dated.length - 1].at)) + " to " +
-            esc(shortDate(dated[0].at)) + "</b><span>first to last</span></div>" : "") +
+          ? '<div><b>' + T("{from} to {to}", { from: esc(shortDate(dated[dated.length - 1].at)),
+            to: esc(shortDate(dated[0].at)) }) + "</b><span>" + T("first to last") + "</span></div>" : "") +
       "</div>" +
       (skipped
-        ? '<p class="muted small">' + plural(skipped, "product's history was", "products' histories were") +
-          " too large to read here - the YouTube one alone can be 48 MB. They are in All files.</p>"
+        ? '<p class="muted small">' + N("{n} product's history was too large to read here - the YouTube one " +
+            "alone can be 48 MB. It is in All files.",
+            "{n} products' histories were too large to read here - the YouTube one alone can be 48 MB. " +
+            "They are in All files.", skipped) + "</p>"
         : "") +
       activityStatsHtml(items, byProduct) +
-      '<h3 class="tp-h">Everything, newest first</h3>' +
+      '<h3 class="tp-h">' + T("Everything, newest first") + "</h3>" +
       '<ol class="ac-list">' + items.slice(0, PAGE).map(row).join("") + "</ol>" +
       (items.length > PAGE
-        ? '<p class="muted small">Showing the newest ' + num(PAGE) + " of " +
-          num(items.length) + ".</p>" : "");
+        ? '<p class="muted small">' + T("Showing the newest {n} of {of}.", { n: num(PAGE), of: num(items.length) }) +
+          "</p>" : "");
 
     if (typeof MCharts !== "undefined" && MCharts.hover) {
       MCharts.hover(el.closest("#ex-scroll") || el);
@@ -1858,8 +1874,7 @@ const MTopics = (function () {
       limit: 20000,
       onProgress: (read, n) => {
         if (el.isConnected && n % 2000 === 0) {
-          el.innerHTML = '<p class="loading">Reading your mail - ' + num(n) +
-            " messages so far...</p>";
+          el.innerHTML = '<p class="loading">' + T("Reading your mail - {n} messages so far...", { n: num(n) }) + "</p>";
         }
       },
     });
@@ -1870,25 +1885,25 @@ const MTopics = (function () {
 
     el.innerHTML =
       '<div class="tp-stats">' +
-        '<div><b>' + num(res.messages.length) + "</b><span>messages read</span></div>" +
-        '<div><b>' + num(sum.senders.length) + "</b><span>people and services</span></div>" +
+        '<div><b>' + num(res.messages.length) + "</b><span>" + T("messages read") + "</span></div>" +
+        '<div><b>' + num(sum.senders.length) + "</b><span>" + T("people and services") + "</span></div>" +
         (dated.length
-          ? '<div><b>' + esc(shortDate(dated[dated.length - 1].at)) + " to " +
-            esc(shortDate(dated[0].at)) + "</b><span>first to last</span></div>" : "") +
+          ? '<div><b>' + T("{from} to {to}", { from: esc(shortDate(dated[dated.length - 1].at)),
+            to: esc(shortDate(dated[0].at)) }) + "</b><span>" + T("first to last") + "</span></div>" : "") +
       "</div>" +
-      '<p class="muted small">Headers only - who, what and when. The bodies stay in the ' +
-        "archive and are never held in memory." +
-        (res.skipped ? " " + num(res.skipped) + " could not be read." : "") + "</p>" +
-      '<h3 class="tp-h">Who writes to you most</h3>' +
+      '<p class="muted small">' + T("Headers only - who, what and when. The bodies stay in the " +
+        "archive and are never held in memory.") +
+        (res.skipped ? " " + T("{n} could not be read.", { n: num(res.skipped) }) : "") + "</p>" +
+      '<h3 class="tp-h">' + T("Who writes to you most") + "</h3>" +
       '<ol class="ml-top">' + sum.senders.slice(0, 20).map((x) =>
-        "<li><b>" + esc(x.name || x.address || "Unknown") + "</b>" +
-        '<em class="muted">' + plural(x.count, "message", "messages") + "</em></li>").join("") +
+        "<li><b>" + esc(x.name || x.address || T("Unknown")) + "</b>" +
+        '<em class="muted">' + N("{n} message", "{n} messages", x.count) + "</em></li>").join("") +
       "</ol>" +
-      '<h3 class="tp-h">Most recent</h3>' +
+      '<h3 class="tp-h">' + T("Most recent") + "</h3>" +
       '<ol class="ml-list">' + dated.slice(0, 500).map((m, i) =>
         '<li class="ml-item" data-i="' + i + '">' +
         "<div class='ml-when'>" + esc(shortDate(m.at)) + "</div>" +
-        "<div><b>" + esc(m.subject || "(no subject)") + "</b>" +
+        "<div><b>" + esc(m.subject || T("(no subject)")) + "</b>" +
         '<span class="muted small">' + esc((m.from && m.from.name) || "") + "</span></div>" +
         "</li>").join("") +
       "</ol>";
@@ -1911,14 +1926,14 @@ const MTopics = (function () {
      * and putting their dark grey text on our dark grey surface is not
      * neutral, it is wrong. */
     const readHtml = (m, body) => {
-      const who = (m.from && m.from.name) || (m.from && m.from.address) || "Unknown sender";
+      const who = (m.from && m.from.name) || (m.from && m.from.address) || T("Unknown sender");
       const addr = (m.from && m.from.address) || "";
       return '<button class="ml-back" type="button">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
           'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-          '<path d="M15 5l-7 7 7 7"/></svg>Back to the list</button>' +
+          '<path d="M15 5l-7 7 7 7"/></svg>' + T("Back to the list") + "</button>" +
         '<article class="ml-read">' +
-          '<h2 class="ml-subj">' + esc(m.subject || "(no subject)") + "</h2>" +
+          '<h2 class="ml-subj">' + esc(m.subject || T("(no subject)")) + "</h2>" +
           '<header class="ml-msghead">' +
             '<span class="ml-av" aria-hidden="true">' +
               esc(who.trim().charAt(0).toUpperCase() || "?") + "</span>" +
@@ -1941,17 +1956,17 @@ const MTopics = (function () {
       const m = shown[Number(li.dataset.i)];
       if (!m) return;
       if (!m.body) {
-        el.innerHTML = readHtml(m, '<p class="muted small">This message was past the amount ' +
-          "of mail kept for reading. Its headers are here; the text is still in the archive.</p>");
+        el.innerHTML = readHtml(m, '<p class="muted small">' + T("This message was past the amount " +
+          "of mail kept for reading. Its headers are here; the text is still in the archive.") + "</p>");
         return;
       }
-      el.innerHTML = readHtml(m, '<p class="muted small">Reading...</p>');
+      el.innerHTML = readHtml(m, '<p class="muted small">' + T("Reading...") + "</p>");
       el.scrollTop = 0;
       let body;
       try {
         body = renderMessage(await m.body.text());
       } catch (err) {
-        body = '<p class="muted small">That message would not open.</p>';
+        body = '<p class="muted small">' + T("That message would not open.") + "</p>";
       }
       const slot = el.querySelector(".ml-content");
       if (slot) slot.innerHTML = body;
@@ -2015,9 +2030,9 @@ const MTopics = (function () {
       }
     });
     return (blocked
-      ? '<p class="ml-blocked">' + plural(blocked, "image was", "images were") +
-        " not loaded. " + (why ||
-          "They live on the sender's server, and fetching one tells them you opened this.") +
+      ? '<p class="ml-blocked">' + N("{n} image was not loaded.", "{n} images were not loaded.", blocked) +
+        " " + (why ||
+          T("They live on the sender's server, and fetching one tells them you opened this.")) +
         "</p>"
       : "") +
       '<div class="ml-html">' + doc.body.innerHTML + "</div>";
@@ -2107,7 +2122,7 @@ const MTopics = (function () {
           const fam = (/iPhone/i.test(raw) ? "iPhone" : /iPad/i.test(raw) ? "iPad"
             : /Mac/i.test(raw) ? "Mac" : /Android/i.test(raw) ? "Android"
             : /Windows/i.test(raw) ? "Windows" : /Linux/i.test(raw) ? "Linux"
-            : /Watch/i.test(raw) ? "Apple Watch" : raw ? "Other" : "");
+            : /Watch/i.test(raw) ? "Apple Watch" : raw ? T("Other") : "");
           if (fam) byWhat.set(fam, (byWhat.get(fam) || 0) + 1);
         }
       }
@@ -2119,22 +2134,22 @@ const MTopics = (function () {
 
     const cards = [];
     if (when.length >= 8) {
-      cards.push('<section class="cs-card cs-wide"><h3>When your account was used</h3>' +
+      cards.push('<section class="cs-card cs-wide"><h3>' + T("When your account was used") + "</h3>" +
         '<div class="cs-chart">' + viz.dots(when, { w: 600, h: 74 }) + "</div>" +
-        '<p class="muted small">One mark per sign-in. A cluster is a busy week; a gap is a ' +
-        "stretch when nothing signed in at all.</p></section>");
+        '<p class="muted small">' + T("One mark per sign-in. A cluster is a busy week; a gap is a " +
+        "stretch when nothing signed in at all.") + "</p></section>");
     }
     if (byWhere.size) {
-      cards.push('<section class="cs-card"><h3>From where</h3>' +
+      cards.push('<section class="cs-card"><h3>' + T("From where") + "</h3>" +
         viz.ranked(rank(byWhere), { limit: 8 }) + "</section>");
     }
     if (byWhat.size) {
-      cards.push('<section class="cs-card"><h3>On what</h3>' +
+      cards.push('<section class="cs-card"><h3>' + T("On what") + "</h3>" +
         viz.ranked(rank(byWhat), { limit: 8 }) + "</section>");
     }
     if (when.length >= 20) {
-      cards.push('<section class="cs-card cs-wide"><h3>At what hour</h3>' +
-        viz.grid(when, { noun: "sign-in" }) + "</section>");
+      cards.push('<section class="cs-card cs-wide"><h3>' + T("At what hour") + "</h3>" +
+        viz.grid(when, { one: T("{n} sign-in"), many: T("{n} sign-ins") }) + "</section>");
     }
     if (!cards.length) return "";
     return '<div class="cs cs-tight"><div class="cs-grid">' + cards.join("") + "</div></div>";
@@ -2236,8 +2251,8 @@ const MTopics = (function () {
       // Information" is the archive talking, not the table.
       const title = String(t.name || "").replace(/^.*?\.zip:\s*/i, "");
       return '<article class="lg-card"><h3>' + esc(title) + "</h3>" +
-        '<p class="muted small">' + plural(t.rows.length, "record", "records") +
-          (list.length < t.rows.length ? ", " + num(list.length) + " worth showing" : "") +
+        '<p class="muted small">' + N("{n} record", "{n} records", t.rows.length) +
+          (list.length < t.rows.length ? ", " + T("{n} worth showing", { n: num(list.length) }) : "") +
         "</p>" +
         '<ul class="lg-list">' + list.slice(0, 40).map((x) => {
           const name = readable(x.dev) || x.where;
@@ -2251,25 +2266,25 @@ const MTopics = (function () {
             /* The original is one hover away, because a decoded string is an
                interpretation and the export said something exact. */
             (name && x.dev && readable(x.dev) !== x.dev
-              ? '<span class="lg-raw" title="' + esc(x.dev) + '">as written</span>' : "") +
+              ? '<span class="lg-raw" title="' + esc(x.dev) + '">' + T("as written") + "</span>" : "") +
           "</li>";
         }).join("") + "</ul>" +
         (list.length > 40
-          ? '<p class="muted small">' + num(list.length - 40) + " more under Records.</p>" : "") +
+          ? '<p class="muted small">' + T("{n} more under Records.", { n: num(list.length - 40) }) + "</p>" : "") +
         "</article>";
     };
 
     el.innerHTML =
       unsupportedNote(match.map((m) => m.table)) +
       '<div class="tp-stats">' +
-        '<div><b>' + num(rows) + "</b><span>recorded sign-ins and devices</span></div>" +
+        '<div><b>' + num(rows) + "</b><span>" + T("recorded sign-ins and devices") + "</span></div>" +
         '<div><b>' + num(match.length) + "</b><span>" +
-          (match.length === 1 ? "table" : "tables") + "</span></div>" +
+          (match.length === 1 ? T("table") : T("tables")) + "</span></div>" +
       "</div>" +
-      '<p class="muted small">Every service keeps this. It is usually the part of an ' +
-        "export people have not thought about.</p>" +
+      '<p class="muted small">' + T("Every service keeps this. It is usually the part of an " +
+        "export people have not thought about.") + "</p>" +
       loginStatsHtml(match) +
-      '<h3 class="tp-h">Every record</h3>' +
+      '<h3 class="tp-h">' + T("Every record") + "</h3>" +
       '<div class="lg-grid">' + match.map(panel).join("") + "</div>";
 
     if (typeof MCharts !== "undefined" && MCharts.hover) {
@@ -2288,13 +2303,13 @@ const MTopics = (function () {
    * A topic with no `only` is offered to everything, which is what keeps a
    * provider nobody has taught us about from getting nothing at all. */
   const TOPICS = [
-    { key: "comments", label: "Comments", icon: "chat",
-      sub: "Everything you wrote, with replies under what they answered.",
+    { key: "comments", label: T("Comments"), icon: "chat",
+      sub: T("Everything you wrote, with replies under what they answered."),
       only: null,
       find: findComments, draw: drawComments,
       count: (m) => m.reduce((n, x) => n + x.items.length, 0) },
-    { key: "health", label: "Health", icon: "heart",
-      sub: "What your devices recorded, and what they did not.",
+    { key: "health", label: T("Health"), icon: "heart",
+      sub: T("What your devices recorded, and what they did not."),
       only: ["samsung", "apple", "google"],
       find: findHealth, draw: drawHealth,
       count: (m) => m.reduce((n, x) => n + x.table.rows.length, 0) },
@@ -2302,38 +2317,38 @@ const MTopics = (function () {
     /* These four read the archive rather than the parsed tables, so they are
        marked `slow` - the view puts up a line saying it is reading before the
        decompression starts, instead of a blank panel for a second. */
-    { key: "contacts", label: "Contacts", icon: "person",
-      sub: "Everyone in your address book, as the export wrote them.",
+    { key: "contacts", label: T("Contacts"), icon: "person",
+      sub: T("Everyone in your address book, as the export wrote them."),
       only: null, slow: true,
       find: findContacts, draw: drawContacts,
       count: (m) => m[0].files.length },
-    { key: "calendar", label: "Calendar", icon: "calendar",
-      sub: "Events and reminders, newest first.",
+    { key: "calendar", label: T("Calendar"), icon: "calendar",
+      sub: T("Events and reminders, newest first."),
       only: null, slow: true,
       find: findCalendar, draw: drawCalendar,
       count: (m) => m[0].files.length },
-    { key: "notes", label: "Notes", icon: "note",
-      sub: "What you wrote down.",
+    { key: "notes", label: T("Notes"), icon: "note",
+      sub: T("What you wrote down."),
       only: null, slow: true,
       find: findNotes, draw: drawNotes,
       count: (m) => m[0].files.length + (m[0].notes || []).length },
-    { key: "activity", label: "Search and watch history", icon: "search",
-      sub: "What you searched for, watched and opened, as Google recorded it.",
+    { key: "activity", label: T("Search and watch history"), icon: "search",
+      sub: T("What you searched for, watched and opened, as Google recorded it."),
       only: ["google"], slow: true,
       find: findActivity, draw: drawActivity,
       count: (m) => m[0].files.length },
-    { key: "mail", label: "Mail", icon: "mail",
-      sub: "Who wrote to you and when. Headers only - the bodies stay in the archive.",
+    { key: "mail", label: T("Mail"), icon: "mail",
+      sub: T("Who wrote to you and when. Headers only - the bodies stay in the archive."),
       only: null, slow: true,
       find: findMail, draw: drawMail,
       count: (m) => m[0].files.length },
-    { key: "logins", label: "Logins and devices", icon: "shield",
-      sub: "Where your account has been used from, and on what.",
+    { key: "logins", label: T("Logins and devices"), icon: "shield",
+      sub: T("Where your account has been used from, and on what."),
       only: null,
       find: findLogins, draw: drawLogins,
       count: (m) => m.reduce((n, x) => n + x.table.rows.length, 0) },
-    { key: "audio", label: "Audio", icon: "audio",
-      sub: "Recordings in this export, playable here.",
+    { key: "audio", label: T("Audio"), icon: "audio",
+      sub: T("Recordings in this export, playable here."),
       only: null, slow: true,
       find: findAudio, draw: drawAudio,
       count: (m) => m[0].files.length },
@@ -2378,16 +2393,16 @@ const MTopics = (function () {
     let m = null;
     try { m = t.find(lib, ctx); } catch (err) { m = null; }
     if (!m || !m.length) {
-      el.innerHTML = '<div class="ex-empty"><h3>Nothing here right now</h3>' +
-        '<p class="muted">Your filter hides everything of this kind.</p></div>';
+      el.innerHTML = '<div class="ex-empty"><h3>' + T("Nothing here right now") + "</h3>" +
+        '<p class="muted">' + T("Your filter hides everything of this kind.") + "</p></div>";
       return true;
     }
     /* Said before the work starts rather than after, because unpacking a few
        hundred files out of an archive takes long enough to look like nothing
        happened. */
     if (t.slow) {
-      el.innerHTML = '<p class="loading">Reading your ' + esc(t.label.toLowerCase()) +
-        " out of the archive...</p>";
+      el.innerHTML = '<p class="loading">' + T("Reading {what} out of the archive...",
+        { what: esc(t.label.toLowerCase()) }) + "</p>";
     }
     /* The promise is returned, not dropped.
      *
@@ -2402,7 +2417,7 @@ const MTopics = (function () {
       .catch((err) => {
         // A view that fails says so; it does not sit on "Reading..." forever.
         if (!el.isConnected) return;
-        el.innerHTML = '<div class="ex-empty"><h3>That did not read</h3>' +
+        el.innerHTML = '<div class="ex-empty"><h3>' + T("That did not read") + "</h3>" +
           '<p class="muted">' + esc(String((err && err.message) || err)) + "</p></div>";
       });
   }

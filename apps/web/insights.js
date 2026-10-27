@@ -161,8 +161,8 @@ const MInsight = (function () {
      anybody writes. The keys come from inside the data here, not from the
      column headings, so the parser's tidying never reached them. */
   const KEY_WORDS = {
-    dob: "Born", birth: "Born", birthdate: "Born", birthday: "Born",
-    id: "ID", url: "URL", uuid: "UUID", os: "OS", sa: "Samsung account",
+    dob: T("Born"), birth: T("Born"), birthdate: T("Born"), birthday: T("Born"),
+    id: "ID", url: "URL", uuid: "UUID", os: "OS", sa: T("Samsung account"),
   };
   function niceKey(name) {
     let s = String(name || "").trim();
@@ -232,25 +232,25 @@ const MInsight = (function () {
   const UNITS = [
     /* Before heart rate, deliberately: "heart_rate_variability" contains
        "heart_rate", and the first match wins. */
-    [/\bhrv\b|variability/i, { unit: "ms", label: "Heart rate variability", agg: "mean" }],
-    [/heart[ _]?rate|\bbpm\b|pulse/i, { unit: "bpm", label: "Heart rate", agg: "mean" }],
-    [/weight/i, { unit: "kg", label: "Weight", agg: "last" }],
-    [/height/i, { unit: "cm", label: "Height", agg: "last" }],
-    [/step[ _]?count|\bsteps\b/i, { unit: "steps", label: "Steps", agg: "sum" }],
-    [/sleep/i, { unit: "h", label: "Sleep", agg: "mean" }],
-    [/calorie|nutrition|food/i, { unit: "kcal", label: "Calories", agg: "sum" }],
-    [/distance/i, { unit: "m", label: "Distance", agg: "sum" }],
-    [/blood[ _]?pressure/i, { unit: "mmHg", label: "Blood pressure", agg: "mean" }],
-    [/oxygen|spo2/i, { unit: "%", label: "Blood oxygen", agg: "mean" }],
-    [/stress/i, { unit: "", label: "Stress", agg: "mean" }],
+    [/\bhrv\b|variability/i, { unit: "ms", label: T("Heart rate variability"), agg: "mean" }],
+    [/heart[ _]?rate|\bbpm\b|pulse/i, { unit: T("bpm"), label: T("Heart rate"), agg: "mean" }],
+    [/weight/i, { unit: "kg", label: T("Weight"), agg: "last" }],
+    [/height/i, { unit: "cm", label: T("Height"), agg: "last" }],
+    [/step[ _]?count|\bsteps\b/i, { unit: T("steps"), label: T("Steps"), agg: "sum" }],
+    [/sleep/i, { unit: "h", label: T("Sleep"), agg: "mean" }],
+    [/calorie|nutrition|food/i, { unit: "kcal", label: T("Calories"), agg: "sum" }],
+    [/distance/i, { unit: "m", label: T("Distance"), agg: "sum" }],
+    [/blood[ _]?pressure/i, { unit: "mmHg", label: T("Blood pressure"), agg: "mean" }],
+    [/oxygen|spo2/i, { unit: "%", label: T("Blood oxygen"), agg: "mean" }],
+    [/stress/i, { unit: "", label: T("Stress"), agg: "mean" }],
     /* A watch records these every night and nothing here knew what they were,
        so six panels on the health page showed a reading count and no shape at
        all - which is the one thing a nightly measurement is good for. */
-    [/respirat|breathing/i, { unit: "br/min", label: "Breathing rate", agg: "mean" }],
-    [/skin[ _]?temp|temperature/i, { unit: "C", label: "Skin temperature", agg: "mean" }],
-    [/floor/i, { unit: "floors", label: "Floors climbed", agg: "sum" }],
-    [/water|caffeine|hydration/i, { unit: "", label: "Water", agg: "sum" }],
-    [/exercise|workout|activity/i, { unit: "", label: "Exercise", agg: "count" }],
+    [/respirat|breathing/i, { unit: T("br/min"), label: T("Breathing rate"), agg: "mean" }],
+    [/skin[ _]?temp|temperature/i, { unit: "C", label: T("Skin temperature"), agg: "mean" }],
+    [/floor/i, { unit: T("floors"), label: T("Floors climbed"), agg: "sum" }],
+    [/water|caffeine|hydration/i, { unit: "", label: T("Water"), agg: "sum" }],
+    [/exercise|workout|activity/i, { unit: "", label: T("Exercise"), agg: "count" }],
   ];
   function unitFor(name) {
     /* The rule travels with the unit it chose, so the column search below can
@@ -456,7 +456,7 @@ const MInsight = (function () {
           kind: "series", title: (unit && unit.label) || t.name, source: t.source, path: t.path,
           unit: unitText,
           stat: fmtNum(head),
-          statLabel: agg === "sum" ? "total" : agg === "last" ? "latest" : agg === "count" ? "records" : "average",
+          statLabel: agg === "sum" ? T("total") : agg === "last" ? T("latest") : agg === "count" ? T("records") : T("average"),
           low: fmtNum(e.min), high: fmtNum(e.max),
           /* Two readings that happen to be equal drew a full-width grey
              rectangle and a footer saying "56 low 56 high". There is no shape
@@ -511,7 +511,7 @@ const MInsight = (function () {
         out.push({
           kind: "money", title: t.name, source: t.source, path: t.path,
           stat: fmtMoney(se.sum / scale, currency),
-          statLabel: "total", n: spent.length,
+          statLabel: T("total"), n: spent.length,
           /* How many rows the total actually came from, so a table where four
              rows in two hundred carry a price says so instead of implying the
              whole table was charges. */
@@ -533,7 +533,7 @@ const MInsight = (function () {
     if (rank && rows.length >= 4) {
       const bars = tally(rows.map((x) => x[r.idx(rank)])).slice(0, 8);
       if (bars.length >= 3) {
-        out.push({ kind: "rank", title: t.name, subtitle: "By " + rank.name.toLowerCase(),
+        out.push({ kind: "rank", title: t.name, subtitle: T("By {what}", { what: rank.name.toLowerCase() }),
                    source: t.source, path: t.path, bars, n: rows.length, span });
       }
     }
@@ -589,7 +589,7 @@ const MInsight = (function () {
     // Nothing recognisable, but a row count is still a fact.
     if (!out.length) {
       out.push({ kind: "count", title: t.name, source: t.source, path: t.path,
-                 stat: fmtNum(rows.length), statLabel: rows.length === 1 ? "record" : "records", span });
+                 stat: fmtNum(rows.length), statLabel: rows.length === 1 ? T("record") : T("records"), span });
     }
     return out;
   }
@@ -629,8 +629,8 @@ const MInsight = (function () {
     if (thin.length > 1) {
       for (const c of thin) cards.splice(cards.indexOf(c), 1);
       cards.push({
-        kind: "other", title: "Also in this export",
-        note: "Tables with too little in them to chart.",
+        kind: "other", title: T("Also in this export"),
+        note: T("Tables with too little in them to chart."),
         rows: thin.map((c) => ({ label: c.title, n: c.n || 1, path: c.path })),
         n: thin.length,
       });

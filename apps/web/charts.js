@@ -60,6 +60,12 @@ const MCharts = (function () {
     'opacity="0.45" vector-effect="non-scaling-stroke"/>' +
     '<circle class="hv-cur-d" r="3.2" fill="currentColor"/></g>';
 
+  /* "3 messages", in the page language. A caller says what it is counting
+     with whole forms - { one: T("{n} thing"), many: T("{n} things") } - rather
+     than a noun that gets an English "s" bolted on. */
+  const count = (o, n, one, many) =>
+    (n === 1 ? (o.one || one) : (o.many || many)).split("{n}").join(n.toLocaleString(LOC));
+
   const svg = (w, h, inner, cls, data) =>
     '<svg class="hv ' + (cls || "") + '" viewBox="0 0 ' + w + " " + h +
     '" preserveAspectRatio="none"' + (data || "") + ">" + inner + CURSOR + "</svg>";
@@ -389,8 +395,7 @@ const MCharts = (function () {
           '" fill="none" stroke="currentColor" stroke-width="' +
           (size * 0.028).toFixed(1) + '" stroke-linecap="round" opacity="' +
           (n ? (0.22 + 0.6 * (n / top)).toFixed(2) : "0.09") + '" data-hv-cell="' +
-          esc(String(hIdx).padStart(2, "0") + ":00 &#183; " + n.toLocaleString(LOC) + " " +
-              (n === 1 ? (o.noun || "message") : (o.noun || "message") + "s")) + '"/>';
+          esc(String(hIdx).padStart(2, "0") + ":00 &#183; " + count(o, n, T("{n} message"), T("{n} messages"))) + '"/>';
       }
     }
 
@@ -493,7 +498,6 @@ const MCharts = (function () {
   function grid(pts, opt) {
     const o = opt || {};
     const cell = o.cell || 11, gap = 2;
-    const noun = o.noun || "item";
     const counts = [];
     for (let d = 0; d < 7; d++) counts.push(new Array(24).fill(0));
     let top = 0;
@@ -523,7 +527,7 @@ const MCharts = (function () {
           (y + cell / 2) + '" r="' + r.toFixed(2) + '" fill="currentColor" opacity="' +
           (n ? (0.16 + 0.74 * f).toFixed(2) : "0.07") + '" data-hv-cell="' +
           esc(DAYNAME[d] + " " + String(h).padStart(2, "0") + ":00 &#183; " +
-              n.toLocaleString(LOC) + " " + (n === 1 ? noun : noun + "s")) + '"/>';
+              count(o, n, T("{n} item"), T("{n} items"))) + '"/>';
       }
     }
     const w = 24 * (cell + gap) - gap, h = 7 * (cell + gap) - gap;
@@ -531,7 +535,7 @@ const MCharts = (function () {
       [1, 3, 5].map((d) => "<span>" + DAYNAME[d] + "</span>").join("") + "</div>" +
       '<div class="hv-gridmain"><svg class="hv hv-grid" viewBox="0 0 ' + w + " " + h +
       '">' + cells + "</svg>" +
-      '<div class="hv-gridx"><span>midnight</span><span>noon</span><span>23:00</span></div>' +
+      '<div class="hv-gridx"><span>' + T("midnight") + '</span><span>' + T("noon") + '</span><span>23:00</span></div>' +
       "</div></div>";
   }
 

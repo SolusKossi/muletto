@@ -68,7 +68,7 @@
     for (const pts of placeDays.values()) {
       items.push({
         at: pts[pts.length - 1].at, type: "place",
-        title: pts.length === 1 ? "Location recorded" : `${pts.length.toLocaleString(LOC)} locations recorded`,
+        title: pts.length === 1 ? T("Location recorded") : T("{n} locations recorded", { n: pts.length.toLocaleString(LOC) }),
         count: pts.length, points: pts,
         src: pts[0].src, srcLabel: pts[0].srcLabel, srcSlug: pts[0].srcSlug,
       });
@@ -101,22 +101,22 @@
      it. Objects and arrays nest and collapse; everything else prints. This is
      the honest view: if a date looks wrong here, the export is wrong. */
   function treeHtml(value, depth = 0) {
-    if (value === null || value === undefined) return `<span class="tv-null">none</span>`;
+    if (value === null || value === undefined) return `<span class="tv-null">${T("none")}</span>`;
     if (value instanceof Date) return `<span class="tv-date">${esc(value.toLocaleString(LOC))}</span>`;
     if (Array.isArray(value)) {
-      if (!value.length) return `<span class="tv-null">empty</span>`;
+      if (!value.length) return `<span class="tv-null">${T("empty")}</span>`;
       return `<details class="tv-node"${depth < 1 ? " open" : ""}>
-        <summary>${plural(value.length, "item", "items")}</summary>
+        <summary>${N("{n} item", "{n} items", value.length)}</summary>
         <div class="tv-kids">${value.slice(0, 200).map((v, i) =>
           `<div class="tv-row"><span class="tv-k">${i}</span>${treeHtml(v, depth + 1)}</div>`).join("")}
-        ${value.length > 200 ? `<div class="tv-row tv-null">${(value.length - 200).toLocaleString(LOC)} more not shown</div>` : ""}</div>
+        ${value.length > 200 ? `<div class="tv-row tv-null">${T("{n} more not shown", { n: (value.length - 200).toLocaleString(LOC) })}</div>` : ""}</div>
       </details>`;
     }
     if (typeof value === "object") {
       const keys = Object.keys(value).filter((k) => typeof value[k] !== "function");
-      if (!keys.length) return `<span class="tv-null">empty</span>`;
+      if (!keys.length) return `<span class="tv-null">${T("empty")}</span>`;
       return `<details class="tv-node"${depth < 1 ? " open" : ""}>
-        <summary>${plural(keys.length, "field", "fields")}</summary>
+        <summary>${N("{n} field", "{n} fields", keys.length)}</summary>
         <div class="tv-kids">${keys.map((k) =>
           `<div class="tv-row"><span class="tv-k">${esc(k)}</span>${treeHtml(value[k], depth + 1)}</div>`).join("")}</div>
       </details>`;
@@ -132,26 +132,26 @@
     if (it.type === "photo" || it.type === "video") {
       const m = it.media;
       return {
-        "file name": m.name,
-        "path inside the export": m.path,
-        "size on disk": m.size,
-        "taken": m.at || null,
-        "kind": m.kind,
-        "format": m.mime || "unknown",
-        "came from": it.srcLabel || "this export",
+        [T("file name")]: m.name,
+        [T("path inside the export")]: m.path,
+        [T("size on disk")]: m.size,
+        [T("taken")]: m.at || null,
+        [T("kind")]: m.kind,
+        [T("format")]: m.mime || T("unknown"),
+        [T("came from")]: it.srcLabel || T("this export"),
       };
     }
     if (it.type === "place") {
       return {
-        "points recorded": it.count,
-        "came from": it.srcLabel || "this export",
-        "coordinates": it.points.slice(0, 200).map((p) => ({
+        [T("points recorded")]: it.count,
+        [T("came from")]: it.srcLabel || T("this export"),
+        [T("coordinates")]: it.points.slice(0, 200).map((p) => ({
           latitude: p.lat, longitude: p.lon, at: p.at || null,
         })),
       };
     }
     if (it.type === "event") {
-      return { "what": it.title, "kind": it.kind || "activity", "when": it.at, "came from": it.srcLabel || "this export" };
+      return { [T("what")]: it.title, [T("kind")]: it.kind || T("activity"), [T("when")]: it.at, [T("came from")]: it.srcLabel || T("this export") };
     }
     return null;
   }
@@ -159,9 +159,9 @@
   /* ---------- the timeline ---------- */
 
   const TYPE_LABEL = {
-    photo: ["Photo", "Photos"], video: ["Video", "Videos"],
-    chat: ["Message", "Messages"], place: ["Location", "Locations"],
-    event: ["Activity", "Activities"],
+    photo: [T("Photo"), T("Photos")], video: [T("Video"), T("Videos")],
+    chat: [T("Message"), T("Messages")], place: [T("Location"), T("Locations")],
+    event: [T("Activity"), T("Activities")],
   };
   const typeName = (t, n) => (TYPE_LABEL[t] || [t, t])[n === 1 ? 0 : 1];
 
@@ -182,8 +182,8 @@
 
     if (!days.length) {
       panel.innerHTML = `<p class="muted small">${q
-        ? `Nothing in the timeline matches "${esc(q)}".`
-        : "Nothing in this export carries a date, so there is no timeline to build. The other views still work."}</p>`;
+        ? T("Nothing in the timeline matches \"{q}\".", { q: esc(q) })
+        : T("Nothing in this export carries a date, so there is no timeline to build. The other views still work.")}</p>`;
       return;
     }
 
@@ -194,9 +194,9 @@
     panel.innerHTML = `
       <div class="tl-head">
         <p class="muted small">
-          ${plural(items, "dated item", "dated items")} across
-          ${plural(days.length, "day", "days")}, newest first.
-          ${esc(fmtDay(oldest))} to ${esc(fmtDay(newest))}.
+          ${T("{items} across {days}, newest first.", { items: N("{n} dated item", "{n} dated items", items),
+            days: N("{n} day", "{n} days", days.length) })}
+          ${T("{from} to {to}", { from: esc(fmtDay(oldest)), to: esc(fmtDay(newest)) })}.
         </p>
         <div class="tl-legend">
           ${[...counts.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) =>
@@ -215,10 +215,10 @@
       tl.insertAdjacentHTML("beforeend", slice.map(dayHtml).join(""));
       drawn += slice.length;
       if (drawn >= days.length) {
-        more.innerHTML = `<p class="muted small">That is the whole record - back to ${esc(fmtDay(oldest))}.</p>`;
+        more.innerHTML = `<p class="muted small">${T("That is the whole record - back to {date}.", { date: esc(fmtDay(oldest)) })}</p>`;
         if (io) io.disconnect();
       } else {
-        more.innerHTML = `<button class="btn ghost" id="tl-load">Load earlier (${(days.length - drawn).toLocaleString(LOC)} days left)</button>`;
+        more.innerHTML = `<button class="btn ghost" id="tl-load">${T("Load earlier ({n} days left)", { n: (days.length - drawn).toLocaleString(LOC) })}</button>`;
         panel.querySelector("#tl-load").addEventListener("click", drawPage);
       }
     };
@@ -265,8 +265,8 @@
 
   function itemHtml(it, dk, i) {
     const sub = it.type === "chat"
-      ? plural(it.count, "message", "messages")
-      : it.type === "place" ? plural(it.count, "point", "points")
+      ? N("{n} message", "{n} messages", it.count)
+      : it.type === "place" ? N("{n} point", "{n} points", it.count)
       : typeName(it.type, 1);
     return `
       <article class="tl-item t-${it.type}" data-day="${esc(dk)}" data-i="${i}" tabindex="0">
@@ -297,7 +297,7 @@
 
     const box = document.createElement("div");
     box.className = "tl-detail";
-    box.innerHTML = `<p class="muted small">Loading...</p>`;
+    box.innerHTML = `<p class="muted small">${T("Loading...")}</p>`;
     row.after(box);
     row.classList.add("is-open");
     row.querySelector(".tl-chev").textContent = "-";
@@ -312,19 +312,19 @@
       const url = await ctx.thumb(it.media);
       head = url
         ? `<div class="tl-preview"><img src="${url}" alt="${esc(it.title)}" loading="lazy"></div>`
-        : `<p class="muted small">No preview available for this file. The data below is still exact.</p>`;
+        : `<p class="muted small">${T("No preview available for this file. The data below is still exact.")}</p>`;
     }
     const details = detailsOf(it);
     box.innerHTML = head + (details
       ? `<div class="tv">${treeHtml(details)}</div>`
-      : `<p class="muted small">Nothing further recorded for this item.</p>`);
+      : `<p class="muted small">${T("Nothing further recorded for this item.")}</p>`);
     if (ctx && ctx.hydrate) ctx.hydrate(box);
   }
 
   function msgHtml(m) {
     return `<div class="msg ${m.direction === "sent" ? "out" : "in"}">
       <div class="mh">${esc(m.from || "")}${m.at ? " - " + esc(fmtTime(m.at)) : ""}</div>
-      <div class="mb">${m.text ? esc(m.text) : `<em class="muted">${esc(m.type || "attachment")}</em>`}</div>
+      <div class="mb">${m.text ? esc(m.text) : `<em class="muted">${esc(m.type || T("attachment"))}</em>`}</div>
     </div>`;
   }
 
@@ -504,43 +504,45 @@
     }
     if (constant && constant.hit >= Math.max(2, spanYears.size - 1)) {
       cards.push({ icon: "person",
-        title: esc(constant.p.name) + " stayed a constant",
-        body: "In every one of the " + constant.hit + " years this export covers" +
-          (constant.hit === spanYears.size ? "" : " but one") + ", with " +
-          plural(constant.p.messages.length, "message", "messages") + " in total." });
+        title: T("{name} stayed a constant", { name: esc(constant.p.name) }),
+        body: (constant.hit === spanYears.size
+          ? T("In every one of the {n} years this export covers, with {msgs} in total.",
+              { n: constant.hit, msgs: N("{n} message", "{n} messages", constant.p.messages.length) })
+          : T("In every one of the {n} years this export covers but one, with {msgs} in total.",
+              { n: constant.hit, msgs: N("{n} message", "{n} messages", constant.p.messages.length) })) });
     }
 
     const run = viz && viz.busiestRun ? viz.busiestRun(all) : null;
     if (run) {
       cards.push({ icon: "clock",
-        title: "Your messages cluster between " + run.from + " and " + run.to,
-        body: run.share + " percent of everything falls in those " + run.hours +
-          " hours, against the " + Math.round((run.hours / 24) * 100) +
-          " percent an even day would put there." +
-          (run.quiet ? " Your quietest hour is " + run.quiet + "." : "") });
+        title: T("Your messages cluster between {from} and {to}", { from: run.from, to: run.to }),
+        body: T("{share} percent of everything falls in those {hours} hours, against the {even} " +
+          "percent an even day would put there.",
+          { share: run.share, hours: run.hours, even: Math.round((run.hours / 24) * 100) }) +
+          (run.quiet ? " " + T("Your quietest hour is {h}.", { h: run.quiet }) : "") });
     }
 
     const rail = cards.length
-      ? '<aside class="cs-rail"><h3>What changed</h3>' + cards.map((c) =>
+      ? '<aside class="cs-rail"><h3>' + T("What changed") + "</h3>" + cards.map((c) =>
           '<article class="cs-ins"><i data-icon="' + esc(c.icon) + '"></i>' +
           "<b>" + c.title + "</b><p>" + c.body + "</p></article>").join("") + "</aside>"
       : "";
 
     /* ---- a week in messages ---- */
     const runLine = run
-      ? "<p>You are most active between <b>" + esc(run.from) + "</b> and <b>" +
-        esc(run.to) + "</b> - " + run.share + " percent of everything.</p>" +
-        (run.quiet ? '<p class="muted">Your quietest hour is ' + esc(run.quiet) + ".</p>" : "")
+      ? "<p>" + T("You are most active between <b>{from}</b> and <b>{to}</b> - {share} percent of everything.",
+          { from: esc(run.from), to: esc(run.to), share: run.share }) + "</p>" +
+        (run.quiet ? '<p class="muted">' + T("Your quietest hour is {h}.", { h: esc(run.quiet) }) + "</p>" : "")
       : "";
 
     const week = viz
-      ? '<div class="cs-card"><h3>A week in messages</h3>' +
+      ? '<div class="cs-card"><h3>' + T("A week in messages") + "</h3>" +
         '<div class="cs-week">' +
-          '<div class="cs-clockpanel"><h4>By hour of the day</h4>' +
+          '<div class="cs-clockpanel"><h4>' + T("By hour of the day") + "</h4>" +
             '<div class="cs-clockrow">' + viz.clock(all, { size: 190 }) +
             '<div class="cs-clocktext">' + runLine + "</div></div></div>" +
-          '<div class="cs-heat"><h4>By day and hour</h4>' +
-            '<div class="cs-heatscroll">' + viz.grid(all, { noun: "message" }) + "</div>" +
+          '<div class="cs-heat"><h4>' + T("By day and hour") + "</h4>" +
+            '<div class="cs-heatscroll">' + viz.grid(all, { one: T("{n} message"), many: T("{n} messages") }) + "</div>" +
           "</div>" +
         "</div></div>"
       : "";
@@ -555,38 +557,37 @@
     for (const p of people) for (const [slug, label] of p.platforms) plats.set(slug, label);
     const joined = people.filter((p) => p.platforms.size > 1).length;
 
-    const who = '<div class="cs-card"><h3>Who you talk to</h3>' +
+    const who = '<div class="cs-card"><h3>' + T("Who you talk to") + "</h3>" +
       (viz ? viz.ranked(top, { limit: 8 }) : "") + "</div>";
 
     const where = plats.size
-      ? '<div class="cs-card"><h3>Where the messages came from</h3>' +
+      ? '<div class="cs-card"><h3>' + T("Where the messages came from") + "</h3>" +
         '<div class="cs-chips">' + [...plats.entries()].map(([slug, label]) =>
           '<span class="cs-chip"><i data-icon="' + esc(slug) + '"></i>' +
           esc(label) + "</span>").join("") + "</div>" +
         '<p class="muted small cs-platnote">' + (joined
-          ? plural(joined, "person appears", "people appear") +
-            " on more than one, joined here by name."
-          : "Exports do not share an identifier between platforms, so only " +
+          ? N("{n} person appears on more than one, joined here by name.",
+              "{n} people appear on more than one, joined here by name.", joined)
+          : T("Exports do not share an identifier between platforms, so only " +
             "identical names are joined automatically. Open anyone and use " +
-            '"Same person as" to join the rest yourself.') + "</p></div>"
+            "\"Same person as\" to join the rest yourself.")) + "</p></div>"
       : "";
 
     return '<div class="cs">' +
-      '<div class="cs-go"><button class="btn primary" id="cs-open">Explore the full chat ' +
-        "history</button>" +
-        '<span class="muted small">Every conversation, in full, with search.</span></div>' +
+      '<div class="cs-go"><button class="btn primary" id="cs-open">' + T("Explore the full chat history") + "</button>" +
+        '<span class="muted small">' + T("Every conversation, in full, with search.") + "</span></div>" +
       '<div class="cs-main">' +
-        '<div class="cs-card"><h3>Messages over time</h3>' +
-          '<p class="muted small">Every message, by the day it was sent.</p>' +
+        '<div class="cs-card"><h3>' + T("Messages over time") + "</h3>" +
+          '<p class="muted small">' + T("Every message, by the day it was sent.") + "</p>" +
           (axis ? '<div class="cs-years">' + axis + "</div>" : "") +
           '<div class="cs-vol">' +
             (viz && days.length > 3
-              ? viz.bars(days, { w: 900, h: 96, n: 130, meta: { unit: "messages" } })
+              ? viz.bars(days, { w: 900, h: 96, n: 130, meta: { unit: T("messages") } })
               : "") + "</div>" +
-          '<div class="cs-legend"><span class="cs-key">Fewer' +
+          '<div class="cs-legend"><span class="cs-key">' + T("Fewer") +
             [0.35, 0.55, 0.75, 0.95].map((o) =>
               '<i class="cs-keysw" style="opacity:' + o + '"></i>').join("") +
-            "More messages that day</span></div>" +
+            T("More messages that day") + "</span></div>" +
         "</div>" +
         rail +
       "</div>" +
@@ -617,16 +618,15 @@
 
     if (!people.length) {
       panel.innerHTML = q
-        ? `<div class="ex-empty"><h3>No conversations match "${esc(q)}"</h3></div>`
+        ? `<div class="ex-empty"><h3>${T("No conversations match \"{q}\"", { q: esc(q) })}</h3></div>`
         : (ctx && ctx.filtered)
-          ? `<div class="ex-empty"><h3>No messages in what you are looking at</h3>
-             <p class="muted">The filters are hiding the rest. There may well be messages in
-             the export outside them.</p>
-             <button class="btn secondary sm" id="ex-clearall">Clear the filters</button></div>`
-          : `<div class="ex-empty"><h3>No messages in this export</h3>
-             <p class="muted">Either it has no chat history, or the part that holds it was not
-             included in the request - some services put messages behind a separate
-             tick-box.</p></div>`;
+          ? `<div class="ex-empty"><h3>${T("No {what} in what you are looking at", { what: T("messages") })}</h3>
+             <p class="muted">${T("The filters are hiding the rest. There may well be {what} in " +
+             "the export outside them.", { what: T("messages") })}</p>
+             <button class="btn secondary sm" id="ex-clearall">${T("Clear the filters")}</button></div>`
+          : `<div class="ex-empty"><h3>${T("No {what} in this export", { what: T("messages") })}</h3>
+             <p class="muted">${T("Either it has no chat history, or the part that holds it was not " +
+             "included in the request - some services put messages behind a separate tick-box.")}</p></div>`;
       const cb = panel.querySelector("#ex-clearall");
       if (cb && ctx && ctx.clearFilters) cb.addEventListener("click", ctx.clearFilters);
       return;
@@ -666,13 +666,13 @@
       <button class="cs-back" id="cs-back" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M15 5l-7 7 7 7"/></svg>Back to the summary</button>
+          <path d="M15 5l-7 7 7 7"/></svg>${T("Back to the summary")}</button>
       <p class="muted small">
-        ${plural(people.length, "person", "people")}${q ? ` matching "${esc(q)}"` : ""}.
-        ${multi ? `${plural(multi, "person appears", "people appear")} on more than one platform.` : ""}
-        Exports do not share an identifier between platforms - Snapchat gives usernames and
-        Instagram gives display names - so only identical names are joined automatically.
-        Open anyone and use "Same person as" to join the rest yourself.
+        ${N("{n} person", "{n} people", people.length)}${q ? " " + T("matching \"{q}\"", { q: esc(q) }) : ""}.
+        ${multi ? N("{n} person appears on more than one platform.", "{n} people appear on more than one platform.", multi) : ""}
+        ${T("Exports do not share an identifier between platforms - Snapchat gives usernames and " +
+        "Instagram gives display names - so only identical names are joined automatically. " +
+        "Open anyone and use \"Same person as\" to join the rest yourself.")}
       </p>
       <div class="chatapp">
         <div class="ca-list" role="tablist">
@@ -683,7 +683,7 @@
                 <span class="ca-name">${esc(p.name)}</span>
                 <span class="ca-sub">
                   ${[...p.platforms.keys()].map((s) => `<i class="ca-ic" data-icon="${esc(s)}" title="${esc(p.platforms.get(s))}"></i>`).join("")}
-                  ${p.hitCount ? `${p.hitCount.toLocaleString(LOC)} matching` : plural(p.messages.length, "message", "messages")}
+                  ${p.hitCount ? T("{n} matching", { n: p.hitCount.toLocaleString(LOC) }) : N("{n} message", "{n} messages", p.messages.length)}
                 </span>
               </span>
             </button>`).join("")}
@@ -709,29 +709,29 @@
         <header class="ca-head">
           <div class="ca-htop">
             <h3>${esc(p.name)}</h3>
-            ${others.length ? `<label class="ca-link">Same person as
+            ${others.length ? `<label class="ca-link">${T("Same person as")}
               <select id="ca-link">
-                <option value="">choose...</option>
+                <option value="">${T("choose...")}</option>
                 ${others.map((o) => `<option value="${esc(o.key)}">${esc(o.name)}</option>`).join("")}
               </select></label>` : ""}
           </div>
           <div class="ca-hbot">
             <div class="ca-plats">
               ${platforms.map(([s, l]) => `<span class="ca-plat"><i data-icon="${esc(s)}"></i>${esc(l)}</span>`).join("")}
-              ${p.names.size > 1 ? `<button class="ca-unlink" id="ca-unlink" type="button">Separate again</button>` : ""}
+              ${p.names.size > 1 ? `<button class="ca-unlink" id="ca-unlink" type="button">${T("Separate again")}</button>` : ""}
             </div>
             <p class="muted small">
-              ${plural(p.messages.length, "message", "messages")}
+              ${N("{n} message", "{n} messages", p.messages.length)}
               ${platforms.length > 1
-                ? `across ${platforms.map(([, l]) => esc(l)).join(" and ")}, shown together`
-                : platforms.length ? `on ${esc(platforms[0][1])}` : ""}
-              ${p.messages.length > msgs.length ? ` - showing the most recent ${msgs.length}` : ""}
+                ? T("across {list}, shown together", { list: MI18N.LANG === "nb"
+                    ? platforms.map(([, l]) => esc(l)).join(" og ") : platforms.map(([, l]) => esc(l)).join(" and ") })
+                : platforms.length ? T("on {name}", { name: esc(platforms[0][1]) }) : ""}
+              ${p.messages.length > msgs.length ? " - " + T("showing the most recent {n}", { n: msgs.length }) : ""}
             </p>
           </div>
         </header>
-        ${p.names.size > 1 ? `<p class="ca-known muted small">Known as
-          ${[...p.names].map((n) => `<strong>${esc(n)}</strong>`).join(" and ")},
-          shown as one person.</p>` : ""}
+        ${p.names.size > 1 ? `<p class="ca-known muted small">${T("Known as {names}, shown as one person.", {
+          names: [...p.names].map((n) => `<strong>${esc(n)}</strong>`).join(MI18N.LANG === "nb" ? " og " : " and ") })}</p>` : ""}
         <div class="ca-msgs">
           ${msgs.length ? msgs.map((m, j) => {
             const prev = msgs[j - 1];
@@ -742,9 +742,9 @@
                    ${platforms.length > 1 && m.srcSlug ? `<i class="ca-ic" data-icon="${esc(m.srcSlug)}" title="${esc(m.srcLabel || "")}"></i>` : ""}
                    ${esc(m.from || "")}${m.at ? " - " + esc(fmtTime(m.at)) : ""}
                  </div>
-                 <div class="mb">${m.text ? esc(m.text) : `<em class="muted">${esc(m.type || "attachment")}</em>`}</div>
+                 <div class="mb">${m.text ? esc(m.text) : `<em class="muted">${esc(m.type || T("attachment"))}</em>`}</div>
                </div>`;
-          }).join("") : `<p class="muted small">No messages.</p>`}
+          }).join("") : `<p class="muted small">${T("No messages.")}</p>`}
         </div>`;
       if (ctx && ctx.hydrate) ctx.hydrate(thread);
       const box = thread.querySelector(".ca-msgs");
@@ -783,13 +783,13 @@
     const pts = lib.places.filter((p) => isFinite(p.lat) && isFinite(p.lon));
     if (!pts.length) {
       panel.innerHTML = (ctx && ctx.filtered)
-        ? `<div class="ex-empty"><h3>No places in what you are looking at</h3>
-           <p class="muted">The filters are hiding the rest.</p>
-           <button class="btn secondary sm" id="ex-clearall">Clear the filters</button></div>`
-        : `<div class="ex-empty"><h3>No places recorded</h3>
-           <p class="muted">Nothing here carries coordinates. Location usually arrives either as
-           its own history file, or inside the photos themselves - and a service that strips
-           location on export leaves neither.</p></div>`;
+        ? `<div class="ex-empty"><h3>${T("No places in what you are looking at")}</h3>
+           <p class="muted">${T("The filters are hiding the rest.")}</p>
+           <button class="btn secondary sm" id="ex-clearall">${T("Clear the filters")}</button></div>`
+        : `<div class="ex-empty"><h3>${T("No places recorded")}</h3>
+           <p class="muted">${T("Nothing here carries coordinates. Location usually arrives either as " +
+           "its own history file, or inside the photos themselves - and a service that strips " +
+           "location on export leaves neither.")}</p></div>`;
       const cb = panel.querySelector("#ex-clearall");
       if (cb && ctx && ctx.clearFilters) cb.addEventListener("click", ctx.clearFilters);
       return;
@@ -802,16 +802,15 @@
     panel.innerHTML = `
       <div class="map-head">
         <p class="muted small">
-          ${plural(pts.length, "recorded location", "recorded locations")}${dated.length < pts.length
-            ? `, ${(pts.length - dated.length).toLocaleString(LOC)} without a date` : ""}.
-          Drawn from the coordinates in your export. The coastline ships with the page,
-          so no map service is contacted and nothing about where you have been leaves
-          this device.
+          ${N("{n} recorded location", "{n} recorded locations", pts.length)}${dated.length < pts.length
+            ? ", " + T("{n} without a date", { n: (pts.length - dated.length).toLocaleString(LOC) }) : ""}.
+          ${T("Drawn from the coordinates in your export. The coastline ships with the page, " +
+          "so no map service is contacted and nothing about where you have been leaves this device.")}
         </p>
-        <button class="btn secondary sm" id="map-reset" type="button">Fit to my places</button>
-        ${years.length > 1 ? `<label class="map-years">Year
+        <button class="btn secondary sm" id="map-reset" type="button">${T("Fit to my places")}</button>
+        ${years.length > 1 ? `<label class="map-years">${T("Year")}
           <select id="map-year">
-            <option value="">all</option>
+            <option value="">${T("all")}</option>
             ${years.map((y) => `<option value="${y}">${y}</option>`).join("")}
           </select></label>` : ""}
       </div>
@@ -859,9 +858,9 @@
              style="--r:${(2 + 4 * Math.sqrt(b.n / max)).toFixed(2)}"
              data-n="${b.n}" data-lat="${b.lat.toFixed(4)}" data-lon="${b.lon.toFixed(4)}"/>`).join("")}
         </g>`;
-      foot.textContent = `${plural(list.length, "distinct spot", "distinct spots")} from ` +
-        `${plural(use.length, "point", "points")}${year ? ` in ${year}` : ""}. ` +
-        `Bigger circles mean more points recorded there.`;
+      foot.textContent = T("{spots} from {points}", { spots: N("{n} distinct spot", "{n} distinct spots", list.length),
+        points: N("{n} point", "{n} points", use.length) }) + (year ? " " + T("in {year}", { year }) : "") + ". " +
+        T("Bigger circles mean more points recorded there.");
     };
 
     /* ---------- framing, zoom and pan ----------
@@ -980,7 +979,7 @@
       tip.hidden = false;
       tip.style.left = `${e.clientX - r.left}px`;
       tip.style.top = `${e.clientY - r.top}px`;
-      tip.textContent = `${c.dataset.lat}, ${c.dataset.lon} - ${plural(Number(c.dataset.n), "point", "points")}`;
+      tip.textContent = `${c.dataset.lat}, ${c.dataset.lon} - ${N("{n} point", "{n} points", Number(c.dataset.n))}`;
     });
     svg.addEventListener("mouseleave", () => { tip.hidden = true; });
 
