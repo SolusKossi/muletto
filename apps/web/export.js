@@ -20,7 +20,6 @@ const MExport = (function () {
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
-  const plural = (n, one, many) => `${n.toLocaleString(LOC)} ${n === 1 ? one : many}`;
   const fmtBytes = (n) => {
     if (!n) return "0 B";
     const u = ["B", "KB", "MB", "GB", "TB"];
@@ -33,37 +32,37 @@ const MExport = (function () {
      cannot drift apart. */
   const LAYOUTS = {
     bucket: {
-      label: "The folders you asked for",
-      hint: "People/, Notes/, Other/ - the buckets from your sorting instruction",
+      label: T("The folders you asked for"),
+      hint: T("People/, Notes/, Other/ - the buckets from your sorting instruction"),
       dir: (m) => [m.bucket || "Other"],
       /* Hidden until a plan has been applied. See plan.js. */
       when: (lib) => lib.media.some((m) => m.bucket),
     },
     "year-month": {
-      label: "Year, then month",
-      hint: "2024/07/IMG_0421.jpg - what most photo apps expect",
+      label: T("Year, then month"),
+      hint: T("2024/07/IMG_0421.jpg - what most photo apps expect"),
       dir: (m) => (m.at ? [String(m.at.getFullYear()), pad(m.at.getMonth() + 1)] : ["undated"]),
     },
     year: {
-      label: "Year only",
-      hint: "2024/IMG_0421.jpg - fewer, larger folders",
+      label: T("Year only"),
+      hint: T("2024/IMG_0421.jpg - fewer, larger folders"),
       dir: (m) => (m.at ? [String(m.at.getFullYear())] : ["undated"]),
     },
     "source-year": {
-      label: "Service, then year",
-      hint: "Apple/2024/IMG_0421.jpg - keeps each export recognisable",
+      label: T("Service, then year"),
+      hint: T("Apple/2024/IMG_0421.jpg - keeps each export recognisable"),
       dir: (m) => [String(m.srcLabel || "unknown").replace(/[\\/:*?"<>|]/g, "-")]
         .concat(m.at ? [String(m.at.getFullYear())] : ["undated"]),
     },
     type: {
-      label: "Photos and videos apart",
-      hint: "Photos/2024/... and Videos/2024/...",
+      label: T("Photos and videos apart"),
+      hint: T("Photos/2024/... and Videos/2024/..."),
       dir: (m) => [m.kind === "video" ? "Videos" : "Photos"]
         .concat(m.at ? [String(m.at.getFullYear())] : ["undated"]),
     },
     flat: {
-      label: "One folder",
-      hint: "Everything together - names are prefixed with the date so they still sort",
+      label: T("One folder"),
+      hint: T("Everything together - names are prefixed with the date so they still sort"),
       dir: () => [],
     },
   };
@@ -141,21 +140,21 @@ const MExport = (function () {
   function stepHtml() {
     const e = estimate();
     const t = state.lib.media.filter((m) => m.drop).length;
-    const steps = ["What to take", "How to arrange it", "Where to put it"];
+    const steps = [T("What to take"), T("How to arrange it"), T("Where to put it")];
     return `
       <header class="xw-head">
         <div>
           <h2>${esc(steps[state.step])}</h2>
-          <p class="muted small">${plural(e.n, "file", "files")}, ${esc(fmtBytes(e.bytes))} selected</p>
+          <p class="muted small">${T("{files}, {size} selected", { files: N("{n} file", "{n} files", e.n), size: esc(fmtBytes(e.bytes)) })}</p>
         </div>
-        <button class="xw-x" id="xw-close" aria-label="Close">&times;</button>
+        <button class="xw-x" id="xw-close" aria-label="${T("Close")}">&times;</button>
       </header>
       <ol class="xw-steps">${steps.map((s, i) =>
         `<li class="${i === state.step ? "on" : i < state.step ? "done" : ""}">${esc(s)}</li>`).join("")}</ol>
       <div class="xw-body">${[whatHtml(t), howHtml(), whereHtml()][state.step]}</div>
       <footer class="xw-foot">
-        ${state.step ? '<button class="btn secondary" id="xw-back">Back</button>' : "<span></span>"}
-        <button class="btn primary" id="xw-next">${state.step === 2 ? "Save it" : "Continue"}</button>
+        ${state.step ? '<button class="btn secondary" id="xw-back">' + T("Back") + "</button>" : "<span></span>"}
+        <button class="btn primary" id="xw-next">${state.step === 2 ? T("Save it") : T("Continue")}</button>
       </footer>`;
   }
 
@@ -165,32 +164,33 @@ const MExport = (function () {
       ${dropped ? `
       <label class="xw-opt">
         <input type="checkbox" data-o="onlyKept" ${o.onlyKept ? "checked" : ""} />
-        <span><b>Only what you chose to keep</b>
-        <em>${plural(dropped, "file was", "files were")} set aside in Clean up. Uncheck to take everything anyway.</em></span>
-      </label>` : `<p class="muted small">Every photo and video in this library. Nothing has been set aside in Clean up.</p>`}
+        <span><b>${T("Only what you chose to keep")}</b>
+        <em>${N("{n} file was set aside in Clean up. Uncheck to take everything anyway.",
+          "{n} files were set aside in Clean up. Uncheck to take everything anyway.", dropped)}</em></span>
+      </label>` : `<p class="muted small">${T("Every photo and video in this library. Nothing has been set aside in Clean up.")}</p>`}
 
       <label class="xw-opt">
         <input type="checkbox" data-o="includeData" ${o.includeData ? "checked" : ""} />
-        <span><b>The data files too</b>
-        <em>The JSON and CSV your services shipped - messages, history, account records.
-        Off by default because most people want the pictures.</em></span>
+        <span><b>${T("The data files too")}</b>
+        <em>${T("The JSON and CSV your services shipped - messages, history, account records. " +
+        "Off by default because most people want the pictures.")}</em></span>
       </label>
 
       ${state.lib.media.some((m) => m.heif) ? `
       <label class="xw-opt">
         <input type="checkbox" data-o="toJpeg" ${o.toJpeg ? "checked" : ""} />
-        <span><b>Turn HEIC photos into JPEG</b>
-        <em>${plural(state.lib.media.filter((m) => m.heif).length, "photo is", "photos are")}
-        HEIC, which is what an iPhone shoots and what Apple exports. Windows, most older
-        software and a lot of the web cannot open one. Converting is done here on your
-        machine, keeps the date and place, and roughly doubles the file size.</em></span>
+        <span><b>${T("Turn HEIC photos into JPEG")}</b>
+        <em>${N("{n} photo is HEIC", "{n} photos are HEIC", state.lib.media.filter((m) => m.heif).length)},
+        ${T("which is what an iPhone shoots and what Apple exports. Windows, most older " +
+        "software and a lot of the web cannot open one. Converting is done here on your " +
+        "machine, keeps the date and place, and roughly doubles the file size.")}</em></span>
       </label>` : ""}
 
       <label class="xw-opt">
         <input type="checkbox" data-o="includeWork" ${o.includeWork ? "checked" : ""} />
-        <span><b>A Muletto work file</b>
-        <em>What was worked out about these files, so a future export recognises them
-        and nothing is done twice. Tiny, and holds no photos or messages.</em></span>
+        <span><b>${T("A Muletto work file")}</b>
+        <em>${T("What was worked out about these files, so a future export recognises them " +
+        "and nothing is done twice. Tiny, and holds no photos or messages.")}</em></span>
       </label>`;
   }
 
@@ -198,7 +198,7 @@ const MExport = (function () {
     const o = state.opt;
     return `
       <fieldset class="xw-group">
-        <legend>Folders</legend>
+        <legend>${T("Folders")}</legend>
         ${Object.keys(LAYOUTS).filter((k) =>
           !LAYOUTS[k].when || LAYOUTS[k].when(state.lib)).map((k) => `
           <label class="xw-radio">
@@ -209,37 +209,37 @@ const MExport = (function () {
 
       <label class="xw-opt">
         <input type="checkbox" data-o="datePrefix" ${o.datePrefix ? "checked" : ""} />
-        <span><b>Put the date at the front of every filename</b>
-        <em>2024-07-14_IMG_0421.jpg. Useful anywhere that sorts by name and ignores dates.</em></span>
+        <span><b>${T("Put the date at the front of every filename")}</b>
+        <em>${T("2024-07-14_IMG_0421.jpg. Useful anywhere that sorts by name and ignores dates.")}</em></span>
       </label>
 
       <label class="xw-opt">
         <input type="checkbox" data-o="writeDates" ${o.writeDates ? "checked" : ""} />
-        <span><b>Write the real date into each photo</b>
-        <em>Exports often lose it, and then everything looks like it was taken the day you
-        downloaded it. JPEG only - other formats are copied untouched.</em></span>
+        <span><b>${T("Write the real date into each photo")}</b>
+        <em>${T("Exports often lose it, and then everything looks like it was taken the day you " +
+        "downloaded it. JPEG only - other formats are copied untouched.")}</em></span>
       </label>
 
       ${state.lib.media.some((m) => m.caption) ? `
       <label class="xw-opt">
         <input type="checkbox" data-o="writeCaptions" ${o.writeCaptions ? "checked" : ""} />
-        <span><b>Write the descriptions into the photos</b>
-        <em>As standard metadata, so Lightroom, Immich, digiKam and Photos can search on
-        them. Without this the descriptions stay here and are lost when you move the files.</em></span>
+        <span><b>${T("Write the descriptions into the photos")}</b>
+        <em>${T("As standard metadata, so Lightroom, Immich, digiKam and Photos can search on " +
+        "them. Without this the descriptions stay here and are lost when you move the files.")}</em></span>
       </label>` : ""}
 
       <label class="xw-opt">
         <input type="checkbox" data-o="sidecars" ${o.sidecars ? "checked" : ""} />
-        <span><b>A small JSON beside each photo</b>
-        <em>Its date, place, which service it came from and where it sat in the original
-        export. For anything that reads sidecars, and for keeping the provenance.</em></span>
+        <span><b>${T("A small JSON beside each photo")}</b>
+        <em>${T("Its date, place, which service it came from and where it sat in the original " +
+        "export. For anything that reads sidecars, and for keeping the provenance.")}</em></span>
       </label>
 
       <label class="xw-opt">
         <input type="checkbox" data-o="manifest" ${o.manifest ? "checked" : ""} />
-        <span><b>An index of everything written</b>
-        <em>One CSV listing every file, its date and its origin, so you can check the
-        copy against what you had.</em></span>
+        <span><b>${T("An index of everything written")}</b>
+        <em>${T("One CSV listing every file, its date and its origin, so you can check the " +
+        "copy against what you had.")}</em></span>
       </label>`;
   }
 
@@ -248,29 +248,29 @@ const MExport = (function () {
     const canFolder = !!window.showDirectoryPicker;
     return `
       <fieldset class="xw-group">
-        <legend>Destination</legend>
+        <legend>${T("Destination")}</legend>
         <label class="xw-radio${canFolder ? "" : " disabled"}">
           <input type="radio" name="target" data-o="target" value="folder" ${o.target === "folder" ? "checked" : ""} ${canFolder ? "" : "disabled"} />
-          <span><b>Straight into a folder</b>
+          <span><b>${T("Straight into a folder")}</b>
           <em>${canFolder
-            ? "You pick the folder - a drive, a NAS share, anywhere this machine can write. Nothing is held in memory, so size does not matter."
-            : "Needs Chrome or Edge. This browser cannot write folders directly."}</em></span>
+            ? T("You pick the folder - a drive, a NAS share, anywhere this machine can write. Nothing is held in memory, so size does not matter.")
+            : T("Needs Chrome or Edge. This browser cannot write folders directly.")}</em></span>
         </label>
         <label class="xw-radio">
           <input type="radio" name="target" data-o="target" value="zip" ${o.target === "zip" ? "checked" : ""} />
-          <span><b>One zip file</b>
-          <em>Downloaded like any other file. Written as it goes rather than built up
-          first, so a large library will not exhaust the tab.</em></span>
+          <span><b>${T("One zip file")}</b>
+          <em>${T("Downloaded like any other file. Written as it goes rather than built up " +
+          "first, so a large library will not exhaust the tab.")}</em></span>
         </label>
         <label class="xw-radio">
           <input type="radio" name="target" data-o="target" value="work" ${o.target === "work" ? "checked" : ""} />
-          <span><b>Just the work file</b>
-          <em>No photos. Only what Muletto worked out, to bring back later or move to
-          another machine.</em></span>
+          <span><b>${T("Just the work file")}</b>
+          <em>${T("No photos. Only what Muletto worked out, to bring back later or move to " +
+          "another machine.")}</em></span>
         </label>
       </fieldset>
-      <p class="xw-fine">Wherever it goes, it goes there from this machine. Muletto has no
-      server to send it to.</p>`;
+      <p class="xw-fine">${T("Wherever it goes, it goes there from this machine. Muletto has no " +
+      "server to send it to.")}</p>`;
   }
 
   function wire(el) {
@@ -418,7 +418,7 @@ const MExport = (function () {
     const list = pool();
     const o = state.opt;
     state.step = 2;
-    const note = MNotify.task("Saving your library");
+    const note = MNotify.task(T("Saving your library"));
     const res = { written: 0, failed: 0, bytes: 0, repaired: 0, unrepairable: 0,
                   captioned: 0, sidecars: 0, target: o.target, started: new Date() };
     const rows = [["path", "name", "taken", "service", "bytes", "originalPath"]];
@@ -433,7 +433,7 @@ const MExport = (function () {
       }
 
       const writer = o.target === "folder" ? await folderWriter() : await zipWriter();
-      if (!writer) { note.failed("Cancelled - nothing was written."); close(); return; }
+      if (!writer) { note.failed(T("Cancelled - nothing was written.")); close(); return; }
 
       let i = 0;
       for (const m of list) {
@@ -470,12 +470,12 @@ const MExport = (function () {
           res.bytes += (bytes && bytes.length !== undefined) ? bytes.length : (size || 0);
         } catch { res.failed++; }
         if (i % 5 === 0 || i === list.length) {
-          note.say(`${i.toLocaleString(LOC)} of ${list.length.toLocaleString(LOC)} - ${fmtBytes(res.bytes)}`);
+          note.say(T("{n} of {of}", { n: i.toLocaleString(LOC), of: list.length.toLocaleString(LOC) }) + " - " + fmtBytes(res.bytes));
         }
       }
 
       if (o.includeData) {
-        note.say("Adding the data files...");
+        note.say(T("Adding the data files..."));
         for (const f of state.lib.files) {
           try {
             const bytes = await MZip.extract(state.sources[f.src || 0].file, f.entry);
@@ -499,7 +499,7 @@ const MExport = (function () {
       res.where = await writer.done();
       finish(res, note);
     } catch (err) {
-      note.failed("Could not finish saving: " + (err && err.message ? err.message : "unknown error"));
+      note.failed(T("Could not finish saving: {why}", { why: err && err.message ? err.message : T("unknown error") }));
       state.step = 1;
       draw();
     }
@@ -515,8 +515,8 @@ const MExport = (function () {
     // decided first. A failure to read that setting must not lose the summary,
     // which is the only place the results are shown.
     drawAfterExport().catch(draw);
-    note.done(`Saved ${plural(res.written, "file", "files")}`, {
-      body: `${fmtBytes(res.bytes)} written. Nothing was uploaded.`,
+    note.done(N("Saved {n} file", "Saved {n} files", res.written), {
+      body: T("{size} written. Nothing was uploaded.", { size: fmtBytes(res.bytes) }),
       goto: () => { if (!document.getElementById("exportx")) { state.step = 3; open({ lib: state.lib, sources: state.sources, entries: state.entries }); } },
     });
   }
@@ -559,7 +559,7 @@ const MExport = (function () {
           await w.close();
         }
       },
-      async done() { return "the folder you chose"; },
+      async done() { return T("the folder you chose"); },
     };
   }
 
@@ -574,18 +574,18 @@ const MExport = (function () {
       try {
         handle = await window.showSaveFilePicker({
           suggestedName: filename,
-          types: [{ description: "Zip archive", accept: { "application/zip": [".zip"] } }],
+          types: [{ description: T("Zip archive"), accept: { "application/zip": [".zip"] } }],
         });
       } catch { return null; }
       const w = await handle.createWritable();
       sink = w;
-      finishSink = async () => "the file you chose";
+      finishSink = async () => T("the file you chose");
     } else {
       const chunks = [];
       sink = new WritableStream({ write: (c) => { chunks.push(c); } });
       finishSink = async () => {
         download(filename, new Blob(chunks, { type: "application/zip" }));
-        return "your downloads folder";
+        return T("your downloads folder");
       };
     }
 
@@ -609,44 +609,44 @@ const MExport = (function () {
     const r = state.result || {};
     const secs = Math.max(1, Math.round((r.ended - r.started) / 1000));
     const guides = [
-      ["dest-nas-generic", "Put it on a NAS"],
-      ["dest-drive", "Keep it on an external drive"],
-      ["dest-immich", "Run your own photo server"],
-      ["dest-icloud", "Put it back into iCloud Photos"],
-      ["dest-google-photos", "Put it back into Google Photos"],
+      ["dest-nas-generic", T("Put it on a NAS")],
+      ["dest-drive", T("Keep it on an external drive")],
+      ["dest-immich", T("Run your own photo server")],
+      ["dest-icloud", T("Put it back into iCloud Photos")],
+      ["dest-google-photos", T("Put it back into Google Photos")],
     ];
     return `
       <header class="xw-head">
         <div>
-          <h2>Saved</h2>
-          <p class="muted small">Into ${esc(r.where || "your downloads")}, in ${secs}s.</p>
+          <h2>${T("Saved")}</h2>
+          <p class="muted small">${T("Into {where}, in {secs}s.", { where: esc(r.where || T("your downloads")), secs })}</p>
         </div>
-        <button class="xw-x" id="xw-close" aria-label="Close">&times;</button>
+        <button class="xw-x" id="xw-close" aria-label="${T("Close")}">&times;</button>
       </header>
       <div class="xw-body">
         <div class="xw-tiles">
-          <div><b>${(r.written || 0).toLocaleString(LOC)}</b><span>files written</span></div>
-          <div><b>${esc(fmtBytes(r.bytes || 0))}</b><span>on disk</span></div>
-          ${r.repaired ? `<div><b>${r.repaired.toLocaleString(LOC)}</b><span>dates repaired</span></div>` : ""}
-          ${r.captioned ? `<div><b>${r.captioned.toLocaleString(LOC)}</b><span>descriptions written in</span></div>` : ""}
-          ${r.failed ? `<div class="bad"><b>${r.failed.toLocaleString(LOC)}</b><span>could not be written</span></div>` : ""}
+          <div><b>${(r.written || 0).toLocaleString(LOC)}</b><span>${T("files written")}</span></div>
+          <div><b>${esc(fmtBytes(r.bytes || 0))}</b><span>${T("on disk")}</span></div>
+          ${r.repaired ? `<div><b>${r.repaired.toLocaleString(LOC)}</b><span>${T("dates repaired")}</span></div>` : ""}
+          ${r.captioned ? `<div><b>${r.captioned.toLocaleString(LOC)}</b><span>${T("descriptions written in")}</span></div>` : ""}
+          ${r.failed ? `<div class="bad"><b>${r.failed.toLocaleString(LOC)}</b><span>${T("could not be written")}</span></div>` : ""}
         </div>
         <ul class="xw-did">
-          <li>Arranged as <strong>${esc((LAYOUTS[state.opt.layout] || {}).label || "")}</strong>.</li>
+          <li>${T("Arranged as <strong>{layout}</strong>.", { layout: esc((LAYOUTS[state.opt.layout] || {}).label || "") })}</li>
           ${state.opt.onlyKept && state.lib.media.some((m) => m.drop)
-            ? `<li>Left out ${plural(state.lib.media.filter((m) => m.drop).length, "file", "files")} you set aside in Clean up.</li>` : ""}
-          ${r.unrepairable ? `<li>${plural(r.unrepairable, "file", "files")} could not have a date written in - only JPEG can.</li>` : ""}
-          ${r.captioned ? `<li>Wrote ${plural(r.captioned, "description", "descriptions")} into the photos themselves, where Lightroom, Immich, digiKam and Photos can search them.</li>` : ""}
-          ${r.drawn ? `<li>Drew the caption back onto ${plural(r.drawn, "memory", "memories")} that Snapchat had split into two files, so each one is the picture as you wrote it rather than a photo and a black square.</li>` : ""}
-          ${r.captions ? `<li>${plural(r.captions, "caption", "captions")} could not be drawn on - a video would have to be re-encoded - so each was written beside its memory as <strong>-caption.png</strong>.</li>` : ""}
-          ${r.converted ? `<li>Turned ${plural(r.converted, "HEIC photo", "HEIC photos")} into JPEG, so they open on anything - and, because a date can only be written into a JPEG, those now carry their real capture date as well.</li>` : ""}
-          ${r.sidecars ? `<li>Wrote ${plural(r.sidecars, "sidecar", "sidecars")} beside the pictures.</li>` : ""}
-          ${r.dataFiles ? `<li>Included ${plural(r.dataFiles, "data file", "data files")} from the original exports.</li>` : ""}
-          ${state.opt.manifest ? "<li>Wrote <strong>muletto-index.csv</strong> listing everything.</li>" : ""}
-          ${r.workFile ? `<li>Included a work file (${esc(fmtBytes(r.workFile))}) so a later export recognises these files.</li>` : ""}
-          <li><strong>Your original archives were not touched</strong>, and nothing was uploaded.</li>
+            ? `<li>${N("Left out {n} file you set aside in Clean up.", "Left out {n} files you set aside in Clean up.", state.lib.media.filter((m) => m.drop).length)}</li>` : ""}
+          ${r.unrepairable ? `<li>${N("{n} file could not have a date written in - only JPEG can.", "{n} files could not have a date written in - only JPEG can.", r.unrepairable)}</li>` : ""}
+          ${r.captioned ? `<li>${N("Wrote {n} description into the photos themselves, where Lightroom, Immich, digiKam and Photos can search them.", "Wrote {n} descriptions into the photos themselves, where Lightroom, Immich, digiKam and Photos can search them.", r.captioned)}</li>` : ""}
+          ${r.drawn ? `<li>${N("Drew the caption back onto {n} memory that Snapchat had split into two files, so it is the picture as you wrote it rather than a photo and a black square.", "Drew the caption back onto {n} memories that Snapchat had split into two files, so each one is the picture as you wrote it rather than a photo and a black square.", r.drawn)}</li>` : ""}
+          ${r.captions ? `<li>${N("{n} caption could not be drawn on - a video would have to be re-encoded - so it was written beside its memory as <strong>-caption.png</strong>.", "{n} captions could not be drawn on - a video would have to be re-encoded - so each was written beside its memory as <strong>-caption.png</strong>.", r.captions)}</li>` : ""}
+          ${r.converted ? `<li>${N("Turned {n} HEIC photo into JPEG, so it opens on anything - and, because a date can only be written into a JPEG, it now carries its real capture date as well.", "Turned {n} HEIC photos into JPEG, so they open on anything - and, because a date can only be written into a JPEG, those now carry their real capture date as well.", r.converted)}</li>` : ""}
+          ${r.sidecars ? `<li>${N("Wrote {n} sidecar beside the pictures.", "Wrote {n} sidecars beside the pictures.", r.sidecars)}</li>` : ""}
+          ${r.dataFiles ? `<li>${N("Included {n} data file from the original exports.", "Included {n} data files from the original exports.", r.dataFiles)}</li>` : ""}
+          ${state.opt.manifest ? "<li>" + T("Wrote <strong>muletto-index.csv</strong> listing everything.") + "</li>" : ""}
+          ${r.workFile ? `<li>${T("Included a work file ({size}) so a later export recognises these files.", { size: esc(fmtBytes(r.workFile)) })}</li>` : ""}
+          <li>${T("<strong>Your original archives were not touched</strong>, and nothing was uploaded.")}</li>
         </ul>
-        <h3 class="xw-h3">What now</h3>
+        <h3 class="xw-h3">${T("What now")}</h3>
         <div class="xw-guides">
           ${guides.map(([slug, label]) =>
             `<a class="xw-guide" href="guides/${slug}.html">${esc(label)}<span class="arrow">-&gt;</span></a>`).join("")}
@@ -654,8 +654,8 @@ const MExport = (function () {
         ${state.askDonation ? MDonate.html() : ""}
       </div>
       <footer class="xw-foot">
-        <button class="btn secondary" id="xw-again">Save another copy</button>
-        <button class="btn primary" id="xw-done">Done</button>
+        <button class="btn secondary" id="xw-again">${T("Save another copy")}</button>
+        <button class="btn primary" id="xw-done">${T("Done")}</button>
       </footer>`;
   }
 

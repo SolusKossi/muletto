@@ -612,8 +612,8 @@ const MCharts = (function () {
   function readout(kind, pt, meta) {
     const when = kind === "hv-bars" || kind === "hv-ridge" ? monthOf(pt.t) : day(pt.t);
     if (kind === "hv-band" && pt.lo !== undefined && pt.hi !== undefined) {
-      return "<b>" + esc(fmtValue(pt.lo, meta)) + " to " + esc(fmtValue(pt.hi, meta)) +
-        "</b><em>" + esc(when) + ", middle " + esc(fmtValue(pt.v, meta)) + "</em>";
+      return "<b>" + T("{from} to {to}", { from: esc(fmtValue(pt.lo, meta)), to: esc(fmtValue(pt.hi, meta)) }) +
+        "</b><em>" + esc(when) + ", " + T("middle {v}", { v: esc(fmtValue(pt.v, meta)) }) + "</em>";
     }
     return "<b>" + esc(fmtValue(pt.v, meta)) + "</b><em>" + esc(when) + "</em>";
   }

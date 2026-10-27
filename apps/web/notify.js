@@ -58,7 +58,7 @@ const MNotify = (function () {
     hub = document.createElement("div");
     hub.className = "nt-hub";
     hub.innerHTML =
-      '<button class="nt-bell" id="nt-bell" type="button" aria-label="Notifications">' +
+      '<button class="nt-bell" id="nt-bell" type="button" aria-label="' + T("Notifications") + '">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
         'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
         '<path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5"/>' +
@@ -66,8 +66,8 @@ const MNotify = (function () {
         '<span class="nt-dot" id="nt-dot" hidden></span>' +
       "</button>" +
       '<div class="nt-panel" id="nt-panel" hidden>' +
-        '<header><strong>Notifications</strong>' +
-        '<button class="nt-clear" id="nt-clear" type="button">Clear</button></header>' +
+        '<header><strong>' + T("Notifications") + "</strong>" +
+        '<button class="nt-clear" id="nt-clear" type="button">' + T("Clear") + "</button></header>" +
         '<div class="nt-list" id="nt-list"></div>' +
       "</div>";
     park();
@@ -148,7 +148,7 @@ const MNotify = (function () {
   function drawList() {
     const list = q("#nt-list");
     if (!items.length) {
-      list.innerHTML = '<p class="nt-empty">Nothing yet. Anything Muletto does will show up here.</p>';
+      list.innerHTML = '<p class="nt-empty">' + T("Nothing yet. Anything Muletto does will show up here.") + "</p>";
       return;
     }
     list.innerHTML = items.map((n) =>
@@ -197,7 +197,7 @@ const MNotify = (function () {
     el.innerHTML = '<span class="nt-ic k-' + n.kind + '">' + icon(n.kind) + "</span>" +
       "<span><b>" + esc(n.title) + "</b>" + (n.body ? "<em>" + esc(n.body) + "</em>" : "") +
       (n.goto && n.action ? '<button class="nt-go">' + esc(n.action) + ' <span class="arrow">-&gt;</span></button>' : "") + "</span>" +
-      '<button class="nt-x" aria-label="Dismiss">&times;</button>';
+      '<button class="nt-x" aria-label="' + T("Dismiss") + '">&times;</button>';
     box.appendChild(el);
 
     /* At most two on screen at once.
@@ -225,7 +225,7 @@ const MNotify = (function () {
         });
       }
       hidden += over;
-      more.textContent = hidden + (hidden === 1 ? " more notice" : " more notices");
+      more.textContent = N("{n} more notice", "{n} more notices", hidden);
       clearTimeout(moreTimer);
       moreTimer = setTimeout(() => { hidden = 0; if (more) more.remove(); }, 8000);
     }

@@ -934,8 +934,8 @@
     const { from, to } = state.range;
     const span = fullSpan();
     card.textContent = !from && !to
-      ? (span ? `${fmtShort(span.from)} to ${fmtShort(span.to)}` : "no dates")
-      : `${from ? fmtShort(from) : "the start"} to ${to ? fmtShort(to) : "now"}`;
+      ? (span ? T("{from} to {to}", { from: fmtShort(span.from), to: fmtShort(span.to) }) : T("no dates"))
+      : T("{from} to {to}", { from: from ? fmtShort(from) : T("the start"), to: to ? fmtShort(to) : T("now") });
     root.querySelector(".ex-stat.range").classList.toggle("set", !!(from || to));
   }
 

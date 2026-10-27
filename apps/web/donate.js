@@ -74,17 +74,17 @@ const MDonate = (function () {
 
   function html() {
     return '<section class="dn" id="dn">' +
-      "<h3>That is everything, and it was free.</h3>" +
-      "<p>No account, no licence, nothing held back, and none of it was uploaded. " +
+      "<h3>" + T("That is everything, and it was free.") + "</h3>" +
+      "<p>" + T("No account, no licence, nothing held back, and none of it was uploaded. " +
       "If it turned out to be worth something to you, you can say so. Most people " +
-      "who do give " + esc(CURRENCY + TYPICAL) + ".</p>" +
+      "who do give {typical}.", { typical: esc(CURRENCY + TYPICAL) }) + "</p>" +
       '<div class="dn-row">' +
         AMOUNTS.map((a) =>
           '<button class="btn secondary dn-amt" data-amt="' + a + '">' +
           esc(CURRENCY + a) + "</button>").join("") +
-        '<button class="btn ghost dn-no" id="dn-no">No thanks</button>' +
+        '<button class="btn ghost dn-no" id="dn-no">' + T("No thanks") + "</button>" +
       "</div>" +
-      '<p class="dn-fine">Nothing changes either way, and you will not be asked again.</p>' +
+      '<p class="dn-fine">' + T("Nothing changes either way, and you will not be asked again.") + "</p>" +
     "</section>";
   }
 
@@ -101,7 +101,7 @@ const MDonate = (function () {
         // Opened rather than navigated, so a half-finished export summary is
         // not thrown away by leaving the page.
         window.open(LINK.replace("{amount}", String(amt)), "_blank", "noopener");
-        box.innerHTML = "<h3>Thank you.</h3><p>That is genuinely appreciated.</p>";
+        box.innerHTML = "<h3>" + T("Thank you.") + "</h3><p>" + T("That is genuinely appreciated.") + "</p>";
       });
     });
 

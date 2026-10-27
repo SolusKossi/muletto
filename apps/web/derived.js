@@ -72,9 +72,9 @@ const MDerived = (function () {
      plainly costs one branch. */
   async function digest(bytes) {
     if (typeof crypto === "undefined" || !crypto.subtle) {
-      throw new Error(
+      throw new Error(T(
         "This page needs a secure connection to identify files. Open it over " +
-        "https (or localhost) rather than http.");
+        "https (or localhost) rather than http."));
     }
     const buf = await crypto.subtle.digest("SHA-256", bytes);
     const view = new Uint8Array(buf);
@@ -261,7 +261,7 @@ const MDerived = (function () {
     let bytes = new Uint8Array(await file.arrayBuffer());
     if (bytes[0] === 0x1f && bytes[1] === 0x8b) {          // gzip
       if (typeof DecompressionStream === "undefined") {
-        throw new Error("This browser cannot read a compressed work file.");
+        throw new Error(T("This browser cannot read a compressed work file."));
       }
       const ds = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
       bytes = new Uint8Array(await new Response(ds).arrayBuffer());
@@ -270,10 +270,10 @@ const MDerived = (function () {
     try {
       data = JSON.parse(new TextDecoder().decode(bytes));
     } catch (e) {
-      throw new Error("That does not look like a Muletto work file.");
+      throw new Error(T("That does not look like a Muletto work file."));
     }
     if (!data || data.format !== FORMAT) {
-      throw new Error("That file was written by a different version of Muletto.");
+      throw new Error(T("That file was written by a different version of Muletto."));
     }
     const added = await record(data.records || []);
     if (data.index && data.index.length) {

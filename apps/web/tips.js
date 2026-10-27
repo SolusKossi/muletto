@@ -119,7 +119,7 @@ const MTips = (function () {
 
   /* The marker itself, so every explained control looks the same. */
   function dot(text) {
-    return '<span class="tip-dot" tabindex="0" role="button" aria-label="What is this?" ' +
+    return '<span class="tip-dot" tabindex="0" role="button" aria-label="' + T("What is this?") + '" ' +
       'data-tip="' + String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;")
         .replace(/>/g, "&gt;").replace(/"/g, "&quot;") + '">?</span>';
   }

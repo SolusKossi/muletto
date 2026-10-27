@@ -847,7 +847,7 @@ const MParse = (function () {
           });
         }
         if (res.records) {
-          lib.insights.push({ n: res.records.toLocaleString(LOC), label: "Health records" });
+          lib.insights.push({ n: res.records.toLocaleString(LOC), label: T("Health records") });
         }
       } catch (err) {
         lib.notes.push("The Health export in this archive could not be read. Everything else in it opened normally.");
@@ -925,8 +925,8 @@ const MParse = (function () {
     if (sidecars.size) {
       lib.insights.push({
         n: (capped ? sidecars.size : withDate).toLocaleString(LOC),
-        label: "Dates recoverable",
-        note: "from Takeout metadata", accent: true,
+        label: T("Dates recoverable"),
+        note: T("from Takeout metadata"), accent: true,
       });
       lib.notes.push(
         "Google stores each photo's real date and location in a separate metadata file rather than in the photo itself. " +
@@ -1063,7 +1063,7 @@ const MParse = (function () {
         });
       }
       if (series.size) {
-        lib.insights.push({ n: series.size.toLocaleString(LOC), label: "Fit measurements" });
+        lib.insights.push({ n: series.size.toLocaleString(LOC), label: T("Fit measurements") });
       }
     }
 
@@ -1127,8 +1127,8 @@ const MParse = (function () {
       }
       if (indexed) {
         lib.insights.push({
-          n: indexed.toLocaleString(LOC), label: "Emails indexed",
-          note: "headers only, from " + size + " of mail", accent: true,
+          n: indexed.toLocaleString(LOC), label: T("Emails indexed"),
+          note: T("headers only, from {size} of mail", { size }), accent: true,
         });
         lib.notes.push("Your Gmail mailbox (" + size + ") was indexed by header: sender, subject and date. Message bodies and attachments are deliberately not loaded.");
       } else {
@@ -1229,7 +1229,7 @@ const MParse = (function () {
     if (lib.conversations.length) {
       lib.insights.push({
         n: lib.conversations.reduce((s, c) => s + c.messages.length, 0).toLocaleString(LOC),
-        label: "Messages", note: "across " + lib.conversations.length.toLocaleString(LOC) + " conversations", accent: true,
+        label: T("Messages"), note: N("across {n} conversation", "across {n} conversations", lib.conversations.length), accent: true,
       });
     }
     return lib;
@@ -1304,8 +1304,8 @@ const MParse = (function () {
 
     if (healthRows) {
       lib.insights.push({
-        n: healthRows.toLocaleString(LOC), label: "Health records",
-        note: "steps, sleep and workouts", accent: true,
+        n: healthRows.toLocaleString(LOC), label: T("Health records"),
+        note: T("steps, sleep and workouts"), accent: true,
       });
     }
     if (!lib.media.length && lib.tables.length) {
@@ -1812,17 +1812,17 @@ const MParse = (function () {
     if (posts || comments) {
       lib.insights.push({
         n: (posts + comments).toLocaleString(LOC),
-        label: "Posts and comments",
+        label: T("Posts and comments"),
         note: posts && comments
-          ? plural(posts, "post", "posts") + " and " + plural(comments, "comment", "comments")
-          : "in this export",
+          ? T("{posts} and {comments}", { posts: N("{n} post", "{n} posts", posts), comments: N("{n} comment", "{n} comments", comments) })
+          : T("in this export"),
         accent: true,
       });
     }
     if (found.get("subs")) {
       lib.insights.push({
         n: (found.get("subs")).toLocaleString(LOC),
-        label: "Subreddits followed", note: "at the time of the export",
+        label: T("Subreddits followed"), note: T("at the time of the export"),
       });
     }
 
@@ -1908,12 +1908,12 @@ const MParse = (function () {
       const artists = new Set(real.map((p) => p.artist).filter(Boolean));
       const tracks = new Set(real.map((p) => p.track + " - " + p.artist));
 
-      lib.insights.push({ n: real.length.toLocaleString(LOC), label: "Tracks played",
-        note: "of " + plays.length.toLocaleString(LOC) + " entries; the rest were " +
-              "under thirty seconds, which Spotify counts as a skip", accent: true });
-      lib.insights.push({ n: hours.toLocaleString(LOC), label: "Hours of listening" });
-      lib.insights.push({ n: artists.size.toLocaleString(LOC), label: "Different artists" });
-      lib.insights.push({ n: tracks.size.toLocaleString(LOC), label: "Different tracks" });
+      lib.insights.push({ n: real.length.toLocaleString(LOC), label: T("Tracks played"),
+        note: T("of {n} entries; the rest were under thirty seconds, which Spotify counts as a skip",
+              { n: plays.length.toLocaleString(LOC) }), accent: true });
+      lib.insights.push({ n: hours.toLocaleString(LOC), label: T("Hours of listening") });
+      lib.insights.push({ n: artists.size.toLocaleString(LOC), label: T("Different artists") });
+      lib.insights.push({ n: tracks.size.toLocaleString(LOC), label: T("Different tracks") });
 
       const span = [plays[0].at, plays[plays.length - 1].at];
       lib.notes.push("The history runs from " + span[0].toISOString().slice(0, 10) +
@@ -1940,7 +1940,7 @@ const MParse = (function () {
       }
       const countries = new Set(plays.map((p) => p.country).filter(Boolean));
       if (countries.size > 1) {
-        lib.insights.push({ n: String(countries.size), label: "Countries listened from",
+        lib.insights.push({ n: String(countries.size), label: T("Countries listened from"),
           note: [...countries].sort().join(", ") });
       }
 
@@ -2111,7 +2111,7 @@ const MParse = (function () {
       if (t.at) lib.events.push({ at: t.at, kind: "tweet", label: t.text.slice(0, 140) || "Posted" });
     }
     if (tweets.length) {
-      lib.insights.push({ n: tweets.length.toLocaleString(LOC), label: "Posts", accent: true });
+      lib.insights.push({ n: tweets.length.toLocaleString(LOC), label: T("Posts"), accent: true });
       lib.tables.push({
         name: "Posts", path: tweets[0].path,
         columns: ["When", "Text", "Likes", "Reposts"],
@@ -2169,8 +2169,8 @@ const MParse = (function () {
     }
     if (dmCount) {
       lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-      lib.insights.push({ n: dmCount.toLocaleString(LOC), label: "Direct messages",
-        note: "across " + lib.conversations.length.toLocaleString(LOC) + " conversations",
+      lib.insights.push({ n: dmCount.toLocaleString(LOC), label: T("Direct messages"),
+        note: N("across {n} conversation", "across {n} conversations", lib.conversations.length),
         accent: true });
       if (unnamed) {
         lib.notes.push("X names a conversation after the account numbers in it and " +
@@ -2305,8 +2305,8 @@ const MParse = (function () {
 
     if (total) {
       lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-      lib.insights.push({ n: total.toLocaleString(LOC), label: "Messages",
-        note: "across " + lib.conversations.length.toLocaleString(LOC) + " channels",
+      lib.insights.push({ n: total.toLocaleString(LOC), label: T("Messages"),
+        note: N("across {n} channel", "across {n} channels", lib.conversations.length),
         accent: true });
       /* The thing people are surprised by: a Discord package holds only what
          you typed. Everybody else's half of every conversation is missing,
@@ -2446,14 +2446,14 @@ const MParse = (function () {
     }
 
     if (orders) {
-      lib.insights.push({ n: orders.toLocaleString(LOC), label: "Orders", accent: true });
+      lib.insights.push({ n: orders.toLocaleString(LOC), label: T("Orders"), accent: true });
       if (spend > 0) {
         lib.insights.push({ n: Math.round(spend).toLocaleString(LOC),
-          label: "Total ordered", note: currency || "in whatever the export was priced in" });
+          label: T("Total ordered"), note: currency || T("in whatever the export was priced in") });
       }
     }
     if (archives.size > 1) {
-      lib.insights.push({ n: String(archives.size), label: "Archives in this export" });
+      lib.insights.push({ n: String(archives.size), label: T("Archives in this export") });
     }
 
     /* The three things people are surprised by, and none of them is a fault
@@ -2593,7 +2593,7 @@ const MParse = (function () {
           if (!kind && !what) continue;
           lib.events.push({
             at, kind: kind ? kind.kind : "record",
-            label: (what || (kind ? kind.label : "Activity")).slice(0, 140),
+            label: (what || (kind ? T(kind.label) : T("Activity"))).slice(0, 140),
           });
           const key = kind ? kind.label : "Other records";
           counts.set(key, (counts.get(key) || 0) + 1);
@@ -2603,11 +2603,11 @@ const MParse = (function () {
 
     let first = true;
     for (const [label, n] of [...counts.entries()].sort((a, b) => b[1] - a[1])) {
-      lib.insights.push({ n: n.toLocaleString(LOC), label, accent: first });
+      lib.insights.push({ n: n.toLocaleString(LOC), label: T(label), accent: first });
       first = false;
     }
     if (placed) {
-      lib.insights.push({ n: placed.toLocaleString(LOC), label: "Locations on the map" });
+      lib.insights.push({ n: placed.toLocaleString(LOC), label: T("Locations on the map") });
     }
 
     /* The one that saves somebody an afternoon. */
@@ -2784,19 +2784,19 @@ const MParse = (function () {
     }
 
     if (connections) {
-      lib.insights.push({ n: connections.toLocaleString(LOC), label: "Connections", accent: true });
+      lib.insights.push({ n: connections.toLocaleString(LOC), label: T("Connections"), accent: true });
       if (noEmail) {
-        lib.insights.push({ n: noEmail.toLocaleString(LOC), label: "Connections with no address",
-          note: "an address is only here if that person chose to share it" });
+        lib.insights.push({ n: noEmail.toLocaleString(LOC), label: T("Connections with no address"),
+          note: T("an address is only here if that person chose to share it") });
       }
     }
     if (messages) {
       lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-      lib.insights.push({ n: messages.toLocaleString(LOC), label: "Messages",
-        note: "across " + lib.conversations.length.toLocaleString(LOC) + " conversations",
+      lib.insights.push({ n: messages.toLocaleString(LOC), label: T("Messages"),
+        note: N("across {n} conversation", "across {n} conversations", lib.conversations.length),
         accent: true });
     }
-    if (posts) lib.insights.push({ n: posts.toLocaleString(LOC), label: "Posts" });
+    if (posts) lib.insights.push({ n: posts.toLocaleString(LOC), label: T("Posts") });
 
     if (droppedPreamble) {
       lib.notes.push("LinkedIn writes a paragraph of explanation above the columns in " +
@@ -3001,14 +3001,14 @@ const MParse = (function () {
     }
 
     if (days.size || sleeps.length) {
-      lib.insights.push({ n: records.toLocaleString(LOC), label: "Health readings",
+      lib.insights.push({ n: records.toLocaleString(LOC), label: T("Health readings"),
         accent: true });
       lib.insights.push({ n: String(byMetric.size + (sleeps.length ? 1 : 0)),
-        label: "Measurements recorded" });
+        label: T("Measurements recorded") });
       const all = [...days.keys()].sort();
       if (all.length) {
-        lib.insights.push({ n: all.length.toLocaleString(LOC), label: "Days covered",
-          note: all[0] + " to " + all[all.length - 1] });
+        lib.insights.push({ n: all.length.toLocaleString(LOC), label: T("Days covered"),
+          note: T("{from} to {to}", { from: all[0], to: all[all.length - 1] }) });
       }
     }
 
@@ -3212,9 +3212,8 @@ const MParse = (function () {
 
     if (total) {
       lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-      lib.insights.push({ n: total.toLocaleString(LOC), label: "Messages",
-        note: "across " + lib.conversations.length.toLocaleString(LOC) +
-              plural(lib.conversations.length, " chat", " chats").replace(/^\d+\s*/, " "),
+      lib.insights.push({ n: total.toLocaleString(LOC), label: T("Messages"),
+        note: N("across {n} chat", "across {n} chats", lib.conversations.length),
         accent: true });
     }
 
@@ -3240,7 +3239,7 @@ const MParse = (function () {
 
     await classifyFiles(lib, entries, file);
     if (attached) {
-      lib.insights.push({ n: attached.toLocaleString(LOC), label: "Messages with an attachment" });
+      lib.insights.push({ n: attached.toLocaleString(LOC), label: T("Messages with an attachment") });
     }
     return lib;
   }
@@ -3425,7 +3424,7 @@ const MParse = (function () {
       if (!table.length) continue;
       lib.tables.push({ name: sec.label, path: big.name,
         columns: ["When", "What"], rows: table.reverse() });
-      lib.insights.push({ n: rows.length.toLocaleString(LOC), label: sec.label,
+      lib.insights.push({ n: rows.length.toLocaleString(LOC), label: T(sec.label),
         accent: sec.key === "watch" });
       found.push(sec.key);
       if (dated < rows.length) {
@@ -3465,8 +3464,8 @@ const MParse = (function () {
       }
       if (total) {
         lib.conversations.sort((a, b) => b.messages.length - a.messages.length);
-        lib.insights.push({ n: total.toLocaleString(LOC), label: "Messages",
-          note: "across " + lib.conversations.length.toLocaleString(LOC) + " conversations",
+        lib.insights.push({ n: total.toLocaleString(LOC), label: T("Messages"),
+          note: N("across {n} conversation", "across {n} conversations", lib.conversations.length),
           accent: true });
       }
     }
@@ -3556,7 +3555,7 @@ const MParse = (function () {
       }
     }
     if (activities) {
-      lib.insights.push({ n: activities.toLocaleString(LOC), label: "Activities", accent: true });
+      lib.insights.push({ n: activities.toLocaleString(LOC), label: T("Activities"), accent: true });
     }
 
     /* The GPS files themselves. */
@@ -3574,8 +3573,8 @@ const MParse = (function () {
       placed++;
     }
     if (placed) {
-      lib.insights.push({ n: placed.toLocaleString(LOC), label: "Activities placed on the map",
-        note: "from the start of each GPX track" });
+      lib.insights.push({ n: placed.toLocaleString(LOC), label: T("Activities placed on the map"),
+        note: T("from the start of each GPX track") });
     }
     if (gpx.length > GPX_CAP) {
       lib.notes.push("Read the start of the first " + GPX_CAP + " GPX tracks. " +

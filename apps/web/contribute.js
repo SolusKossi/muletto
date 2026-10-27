@@ -146,36 +146,36 @@ const MContribute = (function () {
       '<div class="xw" role="dialog" aria-modal="true" aria-labelledby="cb-t">' +
         '<header class="xw-head"><div>' +
           '<h2 id="cb-t">' + (manual
-            ? "Help us read this export properly"
-            : "Some of this export was not read") + "</h2>" +
+            ? T("Help us read this export properly")
+            : T("Some of this export was not read")) + "</h2>" +
           '<p class="muted small">' + (manual
-            ? "Muletto has no reader written for " + esc(who) + " yet, so it is showing " +
+            ? T("Muletto has no reader written for {who} yet, so it is showing " +
               "the contents as the export wrote them. Telling us what this format looks " +
-              "like is what turns that into proper support."
-            : s.unread.toLocaleString(LOC) + " of " +
-              s.total.toLocaleString(LOC) + " files produced nothing. That is not always " +
+              "like is what turns that into proper support.", { who: esc(who) })
+            : T("{n} of {of} files produced nothing. That is not always " +
               "wrong, but it is more than usual, and it probably means Muletto does not " +
-              "understand part of what " + who + " sent you.") +
+              "understand part of what {who} sent you.",
+              { n: s.unread.toLocaleString(LOC), of: s.total.toLocaleString(LOC), who: esc(who) })) +
           "</p></div></header>" +
         '<div class="xw-body">' +
-          "<p>If you want to help, the fastest thing is to open an issue. It takes a " +
-            "minute and you do not have to send your data:</p>" +
+          "<p>" + T("If you want to help, the fastest thing is to open an issue. It takes a " +
+            "minute and you do not have to send your data:") + "</p>" +
           '<ul class="cb-list">' +
-            "<li>The button below opens a pre-filled issue on GitHub.</li>" +
-            "<li>Paste in the structure report, which lists folder names, file types and " +
-              "column headers with <strong>no values</strong> in it.</li>" +
-            "<li>Read it first. If there is anything in it you would rather not share, " +
-              "describe the problem in words instead.</li>" +
+            "<li>" + T("The button below opens a pre-filled issue on GitHub.") + "</li>" +
+            "<li>" + T("Paste in the structure report, which lists folder names, file types and " +
+              "column headers with <strong>no values</strong> in it.") + "</li>" +
+            "<li>" + T("Read it first. If there is anything in it you would rather not share, " +
+              "describe the problem in words instead.") + "</li>" +
           "</ul>" +
-          '<p class="muted small">Nothing is sent from this page. The button opens a ' +
-            "form, and you decide what goes in it.</p>" +
+          '<p class="muted small">' + T("Nothing is sent from this page. The button opens a " +
+            "form, and you decide what goes in it.") + "</p>" +
         "</div>" +
         '<footer class="xw-foot">' +
-          '<button class="btn ghost" id="cb-no">No thanks</button>' +
+          '<button class="btn ghost" id="cb-no">' + T("No thanks") + "</button>" +
           '<div class="xw-footl">' +
-            '<button class="btn secondary" id="cb-report">Get the report</button>' +
+            '<button class="btn secondary" id="cb-report">' + T("Get the report") + "</button>" +
             '<a class="btn primary" id="cb-go" href="' + url + '" target="_blank" ' +
-              'rel="noopener noreferrer">Open an issue</a>' +
+              'rel="noopener noreferrer">' + T("Open an issue") + "</a>" +
           "</div>" +
         "</footer>" +
       "</div>";
