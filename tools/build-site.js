@@ -146,6 +146,15 @@ const EN_STRINGS = {
   titleDest: "{provider}: where to keep your data | Muletto",
   h1Service: "How to export your data from {provider}",
   h1Dest: "Move your data to {provider}",
+  /* For the two destinations whose name is already a phrase ("Back into
+     Google Photos"). Run through h1Dest they read "Move your data to Back into
+     Google Photos", in English as badly as in Norwegian. */
+  h1DestBack: "Put your data back into {provider}",
+  metaWait: "Wait:",
+  metaTakes: "Takes",
+  theGuide: "The {provider} guide",
+  bitWrong: "The bit people get wrong",
+  related: "Related",
   kicker: "Requesting the GDPR export, what arrives, and how to open it.",
 
   introService: "{provider} is required to give you a copy of the data it holds about you, " +
@@ -851,8 +860,33 @@ function translation(g, dir, lang) {
       (missing.length > 4 ? ", ..." : "") };
   }
   /* Anything the translation left out that is not prose - the slug, the URL,
-     the enums - comes from the English, which is where it belongs. */
-  return { ok: true, guide: { ...g, ...t } };
+     the enums, the screenshots - comes from the English, which is where it
+     belongs. At every depth, not just the top.
+
+     This was `{ ...g, ...t }`, which only kept English fields at the top
+     level. Any nested object the translation carried replaced the English one
+     whole: request is { label } in Norwegian, so request.url vanished and 22
+     portal buttons on the /no/ pages rendered as href="", which opens the
+     guide itself. Every step's screenshot went the same way, so no Norwegian
+     guide showed a single image. The comment above described the behaviour
+     everyone assumed and the code did not have. */
+  return { ok: true, guide: overlay(g, t) };
+}
+
+/* The translation over the English: objects merged key by key, arrays item by
+   item, and a value the translation does not carry left as the English one. */
+function overlay(base, top) {
+  if (Array.isArray(base) && Array.isArray(top)) {
+    return base.map((b, i) => (i < top.length ? overlay(b, top[i]) : b))
+      .concat(top.slice(base.length));
+  }
+  if (base && top && typeof base === "object" && typeof top === "object" &&
+      !Array.isArray(base) && !Array.isArray(top)) {
+    const out = { ...base };
+    for (const k of Object.keys(top)) out[k] = k in base ? overlay(base[k], top[k]) : top[k];
+    return out;
+  }
+  return top === undefined ? base : top;
 }
 
 
@@ -865,6 +899,15 @@ const DATA_LABEL = {
 };
 
 function isDest(g) { return g.slug.startsWith("dest-"); }
+
+/* "Back into Google Photos" is a name that is already a sentence, so it gets
+   its own heading rather than being dropped into "Move your data to ...". The
+   English provider field is the test, because it is the same in both builds. */
+function destHeading(g, dest) {
+  if (!dest) return T("h1Service", { provider: g.provider });
+  const back = /^(?:Back into|Tilbake til) (.+)$/.exec(g.provider);
+  return back ? T("h1DestBack", { provider: back[1] }) : T("h1Dest", { provider: g.provider });
+}
 
 /* Screenshots a guide asks for but that are not on disk yet. */
 const MISSING_SHOTS = new Set();
@@ -1076,11 +1119,16 @@ function guideIntro(g) {
 /* Screenshots are redacted crops produced by tools/redact-screenshot.py, so
    they carry no account details. Width and height are inlined to stop the
    article reflowing as they load. */
+/* The screenshots live once, in guides/img. A Norwegian guide is at
+   /no/guides/x.html, so a bare "img/" from there asked for /no/guides/img/,
+   which does not exist - invisible while the shallow merge was dropping the
+   images from those pages altogether, and the first thing to break once it
+   stopped. */
 function shot(s) {
   const dim = SHOTS[s.image];
   if (!dim) MISSING_SHOTS.add(s.image);
   return `<figure class="figshot">
-                <span class="figshot-frame"><img src="img/${esc(s.image)}" alt="${
+                <span class="figshot-frame"><img src="${LANG === "nb" ? "../../guides/img/" : "img/"}${esc(s.image)}" alt="${
     esc(s.alt || "")}" loading="lazy"` +
     (dim ? ` width="${dim.w}" height="${dim.h}"` : "") + `></span>` +
     (s.caption ? `
@@ -1168,11 +1216,11 @@ function guidePage(g, all, dests, lang, alt) {
       </nav>
 
       <header class="art-head">
-        <h1>${esc(T(dest ? "h1Dest" : "h1Service", { provider: g.provider }))}</h1>
+        <h1>${esc(destHeading(g, dest))}</h1>
         ${dest ? "" : `<p class="art-kicker">${esc(T("kicker"))}</p>`}
         <div class="art-meta">
           <span class="badge ${esc(g.difficulty)}">${esc(T("diff_" + g.difficulty))}</span>
-          <span class="muted">${dest ? "Takes" : "Wait:"} ${esc(g.wait_time)}</span>
+          <span class="muted">${esc(T(dest ? "metaTakes" : "metaWait"))} ${esc(g.wait_time)}</span>
         </div>
         <p class="art-intro">${esc(guideIntro(g))}</p>
       </header>
@@ -1395,7 +1443,7 @@ function translateCollection(name, key, items, dir, lang) {
         (missing.length === 1 ? "" : "s") + ": " + missing.slice(0, 3).join(", ") + ")");
       continue;
     }
-    out.push({ ...item, ...nb });
+    out.push(overlay(item, nb));   // deep, for the same reason as translation()
   }
   if (short.length) {
     return { ok: false, why: short.length + " of " + items.length +
@@ -2004,7 +2052,7 @@ function flowPage(f, all, dests, lang, alt) {
       <header class="art-head">
         <h1>${esc(f.title)}</h1>
         <div class="art-meta">
-          <span class="muted">Takes ${esc(f.effort)}</span>
+          <span class="muted">${esc(T("metaTakes"))} ${esc(f.effort)}</span>
         </div>
         <p class="art-intro">${esc(f.outcome)}</p>
       </header>
@@ -2014,7 +2062,7 @@ function flowPage(f, all, dests, lang, alt) {
         <p>${esc(f.why)}</p>
       </div>
 
-      ${f.watch_out ? `<div class="note flow-warn"><strong>The bit people get wrong.</strong>
+      ${f.watch_out ? `<div class="note flow-warn"><strong>${esc(T("bitWrong"))}.</strong>
         ${esc(f.watch_out)}</div>` : ""}
 
       ${f.stumbles && f.stumbles.length ? `<section class="flow-stumbles">
@@ -2029,7 +2077,7 @@ function flowPage(f, all, dests, lang, alt) {
         from
           ? `<p>${esc(T("flStep1FromBody", { wait: from.wait_time }))}</p>`
           : `<p>${esc(T("flStep1AllBody"))}</p>`,
-        from ? { href: sib(from.slug), label: `The ${from.provider} guide` }
+        from ? { href: sib(from.slug), label: T("theGuide", { provider: from.provider }) }
              : { href: topHref("guides.html"), label: T("everyGuide") })}
 
       ${step(2, T("flStep2"),
@@ -2049,7 +2097,7 @@ function flowPage(f, all, dests, lang, alt) {
       ${step(4, to ? T("flStep4To", { provider: to.provider }) : T("flStep4"),
         `<p>${esc(T("flStep4Body"))}</p>
          ${to ? `<p>${esc(T("flStep4Dest"))}</p>` : ""}`,
-        to ? { href: sib(to.slug), label: `The ${to.provider} guide` } : null)}
+        to ? { href: sib(to.slug), label: T("theGuide", { provider: to.provider }) } : null)}
 
       <div class="flow-end">
         <h3>${esc(T("flDone"))}</h3>
@@ -2081,7 +2129,7 @@ function flowPage(f, all, dests, lang, alt) {
  * are the better answer. A page that solves the problem outright is the one
  * that gets linked to and the one that ranks; a page that only says to use us
  * does neither, and would be worse at the job these pages exist to do. */
-function problemPage(p, all, lang, alt) {
+function problemPage(p, all, lang, alt, probs) {
   const canonical = SITE + (lang === "nb" ? "/no/guides/" : "/guides/") + p.slug + ".html";
   const paras = (v) => (Array.isArray(v) ? v : [v]).map((s) => `<p>${esc(s)}</p>`).join("\n        ");
 
@@ -2106,7 +2154,7 @@ function problemPage(p, all, lang, alt) {
 
   const linkFor = (slug) => {
     const g = all.find((x) => x.slug === slug);
-    return g ? { href: sib(slug), label: `The ${g.provider} guide` } : null;
+    return g ? { href: sib(slug), label: T("theGuide", { provider: g.provider }) } : null;
   };
 
   const body = `    <article class="wrap article problem">
@@ -2132,7 +2180,7 @@ function problemPage(p, all, lang, alt) {
       </section>
 
       ${p.gotcha ? `<div class="note prob-gotcha">
-        <strong>${esc(p.gotcha_title || "The bit people get wrong")}</strong>
+        <strong>${esc(p.gotcha_title || T("bitWrong"))}</strong>
         <p>${esc(p.gotcha)}</p>
       </div>` : ""}
 
@@ -2146,7 +2194,7 @@ function problemPage(p, all, lang, alt) {
       ${p.muletto ? `<section class="prob-ours">
         <h2>${esc(T("prMuletto"))}</h2>
         <p>${esc(p.muletto)}</p>
-        <p><a class="btn primary" href="${topHref('app.html')}">Open an export <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
+        <p><a class="btn primary" href="${topHref('app.html')}">${esc(T("open"))} <svg class="arrow" viewBox="0 0 20 12" aria-hidden="true" focusable="false"><path class="a-line" d="M1 6h15"/><path class="a-head" d="M12 1.6 16.4 6 12 10.4"/></svg></a></p>
       </section>` : ""}
 
       ${p.prevent ? `<section class="prob-prevent">
@@ -2157,11 +2205,15 @@ function problemPage(p, all, lang, alt) {
       ${p.evidence ? `<p class="confirmed-line">${esc(p.evidence)}</p>` : ""}
 
       ${(p.related || []).length ? `<section class="prob-related">
-        <h3>Related</h3>
+        <h3>${esc(T("related"))}</h3>
         <ul class="flow-list">${(p.related || []).map((slug) => {
           const g = linkFor(slug);
           if (g) return `<li><a href="${esc(g.href)}">${esc(g.label)}</a></li>`;
-          return `<li><a href="${esc(sib(slug))}">${esc(slug.replace(/-/g, " "))}</a></li>`;
+          /* Another problem page, named by its own title in this language.
+             This used to print the slug - "why tgz will not open" - which
+             reads as a broken link in English and as English in Norwegian. */
+          const q = (probs || []).find((x) => x.slug === slug);
+          return `<li><a href="${esc(sib(slug))}">${esc(q ? q.title : slug.replace(/-/g, " "))}</a></li>`;
         }).join("")}</ul>
       </section>` : ""}
     </article>`;
@@ -2339,7 +2391,7 @@ function main() {
   for (const p of problems) {
     const has = nbProbSet.has(p.slug);
     fs.writeFileSync(path.join(GUIDES, p.slug + ".html"),
-      problemPage(p, all, "en", has ? altEn(p.slug) : null), "utf8");
+      problemPage(p, all, "en", has ? altEn(p.slug) : null, problems), "utf8");
     n++;
   }
   if (nbFlows.ok || nbProblems.ok) fs.mkdirSync(NO_GUIDES, { recursive: true });
@@ -2351,7 +2403,7 @@ function main() {
   }
   for (const p of (nbProblems.ok ? nbProblems.items : [])) {
     fs.writeFileSync(path.join(NO_GUIDES, p.slug + ".html"),
-      problemPage(p, all, "nb", altNb(p.slug)), "utf8");
+      problemPage(p, all, "nb", altNb(p.slug), nbProblems.items), "utf8");
     nNo++;
   }
   LANG = "en";

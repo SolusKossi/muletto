@@ -5,6 +5,40 @@
 // locally and never sends it anywhere; that is the whole point.
 
 const $ = (sel, root = document) => root.querySelector(sel);
+
+/* Where this script lives, so files beside it are found from any depth.
+   /no/app.html loads it as ../app.js, and a bare "samples/x.zip" resolved
+   against that page asked for /no/samples/, which does not exist - so the
+   samples worked in English and failed in Norwegian. Same mistake theme.js
+   made with its stylesheet, and the same fix. */
+const HERE = (function () {
+  const me = document.currentScript && document.currentScript.src;
+  return me ? me.slice(0, me.lastIndexOf("/") + 1) : "";
+})();
+
+/* The handful of app messages that are translated so far. The app itself is
+   still English inside; these are the ones a Norwegian reader meets before
+   any export is open. */
+const NB = document.documentElement.lang === "nb";
+const SAY = NB ? {
+  sampleFetch: "Eksempeleksportene kunne ikke hentes.",
+  sampleOffline: "Eksemplene er det eneste p\u00e5 denne siden som m\u00e5 lastes ned, og du er frakoblet. " +
+    "Din egen eksport trenger ingen tilkobling - slipp den inn, s\u00e5 \u00e5pnes den. Eller koble til et " +
+    "\u00f8yeblikk for \u00e5 hente eksemplene, s\u00e5 virker de frakoblet etterp\u00e5 ogs\u00e5.",
+  sampleMissing: "Fant ikke eksempelfilen ",
+  sampleNote: "Dette er <strong>eksempeleksporter</strong>, ikke dine data - seks sm\u00e5 arkiver formet som " +
+    "de ekte. Det samme bildet finnes i flere av dem, og det er det duplikat- og likhetsverkt\u00f8yene finner.",
+} : {
+  sampleFetch: "The sample exports could not be fetched.",
+  sampleOffline: "The samples are the one part of this page that has to be downloaded, " +
+    "and you are offline. Your own export needs no connection - drop it in " +
+    "and it opens. Or reconnect for a moment to fetch the samples, after " +
+    "which they work offline too.",
+  sampleMissing: "missing ",
+  sampleNote: "These are <strong>sample exports</strong>, not your data - six small archives " +
+    "shaped like the real thing. The same photo appears in more than one of them, which is what the " +
+    "duplicate and similar-photo tools are finding.",
+};
 const fmtBytes = (n) => {
   if (!n) return "0 B";
   const u = ["B", "KB", "MB", "GB", "TB"];
@@ -2839,17 +2873,12 @@ async function loadSamples(btn) {
          * `no-cache` asks the server whether it changed rather than assuming
          * it did not. Offline this still throws, and the message below is the
          * one that matters. */
-        res = await fetch("samples/" + name + (SAMPLES_V ? "?v=" + SAMPLES_V : ""),
+        res = await fetch(HERE + "samples/" + name + (SAMPLES_V ? "?v=" + SAMPLES_V : ""),
                           { cache: "no-cache" });
       } catch (err) {
-        throw new Error(navigator.onLine
-          ? "The sample exports could not be fetched."
-          : "The samples are the one part of this page that has to be downloaded, " +
-            "and you are offline. Your own export needs no connection - drop it in " +
-            "and it opens. Or reconnect for a moment to fetch the samples, after " +
-            "which they work offline too.");
+        throw new Error(navigator.onLine ? SAY.sampleFetch : SAY.sampleOffline);
       }
-      if (!res.ok) throw new Error("missing " + name);
+      if (!res.ok) throw new Error(SAY.sampleMissing + name);
       files.push(new File([await res.blob()], name));
     }
     await handleFiles(files, { demo: true });
@@ -2857,9 +2886,7 @@ async function loadSamples(btn) {
     if (out) {
       const note = document.createElement("div");
       note.className = "note";
-      note.innerHTML = "These are <strong>sample exports</strong>, not your data - six small archives " +
-        "shaped like the real thing. The same photo appears in more than one of them, which is what the " +
-        "duplicate and similar-photo tools are finding.";
+      note.innerHTML = SAY.sampleNote;
       out.insertBefore(note, out.firstChild.nextSibling);
     }
   } catch (e) {

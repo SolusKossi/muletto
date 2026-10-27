@@ -325,5 +325,11 @@
   "langEn": "Fullstendig",
   "langNb": "Ny, fortsatt under kontroll",
   "wipLang": "Den norske oversettelsen er ny og fortsatt under kontroll. Si fra hvis noe leses feil.",
-  "wipTheme": "Temaene er under arbeid. Regn med ujevne kanter."
+  "wipTheme": "Temaene er under arbeid. Regn med ujevne kanter.",
+  "h1DestBack": "Legg dataene tilbake i {provider}",
+  "metaWait": "Ventetid:",
+  "metaTakes": "Tar",
+  "theGuide": "Veiledningen for {provider}",
+  "bitWrong": "Det folk ofte tar feil av",
+  "related": "Relatert"
 }

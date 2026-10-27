@@ -38,5 +38,6 @@
   "explain": {
     "title": "Å legge det tilbake der det kom fra koster lagring nå",
     "body": "Eksporterte du fra Google Foto og laster opp det samme biblioteket igjen, teller det mot de 15 GB-ene dine - den gratis kvoten som deles med Gmail og Disk. Alt du laster opp nå teller, uansett hvilken kvalitet du velger; det gamle unntaket gjaldt bare bilder sikkerhetskopiert før juni 2021, og de beholder det. Så en rundtur ut og inn igjen er ikke gratis, og på et stort bibliotek er det som regel her folk oppdager at de trenger et betalt abonnement."
-  }
+  },
+  "provider": "Tilbake til Google Foto"
 }

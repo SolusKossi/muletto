@@ -300,6 +300,38 @@ console.log("\nInternal links and images");
    was visible without opening the console.
 
    JSON-LD is exempt: it is data the browser never executes. */
+/* ---------- a translation carries what its English carries ---------- */
+
+/* Text changes between languages; pictures and outbound links do not. A
+   Norwegian page with fewer screenshots or fewer links to the outside world
+   than its English twin has lost something in the merge, not in translation.
+
+   Written after the overlay was found to be shallow: every Norwegian guide had
+   shipped without a single screenshot, and 22 portal buttons had href="" and
+   opened the guide itself. All of it passed every check here, because nothing
+   compared the two halves of a pair. */
+console.log("\nTranslations keep their pictures and links");
+{
+  const count = (html) => ({
+    img: (html.match(/<img\b/g) || []).length,
+    out: (html.match(/href="https?:\/\/(?!muletto\.app|github\.com\/SolusKossi)[^"]+"/g) || []).length,
+    empty: (html.match(/href=""/g) || []).length,
+  });
+  const noDir = path.join(WEB, "no");
+  const pairs = fs.existsSync(noDir) ? walk(noDir, (p) => p.endsWith(".html")) : [];
+  let n = 0;
+  for (const nb of pairs) {
+    const en = path.join(WEB, path.relative(noDir, nb));
+    if (!fs.existsSync(en)) continue;
+    n++;
+    const a = count(fs.readFileSync(en, "utf8")), b = count(fs.readFileSync(nb, "utf8"));
+    if (b.empty) fail(rel(nb) + " has " + b.empty + " empty link" + (b.empty === 1 ? "" : "s"));
+    if (b.img !== a.img) fail(rel(nb) + " has " + b.img + " pictures; the English has " + a.img);
+    if (b.out !== a.out) fail(rel(nb) + " has " + b.out + " outside links; the English has " + a.out);
+  }
+  if (!failed) ok(n + " Norwegian pages carry the same pictures and outside links as their English");
+}
+
 /* ---------- every class a page uses has a rule somewhere ---------- */
 
 /* The check that would have caught the home page being unstyled for ten days.
