@@ -35,11 +35,11 @@
   /* Each kind of record gets one colour, used by its icon here, its dot in the
      timeline and its chip in the legend, so the eye learns it once. */
   const KIND = {
-    photo: { label: "Photo", colour: "blue" },
-    video: { label: "Video", colour: "violet" },
-    chat: { label: "Chat message", colour: "green" },
-    place: { label: "Location", colour: "amber" },
-    event: { label: "Activity", colour: "slate" },
+    photo: { label: T("Photo"), colour: "blue" },
+    video: { label: T("Video"), colour: "violet" },
+    chat: { label: T("Chat message"), colour: "green" },
+    place: { label: T("Location"), colour: "amber" },
+    event: { label: T("Activity"), colour: "slate" },
   };
 
   let state = null;
@@ -143,10 +143,10 @@
     const rep = state.actions.report && state.actions.report();
 
     const items = [
-      ["timeline", "Timeline", "clock", stream.items.length],
-      ["photos", videos ? "Images and videos" : "Images", "image", lib.media.length],
-      ["chats", "Chat history", "chat", msgs],
-      ["map", "Location history", "pin", lib.places.filter((p) => isFinite(p.lat)).length],
+      ["timeline", T("Timeline"), "clock", stream.items.length],
+      ["photos", videos ? T("Images and videos") : T("Images"), "image", lib.media.length],
+      ["chats", T("Chat history"), "chat", msgs],
+      ["map", T("Location history"), "pin", lib.places.filter((p) => isFinite(p.lat)).length],
       /* The count is tables, not cards. Building the cards means a pass over
          every row, and this runs on every sidebar redraw - with a filter on,
          scopedLib hands back a fresh array each time, so nothing would be
@@ -173,8 +173,8 @@
     }
 
     items.push(
-      ["highlights", "Highlights", "chart", lib.tables.length],
-      ["files", "All files", "folder", entries.length]
+      ["highlights", T("Highlights"), "chart", lib.tables.length],
+      ["files", T("All files"), "folder", entries.length]
     );
     return items;
   }
@@ -188,8 +188,8 @@
   function emptyNote() {
     const gone = emptyItems();
     if (!gone.length) return "";
-    return '<p class="ex-none">Nothing here: ' +
-      gone.map(([, label]) => esc(String(label).toLowerCase())).join(", ") + ".</p>";
+    return '<p class="ex-none">' + T("Nothing here: {list}.", {
+      list: gone.map(([, label]) => esc(String(label).toLowerCase())).join(", ") }) + "</p>";
   }
 
   /* The sidebar counts and the headline figures answer "how much of this am I
@@ -205,7 +205,7 @@
       box.innerHTML = stats().map((s) => {
         const tag = s.click ? "button" : "div";
         return "<" + tag + ' class="ex-stat' + (s.wide ? " wide" : "") + (s.cls ? " " + s.cls : "") + '"' +
-          (s.click ? ' id="' + s.click + '" type="button" title="Set your own range"' : "") + ">" +
+          (s.click ? ' id="' + s.click + '" type="button" title="' + T("Set your own range") + '"' : "") + ">" +
           '<span class="ex-stat-l">' + esc(s.label) + "</span>" +
           '<span class="ex-stat-v">' + esc(s.value) + "</span>" +
           '<i data-icon="' + s.icon + '"></i></' + tag + ">";
@@ -250,7 +250,7 @@
     const clear = root.querySelector("#ex-clearsrc");
     if (clear) {
       clear.hidden = state.srcOff.size === 0;
-      clear.textContent = "Turn all " + groups.length + " back on";
+      clear.textContent = T("Turn all {n} back on", { n: groups.length });
     }
   }
 
@@ -323,15 +323,15 @@
     const range = (items) => {
       const dates = items.map((x) => x.at && +x.at).filter(Boolean).sort();
       if (!dates.length) return null;
-      return { label: "Date range", wide: true, cls: "range", click: "ex-range", icon: "clock",
-               value: fmtShort(new Date(dates[0])) + " to " + fmtShort(new Date(dates[dates.length - 1])) };
+      return { label: T("Date range"), wide: true, cls: "range", click: "ex-range", icon: "clock",
+               value: T("{from} to {to}", { from: fmtShort(new Date(dates[0])), to: fmtShort(new Date(dates[dates.length - 1])) }) };
     };
     const srcCount = state.sources.reduce((a, _, i) => a + (state.srcOff.has(i) ? 0 : 1), 0);
 
     if (view === "chats") {
       const msgs = lib.conversations.reduce((n, c) => n + c.messages.length, 0);
-      const out = [{ label: "Messages", value: num(msgs), icon: "chat" },
-                   { label: lib.conversations.length === 1 ? "Conversation" : "Conversations",
+      const out = [{ label: T("Messages"), value: num(msgs), icon: "chat" },
+                   { label: lib.conversations.length === 1 ? T("Conversation") : T("Conversations"),
                      value: num(lib.conversations.length), icon: "layers" }];
       const r = range(lib.conversations.flatMap((c) => c.messages));
       if (r) out.push(r);
@@ -339,31 +339,31 @@
     }
     if (view === "map") {
       const withCoords = lib.places.filter((p) => isFinite(p.lat));
-      const out = [{ label: "Places", value: num(withCoords.length), icon: "pin" }];
+      const out = [{ label: T("Places"), value: num(withCoords.length), icon: "pin" }];
       const r = range(withCoords);
       if (r) out.push(r);
       return out;
     }
     if (view === "photos") {
       const vids = lib.media.filter((m) => m.kind === "video").length;
-      const out = [{ label: "Images", value: num(lib.media.length - vids), icon: "image" }];
-      if (vids) out.push({ label: vids === 1 ? "Video" : "Videos", value: num(vids), icon: "video" });
+      const out = [{ label: T("Images"), value: num(lib.media.length - vids), icon: "image" }];
+      if (vids) out.push({ label: vids === 1 ? T("Video") : T("Videos"), value: num(vids), icon: "video" });
       const r = range(lib.media);
       if (r) out.push(r);
       return out;
     }
     if (view === "files" && state.filesTab === "tables") {
-      return [{ label: lib.tables.length === 1 ? "Table" : "Tables",
+      return [{ label: lib.tables.length === 1 ? T("Table") : T("Tables"),
                 value: num(lib.tables.length), icon: "table" },
-              { label: "Rows", value: num(lib.tables.reduce((n, t) => n + t.rows.length, 0)),
+              { label: T("Rows"), value: num(lib.tables.reduce((n, t) => n + t.rows.length, 0)),
                 icon: "layers" }];
     }
     if (view === "files") {
       const entries = filtering() ? state.entries.filter((e) => srcOk(e)) : state.entries;
       const bytes = entries.reduce((n, e) => n + (e.size || 0), 0);
-      return [{ label: "Files", value: num(entries.length), icon: "folder" },
-              { label: "Size", value: fmtBytes(bytes), icon: "layers" },
-              { label: srcCount === 1 ? "Archive" : "Archives", value: num(srcCount), icon: "box" }];
+      return [{ label: T("Files"), value: num(entries.length), icon: "folder" },
+              { label: T("Size"), value: fmtBytes(bytes), icon: "layers" },
+              { label: srcCount === 1 ? T("Archive") : T("Archives"), value: num(srcCount), icon: "box" }];
     }
     return timelineStats();
   }
@@ -384,16 +384,16 @@
     const n = state.sources.reduce((acc, _, i) =>
       acc + (!state.srcOff.has(i) && contributes(i) ? 1 : 0), 0) || sources.length;
     const out = [
-      { label: "Total items", value: num(stream.items.length || entries.length), icon: "table" },
-      { label: n === 1 ? "Source" : "Sources", value: num(n), icon: "layers" },
+      { label: T("Total items"), value: num(stream.items.length || entries.length), icon: "table" },
+      { label: n === 1 ? T("Source") : T("Sources"), value: num(n), icon: "layers" },
     ];
     if (stream.days.length) {
       const a = stream.days[stream.days.length - 1].date, b = stream.days[0].date;
-      out.push({ label: "Date range", value: `${fmtShort(a)} to ${fmtShort(b)}`,
+      out.push({ label: T("Date range"), value: T("{from} to {to}", { from: fmtShort(a), to: fmtShort(b) }),
                  icon: "clock", wide: true, cls: "range", click: "ex-range" });
     }
     const cats = new Set(stream.items.map((i) => i.type));
-    if (cats.size) out.push({ label: "Categories", value: num(cats.size), icon: "folder" });
+    if (cats.size) out.push({ label: T("Categories"), value: num(cats.size), icon: "folder" });
     return out;
   }
 
@@ -467,11 +467,11 @@
     return `
       <div class="ex">
         <aside class="ex-side">
-          <a class="ex-home" href="index.html" title="Back to muletto.app">
+          <a class="ex-home" href="index.html" title="${T("Back to muletto.app")}">
             <span class="wordmark">muletto</span>
           </a>
 
-          <nav class="ex-nav" id="ex-nav" aria-label="Sections">
+          <nav class="ex-nav" id="ex-nav" aria-label="${T("Sections")}">
             ${liveItems().map(([k, label, icon, n]) => `
               <button class="ex-navi${k === state.view ? " on" : ""}" data-k="${k}">
                 <i data-icon="${icon}"></i><span>${esc(label)}</span><em>${num(n)}</em>
@@ -480,7 +480,7 @@
           </nav>
 
           <div class="ex-sources">
-            <h4>Where it came from</h4>
+            <h4>${T("Where it came from")}</h4>
             ${counts.filter((s) => s.n > 0).map((g, gi) => {
               const all = g.idx.join(",");
               const many = g.files.length > 1;
@@ -494,7 +494,7 @@
               <div class="ex-srcg${g.superseded ? " superseded" : ""}" data-g="${gi}">
                 <div class="ex-srch">
                   <input type="checkbox" class="ex-srcall" data-src="${all}" checked
-                    id="srcall-${gi}" aria-label="Include ${esc(g.label)}" />
+                    id="srcall-${gi}" aria-label="${T("Include {name}", { name: esc(g.label) })}" />
                   <button class="ex-srcname" type="button" data-many="${many ? 1 : 0}"
                     data-for="srcall-${gi}"${many ? ` aria-expanded="false"` : ""}>
                     <i data-icon="${esc(g.slug || "box")}"></i>
@@ -515,38 +515,37 @@
                 </ul>` : ""}
               </div>`;
             }).join("")}
-            <button class="ex-clearsrc" id="ex-clearsrc" hidden>Show every source</button>
-            <button class="ex-add" id="ex-add" data-tip="Add a second export to the same
-              library - another service, or a newer download from the same one. Duplicates
-              between them are found automatically.">+ Add another export</button>
+            <button class="ex-clearsrc" id="ex-clearsrc" hidden>${T("Show every source")}</button>
+            <button class="ex-add" id="ex-add" data-tip="${T("Add a second export to the same " +
+              "library - another service, or a newer download from the same one. Duplicates " +
+              "between them are found automatically.")}">+ ${T("Add another export")}</button>
           </div>
 
           ${state.ctx.demo ? `<div class="ex-demo">
-            <strong>This is sample data</strong>
-            <p>Six invented exports, so you can see what is in one before using anything of
-            your own. Look at all of it - open any file, read the messages, scroll the years.
-            Saving, comparing and describing are held back until it is your own data, and
-            nothing here is written to your browser.</p>
-            <button class="btn secondary sm" id="ex-realfile">Open my own export</button>
+            <strong>${T("This is sample data")}</strong>
+            <p>${T("Six invented exports, so you can see what is in one before using anything of " +
+            "your own. Look at all of it - open any file, read the messages, scroll the years. " +
+            "Saving, comparing and describing are held back until it is your own data, and " +
+            "nothing here is written to your browser.")}</p>
+            <button class="btn secondary sm" id="ex-realfile">${T("Open my own export")}</button>
           </div>` : ""}
           <div class="ex-privacy">
-            <strong>Nothing was uploaded</strong>
-            <p>Every file was read in this browser. What you see was worked out
-            on this machine and kept here, so it is waiting next time. No part
-            of it has been sent anywhere.</p>
-            <button class="ex-savework" id="ex-savework" data-tip="Writes the results - the
-              comparisons, the repaired dates, the descriptions - to a small file you keep. It
-              holds no photos or messages. Open it alongside a fresh export next year and
-              nothing has to be worked out twice.">
+            <strong>${T("Nothing was uploaded")}</strong>
+            <p>${T("Every file was read in this browser. What you see was worked out " +
+            "on this machine and kept here, so it is waiting next time. No part " +
+            "of it has been sent anywhere.")}</p>
+            <button class="ex-savework" id="ex-savework" data-tip="${T("Writes the results - the " +
+              "comparisons, the repaired dates, the descriptions - to a small file you keep. It " +
+              "holds no photos or messages. Open it alongside a fresh export next year and " +
+              "nothing has to be worked out twice.")}">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 4v10m0 0 3.5-3.5M12 14l-3.5-3.5"/><path d="M5 17.5v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1"/>
               </svg>
-              Save your work to a file
+              ${T("Save your work to a file")}
             </button>
-            <button class="ex-forget" id="ex-forget" data-tip="Clears everything Muletto has
-              kept about this library from your browser. Your archives are untouched.">Forget
-              this library</button>
+            <button class="ex-forget" id="ex-forget" data-tip="${T("Clears everything Muletto has " +
+              "kept about this library from your browser. Your archives are untouched.")}">${T("Forget this library")}</button>
           </div>
         </aside>
 
@@ -554,26 +553,26 @@
           <header class="ex-top">
             <div class="ex-search">
               <i data-icon="search"></i>
-              <input id="ex-q" type="search" placeholder="Search your data" autocomplete="off" />
+              <input id="ex-q" type="search" placeholder="${T("Search your data")}" autocomplete="off" />
             </div>
             <div class="ex-topact">
               <span id="ex-bell"></span>
-              <button class="btn primary sm" id="ex-save" data-tip="Write the tidied library
-                out to a folder, a drive or a single archive - with the real dates, locations
-                and descriptions inside the files.">Export</button>
-              <button class="ex-nav-btn" id="ex-close" title="Close">&times;</button>
+              <button class="btn primary sm" id="ex-save" data-tip="${T("Write the tidied library " +
+                "out to a folder, a drive or a single archive - with the real dates, locations " +
+                "and descriptions inside the files.")}">${T("Export")}</button>
+              <button class="ex-nav-btn" id="ex-close" title="${T("Close")}">&times;</button>
             </div>
           </header>
 
           <div class="ex-scroll" id="ex-scroll">
             <div class="ex-headline">
-              <h1 id="ex-title">Timeline</h1>
-              <p class="muted" id="ex-sub">Everything in this export, in the order it happened.</p>
+              <h1 id="ex-title">${T("Timeline")}</h1>
+              <p class="muted" id="ex-sub">${T("Everything in this export, in the order it happened.")}</p>
             </div>
             <div class="ex-stats">
               ${stats().map((s) => `
                 <${s.click ? "button" : "div"} class="ex-stat${s.wide ? " wide" : ""}${s.cls ? " " + s.cls : ""}"
-                     ${s.click ? `id="${s.click}" type="button" title="Set your own range"` : ""}>
+                     ${s.click ? `id="${s.click}" type="button" title="${T("Set your own range")}"` : ""}>
                   <span class="ex-stat-l">${esc(s.label)}</span>
                   <span class="ex-stat-v">${esc(s.value)}</span>
                   <i data-icon="${s.icon}"></i>
@@ -687,9 +686,9 @@
         try {
           await fn(status);
         } catch (e) {
-          MNotify.push("That did not finish", {
+          MNotify.push(T("That did not finish"), {
             kind: "warn",
-            body: (e && e.message) ? e.message : "Something went wrong part way through.",
+            body: (e && e.message) ? e.message : T("Something went wrong part way through."),
           });
         }
       });
@@ -710,8 +709,8 @@
       root.querySelectorAll("#ex-save, #ex-savework, #ex-loadwork, #ex-similar, #ex-forget")
         .forEach((b) => {
           b.classList.add("held-back");
-          b.setAttribute("data-tip", "Held back on the sample data. Open your own export " +
-            "and this works.");
+          b.setAttribute("data-tip", T("Held back on the sample data. Open your own export " +
+            "and this works."));
         });
     }
 
@@ -743,14 +742,14 @@
   function emptyHtml(what, hint) {
     if (filtering()) {
       return `<div class="ex-empty">
-        <h3>No ${esc(what)} in what you are looking at</h3>
-        <p class="muted">The filters are hiding the rest. There may well be ${esc(what)} in
-          the export outside them.</p>
-        <button class="btn secondary sm" id="ex-clearall">Clear the filters</button>
+        <h3>${T("No {what} in what you are looking at", { what: esc(what) })}</h3>
+        <p class="muted">${T("The filters are hiding the rest. There may well be {what} in " +
+          "the export outside them.", { what: esc(what) })}</p>
+        <button class="btn secondary sm" id="ex-clearall">${T("Clear the filters")}</button>
       </div>`;
     }
     return `<div class="ex-empty">
-      <h3>No ${esc(what)} in this export</h3>
+      <h3>${T("No {what} in this export", { what: esc(what) })}</h3>
       <p class="muted">${esc(hint)}</p>
     </div>`;
   }
@@ -771,7 +770,11 @@
      and none of them know which days actually have anything in them - which is
      the one thing worth showing when picking a range over somebody's own
      history. Months with nothing in them are dimmed and unselectable. */
-  const DOW = ["M", "T", "W", "T", "F", "S", "S"];
+  /* Monday first, one letter each, in the page language: M T O T F L S. */
+  const DOW = (function () {
+    const d = MI18N.days("narrow");
+    return d.slice(1).concat(d[0]).map((x) => x.toUpperCase());
+  })();
   const MONTH_NAMES = MI18N.months("long");
 
   const dayStart = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -821,23 +824,23 @@
     const draw = () => {
       pop.innerHTML = `
         <div class="cal-presets">
-          ${[["All of it", null], ["This year", "year"], ["Last 12 months", "12m"],
-             ["Last 30 days", "30d"]].map(([label, k]) =>
+          ${[[T("All of it"), null], [T("This year"), "year"], [T("Last 12 months"), "12m"],
+             [T("Last 30 days"), "30d"]].map(([label, k]) =>
             `<button class="cal-preset" data-k="${k || ""}">${esc(label)}</button>`).join("")}
         </div>
         <div class="cal-head">
-          <button class="cal-nav" data-d="-1" aria-label="Earlier">&lsaquo;</button>
+          <button class="cal-nav" data-d="-1" aria-label="${T("Earlier")}">&lsaquo;</button>
           <span>${esc(MONTH_NAMES[shown.getMonth()])} ${shown.getFullYear()}</span>
-          <button class="cal-nav" data-d="1" aria-label="Later">&rsaquo;</button>
+          <button class="cal-nav" data-d="1" aria-label="${T("Later")}">&rsaquo;</button>
         </div>
         <div class="cal-grid">
           ${DOW.map((d) => `<span class="cal-dow">${d}</span>`).join("")}
           ${monthCells(shown, pick)}
         </div>
         <div class="cal-foot">
-          <span>${pick.from ? esc(fmtShort(pick.from)) : "start"} to ${
-            pick.to ? esc(fmtShort(pick.to)) : "end"}</span>
-          <button class="btn ghost sm" id="cal-clear">Clear</button>
+          <span>${T("{from} to {to}", { from: pick.from ? esc(fmtShort(pick.from)) : T("start"),
+            to: pick.to ? esc(fmtShort(pick.to)) : T("end") })}</span>
+          <button class="btn ghost sm" id="cal-clear">${T("Clear")}</button>
         </div>`;
 
       pop.querySelectorAll(".cal-nav").forEach((b) => b.addEventListener("click", () => {
@@ -939,14 +942,14 @@
   /* ---------- views ---------- */
 
   const TITLES = {
-    timeline: ["Timeline", "Everything in this export, in the order it happened."],
-    photos: ["Images and videos", "Every picture and clip found, newest first where a date survived."],
-    chats: ["Chat history", "Grouped by person, with platforms shown together."],
-    map: ["Location history", "Drawn on this device. No map service is contacted."],
-    report: ["What is in here", "Everything your export contains, and how much of it Muletto understood."],
-    highlights: ["Highlights", "What the records add up to, rather than the rows they came in."],
-    records: ["Records", "The tables the export shipped, as they were written."],
-    files: ["All files", "Everything inside the archive, including what could not be read."],
+    timeline: [T("Timeline"), T("Everything in this export, in the order it happened.")],
+    photos: [T("Images and videos"), T("Every picture and clip found, newest first where a date survived.")],
+    chats: [T("Chat history"), T("Grouped by person, with platforms shown together.")],
+    map: [T("Location history"), T("Drawn on this device. No map service is contacted.")],
+    report: [T("What is in here"), T("Everything your export contains, and how much of it Muletto understood.")],
+    highlights: [T("Highlights"), T("What the records add up to, rather than the rows they came in.")],
+    records: [T("Records"), T("The tables the export shipped, as they were written.")],
+    files: [T("All files"), T("Everything inside the archive, including what could not be read.")],
   };
 
   function showView(k) {
@@ -1080,10 +1083,10 @@
     const read = total - unread;
     const share = Math.round((read / total) * 100);
     return '<button type="button" class="ex-cover' + (unread ? "" : " ex-cover-clean") + '" id="ex-cover">' +
-      "<span><b>" + num(read) + " of " + num(total) + " files read</b>" +
+      "<span><b>" + T("{n} of {of} files read", { n: num(read), of: num(total) }) + "</b> - " +
       (unread
-        ? " - " + num(unread) + " produced nothing, which is normal for some of them."
-        : " - everything in this export was understood.") +
+        ? T("{n} produced nothing, which is normal for some of them.", { n: num(unread) })
+        : T("everything in this export was understood.")) +
       "</span><em>" + share + "%</em></button>";
   }
 
@@ -1093,10 +1096,10 @@
 
     if (!days.length) {
       body.innerHTML = state.query
-        ? `<div class="ex-empty"><h3>Nothing matches "${esc(state.query)}"</h3>
-           <p class="muted">Try a shorter search, or a different word.</p></div>`
-        : emptyHtml("dated items", "Nothing here carries a date, so there is no order to put it in. " +
-            "The other sections still work.");
+        ? `<div class="ex-empty"><h3>${T("Nothing matches \"{q}\"", { q: esc(state.query) })}</h3>
+           <p class="muted">${T("Try a shorter search, or a different word.")}</p></div>`
+        : emptyHtml(T("dated items"), T("Nothing here carries a date, so there is no order to put it in. " +
+            "The other sections still work."));
       wireEmpty(body);
       state.days = days;
       return;
@@ -1125,8 +1128,8 @@
     const total = days.reduce((n, d) => n + d.items.length, 0);
 
     body.innerHTML = coverageBanner() + `
-      <p class="muted small ex-count">${plural(total, "item", "items")} across
-        ${plural(days.length, "day", "days")}.</p>
+      <p class="muted small ex-count">${T("{items} across {days}.", {
+        items: N("{n} item", "{n} items", total), days: N("{n} day", "{n} days", days.length) })}</p>
       <div class="ex-tl" id="ex-tl">${days.map(dayShellHtml).join("")}</div>`;
 
     const cover = body.querySelector("#ex-cover");
@@ -1273,7 +1276,7 @@
 
   function dayInnerHtml(d) {
     return `<h3 class="ex-dayh">${esc(fmtDay(d.date))}<span>${
-      plural(d.items.length, "item", "items")}</span></h3>
+      N("{n} item", "{n} items", d.items.length)}</span></h3>
       <div class="ex-rows">${d.items.map((it, i) => rowHtml(it, d.key, i)).join("")}</div>`;
   }
 
@@ -1512,14 +1515,14 @@
         if (it.messages[i].text) return it.messages[i].text;
       }
       const t = it.messages[it.messages.length - 1];
-      return t && t.type ? `Sent ${String(t.type).toLowerCase()}` : "Attachment";
+      return t && t.type ? T("Sent {what}", { what: String(t.type).toLowerCase() }) : T("Attachment");
     }
     return it.title;
   }
 
   function rowSub(it) {
-    if (it.type === "chat") return `${it.title} - ${plural(it.count, "message", "messages")}`;
-    if (it.type === "place") return plural(it.count, "point", "points");
+    if (it.type === "chat") return `${it.title} - ${N("{n} message", "{n} messages", it.count)}`;
+    if (it.type === "place") return N("{n} point", "{n} points", it.count);
     if (it.media) return [it.media.size ? fmtBytes(it.media.size) : "", it.media.mime || ""].filter(Boolean).join(" - ");
     return "";
   }
@@ -1575,10 +1578,10 @@
      hundred. A rule does the whole library at once; a group can then disagree
      with it, and go on disagreeing when the global rule changes again. */
   const RULES = {
-    biggest: { label: "Keep the biggest", pick: (g) => [...g].sort((a, b) => (b.size || 0) - (a.size || 0)) },
-    smallest: { label: "Keep the smallest", pick: (g) => [...g].sort((a, b) => (a.size || 0) - (b.size || 0)) },
-    oldest: { label: "Keep the earliest", pick: (g) => [...g].sort((a, b) => (a.at || 0) - (b.at || 0)) },
-    all: { label: "Keep every copy", pick: (g) => [...g] },
+    biggest: { label: T("Keep the biggest"), pick: (g) => [...g].sort((a, b) => (b.size || 0) - (a.size || 0)) },
+    smallest: { label: T("Keep the smallest"), pick: (g) => [...g].sort((a, b) => (a.size || 0) - (b.size || 0)) },
+    oldest: { label: T("Keep the earliest"), pick: (g) => [...g].sort((a, b) => (a.at || 0) - (b.at || 0)) },
+    all: { label: T("Keep every copy"), pick: (g) => [...g] },
   };
 
   function applyRule(group, rule, keepN) {
@@ -1630,30 +1633,30 @@
 
       ${exact.length || similar.length ? `
       <div class="cl-rules">
-        <label>Exact copies
+        <label>${T("Exact copies")}
           <select id="cl-rule-e">${ruleOptions(state.keepRule)}</select>
         </label>
-        <label>Pictures that look alike
+        <label>${T("Pictures that look alike")}
           <select id="cl-rule-s">${ruleOptions(state.similarRule)}</select>
         </label>
-        <span class="muted small">Any group can be set differently below.</span>
+        <span class="muted small">${T("Any group can be set differently below.")}</span>
       </div>` : ""}
 
       ${!exact.length && !similar.length ? `
-        <p class="muted small">No exact copies found${state.lib.similar
-          ? " and nothing that merely looks alike either"
-          : ". Run <strong>Find similar photos</strong> to look for pictures that are not identical but nearly so"}.</p>` : ""}
+        <p class="muted small">${state.lib.similar
+          ? T("No exact copies found and nothing that merely looks alike either.")
+          : T("No exact copies found. Run <strong>Find similar photos</strong> to look for pictures that are not identical but nearly so.")}</p>` : ""}
 
       ${exact.length ? `
-        <h3 class="cl-h">Exact copies</h3>
-        <p class="muted small cl-note">Identical files, byte for byte. Keeping more than one of these
-          gains nothing but space.</p>
+        <h3 class="cl-h">${T("Exact copies")}</h3>
+        <p class="muted small cl-note">${T("Identical files, byte for byte. Keeping more than one of these " +
+          "gains nothing but space.")}</p>
         <div class="cl-groups">${exact.map((g, i) => groupHtml("e" + i)).join("")}</div>` : ""}
 
       ${similar.length ? `
-        <h3 class="cl-h">Pictures that look alike</h3>
-        <p class="muted small cl-note">Not identical - a burst, a crop, a re-save. Nothing here is dropped
-          until you say so.</p>
+        <h3 class="cl-h">${T("Pictures that look alike")}</h3>
+        <p class="muted small cl-note">${T("Not identical - a burst, a crop, a re-save. Nothing here is dropped " +
+          "until you say so.")}</p>
         <div class="cl-groups">${similar.map((g, i) => groupHtml("s" + i)).join("")}</div>` : ""}
       </div>`;
 
@@ -1691,16 +1694,16 @@
     return `
       <section class="cl-group" data-g="${gid}">
         <header>
-          <span class="cl-gcount">${plural(g.length, "copy", "copies")}${
-            freed ? ` - ${fmtBytes(freed)} left out` : " - all kept"}</span>
+          <span class="cl-gcount">${N("{n} copy", "{n} copies", g.length)}${
+            freed ? " - " + T("{size} left out", { size: fmtBytes(freed) }) : " - " + T("all kept")}</span>
           <span class="cl-gtools">
-            <select class="cl-grule" data-g="${gid}" title="How this group is decided">
-              <option value=""${own ? "" : " selected"}>Follow the setting above</option>
+            <select class="cl-grule" data-g="${gid}" title="${T("How this group is decided")}">
+              <option value=""${own ? "" : " selected"}>${T("Follow the setting above")}</option>
               ${ruleOptions(own || "")}
             </select>
             <span class="cl-keepn${rule === "all" ? " off" : ""}">
               <button class="cl-step" data-g="${gid}" data-d="-1" ${keptN <= 1 ? "disabled" : ""}>-</button>
-              <b>keep ${keptN}</b>
+              <b>${T("keep {n}", { n: keptN })}</b>
               <button class="cl-step" data-g="${gid}" data-d="1" ${keptN >= g.length ? "disabled" : ""}>+</button>
             </span>
           </span>
@@ -1779,8 +1782,8 @@
         const head = cell.closest(".cl-group").querySelector(".cl-gcount");
         const g = state.clGroups[cell.dataset.g];
         const freed = g.filter((x) => x.drop).reduce((n, x) => n + (x.size || 0), 0);
-        head.textContent = plural(g.length, "copy", "copies") +
-          (freed ? " - " + fmtBytes(freed) + " left out" : " - all kept");
+        head.textContent = N("{n} copy", "{n} copies", g.length) +
+          (freed ? " - " + T("{size} left out", { size: fmtBytes(freed) }) : " - " + T("all kept"));
         saveDecisions();
       }
     });
@@ -1791,12 +1794,12 @@
     if (!box) return;
     const t = tally();
     box.innerHTML = `
-      <div class="cl-stat"><span>${num(t.keep)}</span><em>kept</em></div>
-      <div class="cl-stat${t.drop ? " out" : ""}"><span>${num(t.drop)}</span><em>left out</em></div>
-      <div class="cl-stat"><span>${esc(fmtBytes(t.freed))}</span><em>space saved</em></div>
-      <p class="cl-explain">Nothing is deleted from your archives - they are never written to.
-        These are the pictures a tidied copy would contain when you
-        <strong>Save into folders</strong>.</p>`;
+      <div class="cl-stat"><span>${num(t.keep)}</span><em>${T("kept")}</em></div>
+      <div class="cl-stat${t.drop ? " out" : ""}"><span>${num(t.drop)}</span><em>${T("left out")}</em></div>
+      <div class="cl-stat"><span>${esc(fmtBytes(t.freed))}</span><em>${T("space saved")}</em></div>
+      <p class="cl-explain">${T("Nothing is deleted from your archives - they are never written to. " +
+        "These are the pictures a tidied copy would contain when you " +
+        "<strong>Save into folders</strong>.")}</p>`;
   }
 
   function saveDecisions() {
@@ -1846,8 +1849,8 @@
 
     body.innerHTML =
       '<div class="ph-tabs" role="tablist">' +
-        phTab("library", "All pictures", lib.media.length, tab) +
-        phTab("cleanup", "Clean up", dupes, tab) +
+        phTab("library", T("All pictures"), lib.media.length, tab) +
+        phTab("cleanup", T("Clean up"), dupes, tab) +
       '</div><div id="ph-panel"></div>';
 
     body.querySelector(".ph-tabs").addEventListener("click", (e) => {
@@ -1859,8 +1862,8 @@
 
     const root = document.getElementById("explorer");
     root.querySelector("#ex-sub").textContent = tab === "cleanup"
-      ? "Decide what a tidied copy of your library would contain."
-      : "Every picture and clip found, newest first where a date survived.";
+      ? T("Decide what a tidied copy of your library would contain.")
+      : T("Every picture and clip found, newest first where a date survived.");
 
     const panel = body.querySelector("#ph-panel");
     if (tab === "cleanup") drawCleanup(panel);
@@ -1881,8 +1884,8 @@
 
     body.innerHTML =
       '<div class="ph-tabs" role="tablist">' +
-        phTab("files", "Everything", entries.length, tab) +
-        phTab("tables", "Tables in them", lib.tables.length, tab) +
+        phTab("files", T("Everything"), entries.length, tab) +
+        phTab("tables", T("Tables in them"), lib.tables.length, tab) +
       '</div><div id="fl-panel"></div>';
 
     body.querySelector(".ph-tabs").addEventListener("click", (e) => {
@@ -1894,8 +1897,8 @@
 
     const root = document.getElementById("explorer");
     root.querySelector("#ex-sub").textContent = tab === "tables"
-      ? "The spreadsheets and lists inside those files, as the service wrote them."
-      : "Everything inside the archive, including what could not be read.";
+      ? T("The spreadsheets and lists inside those files, as the service wrote them.")
+      : T("Everything inside the archive, including what could not be read.");
 
     const panel = body.querySelector("#fl-panel");
     if (state.actions.legacy) {
@@ -1916,17 +1919,17 @@
 
     if (!info.total) {
       body.innerHTML = state.query
-        ? '<div class="ex-empty"><h3>No pictures match "' + esc(state.query) + '"</h3></div>'
-        : emptyHtml("pictures", "This export is data rather than media - messages, history " +
-            "or account records. Photos usually come from a separate request.");
+        ? '<div class="ex-empty"><h3>' + T("No pictures match \"{q}\"", { q: esc(state.query) }) + "</h3></div>"
+        : emptyHtml(T("pictures"), T("This export is data rather than media - messages, history " +
+            "or account records. Photos usually come from a separate request."));
       wireEmpty(body);
       return;
     }
 
     body.innerHTML =
       '<div class="lib-bar">' +
-        '<p class="muted small">' + plural(info.total, "picture", "pictures") +
-        (info.undated ? ", " + num(info.undated) + " with no date recorded" : "") + ".</p>" +
+        '<p class="muted small">' + N("{n} picture", "{n} pictures", info.total) +
+        (info.undated ? ", " + T("{n} with no date recorded", { n: num(info.undated) }) : "") + ".</p>" +
         libToolsHtml() +
       "</div>" +
       aiBlockHtml() +
@@ -1961,17 +1964,17 @@
     const groups = (state.lib.similar || []).length;
     const inner = state.lib.similar
       ? '<span class="lib-found">' + (groups
-          ? plural(groups, "group", "groups") + " of lookalike pictures found"
-          : "No lookalike pictures found") + "</span>" +
-        (groups ? '<button class="btn secondary sm" id="lib-cleanup" data-tip="Go through ' +
-          'the groups and choose which copy to keep. Nothing is deleted from your archives - ' +
-          'it only decides what goes into the library you export.">Decide what to keep</button>' : "") +
-        '<button class="btn ghost sm" id="lib-scan" data-tip="Run the comparison again, for ' +
-          'instance after opening another export.">Compare again</button>'
-      : '<span class="lib-found">Some of these may be near-copies of each other.</span>' +
-        '<button class="btn secondary sm" id="lib-scan" data-tip="Compares every photo against ' +
-          'every other to find exact copies and near-copies - the burst, the crop, the re-save. ' +
-          'It deletes nothing on its own; you choose afterwards.">Find similar photos</button>';
+          ? N("{n} group of lookalike pictures found", "{n} groups of lookalike pictures found", groups)
+          : T("No lookalike pictures found")) + "</span>" +
+        (groups ? '<button class="btn secondary sm" id="lib-cleanup" data-tip="' + T("Go through " +
+          "the groups and choose which copy to keep. Nothing is deleted from your archives - " +
+          "it only decides what goes into the library you export.") + '">' + T("Decide what to keep") + "</button>" : "") +
+        '<button class="btn ghost sm" id="lib-scan" data-tip="' + T("Run the comparison again, for " +
+          "instance after opening another export.") + '">' + T("Compare again") + "</button>"
+      : '<span class="lib-found">' + T("Some of these may be near-copies of each other.") + "</span>" +
+        '<button class="btn secondary sm" id="lib-scan" data-tip="' + T("Compares every photo against " +
+          "every other to find exact copies and near-copies - the burst, the crop, the re-save. " +
+          "It deletes nothing on its own; you choose afterwards.") + '">' + T("Find similar photos") + "</button>";
     return '<div class="lib-tools">' + inner + "</div>";
   }
 
@@ -1988,7 +1991,7 @@
     return '<div class="pl-strip">' +
       "<div><b>Sort it by describing what you want</b>" +
       "<p>" + (bucketed
-        ? num(bucketed) + " of " + plural(photos.length, "picture", "pictures") +
+        ? num(bucketed) + " of " + N("{n} picture", "{n} pictures", photos.length) +
           " are already sorted into folders. Run it again to change the arrangement."
         : "Say it in a sentence - \"keep people and notes, leave out screenshots, put the " +
           "rest in a separate folder\" - and see exactly what it would do before it does it.") +
@@ -2016,7 +2019,7 @@
 
     if (!todo) {
       return '<div class="ai-strip done">' +
-        "<span>" + aiIcon() + "All " + plural(photos.length, "image is", "images are") +
+        "<span>" + aiIcon() + "All " + N("{n} image is", "{n} images are", photos.length) +
         " tagged. Search above for anything in them - and the tags travel with the " +
         "files when you export.</span>" +
         '<button class="btn ghost sm" id="lib-describe">AI settings</button></div>';
@@ -2025,7 +2028,7 @@
     if (todo < photos.length) {
       return '<div class="ai-strip">' +
         "<span>" + aiIcon() + num(photos.length - todo) + " of " +
-        plural(photos.length, "image", "images") + " tagged so far.</span>" +
+        N("{n} image", "{n} images", photos.length) + " tagged so far.</span>" +
         '<button class="btn ai sm" id="lib-describe">' + aiIcon() +
         "Tag " + num(todo) + " more</button></div>";
     }
@@ -2042,7 +2045,7 @@
       "</div>" +
       '<div class="ai-promo-cta">' +
         '<button class="btn ai" id="lib-describe">' + aiIcon() +
-          "Tag " + plural(photos.length, "image", "images") + " with AI</button>" +
+          "Tag " + N("{n} image", "{n} images", photos.length) + " with AI</button>" +
         '<span class="ai-fine">Free using a model on your own computer, where the pictures ' +
         "never leave the machine. Or your own API key, billed to you.</span>" +
       "</div></div>";
@@ -2058,8 +2061,8 @@
     return '<section class="lib-month" data-gi="' + g.gi + '">' +
       '<h3 class="ex-dayh">' + (g.date
         ? esc(g.date.toLocaleDateString(LOC, { year: "numeric", month: "long" }))
-        : "No date recorded") +
-        "<span>" + plural(g.items.length, "picture", "pictures") + "</span></h3>" +
+        : T("No date recorded")) +
+        "<span>" + N("{n} picture", "{n} pictures", g.items.length) + "</span></h3>" +
       '<div class="lib-grid">' + g.items.map((m, i) =>
         '<figure class="lib-cell" data-gi="' + g.gi + '" data-i="' + i + '" tabindex="0" ' +
                 'data-cell="' + g.gi + ":" + i + '" title="' +
@@ -2113,13 +2116,13 @@
       '<header class="ex-dh">' +
         '<span class="ex-ic lg c-' + k.colour + '" data-icon="' + (kind === "video" ? "video" : "image") + '"></span>' +
         '<span class="ex-dh-t"><b>' + esc(k.label) + "</b><em>" + esc(m.srcLabel || "") + "</em></span>" +
-        '<span class="ex-dh-a"><button class="ex-nav-btn" id="ex-x" title="Close">&times;</button></span>' +
+        '<span class="ex-dh-a"><button class="ex-nav-btn" id="ex-x" title="' + T("Close") + '">&times;</button></span>' +
       "</header>" +
       '<div class="ex-dbody">' +
-        '<p class="ex-when">' + (m.at ? esc(fmtDay(m.at)) + " at " + esc(fmtTime(m.at)) : "No date recorded") + "</p>" +
-        '<div id="ex-dmain"><p class="muted small">Decoding preview...</p></div>' +
-        '<h4 class="ex-dh4">What the export recorded</h4><div class="tv" id="ex-dtree"></div>' +
-        '<p class="ex-dfoot muted small">Shown exactly as your export supplied it.</p>' +
+        '<p class="ex-when">' + (m.at ? T("{day} at {time}", { day: esc(fmtDay(m.at)), time: esc(fmtTime(m.at)) }) : T("No date recorded")) + "</p>" +
+        '<div id="ex-dmain"><p class="muted small">' + T("Decoding preview...") + "</p></div>" +
+        '<h4 class="ex-dh4">' + T("What the export recorded") + '</h4><div class="tv" id="ex-dtree"></div>' +
+        '<p class="ex-dfoot muted small">' + T("Shown exactly as your export supplied it.") + "</p>" +
       "</div>";
     panel.querySelector("#ex-x").addEventListener("click", () => {
       closeDetail();
@@ -2134,8 +2137,8 @@
       panel.querySelector("#ex-dmain").innerHTML = file
         ? '<div class="ex-dpreview"><video id="ex-dvid" controls playsinline preload="metadata"' +
           (poster ? ' poster="' + poster + '"' : "") + ' src="' + file + '"></video></div>'
-        : '<p class="muted small">This browser has no codec for this file, so it cannot be played here. ' +
-          'Exporting the library writes the original file out untouched.</p>';
+        : '<p class="muted small">' + T("This browser has no codec for this file, so it cannot be played here. " +
+          "Exporting the library writes the original file out untouched.") + "</p>";
       const v = panel.querySelector("#ex-dvid");
       if (v) {
         /* Opening a clip is a deliberate click, so it should start. Browsers
@@ -2151,15 +2154,15 @@
       const url = await state.ctx.thumb(m);
       panel.querySelector("#ex-dmain").innerHTML = url
         ? '<div class="ex-dpreview"><img src="' + url + '" alt="' + esc(m.name) + '"></div>'
-        : '<p class="muted small">This browser has no codec for this file, so no preview can be shown.</p>';
+        : '<p class="muted small">' + T("This browser has no codec for this file, so no preview can be shown.") + "</p>";
     }
     panel.querySelector("#ex-dtree").innerHTML = MViews.treeHtml({
-      "file name": m.name,
-      "path inside the export": m.path,
-      "size": m.size ? fmtBytes(m.size) : null,
-      "date taken": m.at || null,
-      "type": m.mime || "unknown",
-      "came from": m.srcLabel || null,
+      [T("file name")]: m.name,
+      [T("path inside the export")]: m.path,
+      [T("size")]: m.size ? fmtBytes(m.size) : null,
+      [T("date taken")]: m.at || null,
+      [T("type")]: m.mime || T("unknown"),
+      [T("came from")]: m.srcLabel || null,
     });
     state.ctx.hydrate(panel);
   }
@@ -2183,28 +2186,28 @@
        filter is the same index test everything else uses. */
     const reports = all && all.filter((_, i) => !state.srcOff.has(i));
     if (all && all.length && reports && !reports.length) {
-      body.innerHTML = '<div class="ex-empty"><h3>Nothing selected</h3>' +
-        '<p class="muted">Every export is switched off in the sidebar, so there is ' +
-        "nothing to describe. Turn one back on.</p></div>";
+      body.innerHTML = '<div class="ex-empty"><h3>' + T("Nothing selected") + "</h3>" +
+        '<p class="muted">' + T("Every export is switched off in the sidebar, so there is " +
+        "nothing to describe. Turn one back on.") + "</p></div>";
       return;
     }
     if (!reports || !reports.length) {
-      body.innerHTML = `<p class="muted small">Reading your export...</p>`;
+      body.innerHTML = `<p class="muted small">${T("Reading your export...")}</p>`;
       return;
     }
 
     body.innerHTML = `
-      <p class="rp-lead">Everything your export contains, and how much of it Muletto could read.
-        If something is missing from your library, this is the page that explains why.</p>
+      <p class="rp-lead">${T("Everything your export contains, and how much of it Muletto could read. " +
+        "If something is missing from your library, this is the page that explains why.")}</p>
       ${reports.map(sourceReportHtml).join("")}
       <div class="rp-foot">
-        <h4>Keep a copy</h4>
-        <p class="muted small">The same thing as JSON: folder layouts, file types, key names and
-          column headers, with file numbers collapsed so a thousand photos read as one line.</p>
+        <h4>${T("Keep a copy")}</h4>
+        <p class="muted small">${T("The same thing as JSON: folder layouts, file types, key names and " +
+          "column headers, with file numbers collapsed so a thousand photos read as one line.")}</p>
         <div class="rp-tools">
-          <button class="btn secondary sm" id="rp-save">Save it as a file</button>
-          <button class="btn ghost sm" id="rp-copy">Copy as JSON</button>
-          <button class="btn ghost sm" id="rp-raw">Show the raw JSON</button>
+          <button class="btn secondary sm" id="rp-save">${T("Save it as a file")}</button>
+          <button class="btn ghost sm" id="rp-copy">${T("Copy as JSON")}</button>
+          <button class="btn ghost sm" id="rp-raw">${T("Show the raw JSON")}</button>
         </div>
         <pre class="report" id="rp-pre" hidden></pre>
       </div>`;
@@ -2216,23 +2219,23 @@
     body.querySelector("#rp-copy").addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(json);
-        MNotify.push("Copied", { kind: "done", body: "The report is on your clipboard." });
+        MNotify.push(T("Copied"), { kind: "done", body: T("The report is on your clipboard.") });
       } catch {
-        MNotify.push("Could not copy", { kind: "warn", body: "Use Save it as a file instead." });
+        MNotify.push(T("Could not copy"), { kind: "warn", body: T("Use Save it as a file instead.") });
       }
     });
     const raw = body.querySelector("#rp-raw");
     raw.addEventListener("click", () => {
       const pre = body.querySelector("#rp-pre");
-      if (pre.hidden) { pre.textContent = json; pre.hidden = false; raw.textContent = "Hide the raw JSON"; }
-      else { pre.hidden = true; raw.textContent = "Show the raw JSON"; }
+      if (pre.hidden) { pre.textContent = json; pre.hidden = false; raw.textContent = T("Hide the raw JSON"); }
+      else { pre.hidden = true; raw.textContent = T("Show the raw JSON"); }
     });
 
     body.querySelectorAll(".rp-more").forEach((b) => {
       b.addEventListener("click", () => {
         const box = b.parentElement.querySelector(".rp-hidden");
         box.hidden = !box.hidden;
-        b.textContent = box.hidden ? b.dataset.show : "Show less";
+        b.textContent = box.hidden ? b.dataset.show : T("Show less");
       });
     });
   }
@@ -2262,58 +2265,56 @@
         <header class="rp-head">
           <div>
             <h3>${esc(r.archive.detectedAs)}</h3>
-            <p class="muted small">${esc(r.sourceName || "")} - ${plural(r.archive.files, "file", "files")},
+            <p class="muted small">${esc(r.sourceName || "")} - ${N("{n} file", "{n} files", r.archive.files)},
               ${esc(fmtBytes(r.archive.bytes))}</p>
           </div>
         </header>
 
         <div class="rp-cards">
-          ${[["Photos and videos", read.media],
-             ["Messages", read.messages],
-             ["Dated events", read.timelineEvents],
-             ["Locations", read.places],
-             ["Record tables", (read.recordTables || []).length]]
+          ${[[T("Photos and videos"), read.media],
+             [T("Messages"), read.messages],
+             [T("Dated events"), read.timelineEvents],
+             [T("Locations"), read.places],
+             [T("Record tables"), (read.recordTables || []).length]]
             .filter(([, v]) => v)
             .map(([k, v]) => `<div class="rp-card"><b>${num(v)}</b><span>${esc(k)}</span></div>`).join("")}
           <div class="rp-card${untouched ? " warn" : ""}">
-            <b>${num(untouched)}</b><span>files nothing was taken from</span>
+            <b>${num(untouched)}</b><span>${T("files nothing was taken from")}</span>
           </div>
         </div>
 
         ${rec && rec.unread ? `
           <div class="rp-gap">
-            <h4>What was not read</h4>
-            <p class="muted small">Every entry in this archive is accounted for below, and
-              ${num(rec.unread)} of ${num(rec.total)} produced nothing. That is not
-              automatically wrong - an export carries index pages and thumbnails - but if
-              something you expected is missing, it is in this list.</p>
+            <h4>${T("What was not read")}</h4>
+            <p class="muted small">${T("Every entry in this archive is accounted for below, and " +
+              "{n} of {of} produced nothing. That is not automatically wrong - an export carries " +
+              "index pages and thumbnails - but if something you expected is missing, it is in this list.",
+              { n: num(rec.unread), of: num(rec.total) })}</p>
             <div class="rp-gapcols">
               <div>
-                <h5>Where</h5>
+                <h5>${T("Where")}</h5>
                 <ul>${rec.byArea.slice(0, 8).map(([k, v]) =>
                   `<li><span>${esc(k)}</span><em>${num(v)}</em></li>`).join("")}</ul>
               </div>
               <div>
-                <h5>What kind</h5>
+                <h5>${T("What kind")}</h5>
                 <ul>${rec.byType.slice(0, 8).map(([k, v]) =>
                   `<li><span>.${esc(k)}</span><em>${num(v)}</em></li>`).join("")}</ul>
               </div>
             </div>
-            ${rec.nested ? `<p class="rp-gapnote">${plural(rec.nested, "archive is", "archives are")}
-              nested inside this one and ${rec.nested === 1 ? "has" : "have"} not been opened.
-              Whatever is inside ${rec.nested === 1 ? "it" : "them"} is not counted anywhere
-              on this page.</p>` : ""}
-            ${rec.orphanSidecars ? `<p class="rp-gapnote">${num(rec.orphanSidecars)} metadata
-              files name a photograph that is not in the library, so those dates and places
-              were lost.</p>` : ""}
-            ${rec.unexplained ? `<p class="rp-gapnote">${num(rec.unexplained)} entries could
-              not be placed in any category, which is a bug in this page rather than in your
-              export.</p>` : ""}
+            ${rec.nested ? `<p class="rp-gapnote">${N("{n} archive is nested inside this one and has not " +
+              "been opened. Whatever is inside it is not counted anywhere on this page.",
+              "{n} archives are nested inside this one and have not been opened. Whatever is " +
+              "inside them is not counted anywhere on this page.", rec.nested)}</p>` : ""}
+            ${rec.orphanSidecars ? `<p class="rp-gapnote">${T("{n} metadata files name a photograph that " +
+              "is not in the library, so those dates and places were lost.", { n: num(rec.orphanSidecars) })}</p>` : ""}
+            ${rec.unexplained ? `<p class="rp-gapnote">${T("{n} entries could not be placed in any " +
+              "category, which is a bug in this page rather than in your export.", { n: num(rec.unexplained) })}</p>` : ""}
           </div>` : ""}
 
-        <h4 class="rp-h">Where the bulk of it sits</h4>
+        <h4 class="rp-h">${T("Where the bulk of it sits")}</h4>
         <div class="tablewrap"><table class="rp-table">
-          <thead><tr><th>Folder</th><th>Files</th><th>Size</th><th>Mostly</th></tr></thead>
+          <thead><tr><th>${T("Folder")}</th><th>${T("Files")}</th><th>${T("Size")}</th><th>${T("Mostly")}</th></tr></thead>
           <tbody>
             ${folders.slice(0, 8).map(([name, f]) => `
               <tr>
@@ -2326,32 +2327,31 @@
           </tbody>
         </table></div>
         ${folders.length > 8 ? `
-          <button class="rp-more" data-show="Show all ${folders.length} folders">Show all ${folders.length} folders</button>
+          <button class="rp-more" data-show="${T("Show all {n} folders", { n: folders.length })}">${T("Show all {n} folders", { n: folders.length })}</button>
           <div class="rp-hidden tablewrap" hidden><table class="rp-table"><tbody>
             ${folders.slice(8).map(([name, f]) => `
               <tr><td><code>${esc(name)}</code></td><td>${num(f.files)}</td>
               <td>${esc(fmtBytes(f.bytes))}</td></tr>`).join("")}
           </tbody></table></div>` : ""}
 
-        <h4 class="rp-h">File types</h4>
+        <h4 class="rp-h">${T("File types")}</h4>
         <div class="rp-chips">
           ${exts.slice(0, 14).map(([e, n]) =>
-            `<span class="rp-chip${KNOWN_EXT.test(e) ? "" : " odd"}">${esc(e || "no extension")} <b>${num(n)}</b></span>`).join("")}
+            `<span class="rp-chip${KNOWN_EXT.test(e) ? "" : " odd"}">${esc(e || T("no extension"))} <b>${num(n)}</b></span>`).join("")}
         </div>
-        ${unknownExts.length ? `<p class="muted small rp-note">${plural(unknownExts.length, "type", "types")}
-          here are not ones Muletto reads: ${esc(unknownExts.slice(0, 8).map(([e]) => e).join(", "))}.
-          That is often fine - exports carry index pages and thumbnails - but it is the first place
-          to look if something is missing.</p>` : ""}
+        ${unknownExts.length ? `<p class="muted small rp-note">${N("{n} type here is not one Muletto reads: {list}.",
+          "{n} types here are not ones Muletto reads: {list}.", unknownExts.length,
+          { list: esc(unknownExts.slice(0, 8).map(([e]) => e).join(", ")) })} ${T("That is often fine - exports " +
+          "carry index pages and thumbnails - but it is the first place to look if something is missing.")}</p>` : ""}
 
-        ${unreadable.length ? `<h4 class="rp-h">Would not open</h4>
-          <p class="muted small">${plural(unreadable.length, "file", "files")} could not be read at
-          all. If those matter to you, this is the part of the report worth looking at.</p>` : ""}
+        ${unreadable.length ? `<h4 class="rp-h">${T("Would not open")}</h4>
+          <p class="muted small">${N("{n} file could not be read at all.", "{n} files could not be read at all.",
+          unreadable.length)} ${T("If those matter to you, this is the part of the report worth looking at.")}</p>` : ""}
 
         ${(r.structuredFiles || []).filter((f) => f.kind !== "unreadable").length ? `
-          <h4 class="rp-h">The data files, and what is in them</h4>
-          <p class="muted small rp-note">The field names each file uses. A parser looking for
-            <code>takenAt</code> in a file that calls it <code>photoTakenTime</code> shows up
-            here.</p>
+          <h4 class="rp-h">${T("The data files, and what is in them")}</h4>
+          <p class="muted small rp-note">${T("The field names each file uses. A parser looking for " +
+            "<code>takenAt</code> in a file that calls it <code>photoTakenTime</code> shows up here.")}</p>
           <div class="rp-shapes">
             ${(r.structuredFiles || []).filter((f) => f.kind !== "unreadable").slice(0, 6).map((f) => `
               <details class="rp-shape">
@@ -2385,33 +2385,33 @@
     el.innerHTML =
       '<div class="xw-scrim"></div>' +
       '<div class="xw" role="dialog" aria-modal="true" aria-labelledby="fx-t">' +
-        '<header class="xw-head"><div><h2 id="fx-t">Forget this library?</h2>' +
-          '<p class="muted small">Your archives are not touched. This clears what Muletto ' +
-          'worked out about them.</p></div>' +
-          '<button class="xw-x" id="fx-x" aria-label="Close">&times;</button></header>' +
+        '<header class="xw-head"><div><h2 id="fx-t">' + T("Forget this library?") + "</h2>" +
+          '<p class="muted small">' + T("Your archives are not touched. This clears what Muletto " +
+          "worked out about them.") + "</p></div>" +
+          '<button class="xw-x" id="fx-x" aria-label="' + T("Close") + '">&times;</button></header>' +
         '<div class="xw-body">' +
           '<ul class="fx-list">' +
-            "<li><b>What goes</b><span>Every comparison, repaired date and description - " +
-            num(photos) + " pictures and " + num(msgs) + " messages worth of work - plus the " +
-            "small copies kept for the grid. The next open starts from nothing.</span></li>" +
-            "<li><b>What stays</b><span>Your exports, wherever they are on disk, and anything " +
-            "you have already written out.</span></li>" +
-            "<li><b>Cannot be undone</b><span>None of it is anywhere else. There is no copy " +
-            "on a server to fetch it back from.</span></li>" +
+            "<li><b>" + T("What goes") + "</b><span>" + T("Every comparison, repaired date and description - " +
+            "{photos} pictures and {msgs} messages worth of work - plus the small copies kept for the " +
+            "grid. The next open starts from nothing.", { photos: num(photos), msgs: num(msgs) }) + "</span></li>" +
+            "<li><b>" + T("What stays") + "</b><span>" + T("Your exports, wherever they are on disk, and anything " +
+            "you have already written out.") + "</span></li>" +
+            "<li><b>" + T("Cannot be undone") + "</b><span>" + T("None of it is anywhere else. There is no copy " +
+            "on a server to fetch it back from.") + "</span></li>" +
           "</ul>" +
-          '<p class="fx-keep">Keep the work first?</p>' +
+          '<p class="fx-keep">' + T("Keep the work first?") + "</p>" +
           '<div class="fx-outs">' +
-            '<button class="btn secondary" id="fx-work">Save it to a file</button>' +
-            '<button class="btn secondary" id="fx-export">Export the library</button>' +
+            '<button class="btn secondary" id="fx-work">' + T("Save it to a file") + "</button>" +
+            '<button class="btn secondary" id="fx-export">' + T("Export the library") + "</button>" +
           "</div>" +
-          '<p class="muted small fx-note">A work file holds no photos or messages - only what ' +
+          '<p class="muted small fx-note">' + T("A work file holds no photos or messages - only what " +
           "was worked out - so it is small, and opening it next to a fresh export saves doing " +
-          "any of this twice.</p>" +
-          '<div class="fx-bar" id="fx-bar" hidden><i></i><span id="fx-say">Clearing...</span></div>' +
+          "any of this twice.") + "</p>" +
+          '<div class="fx-bar" id="fx-bar" hidden><i></i><span id="fx-say">' + T("Clearing...") + "</span></div>" +
         "</div>" +
         '<footer class="xw-foot">' +
-          '<button class="btn ghost" id="fx-no">Keep it</button>' +
-          '<button class="btn danger" id="fx-yes">Forget everything</button>' +
+          '<button class="btn ghost" id="fx-no">' + T("Keep it") + "</button>" +
+          '<button class="btn danger" id="fx-yes">' + T("Forget everything") + "</button>" +
         "</footer>" +
       "</div>";
     document.body.appendChild(el);
@@ -2444,7 +2444,7 @@
       try {
         await state.actions.forget((msg) => { if (say) say.textContent = msg; });
       } catch (err) {
-        say.textContent = "Could not clear everything: " + ((err && err.message) || err);
+        say.textContent = T("Could not clear everything: {why}", { why: (err && err.message) || err });
         el.querySelector("#fx-no").disabled = false;
         return;
       }
@@ -2530,21 +2530,20 @@
         <span class="ex-ic lg c-${k.colour}" data-icon="${iconKey}"></span>
         <span class="ex-dh-t"><b>${esc(k.label)}</b><em>${esc(it.srcLabel || "")}</em></span>
         <span class="ex-dh-a">
-          <button class="ex-nav-btn" id="ex-prev" title="Previous" ${state.selected === 0 ? "disabled" : ""}>&larr;</button>
-          <button class="ex-nav-btn" id="ex-next" title="Next" ${state.selected >= flatCount() - 1 ? "disabled" : ""}>&rarr;</button>
-          <button class="ex-nav-btn" id="ex-x" title="Close">&times;</button>
+          <button class="ex-nav-btn" id="ex-prev" title="${T("Previous")}" ${state.selected === 0 ? "disabled" : ""}>&larr;</button>
+          <button class="ex-nav-btn" id="ex-next" title="${T("Next")}" ${state.selected >= flatCount() - 1 ? "disabled" : ""}>&rarr;</button>
+          <button class="ex-nav-btn" id="ex-x" title="${T("Close")}">&times;</button>
         </span>
       </header>
       <div class="ex-dbody" id="ex-dbody">
-        <p class="ex-when">${esc(fmtDay(it.at))} at ${esc(fmtTime(it.at))}</p>
+        <p class="ex-when">${T("{day} at {time}", { day: esc(fmtDay(it.at)), time: esc(fmtTime(it.at)) })}</p>
         <div id="ex-dmain"></div>
-        <h4 class="ex-dh4">What the export recorded</h4>
+        <h4 class="ex-dh4">${T("What the export recorded")}</h4>
         <div class="tv" id="ex-dtree"></div>
-        <h4 class="ex-dh4">Around this time</h4>
+        <h4 class="ex-dh4">${T("Around this time")}</h4>
         <div class="ex-near" id="ex-near"></div>
         <p class="ex-dfoot muted small">
-          Shown exactly as your export supplied it. Nothing has been added,
-          guessed, or looked up anywhere.
+          ${T("Shown exactly as your export supplied it. Nothing has been added, guessed, or looked up anywhere.")}
         </p>
       </div>`;
 
@@ -2558,11 +2557,11 @@
     } else if (it.type === "chat") {
       main.innerHTML = `<div class="ex-dmsgs">${it.messages.map(msgHtml).join("")}</div>`;
     } else if (it.media) {
-      main.innerHTML = `<p class="muted small">Decoding preview...</p>`;
+      main.innerHTML = `<p class="muted small">${T("Decoding preview...")}</p>`;
       const url = await state.ctx.thumb(it.media);
       main.innerHTML = url
         ? `<div class="ex-dpreview"><img src="${url}" alt="${esc(it.title)}"></div>`
-        : `<p class="muted small">This browser has no codec for this file, so no preview can be shown. The details below still come straight from the export.</p>`;
+        : `<p class="muted small">${T("This browser has no codec for this file, so no preview can be shown. The details below still come straight from the export.")}</p>`;
     }
 
     panel.querySelector("#ex-dtree").innerHTML = MViews.treeHtml(detailsOf(it));
@@ -2580,7 +2579,7 @@
             <span class="ex-neard">${esc(rowTitle(o))}</span>
           </div>`;
         }).join("")
-      : `<p class="muted small">Nothing else was recorded within three hours of this.</p>`;
+      : `<p class="muted small">${T("Nothing else was recorded within three hours of this.")}</p>`;
 
     state.ctx.hydrate(panel);
   }
@@ -2588,7 +2587,7 @@
   function msgHtml(m) {
     return `<div class="msg ${m.direction === "sent" ? "out" : "in"}">
       <div class="mh">${esc(m.from || "")} - ${m.at ? esc(fmtTime(m.at)) : ""}</div>
-      <div class="mb">${m.text ? esc(m.text) : `<em class="muted">${esc(m.type || "attachment")}</em>`}</div>
+      <div class="mb">${m.text ? esc(m.text) : `<em class="muted">${esc(m.type || T("attachment"))}</em>`}</div>
     </div>`;
   }
 
@@ -2596,37 +2595,37 @@
     if (it.media) {
       const m = it.media;
       const o = {
-        "file name": m.name,
-        "description": m.caption || null,
-        "path inside the export": m.path,
-        "size": m.size ? fmtBytes(m.size) : null,
-        "date taken": m.at || null,
-        "type": m.mime || "unknown",
-        "came from": it.srcLabel || null,
+        [T("file name")]: m.name,
+        [T("description")]: m.caption || null,
+        [T("path inside the export")]: m.path,
+        [T("size")]: m.size ? fmtBytes(m.size) : null,
+        [T("date taken")]: m.at || null,
+        [T("type")]: m.mime || T("unknown"),
+        [T("came from")]: it.srcLabel || null,
       };
       return o;
     }
     if (it.type === "place") {
       return {
-        "points recorded": it.count,
-        "came from": it.srcLabel || null,
-        "coordinates": it.points.slice(0, 200).map((p) => ({
+        [T("points recorded")]: it.count,
+        [T("came from")]: it.srcLabel || null,
+        [T("coordinates")]: it.points.slice(0, 200).map((p) => ({
           latitude: p.lat, longitude: p.lon, recorded: p.at || null,
         })),
       };
     }
     if (it.type === "chat") {
       return {
-        "conversation": it.title,
-        "messages that day": it.count,
-        "came from": it.srcLabel || null,
-        "messages": it.messages.map((m) => ({
+        [T("conversation")]: it.title,
+        [T("messages that day")]: it.count,
+        [T("came from")]: it.srcLabel || null,
+        [T("messages")]: it.messages.map((m) => ({
           from: m.from, direction: m.direction, at: m.at || null,
           text: m.text || null, type: m.type || null,
         })),
       };
     }
-    return { "what": it.title, "kind": it.kind || "activity", "when": it.at, "came from": it.srcLabel || null };
+    return { [T("what")]: it.title, [T("kind")]: it.kind || T("activity"), [T("when")]: it.at, [T("came from")]: it.srcLabel || null };
   }
 
   /* A close crop of the shipped basemap around the point, so a coordinate
@@ -2653,9 +2652,9 @@
         </svg>
       </div>
       <dl class="ex-dl">
-        <dt>Latitude</dt><dd>${p.lat.toFixed(4)}</dd>
-        <dt>Longitude</dt><dd>${p.lon.toFixed(4)}</dd>
-        ${points.length > 1 ? `<dt>Points that day</dt><dd>${num(points.length)}</dd>` : ""}
+        <dt>${T("Latitude")}</dt><dd>${p.lat.toFixed(4)}</dd>
+        <dt>${T("Longitude")}</dt><dd>${p.lon.toFixed(4)}</dd>
+        ${points.length > 1 ? `<dt>${T("Points that day")}</dt><dd>${num(points.length)}</dd>` : ""}
       </dl>`;
   }
 
@@ -2692,7 +2691,7 @@
     if (!btn || !state || !state.ctx || !state.ctx.demo) return btn;
     btn.classList.add("held-back");
     btn.setAttribute("data-tip",
-      "Held back on the sample data. Open your own export and this works.");
+      T("Held back on the sample data. Open your own export and this works."));
     return btn;
   }
 
@@ -2719,7 +2718,7 @@
         <span class="ex-ic lg c-slate" data-icon="${esc(iconKey || "file")}"></span>
         <span class="ex-dh-t"><b>${esc(title)}</b><em>${esc(subtitle || "")}</em></span>
         <span class="ex-dh-a">
-          <button class="ex-nav-btn" id="ex-x" title="Close">&times;</button>
+          <button class="ex-nav-btn" id="ex-x" title="${T("Close")}">&times;</button>
         </span>
       </header>
       <div class="ex-dbody" id="ex-dbody"><div id="ex-dmain"></div></div>`;
