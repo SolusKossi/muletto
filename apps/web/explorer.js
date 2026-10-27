@@ -2184,7 +2184,7 @@
     /* This page was the one place a switched-off source kept talking. The
        reports are built one per source in the order they were opened, so the
        filter is the same index test everything else uses. */
-    const reports = all && all.filter((_, i) => !state.srcOff.has(i));
+    const reports = all && all.map((r, i) => [r, i]).filter(([, i]) => !state.srcOff.has(i));
     if (all && all.length && reports && !reports.length) {
       body.innerHTML = '<div class="ex-empty"><h3>' + T("Nothing selected") + "</h3>" +
         '<p class="muted">' + T("Every export is switched off in the sidebar, so there is " +
@@ -2199,7 +2199,8 @@
     body.innerHTML = `
       <p class="rp-lead">${T("Everything your export contains, and how much of it Muletto could read. " +
         "If something is missing from your library, this is the page that explains why.")}</p>
-      ${reports.map(sourceReportHtml).join("")}
+      ${notesHtml(state.lib.mergeNotes)}
+      ${reports.map(([r, i]) => sourceReportHtml(r, i)).join("")}
       <div class="rp-foot">
         <h4>${T("Keep a copy")}</h4>
         <p class="muted small">${T("The same thing as JSON: folder layouts, file types, key names and " +
@@ -2240,7 +2241,21 @@
     });
   }
 
-  function sourceReportHtml(r) {
+  /* What the parsers noticed and had no other place to say: an address on
+     every row, links that expire, a format that cannot be read here. They
+     were written for the reader and sat unseen in the library after the
+     viewer was rebuilt; this page, which already explains what each export
+     holds, is where they belong. */
+  function notesHtml(notes) {
+    if (!notes || !notes.length) return "";
+    return `<div class="rp-notes">
+        <h4>${T("Worth knowing")}</h4>
+        <ul>${notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>
+      </div>`;
+  }
+
+  function sourceReportHtml(r, i) {
+    const src = state.lib.sources && state.lib.sources[i];
     const read = r.parserRead || {};
     const folders = Object.entries(r.folders || {});
     const exts = Object.entries(r.extensions || {});
@@ -2282,6 +2297,8 @@
             <b>${num(untouched)}</b><span>${T("files nothing was taken from")}</span>
           </div>
         </div>
+
+        ${notesHtml(src && src.notes)}
 
         ${rec && rec.unread ? `
           <div class="rp-gap">

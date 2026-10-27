@@ -808,7 +808,12 @@ function mergeSources(sources) {
   sources.forEach((s, i) => {
     const label = s.det ? s.det.label : s.name;
     const slug = s.det ? s.det.slug : "box";
-    merged.sources.push({ i, label, slug, superseded: s.superseded, exportKey: s.exportKey });
+    /* The parsers' notes, kept per source as well as flattened, because the
+       place they are read is that source's section of What is in here, and
+       a switched-off source has to fall silent there. A superseded copy says
+       nothing the newer one does not. */
+    merged.sources.push({ i, label, slug, superseded: s.superseded, exportKey: s.exportKey,
+      notes: s.superseded ? [] : (s.lib.notes || []) });
     // A superseded export contributes only the files the newer one lost.
     const keep = s.keepOnly;
     const fresh = (list) => (keep
@@ -829,8 +834,10 @@ function mergeSources(sources) {
     if (!many) merged.insights.push(...(s.lib.insights || []));
   });
   merged.conversations.sort((a, b) => b.messages.length - a.messages.length);
+  /* About the set of exports rather than any one of them. */
+  merged.mergeNotes = [];
   for (const r of repeats) {
-    merged.notes.push(
+    merged.mergeNotes.push(
       T("You opened {copies} {label} exports. The newest one is used, because a fresh " +
         "export contains everything an older one did - {n} identical files were folded " +
         "away rather than shown twice.",
@@ -838,6 +845,7 @@ function mergeSources(sources) {
       (r.kept ? " " + N("{n} file present only in the older export was kept.",
                         "{n} files present only in the older export were kept.", r.kept) : ""));
   }
+  merged.notes.push(...merged.mergeNotes);
   resolveSelf(merged);
   return merged;
 }

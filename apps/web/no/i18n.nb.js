@@ -401,6 +401,7 @@ MI18N.add({
  "Locations": "Steder",
  "Record tables": "Tabeller",
  "files nothing was taken from": "filer det ikke ble hentet noe fra",
+ "Worth knowing": "Verdt å vite",
  "What was not read": "Det som ikke ble lest",
  "Every entry in this archive is accounted for below, and {n} of {of} produced nothing. That is not automatically wrong - an export carries index pages and thumbnails - but if something you expected is missing, it is in this list.": "Hver oppføring i dette arkivet er gjort rede for nedenfor, og {n} av {of} ga ingenting. Det er ikke automatisk feil - en eksport har med seg indekssider og miniatyrbilder - men mangler noe du ventet deg, ligger det i denne lista.",
  "Where": "Hvor",
